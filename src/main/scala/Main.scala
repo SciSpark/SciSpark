@@ -30,8 +30,9 @@ object Main {
   def getNetCDFVars (url : String, variable : String) : DoubleMatrix = {
     val netcdfFile = NetcdfDataset.openDataset(url);
     val SearchVariable: ma2.Array = netcdfFile.findVariable(variable).read()
+
     val coordinateArray = SearchVariable.copyTo1DJavaArray().asInstanceOf[Array[Float]].map(p => p.toDouble)
-    val matrix = new DoubleMatrix(coordinateArray).reshape(400, 1440)
+    val matrix = new DoubleMatrix(coordinateArray).reshape(180, 360)
     matrix
   }
 
@@ -63,14 +64,14 @@ object Main {
     OpenDapURLGenerator.run()
     val conf = new SparkConf().setAppName("L").setMaster("local[4]")
     val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile("TRMM_L3_Links.txt").repartition(4)
+    val urlRDD = sparkContext.textFile("Links").repartition(4)
 
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("Links").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getNetCDFVars(url, data))
+    val HighResolutionArray = urlRDD.map(url => getNetCDFVars(url, TotCldLiqH2O))
 
     val LowResolutionArray = HighResolutionArray.map(largeArray => reduceResolution(largeArray, 20))
     println(LowResolutionArray.count)
