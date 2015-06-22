@@ -32,7 +32,7 @@ object Main {
     val SearchVariable: ma2.Array = netcdfFile.findVariable(variable).read()
 
     val coordinateArray = SearchVariable.copyTo1DJavaArray().asInstanceOf[Array[Float]].map(p => p.toDouble)
-    val matrix = new DoubleMatrix(coordinateArray).reshape(180, 360)
+    val matrix = new DoubleMatrix(coordinateArray).reshape(14, 360)
     matrix
   }
 
@@ -42,7 +42,7 @@ object Main {
    * @param blockSize
    * @return
    */
-  def reduceResolution(largeArray : DoubleMatrix, blockSize : Int) : DoubleMatrix =  {
+  def jblasreduceResolution(largeArray : DoubleMatrix, blockSize : Int) : DoubleMatrix =  {
     val numRows = largeArray.rows
     val numCols = largeArray.columns
 
@@ -60,6 +60,10 @@ object Main {
     reducedMatrix
   }
 
+  def breezereduceResolution(largeArray : DoubleMatrix, blockSize : Int) : DoubleMatrix = {
+
+  }
+
   def main(args : Array[String]) : Unit = {
     OpenDapURLGenerator.run()
     val conf = new SparkConf().setAppName("L").setMaster("local[4]")
@@ -73,7 +77,7 @@ object Main {
 
     val HighResolutionArray = urlRDD.map(url => getNetCDFVars(url, TotCldLiqH2O))
 
-    val LowResolutionArray = HighResolutionArray.map(largeArray => reduceResolution(largeArray, 20))
+    val LowResolutionArray = HighResolutionArray.map(largeArray => jblasreduceResolution(largeArray, 20))
     println(LowResolutionArray.count)
 
     LowResolutionArray.collect.map(p => {
