@@ -15,7 +15,13 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
   "org.apache.spark" % "spark-core_2.10" % "1.3.0",
   "org.apache.spark" % "spark-mllib_2.10" % "1.3.0",
+  //Math Libraries
   "org.jblas" % "jblas" % "1.2.3",
+  // other dependencies here
+  "org.scalanlp" %% "breeze" % "0.11.2",
+  // native libraries are not included by default. add this if you want them (as of 0.7)
+  // native libraries greatly improve performance, but increase jar sizes.
+  "org.scalanlp" %% "breeze-natives" % "0.11.2",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
   "edu.ucar" % "netcdf" % "4.2.20"
