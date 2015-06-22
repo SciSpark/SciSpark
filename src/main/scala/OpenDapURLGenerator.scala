@@ -14,7 +14,7 @@ object OpenDapURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"
   val FILENAME = "TRMM_L3_Links2.txt"
   val iniYear = 1997
-  val endYear = 1998
+  val endYear = 2015
 
   def run() : Unit = {
 
@@ -22,14 +22,21 @@ object OpenDapURLGenerator {
     // reading time
     var readTime = new DateTime(1997, 1, 2, 0, 0)
     val pw = new PrintWriter(new File(FILENAME))
+    pw.flush()
     val totalUrls = new util.ArrayList[String]()
-    numYears.par.foreach{ e => totalUrls.addAll(generateLinksPerYear(e))}
-    println("Total URLs: " + totalUrls.size())
-    totalUrls.foreach{ e => pw.append(e.toString + "\n")}
-    pw.close()
-
-
-
+    try {
+      numYears.par.foreach { e => totalUrls.addAll(generateLinksPerYear(e)) }
+      println("Total URLs: " + totalUrls.size())
+      totalUrls.foreach { e => pw.append(e.toString + "\n") }
+    } catch {
+      case ex: Exception => {
+        println("Exception")
+        ex.printStackTrace()
+      }
+    } finally {
+      pw.close()
+    }
+  }
     /**
      * Gets the links per year
      * @param year
@@ -72,8 +79,9 @@ object OpenDapURLGenerator {
     def getResponseCode(urlString : String):Boolean = {
       val u = new URL(urlString);
       val huc =  u.openConnection().asInstanceOf[HttpURLConnection];
+      huc.setConnectTimeout(100000);
       huc.setRequestMethod("HEAD");
       return (huc.getResponseCode() == HttpURLConnection.HTTP_OK);
     }
-  }
+
 }
