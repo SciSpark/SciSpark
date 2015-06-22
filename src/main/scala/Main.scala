@@ -32,7 +32,8 @@ object Main {
     val SearchVariable: ma2.Array = netcdfFile.findVariable(variable).read()
 
     val coordinateArray = SearchVariable.copyTo1DJavaArray().asInstanceOf[Array[Float]].map(p => p.toDouble)
-    val matrix = new DoubleMatrix(coordinateArray).reshape(14, 360)
+    val matrix = new DoubleMatrix(coordinateArray).reshape(400, 1440)
+    println(matrix)
     matrix
   }
 
@@ -60,15 +61,15 @@ object Main {
     reducedMatrix
   }
 
-  def breezereduceResolution(largeArray : DoubleMatrix, blockSize : Int) : DoubleMatrix = {
-
-  }
+//  def breezereduceResolution(largeArray : DoubleMatrix, blockSize : Int) : DoubleMatrix = {
+//
+//  }
 
   def main(args : Array[String]) : Unit = {
     OpenDapURLGenerator.run()
     val conf = new SparkConf().setAppName("L").setMaster("local[4]")
     val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile("Links").repartition(4)
+    val urlRDD = sparkContext.textFile("TRMM_L3_Links.txt").repartition(4)
 
     /**
      * Uncomment this line in order to test on a normal scala array
