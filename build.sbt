@@ -11,6 +11,9 @@ resolvers ++= Seq(
   //other resolvers here
 )
 
+val buildSettings = Defaults.defaultSettings ++ Seq{
+  javaOptions += "-Xms4000M -Xmx5024M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M"
+}
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
   "org.apache.spark" % "spark-core_2.10" % "1.3.0",
