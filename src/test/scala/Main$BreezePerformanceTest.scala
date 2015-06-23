@@ -21,15 +21,15 @@ class Main$BreezePerformanceTest extends FunSuite {
     val knmi_dataset = Main.getBreezeNetCDFNDVars(FILE_LEADER + FILE_1, "tasmax")
     val wrf_dataset = Main.getBreezeNetCDFNDVars(FILE_LEADER + FILE_2, "tasmax")
     val result = new Array[DenseMatrix[Double]](knmi_dataset.length)
-    val totalBefore = System.currentTimeMillis()
+    val totalBefore = System.nanoTime()
     for(i <- 0 to knmi_dataset.length - 1){
-      val before = System.nanoTime()
+//      val before = System.nanoTime()
       result(i) = knmi_dataset(i) - wrf_dataset(i)
-      val after = System.nanoTime()
-      println(after - before)
+//      val after = System.nanoTime()
+//      println(after - before)
     }
 
-    val totalAfter = System.currentTimeMillis()
+    val totalAfter = System.nanoTime()
     println(totalAfter - totalBefore)
     assert(true)
   }
