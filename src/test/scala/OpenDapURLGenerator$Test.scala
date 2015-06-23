@@ -1,4 +1,3 @@
-import org.dia._
 import org.scalatest.FunSuite
 
 /**
@@ -7,7 +6,7 @@ import org.scalatest.FunSuite
 class OpenDapURLGenerator$Test extends FunSuite {
 
   test("testDater") {
-    OpenDapURLGenerator.run()
+    //OpenDapURLGenerator.run()
     assert(true)
   }
 

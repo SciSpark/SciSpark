@@ -1,10 +1,10 @@
 package org.dia
 
-import org.apache.spark.{SparkConf,SparkContext}
+import breeze.linalg.{DenseMatrix, DenseVector, sum}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.jblas.DoubleMatrix
-import breeze.linalg.{accumulate,sum, DenseMatrix}
-import breeze.util.DoubleImplicits
 import ucar.ma2
+
 import ucar.nc2.dataset.NetcdfDataset
 /**
  * Created by rahulsp on 6/17/15.
@@ -16,12 +16,15 @@ object Main {
    * TODO:: Make the netcdf variables global - however this may need broadcasting
    */
 
-
+  val rowDim = 400
+  val columnDim = 1440
+  val TextFile = "TRMM_L3_Links2.txt"
   /** 
    * Variable names
     */
   val TotCldLiqH2O = "TotCldLiqH2O_A"
   val data = "data"
+
 
   /**
    * JBLAS implementation
@@ -45,7 +48,7 @@ object Main {
       if(v == Double.NaN) v = 0
       v
     } )
-    val matrix = new DoubleMatrix(coordinateArray).reshape(180, 360)
+    val matrix = new DoubleMatrix(coordinateArray).reshape(rowDim, columnDim)
     matrix
   }
 
@@ -67,8 +70,17 @@ object Main {
   def getBreezeNetCDFVars (url : String, variable : String) : DenseMatrix[Double] = {
     NetcdfDataset.setUseNaNs(false)
     val netcdfFile = NetcdfDataset.openDataset(url);
-    val SearchVariable: ma2.Array = netcdfFile.findVariable(variable).read()
-
+    var SearchVariable : ma2.Array = null
+    try {
+      netcdfFile.getVariables
+      SearchVariable = netcdfFile.findVariable(variable).read()
+    } catch {
+      case ex: Exception => {
+        ex.printStackTrace()
+        println(url)
+      }
+    }
+    println(netcdfFile.findVariable(variable))
     val coordinateArray = SearchVariable.copyTo1DJavaArray()
       .asInstanceOf[Array[Float]]
       .map(p => {
@@ -76,10 +88,52 @@ object Main {
       v = if(v == -9999.0) 0.0 else v
       v
     })
-
-    val matrix = new DenseMatrix(180, 360, coordinateArray, 0)
+    val matrix = new DenseMatrix[Double](rowDim,columnDim, coordinateArray, 0)
     matrix
   }
+
+  def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
+    NetcdfDataset.setUseNaNs(false)
+    val netcdfFile = NetcdfDataset.openDataset(url);
+    var SearchVariable: ma2.Array = null
+    try {
+      netcdfFile.getVariables
+      SearchVariable = netcdfFile.findVariable(variable).read()
+    } catch {
+      case ex: Exception => {
+        ex.printStackTrace()
+        println(url)
+      }
+    }
+
+    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
+    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
+    val any = NDArray.map(p => new DenseMatrix[](201, 194, p(0)., 0))
+//    println("Time :" + 0)
+//
+//    for (k <- 0 to 200) {
+//      for (l <- 0 to 193) print(NDArray(0)(0)(k)(l) + ",  ")
+//      println()
+//    }
+    any
+  }
+
+//  def getNd4JNetCDFVars(url : String, variable : String) : Nd4j {
+//
+//  }
+
+
+
+//    val coordinateArray = SearchVariable.copyTo1DJavaArray()
+//      .asInstanceOf[Array[Float]]
+//      .map(p => {
+//      var v = p.toDouble
+//      v = if(v == -9999.0) 0.0 else v
+//      v
+//    })
+//    val matrix = new DenseMatrix[Double](rowDim,columnDim, coordinateArray, 0)
+//    matrix
+
 
   /**
    * 
@@ -129,17 +183,17 @@ object Main {
   }
 
   def main(args : Array[String]) : Unit = {
-    OpenDapURLGenerator.run()
+    //OpenDapURLGenerator.run()
     val conf = new SparkConf().setAppName("L").setMaster("local[4]")
     val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile("Links").repartition(4)
+    val urlRDD = sparkContext.textFile(TextFile).repartition(4)
 
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("Links").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getBreezeNetCDFVars(url, TotCldLiqH2O))
+    val HighResolutionArray = urlRDD.map(url => getBreezeNetCDFVars(url, data))
 
     val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
     println(LowResolutionArray.count)
