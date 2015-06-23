@@ -1,10 +1,11 @@
 package org.dia
-
+import scala.io.Source
+import java.io.File
 import breeze.linalg.{DenseMatrix, DenseVector, sum}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.jblas.DoubleMatrix
 import ucar.ma2
-
+//import org.nd4j._
 import ucar.nc2.dataset.NetcdfDataset
 /**
  * Created by rahulsp on 6/17/15.
@@ -16,9 +17,9 @@ object Main {
    * TODO:: Make the netcdf variables global - however this may need broadcasting
    */
 
-  val rowDim = 400
-  val columnDim = 1440
-  val TextFile = "TRMM_L3_Links2.txt"
+  val rowDim = 180
+  val columnDim = 360
+  val TextFile = "Links"
   /** 
    * Variable names
     */
@@ -80,7 +81,7 @@ object Main {
         println(url)
       }
     }
-    println(netcdfFile.findVariable(variable))
+    //println(netcdfFile.findVariable(variable))
     val coordinateArray = SearchVariable.copyTo1DJavaArray()
       .asInstanceOf[Array[Float]]
       .map(p => {
@@ -108,14 +109,14 @@ object Main {
 
     val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
     val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    val any = NDArray.map(p => new DenseMatrix[](201, 194, p(0)., 0))
+    //val any = NDArray.map(p => new DenseMatrix[](201, 194, p(0)., 0))
 //    println("Time :" + 0)
 //
 //    for (k <- 0 to 200) {
 //      for (l <- 0 to 193) print(NDArray(0)(0)(k)(l) + ",  ")
 //      println()
 //    }
-    any
+    null
   }
 
 //  def getNd4JNetCDFVars(url : String, variable : String) : Nd4j {
@@ -184,23 +185,30 @@ object Main {
 
   def main(args : Array[String]) : Unit = {
     //OpenDapURLGenerator.run()
-    val conf = new SparkConf().setAppName("L").setMaster("local[4]")
-    val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile(TextFile).repartition(4)
-
+    //val conf = new SparkConf().setAppName("L").setMaster("local[4]")
+    //val sparkContext = new SparkContext(conf)
+    //val urlRDD = sparkContext.textFile(TextFile).repartition(4)
+    val urlRDD = Source.fromFile(new File(TextFile)).mkString.split("\n")
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("Links").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getBreezeNetCDFVars(url, data))
+    val HighResolutionArray = urlRDD.map(url => getBreezeNetCDFVars(url, TotCldLiqH2O))
 
-    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
-    println(LowResolutionArray.count)
+    val collected = HighResolutionArray
 
-    LowResolutionArray.collect.map(p => {
-      println(p)
-    })
+
+    val nanoBefore = System.nanoTime()
+    val biasMatrix = collected(0) - collected(1)
+    val nanoAfter = System.nanoTime()
+    println(nanoAfter - nanoBefore)
+//    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
+//    println(LowResolutionArray.count)
+//
+//    LowResolutionArray.collect.map(p => {
+//      println(p)
+//    })
     //println("Hello World!")
   }
 }
