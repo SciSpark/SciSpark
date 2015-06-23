@@ -1,6 +1,8 @@
 import breeze.linalg.DenseMatrix
 import org.dia._
 import org.jblas.DoubleMatrix
+import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.api.ndarray.INDArray
 /**
  * Created by rahulsp on 6/19/15.
  */
@@ -73,6 +75,19 @@ class Main$Test extends org.scalatest.FunSuite {
     assert(true)
   }
 
+  test("ND4JOps2dTest") {
+    (1 to 100).foreach{p =>
+      var m1 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+      var m2 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+      /**
+       * Vector subtraction
+       */
+      var start = System.nanoTime().toDouble / 1E9
+      val m3 = m1 - m2
+      var stop = System.nanoTime().toDouble / 1E9
+      println(stop - start)
+    }
+  }
 //  test("breezeReduceResolutionAvrgTest") {
 //    val squareSize = 100
 //    val reductionSize = 50

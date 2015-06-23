@@ -1,11 +1,14 @@
 package org.dia
+
+import org.nd4j.linalg.factory.Nd4j
+
 import scala.io.Source
 import java.io.File
 import breeze.linalg.{DenseMatrix, DenseVector, sum}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.jblas.DoubleMatrix
 import ucar.ma2
-//import org.nd4j._
+import org.nd4j._
 import ucar.nc2.dataset.NetcdfDataset
 /**
  * Created by rahulsp on 6/17/15.
@@ -111,31 +114,12 @@ object Main {
     val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
     val j = NDArray(0)(0).flatMap(f => f)
     val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-//    println("Time :" + 0)
-//
-//    for (k <- 0 to 200) {
-//      for (l <- 0 to 193) print(NDArray(0)(0)(k)(l) + ",  ")
-//      println()
-//    }
     any
   }
 
-//  def getNd4JNetCDFVars(url : String, variable : String) : Nd4j {
+//  def getNd4jNetCDFVars(url : String, variable : String) : Nd4j = {
 //
 //  }
-
-
-
-//    val coordinateArray = SearchVariable.copyTo1DJavaArray()
-//      .asInstanceOf[Array[Float]]
-//      .map(p => {
-//      var v = p.toDouble
-//      v = if(v == -9999.0) 0.0 else v
-//      v
-//    })
-//    val matrix = new DenseMatrix[Double](rowDim,columnDim, coordinateArray, 0)
-//    matrix
-
 
   /**
    * 
@@ -200,18 +184,10 @@ object Main {
     val collected = HighResolutionArray
 
 
-    //val nanoBefore = System.nanoTime()
     val biasMatrix = collected(0) - collected(1)
 
     val nanoAfter = System.nanoTime()
-    //println(nanoAfter - nanoBefore)
-//    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
-//    println(LowResolutionArray.count)
-//
-//    LowResolutionArray.collect.map(p => {
-//      println(p)
-//    })
-    //println("Hello World!")
+    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
   }
 }
 
