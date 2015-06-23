@@ -109,14 +109,15 @@ object Main {
 
     val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
     val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    //val any = NDArray.map(p => new DenseMatrix[](201, 194, p(0)., 0))
+    val j = NDArray(0)(0).flatMap(f => f)
+    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
 //    println("Time :" + 0)
 //
 //    for (k <- 0 to 200) {
 //      for (l <- 0 to 193) print(NDArray(0)(0)(k)(l) + ",  ")
 //      println()
 //    }
-    null
+    any
   }
 
 //  def getNd4JNetCDFVars(url : String, variable : String) : Nd4j {
@@ -199,10 +200,11 @@ object Main {
     val collected = HighResolutionArray
 
 
-    val nanoBefore = System.nanoTime()
+    //val nanoBefore = System.nanoTime()
     val biasMatrix = collected(0) - collected(1)
+
     val nanoAfter = System.nanoTime()
-    println(nanoAfter - nanoBefore)
+    //println(nanoAfter - nanoBefore)
 //    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
 //    println(LowResolutionArray.count)
 //
