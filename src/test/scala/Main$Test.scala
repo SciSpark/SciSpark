@@ -1,3 +1,4 @@
+import breeze.linalg.DenseMatrix
 import org.dia._
 import org.jblas.DoubleMatrix
 /**
@@ -51,6 +52,26 @@ class Main$Test extends org.scalatest.FunSuite {
           }
         }
       }
+    assert(true)
+  }
+
+  test("breezeReduceResolutionAvrgTest") {
+    val squareSize = 100
+    val reductionSize = 50
+    val accuracy = 1E-15
+    val reducedWidth = squareSize / reductionSize
+    val testMatrix = DenseMatrix.ones[Double](squareSize, squareSize)
+
+    val resultMatrix = Main.breezereduceResolution(testMatrix, reductionSize)
+
+    for(i <- 0 to (reducedWidth - 1)){
+      for(j <- 0 to (reducedWidth - 1)) {
+        val error = Math.abs(resultMatrix(i, j) - 1)
+        if(error >= accuracy) {
+          assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
+        }
+      }
+    }
     assert(true)
   }
 }

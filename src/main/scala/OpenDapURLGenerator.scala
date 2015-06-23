@@ -1,11 +1,12 @@
 package org.dia
 
-import java.io.PrintWriter
-import java.io.File
+import java.io.{File, PrintWriter}
 import java.net.{HttpURLConnection, URL}
 import java.util
+
 import org.joda.time.DateTime
-import collection.JavaConversions._
+
+import scala.collection.JavaConversions._
 
 /**
  * Created by rahulsp on 6/19/15.
