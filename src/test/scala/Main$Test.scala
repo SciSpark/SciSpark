@@ -82,15 +82,14 @@ class Main$Test extends org.scalatest.FunSuite {
 
   test("ND4JOps2dTest") {
     (1 to 100).foreach{p =>
-      val backend = Nd4jBackend.load()
-      var m1 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
-      var m2 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+      val m1 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+      val m2 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
       /**
        * Vector subtraction
        */
-      var start = System.nanoTime().toDouble / 1E9.toDouble
+      val start = System.nanoTime()
       val m3 = m1 - m2
-      var stop = System.nanoTime().toDouble / 1E9.toDouble
+      val stop = System.nanoTime()
       println(stop - start)
     }
     assert(true)
