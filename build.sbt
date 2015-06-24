@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   // Nd4j scala api with netlib-blas backend
   //"org.nd4j" % "nd4j-api" % "0.0.3.5.5.5",
   "org.nd4j" % "nd4j-scala-api" % "0.0.3.5.5.6-SNAPSHOT",
-  "org.nd4j" % "nd4j-netlib-blas" % "0.0.3.5.5.6-SNAPSHOT",
+  "org.nd4j" % "nd4j-x86" % "0.0.3.5.5.6-SNAPSHOT",
   //"org.nd4j" % "org" % "0.0.3.5.5.6-SNAPSHOT",
   "org.projectlombok" % "lombok" % "1.16.4",
   "edu.ucar" % "opendap" % "2.2.2",
