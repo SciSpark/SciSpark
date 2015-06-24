@@ -26,13 +26,13 @@ libraryDependencies ++= Seq(
   // other dependencies here
   "org.scalanlp" %% "breeze" % "0.11.2",
   // native libraries are not included by default. add this if you want them (as of 0.7)
-//  "org.nd4j" % "org" % "0.0.3.5.5.5",
+  //"org.nd4j" % "org" % "0.0.3.5.5.5",
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  "org.nd4j" % "nd4j-api" % "0.0.3.5.5.5",
+  //"org.nd4j" % "nd4j-api" % "0.0.3.5.5.5",
   "org.nd4j" % "nd4j-scala-api" % "0.0.3.5.5.5",
-  "org.nd4j" % "nd4j-jblas" % "0.0.3.5.5.5",
+  //"org.nd4j" % "nd4j-jblas" % "0.0.3.5.5.5",
   //"org.nd4j" % "org" % "0.0.3.5.5.6-SNAPSHOT",
   "org.projectlombok" % "lombok" % "1.16.4",
   "edu.ucar" % "opendap" % "2.2.2",
