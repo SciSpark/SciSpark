@@ -8,15 +8,14 @@ scalaVersion := "2.10.4"
 mainClass in Compile := Some("org.dia.Main")
 
 resolvers ++= Seq(
-  //other resolvers here
+  Resolver.mavenLocal
 )
 
 val buildSettings = Defaults.defaultSettings ++ Seq {
   javaOptions += "-Xms4000M -Xmx5024M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M"
 }
 
-resolvers += Resolver.mavenLocal
-//externalPom(Def.setting(baseDirectory.value / "java/org/src.main/java.org.nd4j.linalg.netlib/pom.xml"))
+
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
@@ -32,8 +31,8 @@ libraryDependencies ++= Seq(
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
   //"org.nd4j" % "nd4j-api" % "0.0.3.5.5.5",
-  "org.nd4j" % "nd4j-scala-api" % "0.0.3.5.5.5",
-  //"org.nd4j" % "nd4j-netlib-blas" % "0.0.3.5.5.5",
+  "org.nd4j" % "nd4j-scala-api" % "0.0.3.5.5.6-SNAPSHOT",
+  "org.nd4j" % "nd4j-netlib-blas" % "0.0.3.5.5.6-SNAPSHOT",
   //"org.nd4j" % "org" % "0.0.3.5.5.6-SNAPSHOT",
   "org.projectlombok" % "lombok" % "1.16.4",
   "edu.ucar" % "opendap" % "2.2.2",
