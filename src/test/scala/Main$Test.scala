@@ -2,7 +2,12 @@ import breeze.linalg.DenseMatrix
 import org.dia._
 import org.jblas.DoubleMatrix
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.api.ndarray.INDArray
+
+/**
+ * import DSL for scala api
+ */
+import org.nd4j.api.linalg.DSL._
+
 /**
  * Created by rahulsp on 6/19/15.
  */
@@ -82,11 +87,12 @@ class Main$Test extends org.scalatest.FunSuite {
       /**
        * Vector subtraction
        */
-      var start = System.nanoTime().toDouble / 1E9
+      var start = System.nanoTime().toDouble / 1E9.toDouble
       val m3 = m1 - m2
-      var stop = System.nanoTime().toDouble / 1E9
+      var stop = System.nanoTime().toDouble / 1E9.toDouble
       println(stop - start)
     }
+    assert(true)
   }
 //  test("breezeReduceResolutionAvrgTest") {
 //    val squareSize = 100
