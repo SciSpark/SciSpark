@@ -1,5 +1,5 @@
 import org.nd4j.linalg.factory.Nd4j
-
+import org.dia.Main
 /**
  * import DSL for scala api
  */
@@ -77,20 +77,20 @@ class Main$Test extends org.scalatest.FunSuite {
 //    assert(true)
 //  }
 
-  test("ND4JOps2dTest") {
-    (1 to 100).foreach{p =>
-      val m1 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
-      val m2 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
-      /**
-       * Vector subtraction
-       */
-      val start = System.nanoTime()
-      val m3 = m1 - m2
-      val stop = System.nanoTime()
-      println(stop - start)
-    }
-    assert(true)
-  }
+//  test("ND4JOps2dTest") {
+//    (1 to 100).foreach{p =>
+//      val m1 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+//      val m2 = Nd4j.create(p*1000 * p *1000).reshape(p * 1000,p * 1000)
+//      /**
+//       * Vector subtraction
+//       */
+//      val start = System.nanoTime()
+//      val m3 = m1 - m2
+//      val stop = System.nanoTime()
+//      println(stop - start)
+//    }
+//    assert(true)
+//  }
 //  test("breezeReduceResolutionAvrgTest") {
 //    val squareSize = 100
 //    val reductionSize = 50
@@ -110,4 +110,24 @@ class Main$Test extends org.scalatest.FunSuite {
 //    }
 //    assert(true)
 //  }
+
+  test("ndf4jReduceResolutionAvrgTest") {
+        val squareSize = 100
+        val reductionSize = 50
+        val accuracy = 1E-15
+        val reducedWidth = squareSize / reductionSize
+        val testMatrix = Nd4j.create(squareSize, squareSize)
+
+        val resultMatrix = Main.Nd4jReduceResolution(testMatrix, reductionSize)
+
+        for(i <- 0 to (reducedWidth - 1)){
+          for(j <- 0 to (reducedWidth - 1)) {
+            val error = Math.abs(resultMatrix(i, j) - 1)
+            if(error >= accuracy) {
+              assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
+            }
+          }
+        }
+        assert(true)
+  }
 }

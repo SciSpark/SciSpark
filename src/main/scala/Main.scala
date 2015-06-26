@@ -229,7 +229,7 @@ object Main {
 
     val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, TotCldLiqH2O))
     val nanoAfter = System.nanoTime()
-    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 20)).collect
+    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
     LowResolutionArray.map(array => println(array))
   }
 }
