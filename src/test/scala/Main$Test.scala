@@ -1,7 +1,4 @@
-import breeze.linalg.DenseMatrix
-import org.dia._
-import org.jblas.DoubleMatrix
-import org.nd4j.linalg.factory.{Nd4j, Nd4jBackend}
+import org.nd4j.linalg.factory.Nd4j
 
 /**
  * import DSL for scala api

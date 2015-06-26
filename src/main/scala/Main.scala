@@ -1,5 +1,6 @@
 package org.dia
 
+import org.nd4j.linalg.api.ndarray.{BaseNDArray, INDArray}
 import org.nd4j.linalg.factory.Nd4j
 
 import scala.io.Source
@@ -10,6 +11,7 @@ import org.jblas.DoubleMatrix
 import ucar.ma2
 import org.nd4j._
 import ucar.nc2.dataset.NetcdfDataset
+import org.nd4j.api.linalg.DSL._
 /**
  * Created by rahulsp on 6/17/15.
  */
@@ -96,6 +98,31 @@ object Main {
     matrix
   }
 
+  def getNd4jNetCDFVars(url : String, variable : String) : INDArray = {
+    NetcdfDataset.setUseNaNs(false)
+    val netcdfFile = NetcdfDataset.openDataset(url);
+    var SearchVariable: ma2.Array = null
+    try {
+      netcdfFile.getVariables
+      SearchVariable = netcdfFile.findVariable(variable).read()
+    } catch {
+      case ex: Exception => {
+        ex.printStackTrace()
+        println(url)
+      }
+    }
+
+    val coordinateArray = SearchVariable.copyTo1DJavaArray()
+      .asInstanceOf[Array[Float]]
+      .map(p => {
+      var v = p.toDouble
+      v = if(v == -9999.0) 0.0 else v
+      v
+    })
+
+    val NDarray = Nd4j.create(coordinateArray, Array(rowDim, columnDim))
+    NDarray
+  }
   def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
     NetcdfDataset.setUseNaNs(false)
     val netcdfFile = NetcdfDataset.openDataset(url);
@@ -121,6 +148,27 @@ object Main {
 //
 //  }
 
+  def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
+    val numRows = largeArray.rows()
+    val numCols = largeArray.columns()
+
+    val reducedSize = numRows * numCols / (blockSize * blockSize)
+
+    val reducedMatrix = Nd4j.create(numRows / blockSize, numCols / blockSize)
+
+    for(row <- 0 to reducedMatrix.rows - 1){
+      for(col <- 0 to reducedMatrix.columns - 1){
+        val rowRange = (row*blockSize to ((row + 1) * blockSize) - 1).toSet
+        val columnRange = (col * blockSize to ((col + 1) * blockSize) - 1).toSet
+        val crossProductRanges = for { x <- rowRange; y <- columnRange} yield (x, y)
+        val block = crossProductRanges.map(pair => largeArray.getDouble(pair._1, pair._2))
+        val numNonZero = block.filter(p => p != 0).size
+        val sum = block.reduce((A, B) => A + B)
+        reducedMatrix.put(row, col, sum / numNonZero)
+      }
+    }
+    reducedMatrix
+  }
   /**
    * 
    * @param largeArray
@@ -136,7 +184,7 @@ object Main {
     val reducedMatrix = DoubleMatrix.zeros(numRows / blockSize, numCols / blockSize)
     for(row <- 0 to reducedMatrix.rows - 1){
       for(col <- 0 to reducedMatrix.columns - 1){
-        val block = largeArray.getRange(row * blockSize, ((row + 1) * blockSize) , col * blockSize,  ((col + 1) * blockSize))
+        val block = largeArray.getRange(row * blockSize, ((row + 1) * blockSize) , col * blockSize,  ((col + 1) * blockSize) )
         val average = block.mean
         reducedMatrix.put(row, col, average)
       }
@@ -170,24 +218,19 @@ object Main {
 
   def main(args : Array[String]) : Unit = {
     //OpenDapURLGenerator.run()
-    //val conf = new SparkConf().setAppName("L").setMaster("local[4]")
-    //val sparkContext = new SparkContext(conf)
-    //val urlRDD = sparkContext.textFile(TextFile).repartition(4)
-    val urlRDD = Source.fromFile(new File(TextFile)).mkString.split("\n")
+    val conf = new SparkConf().setAppName("L").setMaster("local[4]")
+    val sparkContext = new SparkContext(conf)
+    val urlRDD = sparkContext.textFile(TextFile).repartition(4)
+    //val urlRDD = Source.fromFile(new File(TextFile)).mkString.split("\n")
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("Links").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getBreezeNetCDFVars(url, TotCldLiqH2O))
-
-    val collected = HighResolutionArray
-
-
-    val biasMatrix = collected(0) - collected(1)
-
+    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, TotCldLiqH2O))
     val nanoAfter = System.nanoTime()
-    val LowResolutionArray = HighResolutionArray.map(largeArray => breezereduceResolution(largeArray, 20))
+    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 20)).collect
+    LowResolutionArray.map(array => println(array))
   }
 }
 
