@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dia
 
 import java.io.{File, PrintWriter}
@@ -9,11 +26,11 @@ import org.joda.time.DateTime
 import scala.collection.JavaConversions._
 
 /**
- * Created by rahulsp on 6/19/15.
+ * Generates a list of links for the TRMM dataset
  */
-object OpenDapURLGenerator {
+object OpenDapTRMMURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"
-  val FILENAME = "TRMM_L3_Links2.txt"
+  val FILENAME = "TRMM_L3_Links.txt"
   val iniYear = 1997
   val endYear = 2015
 
