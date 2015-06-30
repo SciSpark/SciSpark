@@ -1,14 +1,38 @@
+package org.dia
+
+import org.dia.Constants.DATASET_VARS
 import org.nd4j.linalg.factory.Nd4j
-import org.dia.Main
 /**
  * import DSL for scala api
  */
 import org.nd4j.api.linalg.DSL._
 
 /**
- * Created by rahulsp on 6/19/15.
+ * Class for testing functionality
  */
 class Main$Test extends org.scalatest.FunSuite {
+
+  test("ReadingNCDFVarsToNdj4") {
+    // loading TRMM data
+    var url = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
+    val nd4jTRMM = Main.getNd4jNetCDFVars(url, DATASET_VARS.get("TRMM_L3").get)
+    println(nd4jTRMM.toString)
+    assert(true)
+  }
+
+  test("LoadDimensionsTRMM") {
+    //get NCDFfile
+    var url = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
+    val netcdfFile = Main.loadNetCDFDataSet(url, DATASET_VARS.get("TRMM_L3").get)
+    assert(netcdfFile != null)
+
+    //test dimensions
+    val rows = Main.getRowDimension(netcdfFile)
+    val cols = Main.getColDimension(netcdfFile)
+    assert(rows == 400)
+    assert(cols == 1440)
+  }
+
 //  test("Multiple Slicing") {
 //
 //    (1 to 100).foreach {i =>
@@ -111,23 +135,23 @@ class Main$Test extends org.scalatest.FunSuite {
 //    assert(true)
 //  }
 
-  test("ndf4jReduceResolutionAvrgTest") {
-        val squareSize = 100
-        val reductionSize = 50
-        val accuracy = 1E-15
-        val reducedWidth = squareSize / reductionSize
-        val testMatrix = Nd4j.create(squareSize, squareSize)
-
-        val resultMatrix = Main.Nd4jReduceResolution(testMatrix, reductionSize)
-
-        for(i <- 0 to (reducedWidth - 1)){
-          for(j <- 0 to (reducedWidth - 1)) {
-            val error = Math.abs(resultMatrix(i, j) - 1)
-            if(error >= accuracy) {
-              assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
-            }
-          }
-        }
-        assert(true)
-  }
+//  test("ndf4jReduceResolutionAvrgTest") {
+//        val squareSize = 100
+//        val reductionSize = 50
+//        val accuracy = 1E-15
+//        val reducedWidth = squareSize / reductionSize
+//        val testMatrix = Nd4j.create(squareSize, squareSize)
+//
+//        val resultMatrix = Main.Nd4jReduceResolution(testMatrix, reductionSize)
+//
+//        for(i <- 0 to (reducedWidth - 1)){
+//          for(j <- 0 to (reducedWidth - 1)) {
+//            val error = Math.abs(resultMatrix(i, j) - 1)
+//            if(error >= accuracy) {
+//              assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
+//            }
+//          }
+//        }
+//        assert(true)
+//  }
 }

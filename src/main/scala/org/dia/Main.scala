@@ -17,18 +17,18 @@
  */
 package org.dia
 
-import org.nd4j.linalg.api.ndarray.{BaseNDArray, INDArray}
-import org.nd4j.linalg.factory.Nd4j
-
-import scala.io.Source
-import java.io.File
-import breeze.linalg.{DenseMatrix, DenseVector, sum}
+import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.dia.Constants._
 import org.jblas.DoubleMatrix
+import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.factory.Nd4j
 import ucar.ma2
-import org.nd4j._
+import ucar.nc2.Dimension
 import ucar.nc2.dataset.NetcdfDataset
-import org.nd4j.api.linalg.DSL._
+import scala.language.implicitConversions
+import scala.collection.convert.WrapAsScala.enumerationAsScalaIterator
+
 /**
  * Created by rahulsp on 6/17/15.
  */
@@ -38,15 +38,9 @@ object Main {
    * NetCDF variables to use
    * TODO:: Make the netcdf variables global - however this may need broadcasting
    */
-
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  /** 
-   * Variable names
-    */
-  val TotCldLiqH2O = "TotCldLiqH2O_A"
-  val data = "data"
 
 
   /**
@@ -74,7 +68,6 @@ object Main {
     val matrix = new DoubleMatrix(coordinateArray).reshape(rowDim, columnDim)
     matrix
   }
-
 
 
   /**
@@ -115,31 +108,72 @@ object Main {
     matrix
   }
 
-  def getNd4jNetCDFVars(url : String, variable : String) : INDArray = {
+  def loadNetCDFDataSet(url : String, variable : String) : NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
     val netcdfFile = NetcdfDataset.openDataset(url);
+    return netcdfFile
+  }
+
+  def getOneDJavaArray(netcdfFile : NetcdfDataset, variable : String) : Array[Double] = {
     var SearchVariable: ma2.Array = null
+    var coordinateArray : Array[Double] = Array.empty
     try {
-      netcdfFile.getVariables
       SearchVariable = netcdfFile.findVariable(variable).read()
+      coordinateArray = SearchVariable.copyTo1DJavaArray()
+        .asInstanceOf[Array[Float]]
+        .map(p => {
+          var v = p.toDouble
+          v = if(v == -9999.0) 0.0 else v
+          v
+      })
+
     } catch {
       case ex: Exception => {
         ex.printStackTrace()
-        println(url)
       }
     }
+    return coordinateArray
+  }
 
-    val coordinateArray = SearchVariable.copyTo1DJavaArray()
-      .asInstanceOf[Array[Float]]
-      .map(p => {
-      var v = p.toDouble
-      v = if(v == -9999.0) 0.0 else v
-      v
-    })
-
-    val NDarray = Nd4j.create(coordinateArray, Array(rowDim, columnDim))
+  def getNd4jNetCDFVars(url : String, variable : String) : INDArray = {
+    var netcdfFile = loadNetCDFDataSet(url, variable)
+    val coordinateArray = getOneDJavaArray(netcdfFile, variable)
+    val rows = getRowDimension(netcdfFile)
+    val cols = getColDimension(netcdfFile)
+    val NDarray = Nd4j.create(coordinateArray, Array(rows, cols))
     NDarray
   }
+
+  /**
+   * Gets the row dimension of a specific file
+   * @param netcdfFile
+   * @return
+   */
+  def getRowDimension(netcdfFile : NetcdfDataset) : Int = {
+    val it = netcdfFile.getDimensions.iterator()
+    while (it.hasNext) {
+      var d = it.next()
+      if (d.getName.equals(ROWS_DIM))
+        return d.getLength
+    }
+    return DEFAULT_TRMM_ROW_SIZE
+  }
+
+  /**
+   * Gets the col dimension of a specific file
+   * @param netcdfFile
+   * @return
+   */
+  def getColDimension(netcdfFile : NetcdfDataset) : Int = {
+    val it = netcdfFile.getDimensions.iterator()
+    while (it.hasNext) {
+      var d = it.next()
+      if (d.getName.equals(COLS_DIM))
+        return d.getLength
+    }
+    return DEFAULT_TRMM_COL_SIZE
+  }
+
   def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
     NetcdfDataset.setUseNaNs(false)
     val netcdfFile = NetcdfDataset.openDataset(url);
@@ -160,10 +194,6 @@ object Main {
     val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
     any
   }
-
-//  def getNd4jNetCDFVars(url : String, variable : String) : Nd4j = {
-//
-//  }
 
   def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
     val numRows = largeArray.rows()
@@ -186,6 +216,7 @@ object Main {
     }
     reducedMatrix
   }
+
   /**
    * 
    * @param largeArray
@@ -234,17 +265,18 @@ object Main {
   }
 
   def main(args : Array[String]) : Unit = {
-    //OpenDapURLGenerator.run()
-    val conf = new SparkConf().setAppName("L").setMaster("local[4]")
+    var cores = Runtime.getRuntime().availableProcessors() - 1;
+    //TODO the number of threads should be configured at cluster level
+    val conf = new SparkConf().setAppName("L").setMaster("local[" + cores + "]")
     val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile(TextFile).repartition(4)
+    val urlRDD = sparkContext.textFile(TextFile).repartition(cores)
     //val urlRDD = Source.fromFile(new File(TextFile)).mkString.split("\n")
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, TotCldLiqH2O))
+    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
     val nanoAfter = System.nanoTime()
     val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
     LowResolutionArray.map(array => println(array))

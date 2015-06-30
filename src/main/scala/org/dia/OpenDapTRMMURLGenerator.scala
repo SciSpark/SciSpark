@@ -30,16 +30,24 @@ import scala.collection.JavaConversions._
  */
 object OpenDapTRMMURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"
-  val FILENAME = "TRMM_L3_Links.txt"
+  val DEFAULT_FILE_NAME = "TRMM_L3_Links.txt"
+  var fileName = ""
   val iniYear = 1997
   val endYear = 2015
+  var checkUrl = false
 
-  def run() : Unit = {
-
+  /**
+   * Runs the OpenDapTRMMURL link generator
+   * @param checkLink
+   */
+  def run(checkLink : Boolean, fName : String) : Unit = {
+    // initializing variables
+    checkUrl = checkLink
+    fileName = fName
     val numYears = (0 to (endYear - iniYear)).toList
     // reading time
     var readTime = new DateTime(1997, 1, 2, 0, 0)
-    val pw = new PrintWriter(new File(FILENAME))
+    val pw = new PrintWriter(new File(fileName))
     pw.flush()
     val totalUrls = new util.ArrayList[String]()
     try {
@@ -54,6 +62,10 @@ object OpenDapTRMMURLGenerator {
     } finally {
       pw.close()
     }
+  }
+
+  def run (checkLink : Boolean) : Unit = {
+    run(checkLink, DEFAULT_FILE_NAME)
   }
     /**
      * Gets the links per year
@@ -81,9 +93,11 @@ object OpenDapTRMMURLGenerator {
         sb.append(paddedReadDay).append(".7.bin");
         // check url and stop if it doesn't exist
         val tmpUrl = URL + sb.toString
-        if (getResponseCode(tmpUrl)) {
-          urls.add(tmpUrl)
-          //println(tmpUrl)
+        if (checkUrl) {
+          if (getResponseCode(tmpUrl)) {
+            urls.add(tmpUrl)
+            //println(tmpUrl)
+          }
         }
       }
       return urls;

@@ -1,6 +1,7 @@
-//import org.apache.spark.mllib.linalg.DenseMatrix
+package org.dia
+
+
 import breeze.linalg.DenseMatrix
-import org.dia.Main
 import org.scalatest.FunSuite
 /**
  * This is a scala breeze implementation of the
