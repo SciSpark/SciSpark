@@ -15,22 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.dia
+package org.dia.b
 
 /**
- * Constants
  */
-object Constants {
-  // mapping between data set and variables
-  // TODO find a better way to retrieve the variables per dataSet
-  val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "data", "ncml" -> "TotCldLiqH2O_A")
-  // Rows dimension name
-  val ROWS_DIM = "rows"
-  // Cols dimension name
-  val COLS_DIM = "cols"
-  // TRMM default row dimension size
-  val DEFAULT_TRMM_ROW_SIZE = 400
-  // TRMM default col dimension size
-  val DEFAULT_TRMM_COL_SIZE = 1440
+class MainBreezeTest extends org.scalatest.FunSuite {
+
+
+
 }

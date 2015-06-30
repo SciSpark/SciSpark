@@ -12,27 +12,6 @@ import org.nd4j.api.linalg.DSL._
  */
 class Main$Test extends org.scalatest.FunSuite {
 
-  test("ReadingNCDFVarsToNdj4") {
-    // loading TRMM data
-    var url = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
-    val nd4jTRMM = Main.getNd4jNetCDFVars(url, DATASET_VARS.get("TRMM_L3").get)
-    println(nd4jTRMM.toString)
-    assert(true)
-  }
-
-  test("LoadDimensionsTRMM") {
-    //get NCDFfile
-    var url = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
-    val netcdfFile = Main.loadNetCDFDataSet(url, DATASET_VARS.get("TRMM_L3").get)
-    assert(netcdfFile != null)
-
-    //test dimensions
-    val rows = Main.getRowDimension(netcdfFile)
-    val cols = Main.getColDimension(netcdfFile)
-    assert(rows == 400)
-    assert(cols == 1440)
-  }
-
 //  test("Multiple Slicing") {
 //
 //    (1 to 100).foreach {i =>

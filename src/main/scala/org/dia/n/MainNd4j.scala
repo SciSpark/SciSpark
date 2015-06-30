@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia
+package org.dia.n
 
 import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -24,15 +24,14 @@ import org.jblas.DoubleMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import ucar.ma2
-import ucar.nc2.Dimension
 import ucar.nc2.dataset.NetcdfDataset
+
 import scala.language.implicitConversions
-import scala.collection.convert.WrapAsScala.enumerationAsScalaIterator
 
 /**
- * Created by rahulsp on 6/17/15.
+ * * Functions needed to perform operations with Nd4j
  */
-object Main {
+object MainNd4j {
 
   /**
    * NetCDF variables to use
