@@ -156,7 +156,7 @@ object MainJblas {
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
       var d = it.next()
-      if (d.getName.equals(ROWS_DIM))
+      if (d.getName.equals(TRMM_ROWS_DIM))
         return d.getLength
     }
     return DEFAULT_TRMM_ROW_SIZE
@@ -171,7 +171,7 @@ object MainJblas {
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
       var d = it.next()
-      if (d.getName.equals(COLS_DIM))
+      if (d.getName.equals(TRMM_COLS_DIM))
         return d.getLength
     }
     return DEFAULT_TRMM_COL_SIZE

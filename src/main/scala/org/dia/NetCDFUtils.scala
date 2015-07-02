@@ -17,12 +17,16 @@
  */
 package org.dia
 
-import org.dia.Constants._
+import java.lang.Exception
+
 import org.slf4j.Logger
 import ucar.ma2
+import ucar.nc2.Dimension
 import ucar.nc2.dataset.NetcdfDataset
 
+import scala.collection.mutable.MutableList
 import scala.language.implicitConversions
+import scala.util.control.Exception
 
 /**
  * Contains all functions needed to handle netCDF files
@@ -68,24 +72,22 @@ object NetCDFUtils {
   def convertMa2ArrayTo1DJavaArray(netcdfFile : NetcdfDataset, variable : String) : Array[Double] = {
     var SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
     var coordinateArray : Array[Double] = Array.empty
-      coordinateArray = SearchVariable.copyTo1DJavaArray()
-        .asInstanceOf[Array[Float]]
-        .map(p => {
-          var v = p.toDouble
-          v = if(v == -9999.0) 0.0 else v
-          v
-      })
+    var oneDarray = SearchVariable.copyTo1DJavaArray()
+    // convert to doubles
+    try {
+      if (!SearchVariable.copyTo1DJavaArray().isInstanceOf[Array[Double]]) {
+        coordinateArray = oneDarray.asInstanceOf[Array[Float]]
+          .map(p => p.toDouble)
+      }
+      //TODO pluggable cleaning values procedures?
+      coordinateArray = coordinateArray.map(p => {if(p == -9999.0) 0.0 else p})
+    } catch {
+      // Something could go wrong while casting elements
+      case ex : Exception => {
+        println("Error while converting a netcdf.ucar.ma2 to a 1D array")
+      }
+    }
     return coordinateArray
-  }
-
-  /**
-   * Gets the row dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getRowDimension(netcdfFile : NetcdfDataset) : Int = {
-    LOG.warn("Using default row dimension name " + ROWS_DIM)
-    return getRowDimension(netcdfFile, ROWS_DIM)
   }
 
   /**
@@ -94,7 +96,7 @@ object NetCDFUtils {
    * @param rowDim
    * @return
    */
-  def getRowDimension(netcdfFile : NetcdfDataset, rowDim : String): Int = {
+  def getDimensionSize(netcdfFile : NetcdfDataset, rowDim : String): Int = {
     var dimSize = -1
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
@@ -108,27 +110,17 @@ object NetCDFUtils {
   }
 
   /**
-   * Gets the col dimension of a specific file
-   * @param netcdfFile
+   * Gets the dimension sizes from a list of Dimension
+   * @param dimensions
    * @return
    */
-  def getColDimension(netcdfFile : NetcdfDataset) : Int = {
-    LOG.warn("Using default row dimension name " + COLS_DIM)
-    return getColDimension(netcdfFile, COLS_DIM)
-  }
-
-  /**
-   * Gets the col dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getColDimension(netcdfFile : NetcdfDataset, colsDim : String) : Int = {
-    val it = netcdfFile.getDimensions.iterator()
+  def getDimensionSizes(dimensions: java.util.List[Dimension]): MutableList[Int] = {
+    val it = dimensions.iterator
+    var dSizes = MutableList[Int]()
     while (it.hasNext) {
       var d = it.next()
-      if (d.getName.equals(colsDim))
-        return d.getLength
+      dSizes += d.getLength
     }
-    return DEFAULT_TRMM_COL_SIZE
+    dSizes
   }
 }

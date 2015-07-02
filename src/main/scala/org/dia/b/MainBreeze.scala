@@ -18,15 +18,12 @@
 package org.dia.b
 
 import breeze.linalg.{DenseMatrix, sum}
-import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.NetCDFUtils
-import org.jblas.DoubleMatrix
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
 
+import scala.collection.mutable.MutableList
 import scala.language.implicitConversions
 
 /**
@@ -36,21 +33,15 @@ object MainBreeze {
 
   /**
    * Breeze implementation
-   * The url is the base url where the netcdf file is located.
-   * 1) Fetch the variable array from via the NetCDF api
-   * 2) Download and convert the netcdf array to 1D array of doubles
-   * 3) Reformat the array as a jblas Double Matrix, and reshape it with the original coordinates
-   *
-   * TODO :: How to obtain the array dimensions from the netcdf api,
-   *         instead of hardcoding for reshape function
-   * @param url
+   * @param url where the netcdf file is located
    * @param variable
    * @return
    */
-  def getBreezeNetCDFVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def getBreezeNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
     var netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    var rowDim = NetCDFUtils.getRowDimension(netcdfFile)
-    var columnDim = NetCDFUtils.getColDimension(netcdfFile)
+
+    var rowDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_ROWS_DIM)
+    var columnDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_COLS_DIM)
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val matrix = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
@@ -68,6 +59,7 @@ object MainBreeze {
     var SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
     val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
     val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
+    // we can only do this because the height dimension is 1
     val j = NDArray(0)(0).flatMap(f => f)
     val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
     any
@@ -98,8 +90,43 @@ object MainBreeze {
         reducedMatrix
       }
     }
-
     reducedMatrix
+  }
+
+  /**
+   * Creates a 2D array from a list of dimensions using a variable
+   * @param dimensionSizes
+   * @param netcdfFile
+   * @param variable
+   * @return DenseMatrix
+   */
+  def create2dBreezeArray(dimensionSizes: MutableList[Int], netcdfFile: NetcdfDataset, variable: String): DenseMatrix[Double] = {
+    println("Creating a 2D array")
+    //TODO make sure that the dimensions are always in the order we want them to be
+    val x = dimensionSizes.get(0).get
+    val y = dimensionSizes.get(1).get
+    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
+    new DenseMatrix[Double](x, y, coordinateArray)
+  }
+
+  /**
+   * Creates a 4D dimensional array from a list of dimensions
+   * Note that this as return type gets boxed into Array[Array[Array[Array[Double]]]]
+   * @param dimensionSizes
+   * @param netcdfFile
+   * @param variable
+   * @return Array.ofDim[x,y,z,u]
+   */
+  def created4dBreezeArray(dimensionSizes: MutableList[Int], netcdfFile: NetcdfDataset, variable: String): Array[Array[Array[Array[Float]]]] = {
+    println("Creating a 4D array")
+    var SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
+    val x = dimensionSizes.get(0).get
+    val y = dimensionSizes.get(1).get
+    val z = dimensionSizes.get(2).get
+    val u = dimensionSizes.get(3).get
+    val ArrayClass = Array.ofDim[Float](x, y, z, u)
+    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[Array[Array[Array[Array[Float]]]]]
+    return NDArray
   }
 }
 
