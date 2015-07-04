@@ -17,29 +17,25 @@
  */
 package org.dia.b
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.Constants._
+import org.joda.time.DateTime
 
-import scala.language.implicitConversions
-import scala.reflect.ClassTag
+import scala.collection.mutable.ListBuffer
 
 /**
- *
+ * Testing TrmmHourly
  */
-object TrmmRDD {
-  implicit class RichRDD[T: ClassTag](rdd: RDD[T]) {
+class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
-    def countEachElement = {
-      rdd
-        .map(element => (element, 1))
-        .reduceByKey((value1, value2) => value1 + value2)
-    }
-
-    def countWhere(f: T => Boolean): Long = {
-      rdd.filter(f).count()
-    }
+  /**
+   * Test if the generated hourly readings are correct
+   */
+  test("GeneratingHourlyTRMMFileUrls") {
+    val realDate = (new DateTime).withYear(1998).withDayOfYear(66)
+    var expectedReadings = new ListBuffer[String]()
+    expectedReadings += ("3B42.19980307.03.7.HDF.Z", "3B42.19980307.06.7.HDF.Z",
+      "3B42.19980307.09.7.HDF.Z", "3B42.19980307.12.7.HDF.Z", "3B42.19980307.15.7.HDF.Z",
+      "3B42.19980307.18.7.HDF.Z", "3B42.19980307.21.7.HDF.Z", "3B42.19980308.00.7.HDF.Z")
+    val trmmHourlyUrls = HourlyTrmm.generateDayReadings(realDate)
+    expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
-
 }
-
