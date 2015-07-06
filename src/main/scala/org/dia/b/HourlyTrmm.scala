@@ -17,8 +17,9 @@
  */
 package org.dia.b
 
-import org.dia.Constants.TRMM_HOURLY_DATA_PREFFIX
-import org.dia.Constants.TRMM_HOURLY_DATA_SUFFIX
+import org.dia.TRMMUtils.Constants
+import Constants.TRMM_HOURLY_DATA_PREFFIX
+import Constants.TRMM_HOURLY_DATA_SUFFIX
 import org.joda.time.DateTime
 
 import collection.mutable.HashMap

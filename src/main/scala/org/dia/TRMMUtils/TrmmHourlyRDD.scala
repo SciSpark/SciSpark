@@ -15,12 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.TRMMUtils
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{TaskContext, Partition, SparkConf, SparkContext}
-import org.dia.Constants
-import org.joda.time.{DateTime, Days}
+import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.dia.b.HourlyTrmm
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

@@ -20,8 +20,9 @@ package org.dia.b
 import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkContext, SparkConf}
-import org.dia.Constants._
-import org.dia.{Constants, NetCDFUtils}
+import org.dia.TRMMUtils.{TrmmHourlyRDD, Constants}
+import Constants._
+import org.dia.NetCDFUtils
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
 

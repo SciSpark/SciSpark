@@ -17,7 +17,8 @@
  */
 package org.dia
 
-import org.dia.Constants.DATASET_VARS
+import org.dia.TRMMUtils.Constants
+import Constants.DATASET_VARS
 import org.dia.n.MainNd4j
 
 /**

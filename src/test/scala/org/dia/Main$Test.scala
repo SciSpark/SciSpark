@@ -18,7 +18,8 @@
 
 package org.dia
 
-import org.dia.Constants.DATASET_VARS
+import org.dia.TRMMUtils.Constants
+import Constants.DATASET_VARS
 import org.nd4j.linalg.factory.Nd4j
 /**
  * import DSL for scala api
