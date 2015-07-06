@@ -48,6 +48,7 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
       println()
       println()
       println()
+//      rdd.bias()
       println(rdd.count())
       println()
       println()
