@@ -85,28 +85,27 @@ class TrmmHourlyRDD[T: ClassTag](
       var splitt = split.asInstanceOf[TrmmHourlyPartition]
       println("============================")
       println("============================")
-//      println(splitt.readings)
-      println("============================")
-      println("============================")
       val iter = new Iterator[T] {
 
         var hNext = true
         var counter = 0
         override def hasNext: Boolean = hNext
 
-//        override def next(): (String, mutable.HashMap[String, DenseMatrix[Double]]) = null
+        // TODO fix the class type, we know what it'll be
         override def next(): T = {
           // for every reading fetch array
+          var n = datasetUrl+ "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
+          println(n)
+          counter +=1
           if (counter >= splitt.readings.length)
             hNext = false
-          else {
-            println(splitt.readings(counter))
-            counter +=1
-          }
-          val n = ""
           n.asInstanceOf[T]
         }
       }
       iter
+  }
+
+  def bias() = {
+
   }
 }

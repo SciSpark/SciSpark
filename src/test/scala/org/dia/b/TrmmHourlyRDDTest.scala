@@ -45,10 +45,12 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
     test("basic functionality") {
       val sc = new SparkContext ("local", "test")
+
       val rdd = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1997, 1998)
-      val rdd2 = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 2000)
-      //rdd2.bias(rdd)
-      println(rdd.count())
+//      val rdd2 = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 2000)
+//      rdd2.bias(rdd)
+      val tmpRdd = rdd.map(e => println(e))
+//      println(rdd.collect())
       //println()
       assert(true)
       //assert (rdd.count === 100)
