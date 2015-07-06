@@ -20,6 +20,7 @@ package org.dia.j
 import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
+import org.dia.NetCDFUtils
 import org.jblas.DoubleMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
@@ -56,7 +57,7 @@ object MainJblas {
    * @return
    */
   def getJblasNetCDFVars (url : String, variable : String) : DoubleMatrix = {
-    var netcdfFile = loadNetCDFDataSet(url)
+    var netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     val SearchVariable: ma2.Array = netcdfFile.findVariable(variable).read()
 
     val coordinateArray = SearchVariable.copyTo1DJavaArray().asInstanceOf[Array[Float]].map(p =>{
@@ -66,33 +67,6 @@ object MainJblas {
     } )
     val matrix = new DoubleMatrix(coordinateArray).reshape(rowDim, columnDim)
     matrix
-  }
-
-
-  /**
-   * Breeze implementation
-   * The url is the base url where the netcdf file is located.
-   * 1) Fetch the variable array from via the NetCDF api
-   * 2) Download and convert the netcdf array to 1D array of doubles
-   * 3) Reformat the array as a jblas Double Matrix, and reshape it with the original coordinates
-   *
-   * TODO :: How to obtain the array dimensions from the netcdf api,
-   *         instead of hardcoding for reshape function
-   * @param url
-   * @param variable
-   * @return
-   */
-  def getBreezeNetCDFVars (url : String, variable : String) : DenseMatrix[Double] = {
-    var netcdfFile = loadNetCDFDataSet(url)
-    val coordinateArray = convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    val matrix = new DenseMatrix[Double](rowDim,columnDim, coordinateArray, 0)
-    matrix
-  }
-
-  def loadNetCDFDataSet(url : String) : NetcdfDataset = {
-    NetcdfDataset.setUseNaNs(false)
-    val netcdfFile = NetcdfDataset.openDataset(url);
-    return netcdfFile
   }
 
   /**

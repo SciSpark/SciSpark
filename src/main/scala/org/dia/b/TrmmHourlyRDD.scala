@@ -22,13 +22,15 @@ import org.apache.spark.{TaskContext, Partition, SparkConf, SparkContext}
 import org.dia.Constants
 import org.joda.time.{DateTime, Days}
 
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
 /**
  * TrmmHourly partition
  */
-class TrmmHourlyPartition(idx: Int, val date: String) extends Partition {
+class TrmmHourlyPartition(idx: Int, val date: String, val readings: ListBuffer[String]) extends Partition {
   override def index: Int = idx
 }
 
@@ -41,26 +43,45 @@ class TrmmHourlyPartition(idx: Int, val date: String) extends Partition {
  * @param ev1
  * @tparam T
  */
-class TrmmHourlyRDD[T: ClassTag](sc: SparkContext, datasetUrl: String, iniYear: Int, finalYear: Int) extends RDD[T](sc, Nil) {
+class TrmmHourlyRDD[T: ClassTag](sc: SparkContext, datasetUrl: String, iniYear: Int, finalYear: Int = 0) extends RDD[T](sc, Nil) {
 
 
   // partition by year-day.
   // Every day has around 96MB which is somewhat bigger than HDFS chunk
   override def getPartitions: Array[Partition] = {
     // get number of day's urls
-    // 1. read from file
-//    val numPartitions = HourlyTrmm.loadTrmmDaily(datasetUrl, iniYear, finalYear)
-    val numPartitions = HourlyTrmm.loadTrmmDaily(Constants.TRMM_HOURLY_URL, 1997, 1997)
+    // 1. read from file and group readings by day
+    val allReadings = HourlyTrmm.loadTrmmDaily(Constants.TRMM_HOURLY_URL, iniYear, finalYear)
+
     // 2. go to the web and get the results from there
     // TODO
-    val result = new Array[Partition](numPartitions.length)
-    for (i <- 0 until numPartitions.length) {
-      result(i) = new TrmmHourlyPartition(i, numPartitions(i))
+    val result = new Array[Partition](allReadings.keySet.size)
+    var cnt = 0
+    allReadings.foreach(keyval =>
+      result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2)
+
+      {cnt+=1; cnt}
+
+    )
+    println()
+    println()
+    println()
+    for(res <- result) {
+      println(res.asInstanceOf[TrmmHourlyPartition].readings)
     }
+    println()
+    println()
+    println()
+//    for (i <- 0 until allReadings.keySet.size) {
+//      result(i) = new TrmmHourlyPartition(i, allReadings(i))
+//    }
     result
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    throw new UnsupportedOperationException("empty RDD")
+//    context.addTaskCompletionListener{ context => closeIfNeeded() }
+    println(split.asInstanceOf[TrmmHourlyPartition].date)
+    val res = mutable.MutableList.empty.iterator
+    res
   }
 }

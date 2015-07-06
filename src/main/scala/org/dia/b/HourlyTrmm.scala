@@ -21,6 +21,7 @@ import org.dia.Constants.TRMM_HOURLY_DATA_PREFFIX
 import org.dia.Constants.TRMM_HOURLY_DATA_SUFFIX
 import org.joda.time.DateTime
 
+import collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -28,16 +29,33 @@ import scala.collection.mutable.ListBuffer
  */
 object HourlyTrmm {
 
-  def loadTrmmDaily(datasetUrl: String, iniYear: Int, finalYear: Int) = {
-//    val maxDays = if (iniYear%4 == 0) 366 else 355
-    val maxDays = 1
-    var yearReadings = new ListBuffer[String]()
-    for (day <- 1 to maxDays) {
-      val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-      yearReadings.appendAll(generateDayReadings(realDate))
-      println(yearReadings)
+  def loadTrmmDaily(datasetUrl: String, iniYear: Int, finalYear: Int = 0) = {
+    val dailyReadings = new HashMap[String, ListBuffer[String]]()
+//    var yearReadings = new ListBuffer[String]()
+    // only a single year
+    if (finalYear == 0) {
+      //val maxDays = if (iniYear%4 == 0) 366 else 355
+      val maxDays = 1
+      for (day <- 1 to maxDays) {
+        val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
+        dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+//        yearReadings.appendAll(generateDayReadings(realDate))
+//        println(yearReadings)
+      }
+    } else {
+      // a range of years
+      for (iYear <- iniYear to finalYear by 1) {
+        //val maxDays = if (iniYear%4 == 0) 366 else 355
+        val maxDays = 1
+        for (day <- 1 to maxDays) {
+          val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
+          dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+//          yearReadings.appendAll(generateDayReadings(realDate))
+//          println(yearReadings)
+        }
+      }
     }
-    yearReadings
+    dailyReadings
   }
 
   def generateDayReadings(realDate: DateTime) = {

@@ -21,7 +21,7 @@ import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkContext, SparkConf}
 import org.dia.Constants._
-import org.dia.NetCDFUtils
+import org.dia.{Constants, NetCDFUtils}
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
 
@@ -33,26 +33,25 @@ import scala.language.implicitConversions
  */
 object MainBreeze {
 
-
-  def createSciRdd(url: String, variable: String) = {
-    // partition by time
-//    val sciRdd = org.apache.spark.rdd.RDD[DenseMatrix]
-  }
-
   def main(args : Array[String]) : Unit = {
     val TextFile = "TestLinks"
     var cores = Runtime.getRuntime().availableProcessors() - 1;
     //TODO the number of threads should be configured at cluster level
     val conf = new SparkConf().setAppName("L").setMaster("local[" + cores + "]")
-    val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile(TextFile).repartition(cores)
+    val sc = new SparkContext(conf)
+    val urlRDD = sc.textFile(TextFile).repartition(cores)
     // depending on the file name or the data set we can create different rdds
     // NOTE: if partitioning by time defined in the file name, then the whole data set is the rdd
     // and the partition comes from the file name itself
-    val sciRDD = urlRDD.map(url => createSciRdd(url, DATASET_VARS.get("trmm").toString))
+    val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
     // print content
-    //sciRDD.map(degres_east => println(value))
-    println(sciRDD.count())
+    println()
+    println()
+    println()
+    println(trmmRDD.count())
+    println()
+    println()
+    println()
 
 //    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
 //    val nanoAfter = System.nanoTime()
