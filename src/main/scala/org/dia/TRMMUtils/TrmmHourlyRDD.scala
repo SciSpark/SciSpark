@@ -19,7 +19,6 @@ package org.dia.TRMMUtils
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import HourlyTrmm
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -53,7 +52,6 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext, datasetUrl: String, iniYear: 
     val allReadings = HourlyTrmm.loadTrmmDaily(Constants.TRMM_HOURLY_URL, iniYear, finalYear)
 
     // 2. go to the web and get the results from there
-    // TODO
     val result = new Array[Partition](allReadings.keySet.size)
     var cnt = 0
     allReadings.foreach(keyval =>

@@ -70,23 +70,6 @@ object MainJblas {
     matrix
   }
 
-  /**
-   * Gets a M2 array from a netCDF file using a variable
-   * @param netcdfFile
-   * @param variable
-   * @return
-   */
-  def getNetCDFVariableArray(netcdfFile : NetcdfDataset, variable : String) : ma2.Array = {
-    var SearchVariable: ma2.Array = null
-    try {
-      SearchVariable = netcdfFile.findVariable(variable).read()
-    } catch {
-      case ex: Exception => {
-        ex.printStackTrace()
-      }
-    }
-    return SearchVariable
-  }
 
   /**
    * Gets a 1D Java array of Doubles from a netCDFDataset using a variable
@@ -95,7 +78,7 @@ object MainJblas {
    * @return
    */
   def convertMa2ArrayTo1DJavaArray(netcdfFile : NetcdfDataset, variable : String) : Array[Double] = {
-    var SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
+    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
     var coordinateArray : Array[Double] = Array.empty
       coordinateArray = SearchVariable.copyTo1DJavaArray()
         .asInstanceOf[Array[Float]]
@@ -107,82 +90,6 @@ object MainJblas {
     return coordinateArray
   }
 
-  /**
-   * Gets a Ndj4 array from a netCDF file using a variable
-   * @param url
-   * @param variable
-   * @return
-   */
-  def getNd4jNetCDFVars(url : String, variable : String) : INDArray = {
-    var netcdfFile = loadNetCDFDataSet(url)
-    val coordinateArray = convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    val rows = getRowDimension(netcdfFile)
-    val cols = getColDimension(netcdfFile)
-    val NDarray = Nd4j.create(coordinateArray, Array(rows, cols))
-    NDarray
-  }
-
-  /**
-   * Gets the row dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getRowDimension(netcdfFile : NetcdfDataset) : Int = {
-    val it = netcdfFile.getDimensions.iterator()
-    while (it.hasNext) {
-      var d = it.next()
-      if (d.getName.equals(TRMM_ROWS_DIM))
-        return d.getLength
-    }
-    return DEFAULT_TRMM_ROW_SIZE
-  }
-
-  /**
-   * Gets the col dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getColDimension(netcdfFile : NetcdfDataset) : Int = {
-    val it = netcdfFile.getDimensions.iterator()
-    while (it.hasNext) {
-      var d = it.next()
-      if (d.getName.equals(TRMM_COLS_DIM))
-        return d.getLength
-    }
-    return DEFAULT_TRMM_COL_SIZE
-  }
-
-  def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
-    var netcdfFile = loadNetCDFDataSet(url)
-    var SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
-    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
-    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    val j = NDArray(0)(0).flatMap(f => f)
-    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-    any
-  }
-
-  def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
-    val numRows = largeArray.rows()
-    val numCols = largeArray.columns()
-
-    val reducedSize = numRows * numCols / (blockSize * blockSize)
-
-    val reducedMatrix = Nd4j.create(numRows / blockSize, numCols / blockSize)
-
-    for(row <- 0 to reducedMatrix.rows - 1){
-      for(col <- 0 to reducedMatrix.columns - 1){
-        val rowRange = (row*blockSize to ((row + 1) * blockSize) - 1).toSet
-        val columnRange = (col * blockSize to ((col + 1) * blockSize) - 1).toSet
-        val crossProductRanges = for { x <- rowRange; y <- columnRange} yield (x, y)
-        val block = crossProductRanges.map(pair => largeArray.getDouble(pair._1, pair._2))
-        val numNonZero = block.filter(p => p != 0).size
-        val sum = block.reduce((A, B) => A + B)
-        reducedMatrix.put(row, col, sum / numNonZero)
-      }
-    }
-    reducedMatrix
-  }
 
   /**
    * 
@@ -208,28 +115,6 @@ object MainJblas {
     reducedMatrix
   }
 
-  def breezereduceResolution(largeArray : DenseMatrix[Double], blockSize : Int) : DenseMatrix[Double] = {
-    val numRows = largeArray.rows
-    val numCols = largeArray.cols
-
-    val reducedSize = numRows * numCols / (blockSize * blockSize)
-    val reducedMatrix = DenseMatrix.zeros[Double](numRows / blockSize, numCols / blockSize)
-
-    for(row <- 0 to reducedMatrix.rows - 1){
-      for(col <- 0 to reducedMatrix.cols - 1){
-        val rowIndices = (row * blockSize) to (((row + 1)) * blockSize - 1)
-        val colIndices = (col * blockSize) to ((col + 1) * blockSize - 1)
-        val block = largeArray(rowIndices, colIndices)
-        val totalsum = sum(block)
-        val validCount = block.findAll(p => p != 0.0).size.toDouble
-        val average = if(validCount > 0) totalsum / validCount else 0.0
-        reducedMatrix(row to row, col to col) := average
-        reducedMatrix
-      }
-    }
-
-    reducedMatrix
-  }
 
   def main(args : Array[String]) : Unit = {
     var cores = Runtime.getRuntime().availableProcessors() - 1;
@@ -243,10 +128,10 @@ object MainJblas {
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
-    val nanoAfter = System.nanoTime()
-    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
-    LowResolutionArray.map(array => println(array))
+//    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
+//    val nanoAfter = System.nanoTime()
+//    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
+//    LowResolutionArray.map(array => println(array))
   }
 }
 

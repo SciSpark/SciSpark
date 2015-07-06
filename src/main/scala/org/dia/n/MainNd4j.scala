@@ -19,7 +19,7 @@ package org.dia.n
 
 import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.Constants
+import org.dia.TRMMUtils.{TrmmHourlyRDD, Constants}
 import Constants._
 import org.jblas.DoubleMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
@@ -34,67 +34,30 @@ import scala.language.implicitConversions
  */
 object MainNd4j {
 
-  /**
-   * NetCDF variables to use
-   * TODO:: Make the netcdf variables global - however this may need broadcasting
-   */
-  val rowDim = 180
-  val columnDim = 360
-  val TextFile = "TestLinks"
-
-
-
-
-  /**
-   * Gets the row dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getRowDimension(netcdfFile : NetcdfDataset) : Int = {
-    val it = netcdfFile.getDimensions.iterator()
-    while (it.hasNext) {
-      var d = it.next()
-      if (d.getName.equals(TRMM_ROWS_DIM))
-        return d.getLength
-    }
-    return DEFAULT_TRMM_ROW_SIZE
-  }
-
-  /**
-   * Gets the col dimension of a specific file
-   * @param netcdfFile
-   * @return
-   */
-  def getColDimension(netcdfFile : NetcdfDataset) : Int = {
-    val it = netcdfFile.getDimensions.iterator()
-    while (it.hasNext) {
-      var d = it.next()
-      if (d.getName.equals(TRMM_COLS_DIM))
-        return d.getLength
-    }
-    return DEFAULT_TRMM_COL_SIZE
-  }
-
-
-
-
-
   def main(args : Array[String]) : Unit = {
-    var cores = Runtime.getRuntime().availableProcessors() - 1;
+    val TextFile = "TestLinks"
+    val cores = Runtime.getRuntime().availableProcessors() - 1;
     //TODO the number of threads should be configured at cluster level
     val conf = new SparkConf().setAppName("L").setMaster("local[" + cores + "]")
-    val sparkContext = new SparkContext(conf)
-    val urlRDD = sparkContext.textFile(TextFile).repartition(cores)
-    //val urlRDD = Source.fromFile(new File(TextFile)).mkString.split("\n")
-    /**
-     * Uncomment this line in order to test on a normal scala array
-     * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
-     */
+    val sc = new SparkContext(conf)
+    val urlRDD = sc.textFile(TextFile).repartition(cores)
+    // depending on the file name or the data set we can create different rdds
+    // NOTE: if partitioning by time defined in the file name, then the whole data set is the rdd
+    // and the partition comes from the file name itself
+    val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
+    // print content
+    println()
+    println()
+    println()
+    println(trmmRDD.count())
+    println()
+    println()
+    println()
 
-    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
-    val nanoAfter = System.nanoTime()
-    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
-    LowResolutionArray.map(array => println(array))
+    //    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
+    //    val nanoAfter = System.nanoTime()
+    //    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
+    //    LowResolutionArray.map(array => println(array))
   }
 }
 

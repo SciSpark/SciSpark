@@ -37,7 +37,7 @@ object Nd4jFuncs {
    * @return
    */
   def getNd4jNetCDFNDVars (url : String, variable : String) : INDArray = {
-
+    null
   }
 
   def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
