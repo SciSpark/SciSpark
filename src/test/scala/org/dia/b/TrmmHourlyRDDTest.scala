@@ -28,6 +28,8 @@ import scala.collection.mutable.ListBuffer
  */
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
+  val HOURLY_TRMM_DATA_VAR = "precipitation"
+
   /**
    * Test if the generated hourly readings are correct
    */
@@ -41,24 +43,15 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
-
     test("basic functionality") {
       val sc = new SparkContext ("local", "test")
-      val rdd = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1998)
-      println()
-      println()
-      println()
-//      rdd.bias()
+      val rdd = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1997, 1998)
+      val rdd2 = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 2000)
+      //rdd2.bias(rdd)
       println(rdd.count())
-      println()
-      println()
+      //println()
       assert(true)
-//  val rdd = new JdbcRDD (sc, () => { DriverManager.getConnection ("jdbc:derby:target/JdbcRDDSuiteDb")},
-//                            "SELECT DATA FROM FOO WHERE ? <= ID AND ID <= ?",
-//                            1, 100, 3,
-//                            (r: ResultSet) => { r.getInt (1)}).cache()
-
-//assert (rdd.count === 100)
-//assert (rdd.reduce (_+ _) === 10100)
+      //assert (rdd.count === 100)
+      //assert (rdd.reduce (_+ _) === 10100)
   }
 }

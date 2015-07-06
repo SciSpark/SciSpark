@@ -29,8 +29,8 @@ import scala.collection.mutable.ListBuffer
  */
 object HourlyTrmm {
 
-  def loadTrmmDaily(datasetUrl: String, iniYear: Int, finalYear: Int = 0) = {
-    val dailyReadings = new HashMap[String, ListBuffer[String]]()
+  def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
+    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
 //    var yearReadings = new ListBuffer[String]()
     // only a single year
     if (finalYear == 0) {
@@ -38,7 +38,7 @@ object HourlyTrmm {
       val maxDays = 1
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-        dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+        dailyReadings.put(realDate,generateDayReadings(realDate))
 //        yearReadings.appendAll(generateDayReadings(realDate))
 //        println(yearReadings)
       }
@@ -49,7 +49,7 @@ object HourlyTrmm {
         val maxDays = 1
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
-          dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+          dailyReadings.put(realDate,generateDayReadings(realDate))
 //          yearReadings.appendAll(generateDayReadings(realDate))
 //          println(yearReadings)
         }

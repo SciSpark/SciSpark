@@ -106,20 +106,6 @@ object MainJblas {
     return coordinateArray
   }
 
-  /**
-   * Gets a Ndj4 array from a netCDF file using a variable
-   * @param url
-   * @param variable
-   * @return
-   */
-  def getNd4jNetCDFVars(url : String, variable : String) : INDArray = {
-    var netcdfFile = loadNetCDFDataSet(url)
-    val coordinateArray = convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    val rows = getRowDimension(netcdfFile)
-    val cols = getColDimension(netcdfFile)
-    val NDarray = Nd4j.create(coordinateArray, Array(rows, cols))
-    NDarray
-  }
 
   /**
    * Gets the row dimension of a specific file
@@ -151,15 +137,6 @@ object MainJblas {
     return DEFAULT_TRMM_COL_SIZE
   }
 
-  def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
-    var netcdfFile = loadNetCDFDataSet(url)
-    var SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
-    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
-    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    val j = NDArray(0)(0).flatMap(f => f)
-    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-    any
-  }
 
   def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
     val numRows = largeArray.rows()
@@ -242,10 +219,10 @@ object MainJblas {
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
      */
 
-    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
-    val nanoAfter = System.nanoTime()
-    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
-    LowResolutionArray.map(array => println(array))
+//    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
+//    val nanoAfter = System.nanoTime()
+//    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
+//    LowResolutionArray.map(array => println(array))
   }
 }
 

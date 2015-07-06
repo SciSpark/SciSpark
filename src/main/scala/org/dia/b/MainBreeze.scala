@@ -43,15 +43,15 @@ object MainBreeze {
     // depending on the file name or the data set we can create different rdds
     // NOTE: if partitioning by time defined in the file name, then the whole data set is the rdd
     // and the partition comes from the file name itself
-    val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
+    val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, "precipitation", 1997, 1997)
     // print content
-    println()
-    println()
-    println()
-    println(trmmRDD.count())
-    println()
-    println()
-    println()
+//    println()
+//    println()
+//    println()
+//    println(trmmRDD.count())
+//    println()
+//    println()
+//    println()
 
 //    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
 //    val nanoAfter = System.nanoTime()
