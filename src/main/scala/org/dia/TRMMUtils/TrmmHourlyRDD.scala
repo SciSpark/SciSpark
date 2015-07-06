@@ -19,7 +19,7 @@ package org.dia.TRMMUtils
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Partition, SparkContext, TaskContext}
-import org.dia.b.HourlyTrmm
+import HourlyTrmm
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

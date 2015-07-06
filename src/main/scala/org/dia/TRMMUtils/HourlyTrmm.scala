@@ -15,15 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.TRMMUtils
 
-import org.dia.TRMMUtils.Constants
-import Constants.TRMM_HOURLY_DATA_PREFFIX
-import Constants.TRMM_HOURLY_DATA_SUFFIX
+import org.dia.TRMMUtils.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX}
 import org.joda.time.DateTime
 
-import collection.mutable.HashMap
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{HashMap, ListBuffer}
 
 /**
  * Container of HourlyTrmm data

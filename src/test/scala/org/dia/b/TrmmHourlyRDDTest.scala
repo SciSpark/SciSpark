@@ -18,7 +18,7 @@
 package org.dia.b
 
 import org.apache.spark.SparkContext
-import org.dia.TRMMUtils.{TrmmHourlyRDD, Constants}
+import org.dia.TRMMUtils.{HourlyTrmm, TrmmHourlyRDD, Constants}
 import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
