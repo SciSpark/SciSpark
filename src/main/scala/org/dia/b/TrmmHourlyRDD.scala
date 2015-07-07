@@ -33,8 +33,19 @@ import scala.reflect.ClassTag
 /**
  * TrmmHourly partition
  */
-class TrmmHourlyPartition(idx: Int, val date: DateTime, val readings: ListBuffer[String]) extends Partition {
+class TrmmHourlyPartition(
+                           idx: Int,
+                           val date: DateTime,
+                           val readings: ListBuffer[String])
+  extends Partition {
+
+  // Partition index
   override def index: Int = idx
+
+  /**
+   * To string method
+   * @return String
+   */
   override def toString() = {
     var sb = new StringBuilder()
     sb.append("{idx:").append(idx).append(", ");
@@ -53,12 +64,11 @@ class TrmmHourlyPartition(idx: Int, val date: DateTime, val readings: ListBuffer
  * @param ev1
  * @tparam T
  */
-class TrmmHourlyRDD[T: ClassTag](
-                                  sc: SparkContext,
-                                  datasetUrl: String,
-                                  varName: String,
-                                  iniYear: Int,
-                                  finalYear: Int = 0)
+class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
+                                 datasetUrl: String,
+                                 varName: String,
+                                 iniYear: Int,
+                                 finalYear: Int = 0)
   extends RDD[T](sc, Nil) with Logging {
 
 
@@ -74,38 +84,59 @@ class TrmmHourlyRDD[T: ClassTag](
     val result = new Array[Partition](allReadings.keySet.size)
     var cnt = 0
     allReadings.foreach(keyval =>
-      result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2)
-      {cnt+=1; cnt}
+      result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2) {
+        cnt += 1;
+        cnt
+      }
     )
     result
   }
 
-  @DeveloperApi
+  //  @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
-      var splitt = split.asInstanceOf[TrmmHourlyPartition]
-      println("============================")
-      println("============================")
-      val iter = new Iterator[T] {
+    var splitt = split.asInstanceOf[TrmmHourlyPartition]
+    println("============================")
+    println("============================")
 
-        var hNext = true
-        var counter = 0
-        override def hasNext: Boolean = hNext
 
-        // TODO fix the class type, we know what it'll be
-        override def next(): T = {
-          // for every reading fetch array
-          var n = datasetUrl+ "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
-          println(n)
-          counter +=1
-          if (counter >= splitt.readings.length)
-            hNext = false
-          n.asInstanceOf[T]
-        }
+
+    val iter = new Iterator[T] {
+
+      var counter = 0
+      var hNext = true
+
+      override def hasNext: Boolean = {
+        println((counter < splitt.readings.length) + " " + counter + " " + splitt.readings.length)
+        counter < splitt.readings.length
       }
-      iter
-  }
 
-  def bias() = {
+      // TODO fix the class type, we know what it'll be
+      override def next(): T = {
+        // for every reading fetch array
+        var n = datasetUrl + "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
+        var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
+//        var twoDarray: DenseMatrix[Double] = null
+        var twoDarray = DenseMatrix.zeros[Double](300, 300)
+        //
+        if (netCdfFile != null) {
+          println("This was not null " + n)
+          try {
+            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile.findVariable(varName).getDimensions)
+            twoDarray = BreezeFuncs.create2dBreezeArray(dimensionSizes, netCdfFile, varName)
+          } catch {
+            case e: Exception => println("ERROR reading variable %s from %s".format(varName, n))
+          }
+        }
+        counter += 1
 
+        if (counter >= splitt.readings.length)
+        //                  finished = true
+          hNext = false
+        println(counter + "|||||||||||||||||||" + splitt.readings.length + "||||||||" + hNext)
+        (n, twoDarray).asInstanceOf[T]
+      }
+
+    }
+    iter
   }
 }

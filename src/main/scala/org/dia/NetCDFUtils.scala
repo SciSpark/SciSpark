@@ -17,6 +17,7 @@
  */
 package org.dia
 
+import java.io.IOException
 import java.lang.Exception
 
 import org.slf4j.Logger
@@ -40,9 +41,19 @@ object NetCDFUtils {
    * Loads a NetCDF file from a url
    */
   def loadNetCDFDataSet(url : String) : NetcdfDataset = {
-    NetcdfDataset.setUseNaNs(false)
-    val netcdfFile = NetcdfDataset.openDataset(url);
-    return netcdfFile
+    try {
+      NetcdfDataset.setUseNaNs(false)
+      val netcdfFile = NetcdfDataset.openDataset(url);
+      return netcdfFile
+    } catch {
+      case ex: IOException => {
+        LOG.error("IO Exception: %s not found!".format(url))
+      }
+      case ex: Exception => {
+        LOG.error("Exception: while checking %s!".format(url))
+      }
+    }
+    null
   }
 
   /**

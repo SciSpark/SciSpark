@@ -17,6 +17,7 @@
  */
 package org.dia.b
 
+import breeze.linalg.DenseMatrix
 import org.apache.spark.SparkContext
 import org.dia.Constants
 import org.joda.time.DateTime
@@ -43,17 +44,21 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
-    test("basic functionality") {
-      val sc = new SparkContext ("local", "test")
+  test("basic functionality") {
+    val sc = new SparkContext ("local", "test")
+    val rdd = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1998, 1998)
+    val rdd2 = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 1999)
 
-      val rdd = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1997, 1998)
-//      val rdd2 = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 2000)
-//      rdd2.bias(rdd)
-      val tmpRdd = rdd.map(e => println(e))
-//      println(rdd.collect())
-      //println()
+    // operation
+//      val threshold = 45
+//      rdd.collect().map( m =>
+//        if (m._2.max > threshold)
+//          println(m._1)
+//      )
+
+    val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
+    println(rdd3.collect()(0))
+      println()
       assert(true)
-      //assert (rdd.count === 100)
-      //assert (rdd.reduce (_+ _) === 10100)
   }
 }

@@ -49,7 +49,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
 //    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
 //    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
 //    println()
-//    assert(true)
+    assert(true)
   }
 
   // test for creating a N-Dimensional array from hourly collected TRMM data
