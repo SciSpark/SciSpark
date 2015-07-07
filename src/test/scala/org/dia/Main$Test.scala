@@ -18,8 +18,6 @@
 
 package org.dia
 
-import org.dia.TRMMUtils.Constants
-import Constants.DATASET_VARS
 import org.nd4j.linalg.factory.Nd4j
 /**
  * import DSL for scala api
@@ -133,23 +131,5 @@ class Main$Test extends org.scalatest.FunSuite {
 //    assert(true)
 //  }
 
-//  test("ndf4jReduceResolutionAvrgTest") {
-//        val squareSize = 100
-//        val reductionSize = 50
-//        val accuracy = 1E-15
-//        val reducedWidth = squareSize / reductionSize
-//        val testMatrix = Nd4j.create(squareSize, squareSize)
-//
-//        val resultMatrix = Main.Nd4jReduceResolution(testMatrix, reductionSize)
-//
-//        for(i <- 0 to (reducedWidth - 1)){
-//          for(j <- 0 to (reducedWidth - 1)) {
-//            val error = Math.abs(resultMatrix(i, j) - 1)
-//            if(error >= accuracy) {
-//              assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
-//            }
-//          }
-//        }
-//        assert(true)
-//  }
+
 }

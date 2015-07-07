@@ -1,10 +1,12 @@
 package org.dia.n
 
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
 import org.dia.NetCDFUtils
 import org.dia.TRMMUtils.Constants._
+import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.factory.Nd4j
+import ucar.nc2.dataset.NetcdfDataset
 
+import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
@@ -30,6 +32,23 @@ object Nd4jFuncs {
   }
 
   /**
+   * Creates a 2D array from a list of dimensions using a variable
+   * @param dimensionSizes
+   * @param netcdfFile
+   * @param variable
+   * @return DenseMatrix
+   */
+  def create2dNd4jArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): INDArray = {
+
+    val x = dimensionSizes.get(1).get
+    val y = dimensionSizes.get(2).get
+
+    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
+
+    Nd4j.create(coordinateArray, Array(x, y))
+  }
+
+  /**
    * Gets an NDimensional array of Breeze's DenseMatrix from a NetCDF file
    * TODO :: Need to be able to load in the dimensions of the NetCDF variable on runtime
    * @param largeArray
@@ -40,7 +59,7 @@ object Nd4jFuncs {
     null
   }
 
-  def Nd4jReduceResolution(largeArray : INDArray, blockSize : Int) : INDArray = {
+  def reduceResolution(largeArray: INDArray, blockSize: Int): INDArray = {
     val numRows = largeArray.rows()
     val numCols = largeArray.columns()
 

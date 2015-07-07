@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.TRMMUtils
 
 import org.apache.spark.SparkContext
-import org.dia.TRMMUtils.{HourlyTrmm, TrmmHourlyRDD, Constants}
 import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer

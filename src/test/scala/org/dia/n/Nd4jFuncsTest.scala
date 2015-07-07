@@ -15,15 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.n
 
-import breeze.linalg.DenseMatrix
 import org.dia.NetCDFUtils
+import org.nd4j.api.linalg.DSL._
+import org.nd4j.linalg.factory.Nd4j
 
 /**
  * Tests for the Breeze functions
  */
-class BreezeFuncsTest extends org.scalatest.FunSuite {
+class Nd4jFuncsTest extends org.scalatest.FunSuite {
 
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
   val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
@@ -39,25 +40,24 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
   val BLOCK_SIZE = 5
 
   /**
-   * Testing creation of 2D Array (DenseMatrix) from daily collected TRMM data
+   * Testing creation of 2D Array (INDArray) from daily collected TRMM data
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingDailyTRMMDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
-    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
+    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(DAILY_TRMM_DATA_VAR).getDimensions)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
-    assert(ExpectedClass.cols == resDenseMatrix.cols)
+    assert(ExpectedClass.columns == resDenseMatrix.columns)
     assert(true)
   }
-
 
   /**
    * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM data
@@ -67,15 +67,15 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
+    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
-    assert(ExpectedClass.cols == resDenseMatrix.cols)
+    assert(ExpectedClass.columns == resDenseMatrix.columns)
     assert(true)
   }
 
@@ -84,14 +84,35 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
    * test for creating a N-Dimension array from KNMI data
    */
   test("ReadingKNMIDimensions") {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
+    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
+    //
+    //    val ExpectedType = Array.ofDim[Float](240, 1, 201 ,194)
+    //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(KNMI_TASMAX_VAR).getDimensions)
+    //    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+    //
+    //    val fdArray = BreezeFuncs.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
+    //    assert(fdArray.getClass.equals(ExpectedType.getClass))
+    assert(true)
+  }
 
-    val ExpectedType = Array.ofDim[Float](240, 1, 201, 194)
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(KNMI_TASMAX_VAR).getDimensions)
-    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+  test("ndf4jReduceResolutionAvrgTest") {
+    val squareSize = 100
+    val reductionSize = 50
+    val accuracy = 1E-15
+    val reducedWidth = squareSize / reductionSize
+    val testMatrix = Nd4j.create(squareSize, squareSize)
 
-    val fdArray = BreezeFuncs.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
-    assert(fdArray.getClass.equals(ExpectedType.getClass))
+    val resultMatrix = Nd4jFuncs.reduceResolution(testMatrix, reductionSize)
+
+    for (i <- 0 to (reducedWidth - 1)) {
+      for (j <- 0 to (reducedWidth - 1)) {
+        val error = Math.abs(resultMatrix(i, j) - 1)
+        if (error >= accuracy) {
+          assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
+        }
+      }
+    }
+    assert(true)
   }
 
   /**
@@ -102,18 +123,17 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
+    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE))
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
-    val reducedMatrix = BreezeFuncs.reduceResolution(resDenseMatrix, BLOCK_SIZE)
+    val resDenseMatrix = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
+    val reducedMatrix = Nd4jFuncs.reduceResolution(resDenseMatrix, BLOCK_SIZE)
 
 
     assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == reducedMatrix.rows)
-    assert(ExpectedClass.cols == reducedMatrix.cols)
-
-
+    assert(ExpectedClass.columns == reducedMatrix.columns)
   }
+
 }
