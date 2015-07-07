@@ -4,17 +4,17 @@ import java.io.{IOException, ObjectOutputStream}
 
 import breeze.linalg.DenseMatrix
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Logging, SparkContext, Partition, TaskContext}
+import org.apache.spark._
 
 import scala.reflect.ClassTag
 
 class TrmmBiasPartition(
-                          idx: Int,
-                          @transient rdd1: RDD[_],
-                          @transient rdd2: RDD[_],
-                          s1Index: Int,
-                          s2Index: Int
-                          ) extends Partition {
+                         idx: Int,
+                         @transient rdd1: RDD[_],
+                         @transient rdd2: RDD[_],
+                         s1Index: Int,
+                         s2Index: Int
+                         ) extends Partition {
   var s1 = rdd1.partitions(s1Index)
   var s2 = rdd2.partitions(s2Index)
   override val index: Int = idx
@@ -32,7 +32,7 @@ class TrmmBiasPartition(
 }
 
 /**
- */
+  */
 class TrmmBiasRDD[T: ClassTag](
                                 sc: SparkContext,
                                 rdd1: TrmmHourlyRDD[T],
@@ -42,41 +42,31 @@ class TrmmBiasRDD[T: ClassTag](
   // We could use any of the rdd's partitions
   val numPartitionsInRdd2 = rdd2.partitions.length
 
-  override def compute(split: Partition, context: TaskContext): Iterator[T] =  {
-    println("'''''''''''''''''''''''''''''''''''computecomputecomputecomputecomputecomputecomputecompute")
+  override def compute(split: Partition, context: TaskContext): Iterator[T] = {
     var splitt = split.asInstanceOf[TrmmBiasPartition]
-    val x = rdd1.iterator(splitt.s1, context)
-    val y = rdd2.iterator(splitt.s2, context)
+    val rddIt1 = rdd1.iterator(splitt.s1, context)
+    val rddIt2 = rdd2.iterator(splitt.s2, context)
 
-//    val iter = new Iterator[T] {
-//      override def hasNext: Boolean = rdd1.iterator(splitt.s1, context).hasNext && rdd2.iterator(splitt.s1, context).hasNext
-//
-//      override def next(): T = {
-//        val xx = x.next()
-//        val yy = y.next()
-//        val label = xx.asInstanceOf[(String, DenseMatrix[Double])]+ ":" + yy.asInstanceOf[(String, DenseMatrix[Double])]._1
-//        var resVal = xx.asInstanceOf[(String, DenseMatrix[Double])]._2
-//        if (resVal == null)
-//          resVal = yy.asInstanceOf[(String, DenseMatrix[Double])]._2
-//        else if (yy.asInstanceOf[(String, DenseMatrix[Double])]._2 != null)
-//          resVal = xx.asInstanceOf[(String, DenseMatrix[Double])]._2 - yy.asInstanceOf[(String, DenseMatrix[Double])]._2
-//          (label, resVal).asInstanceOf[T]
-//      }
-//    }
-//
-//    for ( x <- rdd1.iterator(splitt.s1, context);
-//          y <- rdd2.iterator(splitt.s2, context))
-//      yield
-//      (
-//        x.asInstanceOf[(String, DenseMatrix[Double])]._1 + ":" + y.asInstanceOf[(String, Option[DenseMatrix[Double]])]._1,
-//        (x.asInstanceOf[(String, DenseMatrix[Double])]. _2
-//          - y.asInstanceOf[(String, DenseMatrix[Double])]._2)
-//      ).asInstanceOf[T]
-    ("", DenseMatrix.zeros[Double]).asInstanceOf[T]
-//    iter
+    val iter = new Iterator[T] {
+
+      override def hasNext: Boolean = rddIt1.hasNext && rddIt2.hasNext
+
+      override def next(): T = {
+        val xx = rddIt2.next()
+        val yy = rddIt1.next()
+        val label = xx.asInstanceOf[(String, DenseMatrix[Double])] + ":" + yy.asInstanceOf[(String, DenseMatrix[Double])]._1
+        var resVal = xx.asInstanceOf[(String, DenseMatrix[Double])]._2
+        if (resVal == null)
+          resVal = yy.asInstanceOf[(String, DenseMatrix[Double])]._2
+        else if (yy.asInstanceOf[(String, DenseMatrix[Double])]._2 != null)
+          resVal = xx.asInstanceOf[(String, DenseMatrix[Double])]._2 - yy.asInstanceOf[(String, DenseMatrix[Double])]._2
+        (label, resVal).asInstanceOf[T]
+      }
+    }
+    iter
   }
 
-  override protected def getPartitions: Array[Partition] =  {
+  override protected def getPartitions: Array[Partition] = {
     val array = new Array[Partition](rdd2.partitions.length)
     for (s1 <- rdd1.partitions; s2 <- rdd2.partitions) {
       val idx = s1.index * numPartitionsInRdd2 + s2.index

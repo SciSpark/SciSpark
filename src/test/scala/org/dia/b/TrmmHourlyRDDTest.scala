@@ -57,6 +57,8 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 //      )
 
     val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
+    
+
     println(rdd3.collect()(0))
       println()
       assert(true)

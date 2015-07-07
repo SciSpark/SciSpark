@@ -71,7 +71,6 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
                                  finalYear: Int = 0)
   extends RDD[T](sc, Nil) with Logging {
 
-
   // partition by year-day.
   // Every day has around 96MB which is somewhat bigger than HDFS chunk
   override def getPartitions: Array[Partition] = {
@@ -95,10 +94,6 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
   //  @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
     var splitt = split.asInstanceOf[TrmmHourlyPartition]
-    println("============================")
-    println("============================")
-
-
 
     val iter = new Iterator[T] {
 
@@ -117,7 +112,7 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
         var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
 //        var twoDarray: DenseMatrix[Double] = null
         var twoDarray = DenseMatrix.zeros[Double](300, 300)
-        //
+
         if (netCdfFile != null) {
           println("This was not null " + n)
           try {
