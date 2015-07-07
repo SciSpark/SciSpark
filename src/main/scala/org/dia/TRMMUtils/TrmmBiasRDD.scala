@@ -1,10 +1,11 @@
-package org.dia.b
+package org.dia.TRMMUtils
 
 import java.io.{IOException, ObjectOutputStream}
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.rdd.RDD
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
+import org.dia.b.TrmmHourlyRDD
 
 import scala.reflect.ClassTag
 
