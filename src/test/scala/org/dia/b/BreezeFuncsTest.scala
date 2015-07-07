@@ -47,7 +47,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
     val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(DAILY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
@@ -68,7 +68,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
@@ -87,7 +87,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
 
     val ExpectedType = Array.ofDim[Float](240, 1, 201, 194)
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(KNMI_TASMAX_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
     println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
     val fdArray = BreezeFuncs.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
@@ -103,7 +103,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)

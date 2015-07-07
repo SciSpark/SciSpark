@@ -48,7 +48,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(DAILY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
@@ -68,7 +68,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
@@ -124,7 +124,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE))
-    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(HOURLY_TRMM_DATA_VAR).getDimensions)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))

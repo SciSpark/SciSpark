@@ -17,17 +17,12 @@
  */
 package org.dia
 
-import java.lang.Exception
-
 import org.slf4j.Logger
 import ucar.ma2
-import ucar.nc2.Dimension
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable
-import scala.collection.mutable.MutableList
 import scala.language.implicitConversions
-import scala.util.control.Exception
 
 /**
  * Contains all functions needed to handle netCDF files
@@ -42,38 +37,20 @@ object NetCDFUtils {
    */
   def loadNetCDFDataSet(url : String) : NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
-    val netcdfFile = NetcdfDataset.openDataset(url);
-    return netcdfFile
-  }
-
-  /**
-   * Gets a M2 array from a netCDF file using a variable
-   * @param netcdfFile
-   * @param variable
-   * @return
-   */
-  def getNetCDFVariableArray(netcdfFile : NetcdfDataset, variable : String) : ma2.Array = {
-    var SearchVariable: ma2.Array = null
-    try {
-      SearchVariable = netcdfFile.findVariable(variable).read()
-    } catch {
-      case ex: Exception => {
-        ex.printStackTrace()
-      }
-    }
-    return SearchVariable
+    val netcdfFile = NetcdfDataset.openDataset(url)
+    netcdfFile
   }
 
   /**
    * Gets a 1D Java array of Doubles from a netCDFDataset using a variable
-   * @param netcdfFile
-   * @param variable
+   * @param netcdfFile the NetcdfDataSet to read from
+   * @param variable the variable array to extract
    * @return
    */
-  def convertMa2ArrayTo1DJavaArray(netcdfFile : NetcdfDataset, variable : String) : Array[Double] = {
-    var SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
-    var coordinateArray : Array[Double] = Array.empty
-    var oneDarray = SearchVariable.copyTo1DJavaArray()
+  def convertMa2ArrayTo1DJavaArray(netcdfFile: NetcdfDataset, variable: String): Array[Double] = {
+    val SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
+    var coordinateArray: Array[Double] = Array.empty
+    val oneDarray = SearchVariable.copyTo1DJavaArray()
     // convert to doubles
     try {
       if (!SearchVariable.copyTo1DJavaArray().isInstanceOf[Array[Double]]) {
@@ -81,43 +58,65 @@ object NetCDFUtils {
           .map(p => p.toDouble)
       }
       //TODO pluggable cleaning values procedures?
-      coordinateArray = coordinateArray.map(p => {if(p == -9999.0) 0.0 else p})
+      coordinateArray = coordinateArray.map(p => {
+        if (p == -9999.0) 0.0 else p
+      })
     } catch {
       // Something could go wrong while casting elements
-      case ex : Exception => {
+      case ex: Exception =>
         println("Error while converting a netcdf.ucar.ma2 to a 1D array")
-      }
+
     }
-    return coordinateArray
+    coordinateArray
+  }
+
+  /**
+   * Gets a M2 array from a netCDF file using a variable
+   * @param netcdfFile the NetcdfDataSet to read from
+   * @param variable the variable array to extract
+   * @return
+   */
+  def getNetCDFVariableArray(netcdfFile: NetcdfDataset, variable: String): ma2.Array = {
+    var SearchVariable: ma2.Array = null
+    try {
+      SearchVariable = netcdfFile.findVariable(variable).read()
+    } catch {
+      case ex: Exception =>
+        ex.printStackTrace()
+    }
+    SearchVariable
   }
 
   /**
    * Gets the row dimension of a specific file
-   * @param netcdfFile
-   * @param rowDim
+   * @param netcdfFile the NetcdfDataSet to read from
+   * @param rowDim the specific dimension to get the size of
    * @return
    */
   def getDimensionSize(netcdfFile : NetcdfDataset, rowDim : String): Int = {
     var dimSize = -1
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
-      var d = it.next()
+      val d = it.next()
       if (d.getName.equals(rowDim))
         dimSize = d.getLength
     }
     if (dimSize < 0)
       throw new IllegalStateException("Dimension does not exist!!!")
-    return dimSize
+    dimSize
   }
 
   /**
    * Gets the dimension sizes from a list of Dimension
-   * @param dimensions
+   * @param netcdfFile the NetcdfDataSet to read from
+   * @param variable the variable array to extract
    * @return
    */
-  def getDimensionSizes(dimensions: java.util.List[Dimension]): mutable.HashMap[Int, Int] = {
+  def getDimensionSizes(netcdfFile: NetcdfDataset, variable: String): mutable.HashMap[Int, Int] = {
+
+    val dimensions = netcdfFile.findVariable(variable).getDimensions
     val it = dimensions.iterator
-    val nameSizeMap = dimensions
+
     val dSizes = new mutable.HashMap[Int, Int]()
 
     var iterate = 3
