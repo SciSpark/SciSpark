@@ -19,12 +19,13 @@ package org.dia.perf
 
 import org.nd4j.api.linalg.DSL._
 import org.nd4j.linalg.factory.Nd4j
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
 /**
  * The Nd4j Performance Tests
  * Created by rahulsp on 7/7/15.
  */
+@Ignore
 class Main$Nd4jPerformanceTest extends FunSuite {
 
   test("ND4JOps2dTest") {

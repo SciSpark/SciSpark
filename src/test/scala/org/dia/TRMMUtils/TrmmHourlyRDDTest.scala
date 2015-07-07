@@ -19,12 +19,14 @@ package org.dia.TRMMUtils
 
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
+import org.scalatest.Ignore
 
 import scala.collection.mutable.ListBuffer
 
 /**
  * Testing TrmmHourly
  */
+@Ignore
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
   /**

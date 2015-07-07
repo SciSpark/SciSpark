@@ -60,7 +60,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
   }
 
   /**
-   * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM data
+   * Testing creation of 2D Array (Nd4j) from hourly collected TRMM data
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingHourlyTRMMDimensions") {
@@ -84,14 +84,18 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
    * test for creating a N-Dimension array from KNMI data
    */
   test("ReadingKNMIDimensions") {
-    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
-    //
-    //    val ExpectedType = Array.ofDim[Float](240, 1, 201 ,194)
-    //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile.findVariable(KNMI_TASMAX_VAR).getDimensions)
-    //    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
-    //
-    //    val fdArray = BreezeFuncs.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
-    //    assert(fdArray.getClass.equals(ExpectedType.getClass))
+        val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
+
+
+        val ExpectedType = Nd4j.zeros(Array(240, 1, 201, 194))
+        val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
+        println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+
+        val fdArray = Nd4jFuncs.getNd4jNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
+
+        assert(fdArray.getClass.equals(ExpectedType.getClass))
+
+    assert(fdArray.shape.deep == ExpectedType.shape.deep)
     assert(true)
   }
 

@@ -19,7 +19,7 @@
 package org.dia.perf
 
 import breeze.linalg.{DenseMatrix, DenseVector}
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
 /**
  * This is a scala breeze implementation of the
@@ -29,6 +29,7 @@ import org.scalatest.FunSuite
  * Source : https://github.com/apache/climate/blob/master/ocw/metrics.py
  * Created by rahulsp on 6/22/15.
  */
+@Ignore
 class Main$BreezePerformanceTest extends FunSuite {
 
   // Files URL

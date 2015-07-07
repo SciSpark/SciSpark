@@ -18,11 +18,12 @@ package org.dia.TRMMUtils
  * limitations under the License.
  */
 
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
 /**
  * Testing for the OpenDapTRMM link creator works
  */
+@Ignore
 class OpenDapTRMMURLGenerator_Test extends FunSuite {
 
   test("testLinkGeneration") {

@@ -50,6 +50,20 @@ object Nd4jFuncs {
   }
 
   /**
+   * Gets an NDimensional array of INDArray from a NetCDF file
+   * @param url where the netcdf file is located
+   * @param variable the NetCDF variable to search for
+   * @return
+   */
+  def getNd4jNetCDFNDVars(url: String, variable: String): INDArray = {
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
+    val shape = NetCDFUtils.getDimensionSizes(netcdfFile, variable).toArray.sortBy(_._1).map(_._2)
+
+    Nd4j.create(coordinateArray, shape)
+  }
+
+  /**
    * Creates a 2D array from a list of dimensions using a variable
    * @param dimensionSizes hashmap of (dimension, size) pairs
    * @param netcdfFile the NetcdfDataset to read
@@ -66,16 +80,6 @@ object Nd4jFuncs {
     Nd4j.create(coordinateArray, Array(x, y))
   }
 
-  /**
-   * Gets an NDimensional array of INDArray from a NetCDF file
-   * TODO :: Need to be able to load in the dimensions of the NetCDF variable on runtime
-   * @param url where the netcdf file is located
-   * @param variable the NetCDF variable to search for
-   * @return
-   */
-  def getNd4jNetCDFNDVars (url : String, variable : String) : INDArray = {
-    null
-  }
 
   def reduceResolution(largeArray: INDArray, blockSize: Int): INDArray = {
     val numRows = largeArray.rows()
