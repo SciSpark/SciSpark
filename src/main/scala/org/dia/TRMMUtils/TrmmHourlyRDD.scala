@@ -15,11 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.b
 
+import breeze.linalg.DenseMatrix
+import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark._
+import org.dia.{NetCDFUtils, Constants}
+import org.joda.time.{DateTime, Days}
 
+import scala.StringBuilder
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
@@ -28,8 +33,26 @@ import scala.reflect.ClassTag
 /**
  * TrmmHourly partition
  */
-class TrmmHourlyPartition(idx: Int, val date: String, val readings: ListBuffer[String]) extends Partition {
+class TrmmHourlyPartition(
+                           idx: Int,
+                           val date: DateTime,
+                           val readings: ListBuffer[String])
+  extends Partition {
+
+  // Partition index
   override def index: Int = idx
+
+  /**
+   * To string method
+   * @return String
+   */
+  override def toString() = {
+    var sb = new StringBuilder()
+    sb.append("{idx:").append(idx).append(", ");
+    sb.append("date:").append(date).append(", ");
+    sb.append("readings:").append(date).append("}");
+    sb.toString()
+  }
 }
 
 /**
@@ -41,44 +64,74 @@ class TrmmHourlyPartition(idx: Int, val date: String, val readings: ListBuffer[S
  * @param ev1
  * @tparam T
  */
-class TrmmHourlyRDD[T: ClassTag](sc: SparkContext, datasetUrl: String, iniYear: Int, finalYear: Int = 0) extends RDD[T](sc, Nil) {
-
+class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
+                                 datasetUrl: String,
+                                 varName: String,
+                                 iniYear: Int,
+                                 finalYear: Int = 0)
+  extends RDD[T](sc, Nil) with Logging {
 
   // partition by year-day.
   // Every day has around 96MB which is somewhat bigger than HDFS chunk
   override def getPartitions: Array[Partition] = {
     // get number of day's urls
     // 1. read from file and group readings by day
-    val allReadings = HourlyTrmm.loadTrmmDaily(Constants.TRMM_HOURLY_URL, iniYear, finalYear)
+    val allReadings = HourlyTrmm.generateTrmmDaily(iniYear, finalYear)
 
     // 2. go to the web and get the results from there
+    // TODO
     val result = new Array[Partition](allReadings.keySet.size)
     var cnt = 0
     allReadings.foreach(keyval =>
-      result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2)
-
-      {cnt+=1; cnt}
-
+      result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2) {
+        cnt += 1;
+        cnt
+      }
     )
-    println()
-    println()
-    println()
-    for(res <- result) {
-      println(res.asInstanceOf[TrmmHourlyPartition].readings)
-    }
-    println()
-    println()
-    println()
-//    for (i <- 0 until allReadings.keySet.size) {
-//      result(i) = new TrmmHourlyPartition(i, allReadings(i))
-//    }
     result
   }
 
-  override def compute(split : Partition, context: TaskContext): Iterator[T] = {
-//    context.addTaskCompletionListener{ context => closeIfNeeded() }
-    val theSplit = split.asInstanceOf[TrmmHourlyPartition]
-    val res = mutable.MutableList.empty.iterator
-    res
+  //  @DeveloperApi
+  override def compute(split: Partition, context: TaskContext): Iterator[T] = {
+    var splitt = split.asInstanceOf[TrmmHourlyPartition]
+
+    val iter = new Iterator[T] {
+
+      var counter = 0
+      var hNext = true
+
+      override def hasNext: Boolean = {
+        println((counter < splitt.readings.length) + " " + counter + " " + splitt.readings.length)
+        counter < splitt.readings.length
+      }
+
+      // TODO fix the class type, we know what it'll be
+      override def next(): T = {
+        // for every reading fetch array
+        var n = datasetUrl + "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
+        var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
+//        var twoDarray: DenseMatrix[Double] = null
+        var twoDarray = DenseMatrix.zeros[Double](300, 300)
+
+        if (netCdfFile != null) {
+          println("This was not null " + n)
+          try {
+            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile.findVariable(varName).getDimensions)
+            twoDarray = BreezeFuncs.create2dBreezeArray(dimensionSizes, netCdfFile, varName)
+          } catch {
+            case e: Exception => println("ERROR reading variable %s from %s".format(varName, n))
+          }
+        }
+        counter += 1
+
+        if (counter >= splitt.readings.length)
+        //                  finished = true
+          hNext = false
+        println(counter + "|||||||||||||||||||" + splitt.readings.length + "||||||||" + hNext)
+        (n, twoDarray).asInstanceOf[T]
+      }
+
+    }
+    iter
   }
 }

@@ -17,6 +17,7 @@
  */
 package org.dia.TRMMUtils
 
+import breeze.linalg.DenseMatrix
 import org.apache.spark.SparkContext
 import org.joda.time.DateTime
 import org.scalatest.Ignore
@@ -28,6 +29,8 @@ import scala.collection.mutable.ListBuffer
  */
 @Ignore
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
+
+  val HOURLY_TRMM_DATA_VAR = "precipitation"
 
   /**
    * Test if the generated hourly readings are correct
@@ -42,24 +45,23 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
+  test("basic functionality") {
+    val sc = new SparkContext ("local", "test")
+    val rdd = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1998, 1998)
+    val rdd2 = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 1999)
 
-    test("basic functionality") {
-      val sc = new SparkContext ("local", "test")
-      val rdd = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1998)
-      println()
-      println()
-      println()
-//      rdd.bias()
-      println(rdd.count())
-      println()
+    // operation
+//      val threshold = 45
+//      rdd.collect().map( m =>
+//        if (m._2.max > threshold)
+//          println(m._1)
+//      )
+
+    val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
+    
+
+    println(rdd3.collect()(0))
       println()
       assert(true)
-//  val rdd = new JdbcRDD (sc, () => { DriverManager.getConnection ("jdbc:derby:target/JdbcRDDSuiteDb")},
-//                            "SELECT DATA FROM FOO WHERE ? <= ID AND ID <= ?",
-//                            1, 100, 3,
-//                            (r: ResultSet) => { r.getInt (1)}).cache()
-
-//assert (rdd.count === 100)
-//assert (rdd.reduce (_+ _) === 10100)
   }
 }

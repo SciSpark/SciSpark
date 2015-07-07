@@ -27,8 +27,14 @@ import scala.collection.mutable.{HashMap, ListBuffer}
  */
 object HourlyTrmm {
 
-  def loadTrmmDaily(datasetUrl: String, iniYear: Int, finalYear: Int = 0) = {
-    val dailyReadings = new HashMap[String, ListBuffer[String]]()
+  /**
+   * Generates the readings between two years
+   * @param iniYear
+   * @param finalYear
+   * @return HashMap grouping readings per day
+   */
+  def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
+    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
 //    var yearReadings = new ListBuffer[String]()
     // only a single year
     if (finalYear == 0) {
@@ -36,7 +42,7 @@ object HourlyTrmm {
       val maxDays = 1
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-        dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+        dailyReadings.put(realDate,generateDayReadings(realDate))
 //        yearReadings.appendAll(generateDayReadings(realDate))
 //        println(yearReadings)
       }
@@ -47,7 +53,7 @@ object HourlyTrmm {
         val maxDays = 1
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
-          dailyReadings.put(realDate.toString("yyyyMMdd"),generateDayReadings(realDate))
+          dailyReadings.put(realDate,generateDayReadings(realDate))
 //          yearReadings.appendAll(generateDayReadings(realDate))
 //          println(yearReadings)
         }
@@ -56,6 +62,11 @@ object HourlyTrmm {
     dailyReadings
   }
 
+  /**
+   * Generating readings for a specific day from a date
+   * @param realDate
+   * @return
+   */
   def generateDayReadings(realDate: DateTime) = {
     val sb = new StringBuilder
     var dailyReadings = new ListBuffer[String]()
@@ -63,7 +74,7 @@ object HourlyTrmm {
       sb.append(TRMM_HOURLY_DATA_PREFFIX).append(".")
       if (reading != 24) {
         sb.append("%s".format(realDate.toString("yyyyMMdd"))).append(".")
-        sb.append(if (reading >= 10) reading else "0%d".format(reading))
+        sb.append("%02d".format(reading))
       }
       else {
         sb.append("%s".format(realDate.plusDays(1).toString("yyyyMMdd"))).append(".")
