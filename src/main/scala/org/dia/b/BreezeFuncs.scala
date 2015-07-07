@@ -38,7 +38,7 @@ object BreezeFuncs {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getBreezeNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def getNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_Y_AXIS_NAMES(0))
@@ -55,7 +55,7 @@ object BreezeFuncs {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
+  def getNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
     val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
@@ -101,7 +101,7 @@ object BreezeFuncs {
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dBreezeArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): DenseMatrix[Double] = {
+  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): DenseMatrix[Double] = {
     //TODO make sure that the dimensions are always in the order we want them to be
     val x = dimensionSizes.get(1).get
     val y = dimensionSizes.get(2).get

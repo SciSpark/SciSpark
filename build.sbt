@@ -5,13 +5,13 @@ version := "1.0"
 //scalaVersion := "2.11.6"
 scalaVersion := "2.10.4"
 
-mainClass in Compile := Some("org.dia.n.MainNd4j")
+mainClass in Compile := Some("org.dia.n.Main")
 
 resolvers ++= Seq(
   Resolver.mavenLocal
 )
 
-val buildSettings = Defaults.defaultSettings ++ Seq {
+val buildSettings = Defaults.coreDefaultSettings ++ Seq {
   javaOptions += "-Xms4000M -Xmx5024M -Xss1M -XX:MaxPermSize=256M"
 }
 

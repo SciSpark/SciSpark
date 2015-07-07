@@ -38,7 +38,7 @@ object Nd4jFuncs {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getNd4jNetCDFTRMMVars(url : String, variable : String) : INDArray = {
+  def getNetCDFTRMMVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_Y_AXIS_NAMES(0))
@@ -55,7 +55,7 @@ object Nd4jFuncs {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getNd4jNetCDFNDVars(url: String, variable: String): INDArray = {
+  def getNetCDFNDVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val shape = NetCDFUtils.getDimensionSizes(netcdfFile, variable).toArray.sortBy(_._1).map(_._2)
@@ -70,7 +70,7 @@ object Nd4jFuncs {
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dNd4jArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): INDArray = {
+  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): INDArray = {
 
     val x = dimensionSizes.get(1).get
     val y = dimensionSizes.get(2).get

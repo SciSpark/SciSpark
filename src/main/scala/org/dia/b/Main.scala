@@ -17,26 +17,19 @@
  */
 package org.dia.b
 
-import breeze.linalg.{DenseMatrix, sum}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkContext, SparkConf}
-import org.dia.TRMMUtils.{TrmmHourlyRDD, Constants}
-import Constants._
-import org.dia.NetCDFUtils
-import ucar.ma2
-import ucar.nc2.dataset.NetcdfDataset
+import org.apache.spark.{SparkConf, SparkContext}
+import org.dia.TRMMUtils.{Constants, TrmmHourlyRDD}
 
-import scala.collection.mutable.MutableList
 import scala.language.implicitConversions
 
 /**
  * Functions needed to perform operations with Breeze
  */
-object MainBreeze {
+object Main {
 
   def main(args : Array[String]) : Unit = {
     val TextFile = "TestLinks"
-    var cores = Runtime.getRuntime().availableProcessors() - 1;
+    val cores = Runtime.getRuntime.availableProcessors - 1
     //TODO the number of threads should be configured at cluster level
     val conf = new SparkConf().setAppName("L").setMaster("local[" + cores + "]")
     val sc = new SparkContext(conf)

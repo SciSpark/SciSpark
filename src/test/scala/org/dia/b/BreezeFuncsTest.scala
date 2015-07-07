@@ -50,7 +50,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
+    val resDenseMatrix = BreezeFuncs.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -71,7 +71,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val resDenseMatrix = BreezeFuncs.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -106,7 +106,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = BreezeFuncs.create2dBreezeArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val resDenseMatrix = BreezeFuncs.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
     val reducedMatrix = BreezeFuncs.reduceResolution(resDenseMatrix, BLOCK_SIZE)
 
 

@@ -17,26 +17,19 @@
  */
 package org.dia.n
 
-import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.{TrmmHourlyRDD, Constants}
-import Constants._
-import org.jblas.DoubleMatrix
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
-import ucar.ma2
-import ucar.nc2.dataset.NetcdfDataset
+import org.dia.TRMMUtils.{Constants, TrmmHourlyRDD}
 
 import scala.language.implicitConversions
 
 /**
  * * Functions needed to perform operations with Nd4j
  */
-object MainNd4j {
+object Main {
 
   def main(args : Array[String]) : Unit = {
     val TextFile = "TestLinks"
-    val cores = Runtime.getRuntime().availableProcessors() - 1;
+    val cores = Runtime.getRuntime.availableProcessors - 1
     //TODO the number of threads should be configured at cluster level
     val conf = new SparkConf().setAppName("L").setMaster("local[" + cores + "]")
     val sc = new SparkContext(conf)

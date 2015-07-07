@@ -51,7 +51,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jFuncs.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -71,7 +71,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = Nd4jFuncs.create2dNd4jArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jFuncs.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -91,7 +91,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
         val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
         println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
-        val fdArray = Nd4jFuncs.getNd4jNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
+    val fdArray = Nd4jFuncs.getNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
 
         assert(fdArray.getClass.equals(ExpectedType.getClass))
 
