@@ -64,14 +64,15 @@ class TrmmBiasRDD[T: ClassTag](
 //      }
 //    }
 //
-    for ( x <- rdd1.iterator(splitt.s1, context);
-          y <- rdd2.iterator(splitt.s2, context))
-      yield
-      (
-        x.asInstanceOf[(String, DenseMatrix[Double])]._1 + ":" + y.asInstanceOf[(String, Option[DenseMatrix[Double]])]._1,
-        (x.asInstanceOf[(String, DenseMatrix[Double])]. _2
-          - y.asInstanceOf[(String, DenseMatrix[Double])]._2)
-      ).asInstanceOf[T]
+//    for ( x <- rdd1.iterator(splitt.s1, context);
+//          y <- rdd2.iterator(splitt.s2, context))
+//      yield
+//      (
+//        x.asInstanceOf[(String, DenseMatrix[Double])]._1 + ":" + y.asInstanceOf[(String, Option[DenseMatrix[Double]])]._1,
+//        (x.asInstanceOf[(String, DenseMatrix[Double])]. _2
+//          - y.asInstanceOf[(String, DenseMatrix[Double])]._2)
+//      ).asInstanceOf[T]
+    ("", DenseMatrix.zeros[Double]).asInstanceOf[T]
 //    iter
   }
 
