@@ -75,9 +75,9 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext, datasetUrl: String, iniYear: 
     result
   }
 
-  override def compute(split: Partition, context: TaskContext): Iterator[T] = {
+  override def compute(split : Partition, context: TaskContext): Iterator[T] = {
 //    context.addTaskCompletionListener{ context => closeIfNeeded() }
-    println(split.asInstanceOf[TrmmHourlyPartition].date)
+    val theSplit = split.asInstanceOf[TrmmHourlyPartition]
     val res = mutable.MutableList.empty.iterator
     res
   }

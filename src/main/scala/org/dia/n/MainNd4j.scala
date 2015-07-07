@@ -54,10 +54,10 @@ object MainNd4j {
     println()
     println()
 
-    //    val HighResolutionArray = urlRDD.map(url => getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
-    //    val nanoAfter = System.nanoTime()
-    //    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
-    //    LowResolutionArray.map(array => println(array))
+//        val HighResolutionArray = urlRDD.map(url => Nd4jFuncs.getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
+//        val nanoAfter = System.nanoTime()
+//        val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
+//        LowResolutionArray.map(array => println(array))
   }
 }
 

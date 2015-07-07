@@ -24,6 +24,7 @@ import ucar.ma2
 import ucar.nc2.Dimension
 import ucar.nc2.dataset.NetcdfDataset
 
+import scala.collection.mutable
 import scala.collection.mutable.MutableList
 import scala.language.implicitConversions
 import scala.util.control.Exception
@@ -114,12 +115,22 @@ object NetCDFUtils {
    * @param dimensions
    * @return
    */
-  def getDimensionSizes(dimensions: java.util.List[Dimension]): MutableList[Int] = {
+  def getDimensionSizes(dimensions: java.util.List[Dimension]): mutable.HashMap[Int, Int] = {
     val it = dimensions.iterator
-    var dSizes = MutableList[Int]()
+    val nameSizeMap = dimensions
+    val dSizes = new mutable.HashMap[Int, Int]()
+
+    var iterate = 3
     while (it.hasNext) {
-      var d = it.next()
-      dSizes += d.getLength
+      val d = it.next()
+      if(TRMMUtils.Constants.TRMM_Y_AXIS_NAMES.contains(d.getName)){
+        dSizes.put(1, d.getLength)
+      } else if( TRMMUtils.Constants.TRMM_X_AXIS_NAMES.contains(d.getName)){
+        dSizes.put(2, d.getLength)
+      } else {
+        dSizes.put(iterate, d.getLength)
+        iterate += 1
+      }
     }
     dSizes
   }
