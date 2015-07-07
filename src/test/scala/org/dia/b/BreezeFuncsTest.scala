@@ -113,7 +113,7 @@ class BreezeFuncsTest extends org.scalatest.FunSuite {
     assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == reducedMatrix.rows)
     assert(ExpectedClass.cols == reducedMatrix.cols)
-
-
   }
+
+
 }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia
+package org.dia.TRMMUtils
 
 import java.io.{File, PrintWriter}
 import java.net.{HttpURLConnection, URL}
@@ -31,14 +31,18 @@ import scala.collection.JavaConversions._
 object OpenDapTRMMURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"
   val DEFAULT_FILE_NAME = "TRMM_L3_Links.txt"
-  var fileName = ""
   val iniYear = 1997
   val endYear = 2015
+  var fileName = ""
   var checkUrl = false
+
+  def run(checkLink: Boolean): Unit = {
+    run(checkLink, DEFAULT_FILE_NAME)
+  }
 
   /**
    * Runs the OpenDapTRMMURL link generator
-   * @param checkLink
+   * @param checkLink if the link needs to bec checked ?Deprecated?
    */
   def run(checkLink : Boolean, fName : String) : Unit = {
     // initializing variables
@@ -55,21 +59,17 @@ object OpenDapTRMMURLGenerator {
       println("Total URLs: " + totalUrls.size())
       totalUrls.foreach { e => pw.append(e.toString + "\n") }
     } catch {
-      case ex: Exception => {
+      case ex: Exception =>
         println("Exception")
         ex.printStackTrace()
-      }
     } finally {
       pw.close()
     }
   }
 
-  def run (checkLink : Boolean) : Unit = {
-    run(checkLink, DEFAULT_FILE_NAME)
-  }
     /**
      * Gets the links per year
-     * @param year
+     * @param year the year offset 1997 e.g. For Starting at 2000 -> year = 3
      * @return
      */
     def generateLinksPerYear(year: Int) : util.ArrayList[String] = {
@@ -86,11 +86,11 @@ object OpenDapTRMMURLGenerator {
         readTime = readTime.plusDays(1)
 
         val sb = new StringBuilder()
-        sb.append(checkedYear).append("/");
-        sb.append(paddedDay).append("/");
-        sb.append("3B42_daily.").append(readTime.getYear).append(".");
-        sb.append(paddedMonth).append(".");
-        sb.append(paddedReadDay).append(".7.bin");
+        sb.append(checkedYear).append("/")
+        sb.append(paddedDay).append("/")
+        sb.append("3B42_daily.").append(readTime.getYear).append(".")
+        sb.append(paddedMonth).append(".")
+        sb.append(paddedReadDay).append(".7.bin")
         // check url and stop if it doesn't exist
         val tmpUrl = URL + sb.toString
         if (checkUrl) {
@@ -100,20 +100,20 @@ object OpenDapTRMMURLGenerator {
           }
         }
       }
-      return urls;
+      urls
     }
 
     /**
      * Checks if the url actually exists
-     * @param urlString
+     * @param urlString the url
      * @return
      */
     def getResponseCode(urlString : String):Boolean = {
-      val u = new URL(urlString);
-      val huc =  u.openConnection().asInstanceOf[HttpURLConnection];
-      huc.setConnectTimeout(100000);
-      huc.setRequestMethod("HEAD");
-      return (huc.getResponseCode() == HttpURLConnection.HTTP_OK);
+      val u = new URL(urlString)
+      val huc = u.openConnection().asInstanceOf[HttpURLConnection]
+      huc.setConnectTimeout(100000)
+      huc.setRequestMethod("HEAD")
+      huc.getResponseCode == HttpURLConnection.HTTP_OK
     }
 
 }

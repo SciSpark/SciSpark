@@ -28,13 +28,14 @@ import scala.language.implicitConversions
 
 /**
  * Functions needed to perform operations with Breeze
+ * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
 object BreezeFuncs {
 
   /**
    * Breeze implementation
    * @param url where the netcdf file is located
-   * @param variable
+   * @param variable the NetCDF variable to search for
    * @return
    */
   def getBreezeNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
@@ -50,8 +51,8 @@ object BreezeFuncs {
 
   /**
    * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
-   * @param url
-   * @param variable
+   * @param url where the netcdf file is located
+   * @param variable the NetCDF variable to search for
    * @return
    */
   def getBreezeNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
@@ -67,8 +68,8 @@ object BreezeFuncs {
 
   /**
    * Reduces the resolution of a DenseMatrix
-   * @param largeArray
-   * @param blockSize
+   * @param largeArray the array that will be reduced
+   * @param blockSize the size of n x n size of blocks.
    * @return
    */
   def reduceResolution(largeArray: DenseMatrix[Double], blockSize: Int): DenseMatrix[Double] = {
@@ -80,7 +81,7 @@ object BreezeFuncs {
 
     for(row <- 0 to reducedMatrix.rows - 1){
       for(col <- 0 to reducedMatrix.cols - 1){
-        val rowIndices = (row * blockSize) to (((row + 1)) * blockSize - 1)
+        val rowIndices = (row * blockSize) to ((row + 1) * blockSize - 1)
         val colIndices = (col * blockSize) to ((col + 1) * blockSize - 1)
         val block = largeArray(rowIndices, colIndices)
         val totalsum = sum(block)
@@ -95,9 +96,9 @@ object BreezeFuncs {
 
   /**
    * Creates a 2D array from a list of dimensions using a variable
-   * @param dimensionSizes
-   * @param netcdfFile
-   * @param variable
+   * @param dimensionSizes hashmap of (dimension, size) pairs
+   * @param netcdfFile the NetcdfDataset to read
+   * @param variable the variable array to extract
    * @return DenseMatrix
    */
   def create2dBreezeArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): DenseMatrix[Double] = {
@@ -111,9 +112,11 @@ object BreezeFuncs {
   /**
    * Creates a 4D dimensional array from a list of dimensions
    * Note that this as return type gets boxed into Array[Array[Array[Array[Double]]]]
-   * @param dimensionSizes
-   * @param netcdfFile
-   * @param variable
+   *
+   * TODO :: Find a better way to index the dimensions. However we may never need to use this function
+   * @param dimensionSizes hashmap of (dimension, size) pairs
+   * @param netcdfFile the NetcdfDataset to read
+   * @param variable the variable array to extract
    * @return Array.ofDim[x,y,z,u]
    */
   def create4dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): Array[Array[Array[Array[Float]]]] = {
@@ -128,7 +131,8 @@ object BreezeFuncs {
 
     val ArrayClass = Array.ofDim[Float](x, y, z, u)
     val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[Array[Array[Array[Array[Float]]]]]
-    return NDArray
+
+    NDArray
   }
 }
 

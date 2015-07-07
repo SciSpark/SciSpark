@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dia.n
 
 import org.dia.NetCDFUtils
@@ -10,14 +27,15 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
+ * The Nd4j Functional operations
  * Created by rahulsp on 7/6/15.
  */
 object Nd4jFuncs {
 
   /**
    * Gets an NDimensional Array of ND4j
-   * @param url
-   * @param variable
+   * @param url where the netcdf file is located
+   * @param variable the NetCDF variable to search for
    * @return
    */
   def getNd4jNetCDFTRMMVars(url : String, variable : String) : INDArray = {
@@ -33,9 +51,9 @@ object Nd4jFuncs {
 
   /**
    * Creates a 2D array from a list of dimensions using a variable
-   * @param dimensionSizes
-   * @param netcdfFile
-   * @param variable
+   * @param dimensionSizes hashmap of (dimension, size) pairs
+   * @param netcdfFile the NetcdfDataset to read
+   * @param variable the variable array to extract
    * @return DenseMatrix
    */
   def create2dNd4jArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): INDArray = {
@@ -49,10 +67,10 @@ object Nd4jFuncs {
   }
 
   /**
-   * Gets an NDimensional array of Breeze's DenseMatrix from a NetCDF file
+   * Gets an NDimensional array of INDArray from a NetCDF file
    * TODO :: Need to be able to load in the dimensions of the NetCDF variable on runtime
-   * @param largeArray
-   * @param blockSize
+   * @param url where the netcdf file is located
+   * @param variable the NetCDF variable to search for
    * @return
    */
   def getNd4jNetCDFNDVars (url : String, variable : String) : INDArray = {
@@ -73,8 +91,8 @@ object Nd4jFuncs {
         val columnRange = (col * blockSize to ((col + 1) * blockSize) - 1).toSet
         val crossProductRanges = for { x <- rowRange; y <- columnRange} yield (x, y)
         val block = crossProductRanges.map(pair => largeArray.getDouble(pair._1, pair._2))
-        val numNonZero = block.filter(p => p != 0).size
-        val sum = block.reduce((A, B) => A + B)
+        val numNonZero = block.count(p => p != 0)
+        val sum = block.sum
         reducedMatrix.put(row, col, sum / numNonZero)
       }
     }

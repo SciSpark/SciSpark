@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.dia
+package org.dia.perf
 
-import breeze.linalg.DenseMatrix
+import breeze.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.FunSuite
 
 /**
@@ -66,4 +66,22 @@ class Main$BreezePerformanceTest extends FunSuite {
     //    }
     assert(true)
   }
+
+  test("Multiple Slicing") {
+    (1 to 100).foreach { i =>
+      val m = DenseMatrix.zeros[Double](i * 1000, i * 1000) //, (1000000 to 2000000).toArray.map(p => p.toDouble), 0)
+    val m2 = DenseMatrix.ones[Double](i * 1000, i * 1000) //, (1 to 1000000).toArray.map(p => p.toDouble), 0)
+    val start = System.nanoTime()
+      //val m3 = m * m2
+      val m3 = m :* m2
+      val stop = System.nanoTime()
+      println(stop - start)
+      val slice1 = m(1 to 3, 1 to 3)
+      assert(slice1(::, 1) == DenseVector(14, 15, 16))
+      assert(slice1(::, 1 to 2) == DenseMatrix((14, 20), (15, 21), (16, 22)))
+    }
+
+
+  }
+
 }

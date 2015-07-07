@@ -1,5 +1,3 @@
-package org.dia
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,19 +15,30 @@ package org.dia
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.dia.perf
 
-import java.nio.file.{Files, Paths}
-
+import org.nd4j.api.linalg.DSL._
+import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
 
 /**
- * Testing for the OpenDapTRMM link creator works
+ * The Nd4j Performance Tests
+ * Created by rahulsp on 7/7/15.
  */
-class OpenDapTRMMURLGenerator_Test extends FunSuite {
+class Main$Nd4jPerformanceTest extends FunSuite {
 
-  test("testLinkGeneration") {
-//    OpenDapTRMMURLGenerator.run(false, "testLinkfile.txt")
-//    assert(Files.exists(Paths.get("testLinkfile.txt")))
+  test("ND4JOps2dTest") {
+    (1 to 100).foreach { p =>
+      val m1 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
+      val m2 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
+      /**
+       * Vector subtraction
+       */
+      val start = System.nanoTime()
+      val m3 = m1 - m2
+      val stop = System.nanoTime()
+      println(stop - start)
+    }
+    assert(true)
   }
-
 }
