@@ -1291,11 +1291,11 @@ public  class NDArrayTestsFortran  extends BaseNd4jTest {
 
     @Test
     public void testMatrix() {
-        INDArray arr = Nd4j.create(new float[]{1,2,3,4},new int[]{2,2});
+        INDArray arr = Nd4j.create(new float[]{1, 2, 3, 4}, new int[]{2, 2});
         INDArray brr = Nd4j.create(new float[]{5,6},new int[]{1,2});
         INDArray row = arr.getRow(0);
         row.subi(brr);
-        assertEquals(Nd4j.create(new double[]{-4,-3}),arr.getRow(0));
+        assertEquals(Nd4j.create(new double[]{-4, -3}), arr.getRow(0));
 
     }
 
@@ -1316,6 +1316,55 @@ public  class NDArrayTestsFortran  extends BaseNd4jTest {
 
 
 
+    }
+
+
+    @Test
+    public void testSumWithRow1(){
+        //Works:
+        INDArray array2d = Nd4j.ones(1,10);
+        array2d.sum(0); //OK
+        array2d.sum(1); //OK
+
+        INDArray array3d = Nd4j.ones(1,10,10);
+        array3d.sum(0); //OK
+        array3d.sum(1); //OK
+        array3d.sum(2); //java.lang.IllegalArgumentException: Illegal index 100 derived from 9 with offset of 10 and stride of 10
+
+        INDArray array4d = Nd4j.ones(1,10,10,10);
+        array4d.sum(0); //OK
+        array4d.sum(1); //OK
+        array4d.sum(2); //java.lang.IllegalArgumentException: Illegal index 1000 derived from 9 with offset of 910 and stride of 10
+        array4d.sum(3); //java.lang.IllegalArgumentException: Illegal index 1000 derived from 9 with offset of 100 and stride of 100
+
+        INDArray array5d = Nd4j.ones(1, 10, 10, 10, 10);
+        array5d.sum(0); //OK
+        array5d.sum(1); //OK
+        array5d.sum(2); //java.lang.IllegalArgumentException: Illegal index 10000 derived from 9 with offset of 9910 and stride of 10
+        array5d.sum(3); //java.lang.IllegalArgumentException: Illegal index 10000 derived from 9 with offset of 9100 and stride of 100
+        array5d.sum(4); //java.lang.IllegalArgumentException: Illegal index 10000 derived from 9 with offset of 1000 and stride of 1000
+    }
+
+    @Test
+    public void testSumWithRow2(){
+        //All sums in this method execute without exceptions.
+        INDArray array3d = Nd4j.ones(2,10,10);
+        array3d.sum(0);
+        array3d.sum(1);
+        array3d.sum(2);
+
+        INDArray array4d = Nd4j.ones(2,10,10,10);
+        array4d.sum(0);
+        array4d.sum(1);
+        array4d.sum(2);
+        array4d.sum(3);
+
+        INDArray array5d = Nd4j.ones(2,10,10,10,10);
+        array5d.sum(0);
+        array5d.sum(1);
+        array5d.sum(2);
+        array5d.sum(3);
+        array5d.sum(4);
     }
 
 
@@ -1342,7 +1391,8 @@ public  class NDArrayTestsFortran  extends BaseNd4jTest {
         INDArray n2 = Nd4j.scalar(2);
         INDArray nClone = n1.add(n2);
         assertEquals(Nd4j.scalar(3), nClone);
-        assertFalse(n1.add(n2).equals(n1));
+        INDArray n1PlusN2 = n1.add(n2);
+        assertFalse(getFailureMessage(),n1PlusN2.equals(n1));
 
         INDArray n3 = Nd4j.scalar(3);
         INDArray n4 = Nd4j.scalar(4);
@@ -1359,6 +1409,16 @@ public  class NDArrayTestsFortran  extends BaseNd4jTest {
 
 
 
+    @Test
+    public void testLeadingOnesAndTrailingOnes() {
+        INDArray arr = Nd4j.ones(1,10,1);
+        arr.toString();
+        System.out.println(arr);
+        INDArray array = Nd4j.zeros(new int[]{1,10,1});
+        INDArray slice = array.slice(0,2);
+        System.out.println(Arrays.toString(slice.shape())); //Expect: [1,10] -> OK
+        System.out.println(slice);
+    }
 
 
 

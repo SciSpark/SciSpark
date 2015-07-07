@@ -573,7 +573,7 @@ public interface INDArray extends Serializable  {
      * @param columns
      * @return
      */
-    INDArray getColumns(int[] columns);
+    INDArray getColumns(int...columns);
 
     /**
      * Get a list of rows
@@ -581,7 +581,7 @@ public interface INDArray extends Serializable  {
      * @param rows
      * @return
      */
-    INDArray getRows(int[] rows);
+    INDArray getRows(int...rows);
 
     /**
      * Reverse division
@@ -1395,6 +1395,8 @@ public interface INDArray extends Serializable  {
     int slices();
 
 
+    int getLeadingOnes();
+
     /**
      * Returns the specified slice of this ndarray
      *
@@ -1678,6 +1680,7 @@ public interface INDArray extends Serializable  {
     IComplexNDArray add(IComplexNumber n, IComplexNDArray result);
 
     IComplexNDArray addi(IComplexNumber n, IComplexNDArray result);
+
 
 
 }
