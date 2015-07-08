@@ -21,7 +21,8 @@ import breeze.linalg.DenseMatrix
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
 import org.apache.spark._
-import org.dia.{NetCDFUtils, Constants}
+import org.dia.NetCDFUtils
+import org.dia.TRMMUtils._
 import org.joda.time.{DateTime, Days}
 
 import scala.StringBuilder
@@ -29,6 +30,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
+
 
 /**
  * TrmmHourly partition
@@ -116,8 +118,8 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
         if (netCdfFile != null) {
           println("This was not null " + n)
           try {
-            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile.findVariable(varName).getDimensions)
-            twoDarray = BreezeFuncs.create2dBreezeArray(dimensionSizes, netCdfFile, varName)
+            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile,varName)
+            twoDarray = BreezeFuncs.create2dArray(dimensionSizes, netCdfFile, varName)
           } catch {
             case e: Exception => println("ERROR reading variable %s from %s".format(varName, n))
           }

@@ -19,6 +19,7 @@ package org.dia.TRMMUtils
 
 import breeze.linalg.DenseMatrix
 import org.apache.spark.SparkContext
+import org.dia.b.TrmmHourlyRDD
 import org.joda.time.DateTime
 import org.scalatest.Ignore
 
@@ -27,7 +28,7 @@ import scala.collection.mutable.ListBuffer
 /**
  * Testing TrmmHourly
  */
-@Ignore
+
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
   val HOURLY_TRMM_DATA_VAR = "precipitation"

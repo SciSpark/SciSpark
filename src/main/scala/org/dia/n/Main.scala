@@ -18,7 +18,8 @@
 package org.dia.n
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.{Constants, TrmmHourlyRDD}
+import org.dia.TRMMUtils.Constants
+import org.dia.b.TrmmHourlyRDD
 
 import scala.language.implicitConversions
 
@@ -37,12 +38,12 @@ object Main {
     // depending on the file name or the data set we can create different rdds
     // NOTE: if partitioning by time defined in the file name, then the whole data set is the rdd
     // and the partition comes from the file name itself
-    val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
+    //val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
     // print content
     println()
     println()
     println()
-    println(trmmRDD.count())
+    //println(trmmRDD.count())
     println()
     println()
     println()
