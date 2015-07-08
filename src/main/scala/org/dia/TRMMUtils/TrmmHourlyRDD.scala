@@ -18,19 +18,14 @@
 package org.dia.b
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.rdd.RDD
 import org.apache.spark._
 import org.dia.NetCDFUtils
-import org.dia.TRMMUtils._
-import org.joda.time.{DateTime, Days}
+import org.joda.time.DateTime
 
-import scala.StringBuilder
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
-
 
 /**
  * TrmmHourly partition
@@ -41,7 +36,9 @@ class TrmmHourlyPartition(
                            val readings: ListBuffer[String])
   extends Partition {
 
-  // Partition index
+  /**
+   * Partition index
+   */
   override def index: Int = idx
 
   /**
@@ -81,11 +78,13 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
     val allReadings = HourlyTrmm.generateTrmmDaily(iniYear, finalYear)
 
     // 2. go to the web and get the results from there
-    // TODO
+    // TODO check if url exist to not to create an empty partition
     val result = new Array[Partition](allReadings.keySet.size)
+    logDebug("Found %d days/partitions.".format(allReadings.keySet.size))
     var cnt = 0
     allReadings.foreach(keyval =>
       result(cnt) = new TrmmHourlyPartition(cnt, keyval._1, keyval._2) {
+        logDebug("Partition created %s".format(result(cnt)))
         cnt += 1;
         cnt
       }
@@ -93,17 +92,17 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
     result
   }
 
-  //  @DeveloperApi
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
+    // turning split into a split we understand
     var splitt = split.asInstanceOf[TrmmHourlyPartition]
-
+    // creating our own iterator
     val iter = new Iterator[T] {
 
       var counter = 0
       var hNext = true
 
       override def hasNext: Boolean = {
-        println((counter < splitt.readings.length) + " " + counter + " " + splitt.readings.length)
+        logDebug("Iterating through element %d out of %d".format(counter, splitt.readings.length))
         counter < splitt.readings.length
       }
 
@@ -112,28 +111,25 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
         // for every reading fetch array
         var n = datasetUrl + "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
         var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
-//        var twoDarray: DenseMatrix[Double] = null
-        var twoDarray = DenseMatrix.zeros[Double](300, 300)
-
+        var twoDarray: DenseMatrix[Double] = null
+        //        var twoDarray = DenseMatrix.zeros[Double](300, 300)
         if (netCdfFile != null) {
-          println("This was not null " + n)
+          logInfo("Reading from %s".format(n))
           try {
-            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile,varName)
-            twoDarray = BreezeFuncs.create2dArray(dimensionSizes, netCdfFile, varName)
+            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile.findVariable(varName).getDimensions)
+            twoDarray = BreezeFuncs.create2dBreezeArray(dimensionSizes, netCdfFile, varName)
           } catch {
-            case e: Exception => println("ERROR reading variable %s from %s".format(varName, n))
+            case e: Exception => logError("ERROR reading variable %s from %s".format(varName, n))
           }
         }
         counter += 1
 
         if (counter >= splitt.readings.length)
-        //                  finished = true
           hNext = false
-        println(counter + "|||||||||||||||||||" + splitt.readings.length + "||||||||" + hNext)
         (n, twoDarray).asInstanceOf[T]
       }
-
     }
+    // returning our iterator
     iter
   }
 }
