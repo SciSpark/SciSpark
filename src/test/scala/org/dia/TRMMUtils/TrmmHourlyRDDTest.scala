@@ -19,7 +19,7 @@ package org.dia.TRMMUtils
 
 import breeze.linalg.DenseMatrix
 import org.apache.spark.SparkContext
-import org.dia.b.TrmmHourlyRDD
+import org.dia.b.{TrmmBiasRDD, TrmmHourlyRDD}
 import org.joda.time.DateTime
 import org.scalatest.Ignore
 
