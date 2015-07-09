@@ -3,6 +3,7 @@ package org.dia.core
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
 import org.dia.n.Nd4jFuncs
+import ucar.nc2.dataset.NetcdfDataset
 
 import scala.reflect.ClassTag
 
@@ -12,7 +13,7 @@ import scala.reflect.ClassTag
 
 private class sRDDPartition(
                              idx: Int,
-                             val datasetURL: List[String]
+                             val datasets: List[NetcdfDataset]
                              ) extends Partition {
   /**
    * Partition index
@@ -34,7 +35,7 @@ private class sRDDPartition(
 
 
 class sRDD[T: ClassTag](sc: SparkContext,
-                        datasetURLs: List[String],
+                        datasets: List[NetcdfDataset],
                         varName: String)
   extends RDD[T](sc, Nil) with Logging {
 
@@ -48,8 +49,8 @@ class sRDD[T: ClassTag](sc: SparkContext,
    */
   override def getPartitions: Array[Partition] = {
     var pos = 0
-    val array = new Array[Partition](datasetURLs.length)
-    for (urlPartition <- datasetURLs.grouped(1)) {
+    val array = new Array[Partition](datasets.length)
+    for (urlPartition <- datasets.grouped(1)) {
       array(pos) = new sRDDPartition(pos, urlPartition)
       pos += 1
     }
@@ -69,11 +70,11 @@ class sRDD[T: ClassTag](sc: SparkContext,
       var counter = 0
 
       override def hasNext: Boolean = {
-        counter < split.datasetURL.length
+        counter < split.datasets.length
       }
 
       override def next: T = {
-        val tensor = Nd4jFuncs.getNetCDFNDVars(split.datasetURL(counter), varName)
+        val tensor = Nd4jFuncs.getNetCDFNDVars(split.datasets(counter), varName)
         counter += 1
         tensor.asInstanceOf[T]
       }

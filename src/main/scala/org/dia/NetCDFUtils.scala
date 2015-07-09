@@ -34,6 +34,7 @@ object NetCDFUtils {
 
   /**
    * Loads a NetCDF file from a url
+   * TODO :: Check if it loads the entire file with openDataset
    */
   def loadNetCDFDataSet(url : String) : NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)

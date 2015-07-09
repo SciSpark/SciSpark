@@ -50,13 +50,23 @@ object Nd4jFuncs {
   }
 
   /**
-   * Gets an NDimensional array of INDArray from a NetCDF file
+   * Gets an NDimensional array of INDArray from a NetCDF url
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
   def getNetCDFNDVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    getNetCDFNDVars(netcdfFile, variable)
+  }
+
+  /**
+   * Gets an NDimensional array of INDArray from a NetCDF file
+   * @param netcdfFile where the netcdf file is located
+   * @param variable the NetCDF variable to search for
+   * @return
+   */
+  def getNetCDFNDVars(netcdfFile: NetcdfDataset, variable: String): INDArray = {
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val shape = NetCDFUtils.getDimensionSizes(netcdfFile, variable).toArray.sortBy(_._1).map(_._2)
 
