@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
+import org.nd4j.linalg.jblas.JblasBackend;
 import org.nd4j.linalg.jcublas.JCublasBackend;
 import org.nd4j.linalg.netlib.NetlibBlasBackend;
 import org.slf4j.Logger;
@@ -73,15 +74,7 @@ public abstract class BaseNd4jTest  extends TestCase {
      * given command line arguments
      */
     public static Nd4jBackend getDefaultBackend() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-        String clazz = System.getProperty(DEFAULT_BACKED,JCublasBackend.class.getName());
-=======
         String clazz = System.getProperty(DEFAULT_BACKED,NetlibBlasBackend.class.getName());
->>>>>>> bbdb2d94d6d270190d57292ea0a92df49d35bcc4
-=======
-        String clazz = System.getProperty(DEFAULT_BACKED,NetlibBlasBackend.class.getName());
->>>>>>> bbdb2d94d6d270190d57292ea0a92df49d35bcc4
         try {
             return (Nd4jBackend) Class.forName(clazz).newInstance();
         } catch (Exception e) {
