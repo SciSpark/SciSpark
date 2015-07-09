@@ -20,6 +20,7 @@ package org.dia.TRMMUtils
 import breeze.linalg.DenseMatrix
 import org.apache.spark.SparkContext
 import org.dia.b.{TrmmBiasRDD, TrmmHourlyRDD}
+import org.dia.core.SparkTestConstants
 import org.joda.time.DateTime
 import org.scalatest.Ignore
 
@@ -47,7 +48,7 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
   }
 
   test("basic functionality") {
-    val sc = new SparkContext("local[4]", "test")
+    val sc = SparkTestConstants.sc
     val rdd = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1998, 1998)
     val rdd2 = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 1999)
 
@@ -60,8 +61,8 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
     val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
 
-    println(rdd3.collect()(0))
-    println()
+    //println(rdd3.collect()(0))
+    //println()
     assert(true)
   }
 }
