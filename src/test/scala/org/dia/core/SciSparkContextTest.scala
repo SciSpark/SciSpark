@@ -10,7 +10,7 @@ class SciSparkContextTest extends FunSuite {
 
   test("testOpenDapURLFile") {
 
-    val scisparkContext = new SciSparkContext("local[4]", "test")
+    val scisparkContext = SparkTestConstants.sc
     val srdd = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
 
     val collected = srdd.collect

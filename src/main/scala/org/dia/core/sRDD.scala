@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 
 private class sRDDPartition(
                              idx: Int,
-                             val datasets: List[NetcdfDataset]
+                             val datasets: List[String]
                              ) extends Partition {
   /**
    * Partition index
@@ -35,7 +35,7 @@ private class sRDDPartition(
 
 
 class sRDD[T: ClassTag](sc: SparkContext,
-                        datasets: List[NetcdfDataset],
+                        datasets: List[String],
                         varName: String)
   extends RDD[T](sc, Nil) with Logging {
 

@@ -16,6 +16,11 @@ val buildSettings = Defaults.coreDefaultSettings ++ Seq {
 }
 
 /**
+ * Prevents multiple SparkContexts from being launched
+ */
+parallelExecution in Test := false
+
+/**
  * There are conflicting slf4j versions between spark and nd4j. Due to the
  * recency of Nd4j and it's development speed it is using the latest slf4j version.
  */

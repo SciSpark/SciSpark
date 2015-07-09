@@ -12,13 +12,13 @@ import scala.io.Source
  */
 class sRDDTest extends FunSuite {
   test("basicFunctionality") {
-    val sc = new SparkContext("local[4]", "test")
+    val sc = SparkTestConstants.sc
     val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val NetCDFdatasets = datasetUrls.map(url => NetCDFUtils.loadNetCDFDataSet(url))
-    val srdd = new sRDD[INDArray](sc, NetCDFdatasets, "TotCldLiqH2O_A")
+    val srdd = new sRDD[INDArray](sc, datasetUrls, "TotCldLiqH2O_A")
 
     val collected = srdd.collect
     collected.map(p => println(p))
+    sc.stop()
     assert(true)
   }
 }

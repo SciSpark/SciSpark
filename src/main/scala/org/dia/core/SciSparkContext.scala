@@ -32,8 +32,7 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
                        minPartitions: Int = defaultMinPartitions) : sRDD[INDArray] = {
 
       val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-      val NetCDFdatasets = datasetUrls.map(url => NetCDFUtils.loadNetCDFDataSet(url))
-      new sRDD[INDArray](this, NetCDFdatasets, varName)
+      new sRDD[INDArray](this, datasetUrls, varName)
     }
 
 
