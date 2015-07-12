@@ -550,18 +550,17 @@ public abstract class BaseNDArray implements INDArray {
     @Override
     public int majorStride() {
         ensureNotCleanedUp();
-        if(majorStride >= 0)
-            return majorStride;
         if(stride.length == 0) {
             majorStride = elementStride();
             return elementStride();
         }
         if(ordering() == NDArrayFactory.C) {
-            if(stride[shape().length - 1] == 1 && !isMatrix()) {
+            if(stride[shape().length - 1] == 1 && !isMatrix() || Shape.isRowVectorShape(shape())) {
                 int ret =  getFirstNonOneStride();
                 majorStride = ret;
                 return ret;
             }
+
         }
 
         if(ordering() == NDArrayFactory.FORTRAN && size(0) == 1) {
@@ -570,12 +569,19 @@ public abstract class BaseNDArray implements INDArray {
             return ret;
         }
 
-        if(size(0) == length() && getTrailingOnes() > 0 || getLeadingOnes() > 0 && rank() > 2) {
+        if(rank() > 2 && (size(0) == length() && getTrailingOnes() > 0  || getLeadingOnes() > 0 && !isVector())) {
             return elementStride();
         }
 
 
-        int majorStride =  stride[0];
+        if(Shape.isColumnVectorShape(shape())) {
+            int majorStride = ordering() == 'c' ? stride(1) : stride(0);
+            this.majorStride = majorStride;
+            return majorStride;
+        }
+
+
+        int majorStride = stride(0);
         this.majorStride = majorStride;
         return majorStride;
     }
@@ -594,6 +600,24 @@ public abstract class BaseNDArray implements INDArray {
                 return majorStride();
         }
         return majorStride();
+    }
+
+    @Override
+    public int tensorssAlongDimension(int... dimension) {
+        if(dimension.length == 1)
+            return vectorsAlongDimension(dimension[0]);
+        int[] tensorShape = ArrayUtil.keep(shape(), dimension);
+        return length / ArrayUtil.prod(tensorShape);
+    }
+
+    @Override
+    public INDArray tensorAlongDimension(int index, int... dimension) {
+        if(dimension.length == 1)
+            return vectorAlongDimension(index, dimension[0]);
+        int[] tensorShape = ArrayUtil.keep(shape(),dimension);
+        int[] stride = ArrayUtil.keep(stride(), dimension);
+        int idx = offset + index * ArrayUtil.prod(ArrayUtil.removeIndex(stride(),dimension));
+        return create(data(),tensorShape,stride,idx,ordering());
     }
 
     /**
@@ -705,22 +729,21 @@ public abstract class BaseNDArray implements INDArray {
 
         if(isMatrix()) {
             if(dimension == 0) {
-                if(ordering() == NDArrayFactory.C)
-                    return create(data,
-                            new int[]{shape[dimension],1}
-                            ,  new int[]{stride[dimension],elementStride()},
-                            offset + index * stride[stride.length - 1]);
-                else
-                    return create(data,
-                            new int[]{shape[dimension],1}
-                            ,  new int[]{stride[dimension],elementStride()},
-                            calcoffset(index));
+                int[] shape2 =  new int[]{shape[dimension],1};
+                int realOffset = offset + (index * (ordering() == 'f' ? stride(0) : stride(1)));
+                int[] retStride = ordering() == NDArrayFactory.FORTRAN ? new int[]{majorStride(),elementStride()} : new int[] {elementStride(),majorStride()};
+                return create(data,
+                        shape2
+                        ,retStride,
+                        realOffset);
             }
             else if(dimension == 1) {
+                int[] shape2 =  new int[]{1,shape[dimension]};
+
                 if(ordering() == NDArrayFactory.C)
                     return create(data,
                             new int[]{1, shape[dimension]}
-                            , ArrayUtil.of(elementStride(),stride[dimension]),
+                            , Nd4j.getComplexStrides(shape2, ordering()),
                             calcoffset(index));
                 //c ordering
                 return create(data,
@@ -730,7 +753,7 @@ public abstract class BaseNDArray implements INDArray {
             }
         }
 
-        int arrOffset = offset + index * stride[0];
+        int arrOffset = offset == 0 && dimension > 0 ? offset + index * majorStride() : offset + index;
 
         /**
          * The offset is greater than the dimensions.
@@ -816,17 +839,7 @@ public abstract class BaseNDArray implements INDArray {
     }
 
 
-    private int getFirstNonOneStrideIdx() {
-        for(int j = 0; j < stride().length; j++) {
-            if(stride[j] == 1)
-                continue;
 
-            return j;
-        }
-
-        return elementStride();
-
-    }
 
     private int getFirstNonOneStride() {
         if(firstNonOneStride >= 0)
@@ -1533,7 +1546,10 @@ public abstract class BaseNDArray implements INDArray {
             }
 
             else if (isColumnVector() && Shape.isRowVectorShape(newShape)) {
-                return create(data, newShape, new int[]{stride[0],1}, offset);
+                if(ordering() == 'f')
+                    return create(data, newShape, new int[]{stride[0],elementStride()}, offset);
+                 else
+                    return create(data, newShape, new int[]{elementStride(),stride(-1)}, offset);
 
             }
         }
@@ -1554,9 +1570,7 @@ public abstract class BaseNDArray implements INDArray {
 
             //create a new copy of the ndarray
             if (shape().length > 1 || this.ordering != ordering || newShape.length != shape().length) {
-                if(this instanceof IComplexNDArray)
-                    return  create(data,newShape,newStrides,offset,ordering);
-                newCopy = create(data, newShape, newStrides, offset, ordering).dup();
+                newCopy = create(data, newShape, newStrides, offset, ordering);
                 return newCopy;
             }
 
@@ -1824,22 +1838,7 @@ public abstract class BaseNDArray implements INDArray {
         return permute(shape);
     }
 
-    /**
-     * Gives the indices for the ending of each slice
-     *
-     * @return the off sets for the beginning of each slice
-     */
-    @Override
-    public int[] endsForSlices() {
-        ensureNotCleanedUp();
-        int[] ret = new int[slices()];
-        int currOffset = offset + stride[0] - 1;
-        for (int i = 0; i < slices(); i++) {
-            ret[i] = currOffset;
-            currOffset += stride[0];
-        }
-        return ret;
-    }
+
 
     @Override
     public DataBuffer data() {
@@ -2807,7 +2806,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the norm1 along the specified dimension
      */
     @Override
-    public INDArray normmax(int dimension) {
+    public INDArray normmax(int...dimension) {
         return Nd4j.getExecutioner().exec(new NormMax(this), dimension);
     }
 
@@ -2907,7 +2906,7 @@ public abstract class BaseNDArray implements INDArray {
      */
     @Override
     public INDArray assign(Number value) {
-        data().assign(value);
+        Nd4j.getExecutioner().exec(new ScalarSet(this,value));
         return this;
     }
 
@@ -2978,20 +2977,40 @@ public abstract class BaseNDArray implements INDArray {
             }
 
             else {
-                int[] sliceShape = !Shape.isRowVectorShape(shape) ? Arrays.copyOfRange(shape, 1, shape.length) : shape();
-                int[] retStride =  !Shape.isRowVectorShape(shape) ? Arrays.copyOfRange(stride,1,stride.length) : stride();
+                if(stride(-1) == 1 && rank() > 2) {
+                    int[] sliceShape = !Shape.isRowVectorShape(shape) ? Arrays.copyOfRange(shape, 1, shape.length) : shape();
+                    //trailing ones should not count
+                    int[] retStride =  getStrides(sliceShape,ordering());
 
-                //enforce 1 x m
-                if(Shape.isRowVectorShape(sliceShape) && retStride.length < 2) {
-                    sliceShape = new int[] {1,sliceShape[0]};
-                    retStride = ArrayUtil.of(1,retStride[0]);
+                    //enforce 1 x m
+                    if(Shape.isRowVectorShape(sliceShape) && retStride.length < 2) {
+                        sliceShape = new int[] {1,sliceShape[0]};
+                        retStride = ordering() == 'f'  ?  ArrayUtil.of(retStride[0],elementStride()) : ArrayUtil.of(elementStride(),retStride[0]);
+                    }
+
+                    INDArray slice2 = create(data,
+                            sliceShape,
+                            retStride,
+                            offset, ordering);
+                    return slice2;
+                }
+                else {
+                    int[] sliceShape = !Shape.isRowVectorShape(shape) ? Arrays.copyOfRange(shape, 1, shape.length) : shape();
+                    int[] retStride =  !Shape.isRowVectorShape(shape) ? Arrays.copyOfRange(stride,1,stride.length) : stride();
+
+                    //enforce 1 x m
+                    if(Shape.isRowVectorShape(sliceShape) && retStride.length < 2) {
+                        sliceShape = new int[] {1,sliceShape[0]};
+                        retStride = ordering() == 'f'  ?  ArrayUtil.of(retStride[0],elementStride()) : ArrayUtil.of(elementStride(),retStride[0]);
+                    }
+
+                    INDArray slice2 = create(data,
+                            sliceShape,
+                            retStride,
+                            offset, ordering);
+                    return slice2;
                 }
 
-                INDArray slice2 = create(data,
-                        sliceShape,
-                        retStride,
-                        offset, ordering);
-                return slice2;
             }
 
 
@@ -3053,11 +3072,11 @@ public abstract class BaseNDArray implements INDArray {
 
 
     protected int calcoffset(int index) {
-        if(getLeadingOnes() > 0 || getTrailingOnes() > 0) {
-            if(getLeadingOnes() > 0 && getTrailingOnes() > 0) {
+        if(getLeadingOnes() > 0 || getTrailingOnes() > 0 && rank() > 2) {
+            if(getLeadingOnes() > 0 && getTrailingOnes() > 0  && rank() > 2) {
                 return offset + index;
             }
-            else
+            else if(rank() > 2)
                 return offset + index * elementStride();
 
         }
@@ -3384,10 +3403,6 @@ public abstract class BaseNDArray implements INDArray {
     }
 
 
-
-
-
-
     /**
      *
      * Return transposed version of this matrix.
@@ -3597,7 +3612,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the product along the specified dimension
      */
     @Override
-    public INDArray prod(int dimension) {
+    public INDArray prod(int...dimension) {
         return Nd4j.getExecutioner().exec(new Prod(this),dimension);
     }
 
@@ -3608,7 +3623,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the mean along the specified dimension of this ndarray
      */
     @Override
-    public INDArray mean(int dimension) {
+    public INDArray mean(int...dimension) {
         return Nd4j.getExecutioner().exec(new Mean(this),dimension);
     }
 
@@ -3619,7 +3634,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the mean along the specified dimension of this ndarray
      */
     @Override
-    public INDArray var(int dimension) {
+    public INDArray var(int...dimension) {
         return Nd4j.getExecutioner().exec(new Variance(this),dimension);
     }
 
@@ -3630,7 +3645,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the mean along the specified dimension of this ndarray
      */
     @Override
-    public INDArray max(int dimension) {
+    public INDArray max(int...dimension) {
         return Nd4j.getExecutioner().exec(new Max(this),dimension);
     }
 
@@ -3641,7 +3656,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the mean along the specified dimension of this ndarray
      */
     @Override
-    public INDArray min(int dimension) {
+    public INDArray min(int...dimension) {
         return Nd4j.getExecutioner().exec(new Min(this),dimension);
     }
 
@@ -3652,7 +3667,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the sum along the specified dimension of this ndarray
      */
     @Override
-    public INDArray sum(int dimension) {
+    public INDArray sum(int...dimension) {
         return Nd4j.getExecutioner().exec(new Sum(this),dimension);
     }
 
@@ -3664,7 +3679,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the norm1 along the specified dimension
      */
     @Override
-    public INDArray norm1(int dimension) {
+    public INDArray norm1(int...dimension) {
         return Nd4j.getExecutioner().exec(new Norm1(this),dimension);
     }
 
@@ -3676,7 +3691,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the standard deviation along a particular dimension
      */
     @Override
-    public INDArray std(int dimension) {
+    public INDArray std(int...dimension) {
         return Nd4j.getExecutioner().exec(new StandardDeviation(this),dimension);
     }
 
@@ -3688,7 +3703,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the norm2 along the specified dimension
      */
     @Override
-    public INDArray norm2(int dimension) {
+    public INDArray norm2(int...dimension) {
         return Nd4j.getExecutioner().exec(new Norm2(this),dimension);
     }
 
@@ -3938,7 +3953,7 @@ public abstract class BaseNDArray implements INDArray {
         }
 
         int[] stride = this.stride();
-        if(offsets[0] > 0 && ordering() == NDArrayFactory.C) {
+        if(ordering() == NDArrayFactory.C) {
             stride = ArrayUtil.reverseCopy(getStrides(shape,ordering));
         }
         else if(ordering() == NDArrayFactory.FORTRAN && Shape.isRowVectorShape(shape))
@@ -4349,7 +4364,7 @@ public abstract class BaseNDArray implements INDArray {
      * @return the newly permuted array
      */
     @Override
-    public INDArray permute(int[] rearrange) {
+    public INDArray permute(int...rearrange) {
         ensureNotCleanedUp();
         if (rearrange.length != shape.length)
             return dup();

@@ -17,103 +17,113 @@
  *
  */
 
-package org.nd4j.linalg.api.ops.impl.transforms;
+package org.nd4j.linalg.api.ops.impl.scalar;
 
+import org.apache.commons.math3.util.FastMath;
 import org.nd4j.linalg.api.complex.IComplexNumber;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.ops.BaseTransformOp;
+import org.nd4j.linalg.api.ops.BaseScalarOp;
 import org.nd4j.linalg.api.ops.Op;
 
 /**
- * Negative function
+ * Scalar max operation.
+ * Returns the max of an element
+ * in the ndarray of the specified number.
  *
  * @author Adam Gibson
  */
-public class Negative extends BaseTransformOp {
-
-    public Negative() {
+public class ScalarSet extends BaseScalarOp {
+    public ScalarSet() {
     }
 
-    public Negative(INDArray x, INDArray y, INDArray z, int n) {
-        super(x, y, z, n);
+    public ScalarSet(INDArray x, INDArray y, INDArray z, int n, Number num) {
+        super(x, y, z, n, num);
     }
 
-    public Negative(INDArray x, INDArray z) {
-        super(x, z);
+    public ScalarSet(INDArray x, Number num) {
+        super(x, num);
     }
 
-    public Negative(INDArray x, INDArray z, int n) {
-        super(x, z, n);
+    public ScalarSet(INDArray x, INDArray y, INDArray z, int n, IComplexNumber num) {
+        super(x, y, z, n, num);
     }
 
-    public Negative(INDArray x) {
-        super(x);
+    public ScalarSet(INDArray x, IComplexNumber num) {
+        super(x, num);
     }
 
     @Override
     public String name() {
-        return "neg";
+        return "set_scalar";
     }
 
     @Override
     public IComplexNumber op(IComplexNumber origin, double other) {
-        return origin.neg();
+        return complexNumber;
     }
 
     @Override
     public IComplexNumber op(IComplexNumber origin, float other) {
-        return origin.neg();
+        return complexNumber;
+
     }
 
     @Override
     public IComplexNumber op(IComplexNumber origin, IComplexNumber other) {
-        return origin.neg();
+        return complexNumber;
+
     }
 
     @Override
     public float op(float origin, float other) {
-        return -origin;
+        return num.floatValue();
     }
 
     @Override
     public double op(double origin, double other) {
-        return -origin;
+        return num.doubleValue();
     }
 
     @Override
     public double op(double origin) {
-        return -origin;
+        return num.doubleValue();
+
     }
 
     @Override
     public float op(float origin) {
-        return -origin;
+        return num.floatValue();
+
     }
 
     @Override
     public IComplexNumber op(IComplexNumber origin) {
-        return origin.neg();
+        return complexNumber;
     }
 
     @Override
     public Op opForDimension(int index, int dimension) {
-        INDArray xAlongDimension = x.vectorAlongDimension(index, dimension);
-
-        if (y() != null)
-            return new Negative(xAlongDimension, y.vectorAlongDimension(index, dimension), z.vectorAlongDimension(index, dimension), xAlongDimension.length());
+        if (num != null)
+            return new ScalarSet(x.vectorAlongDimension(index, dimension), num);
         else
-            return new Negative(xAlongDimension, z.vectorAlongDimension(index, dimension), x.length());
-
+            return new ScalarSet(x.vectorAlongDimension(index, dimension), complexNumber);
     }
 
     @Override
     public Op opForDimension(int index, int... dimension) {
-        INDArray xAlongDimension = x.tensorAlongDimension(index, dimension);
-
-        if (y() != null)
-            return new Negative(xAlongDimension, y.tensorAlongDimension(index, dimension), z.tensorAlongDimension(index, dimension), xAlongDimension.length());
+        if (num != null)
+            return new ScalarSet(x.tensorAlongDimension(index, dimension), num);
         else
-            return new Negative(xAlongDimension, z.tensorAlongDimension(index, dimension), x.length());
+            return new ScalarSet(x.tensorAlongDimension(index, dimension), complexNumber);
+    }
+
+    @Override
+    public void init(INDArray x, INDArray y, INDArray z, int n) {
+        super.init(x, y, z, n);
+        if (num != null)
+            this.extraArgs = new Object[]{num};
+        else
+            this.extraArgs = new Object[]{complexNumber};
 
     }
 }
