@@ -106,10 +106,14 @@ object Nd4jFuncs {
         val crossProductRanges = for { x <- rowRange; y <- columnRange} yield (x, y)
         val block = crossProductRanges.map(pair => largeArray.getDouble(pair._1, pair._2))
         val numNonZero = block.count(p => p != 0)
-        val sum = block.sum
-        reducedMatrix.put(row, col, sum / numNonZero)
+        val avg = if (numNonZero > 0) (block.sum / numNonZero) else 0.0
+        reducedMatrix.put(row, col, avg)
       }
     }
     reducedMatrix
+  }
+
+  def LessThanOrEqualMask(value : Double): Unit = {
+
   }
 }

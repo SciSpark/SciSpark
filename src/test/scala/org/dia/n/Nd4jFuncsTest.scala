@@ -88,9 +88,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
    */
   test("ReadingKNMIDimensions") {
         val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
-
-
-        val ExpectedType = Nd4j.zeros(Array(240, 1, 201, 194))
+        val ExpectedType = Nd4j.zeros(240, 1, 201, 194)
         val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
         println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
