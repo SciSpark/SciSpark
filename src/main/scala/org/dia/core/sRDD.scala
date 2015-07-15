@@ -48,8 +48,8 @@ case object ND4J extends ArrayLib {
 
 // TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
-                        datasets: mutable.HashMap[_, _],
-                        callback: (Any, Any) => ListBuffer[String],
+                        datasets: List[DataObject],
+                        partitioner: (Any) => List[List[T]],
                         varName: String,
                         arrayLib: ArrayLib)
   extends RDD[T](sc, Nil) with Logging {
@@ -60,20 +60,10 @@ class sRDD[T: ClassTag](sc: SparkContext,
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    val theSplit = split.asInstanceOf[sRDDPartition]
-    arrayLib match {
-      case ND4J => return getNd4jIterator(theSplit)
-      case BREEZE => return getBreezeIterator(theSplit)
-      case _ => throw new IllegalArgumentException("Array library not supported.")
-    }
+    getIterator(split.asInstanceOf[sRDDPartition])
   }
 
-  /**
-   * Gets an Nd4j iterator class
-   * @param theSplit
-   * @return
-   */
-  def getNd4jIterator(theSplit: sRDDPartition): Iterator[T] = {
+  def getIterator(theSplit: sRDDPartition): Iterator[T] = {
     val iterator = new Iterator[T] {
       var counter = 0
 
@@ -81,43 +71,10 @@ class sRDD[T: ClassTag](sc: SparkContext,
         counter < theSplit.dataset.length
       }
 
-      override def next: T = {
-
-        println(theSplit.dataset(counter))
-        val tensor = Nd4jFuncs.getNetCDFNDVars(theSplit.dataset(counter), varName)
+      override def next(): T = {
+        val tensor = theSplit.dataset(counter).asInstanceOf[DataObject].load(varName)
         counter += 1
-        (theSplit.partId, tensor).asInstanceOf[T]
-      }
-    }
-    iterator
-  }
-
-  /**
-   * Gets a Breeze iterator
-   * @param theSplit
-   * @return
-   */
-  def getBreezeIterator(theSplit: sRDDPartition): Iterator[T] = {
-    val iterator = new Iterator[T] {
-      var counter = 0
-
-      override def hasNext: Boolean = {
-        counter < theSplit.dataset.length
-      }
-
-      override def next: T = {
-        var resultHashMap = new mutable.HashMap[String, ListBuffer[DenseMatrix[Double]]]()
-        var readings = new ListBuffer[DenseMatrix[Double]]
-        //TODO better error handling
-        for (elem: String <- theSplit.dataset) {
-          val netcdfFile = NetCDFUtils.loadNetCDFDataSet(elem)
-          val dimensions = NetCDFUtils.getDimensionSizes(netcdfFile, varName)
-          val two2dArray = BreezeFuncs.create2dArray(dimensions, netcdfFile, varName)
-          readings += two2dArray
-        }
-        resultHashMap.put(theSplit.partId, readings)
-        counter += 1
-        (resultHashMap).asInstanceOf[T]
+        new DataObject(null, tensor).asInstanceOf[T]
       }
     }
     iterator
@@ -132,9 +89,10 @@ class sRDD[T: ClassTag](sc: SparkContext,
    */
   override def getPartitions: Array[Partition] = {
     var pos = 0
-    val array = new Array[Partition](datasets.keySet.size)
-    for ((key, value) <- datasets) {
-      array(pos) = new sRDDPartition(pos, key.toString, callback(key, value))
+    val array = new Array[Partition](datasets.length)
+    val listOfLists = partitioner(datasets)
+    for (list <- listOfLists) {
+      array(pos) = new sRDDPartition(pos, list)
       pos += 1
     }
     array

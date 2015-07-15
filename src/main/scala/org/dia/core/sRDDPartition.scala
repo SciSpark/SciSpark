@@ -20,14 +20,14 @@ package org.dia.core
 import org.apache.spark.Partition
 
 import scala.collection.mutable.ListBuffer
+import scala.reflect.ClassTag
 
 /**
  * Created by marroquin on 7/13/15.
  */
-class sRDDPartition (
+class sRDDPartition[T: ClassTag] (
                               idx: Int,
-                              val partId: String,
-                              val dataset: ListBuffer[String]
+                              val dataset: List[T]
                               ) extends Partition {
   /**
    * Partition index
@@ -41,7 +41,6 @@ class sRDDPartition (
   override def toString() = {
     val sb = new StringBuilder
     sb.append("{idx:").append(idx).append(",")
-    sb.append("partId:").append(partId).append(",")
     sb.append("urls:").append(dataset).append("}")
     sb.toString
   }
