@@ -1,15 +1,9 @@
 package org.dia.core
 
-import java.util
-
 import _root_.breeze.linalg.DenseMatrix
-import org.dia.TRMMUtils.{HourlyTrmm, OpenDapTRMMURLGenerator}
-import org.dia.core.singleUrl.{sciBreezeRDD, sciNd4jRDD}
-import org.joda.time.DateTime
-import org.nd4j.linalg.api.ndarray.INDArray
+import org.dia.TRMMUtils.HourlyTrmm
 import org.scalatest.FunSuite;
 
-import scala.collection.generic.MutableMapFactory
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, HashMap}
 import scala.io.Source
@@ -20,29 +14,26 @@ import scala.io.Source
  */
 class sRddTest extends FunSuite  {
   test("SimplePartitionScheme") {
+    val sc = SparkTestConstants.sc
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-//    println(dataUrls.toMap[String, String])
-    //and now we will construct a map using the list of settings
     var cnt = -1
-    val dataMapping = dataUrls.map(elem => {cnt+=1; (cnt, elem);}).toMap
-    //the above codes are similar to the first example, except we using the map function to convert the settings list into a list of tuple.
-
-    println(dataMapping)
-    assert(true)
-//    val datasetMapping: Map[AnyVal, Any] = datasetUrls.foreach(element => (0, element)).asInstanceOf[Map[AnyVal, Any]]
-//    datasetMapping.keys.foreach(k => println(datasetMapping.get(k)))
+    val dataMapping = new mutable.HashMap[Int, String]()
+    dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
+    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
+    println()
+    println(sRdd.collect().length)
+    println()
+    sc.stop
   }
 
   test("GroupingByDayPartitioning") {
     val dataMapping = HourlyTrmm.generateTrmmDaily(1999)
-//    for((key, value) <- dataMapping) {
-//      println(key.toString("yyyy-MM-dd") + "=>" + value)
-//    }
     val sc = SparkTestConstants.sc
-    val sRdd = new sciBreezeRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation")
-    println("]]]]]]]")
+//    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", BREEZE)
+    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
+    println()
     println(sRdd.collect().length)
-    println("]]]]]]]")
+    println()
     sc.stop
   }
 
@@ -106,11 +97,11 @@ class sRddTest extends FunSuite  {
   }
 
   test("testOpenDapURLFile") {
-    val sciContext = SparkTestConstants.sc
-    val srdd = sciContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
-
-    val collected = srdd.collect
-    collected.map(p => println(p))
+//    val sciContext = SparkTestConstants.sc
+//    val srdd = sciContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+//
+//    val collected = srdd.collect
+//    collected.map(p => println(p))
     assert(true)
   }
 }
