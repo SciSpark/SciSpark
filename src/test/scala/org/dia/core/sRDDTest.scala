@@ -2,6 +2,7 @@ package org.dia.core
 
 import _root_.breeze.linalg.DenseMatrix
 import org.dia.TRMMUtils.HourlyTrmm
+import org.nd4j.linalg.api.ndarray.INDArray
 import org.scalatest.FunSuite;
 
 import scala.collection.mutable
@@ -19,7 +20,7 @@ class sRddTest extends FunSuite  {
     var cnt = -1
     val dataMapping = new mutable.HashMap[Int, String]()
     dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
-    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
+    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
     println()
     println(sRdd.collect().length)
     println()
@@ -30,14 +31,12 @@ class sRddTest extends FunSuite  {
     val dataMapping = HourlyTrmm.generateTrmmDaily(1999)
     val sc = SparkTestConstants.sc
 //    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", BREEZE)
-    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
+    val sRdd = new sRDD[HashMap[String, INDArray]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
     println()
     println(sRdd.collect().length)
     println()
     sc.stop
   }
-
-
 
   test("GroupingByMonthPartitioning") {
     var dataUrls = HourlyTrmm.generateTrmmDaily(1999)

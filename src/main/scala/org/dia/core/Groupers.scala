@@ -40,5 +40,14 @@ object Groupers {
     val actualKey = key.asInstanceOf[DateTime]
     actualValue
   }
+
+  //TODO better name?
+  def mapUrls(key:Any, value:Any) : ListBuffer[String] = {
+    var urls = new ListBuffer[String]
+    val actualKey = key.asInstanceOf[Int]
+    val actualValue = value.asInstanceOf[String]
+    urls+=actualValue
+    urls
+  }
 }
 

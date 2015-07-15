@@ -69,8 +69,8 @@ object Nd4jFuncs {
   def getNetCDFNDVars(netcdfFile: NetcdfDataset, variable: String): INDArray = {
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val shape = NetCDFUtils.getDimensionSizes(netcdfFile, variable).toArray.sortBy(_._1).map(_._2)
-
-    Nd4j.create(coordinateArray, shape)
+    val ar = Nd4j.create(coordinateArray, shape)
+    ar
   }
 
   /**
