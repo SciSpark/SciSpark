@@ -109,29 +109,37 @@ object NetCDFUtils {
 
   /**
    * Gets the dimension sizes from a list of Dimension
+   * Dimension[1] -> rows, latitude
+   * Dimension[2] -> cols, longitude
+   * Other dimensions start at index 3
    * @param netcdfFile the NetcdfDataSet to read from
    * @param variable the variable array to extract
    * @return
    */
   def getDimensionSizes(netcdfFile: NetcdfDataset, variable: String): mutable.HashMap[Int, Int] = {
-
+    //TODO verify if the variable name actually exists
     val dimensions = netcdfFile.findVariable(variable).getDimensions
     val it = dimensions.iterator
-
     val dSizes = new mutable.HashMap[Int, Int]()
-
     var iterate = 3
+
     while (it.hasNext) {
       val d = it.next()
-      if(TRMMUtils.Constants.TRMM_Y_AXIS_NAMES.contains(d.getName)){
+      println(d)
+      if(TRMMUtils.Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)){
         dSizes.put(1, d.getLength)
-      } else if( TRMMUtils.Constants.TRMM_X_AXIS_NAMES.contains(d.getName)){
+      } else if( TRMMUtils.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)){
         dSizes.put(2, d.getLength)
       } else {
         dSizes.put(iterate, d.getLength)
         iterate += 1
       }
     }
+    if (dSizes.get(1).equals(None))
+      LOG.warn("No X-axis dimension found.")
+    if (dSizes.get(2).equals(None))
+      LOG.warn("No Y-axis dimension found.")
+    LOG.debug("Dimensions found: %s".format(dSizes.toStream))
     dSizes
   }
 }

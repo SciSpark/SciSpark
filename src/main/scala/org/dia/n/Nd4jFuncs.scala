@@ -41,8 +41,8 @@ object Nd4jFuncs {
   def getNetCDFTRMMVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
-    val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_Y_AXIS_NAMES(0))
-    val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, TRMM_X_AXIS_NAMES(0))
+    val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
+    val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val NDArray = Nd4j.create(coordinateArray, Array(rowDim, columnDim))

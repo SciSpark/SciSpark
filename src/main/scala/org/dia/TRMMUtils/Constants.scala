@@ -25,10 +25,9 @@ object Constants {
   // TODO find a better way to retrieve the variables per dataSet
   val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "data", "ncml" -> "TotCldLiqH2O_A")
   // potential names for the different axis of the grid that is present in netcdf files
-  val TRMM_Y_AXIS_NAMES = Array("rows", "nlat")
-  val TRMM_X_AXIS_NAMES = Array("cols", "nlon")
-
-
+  val X_AXIS_NAMES = Array("x", "rlat", "rlats", "lat", "lats", "rows", "nlat", "latitude", "latitudes")
+  val Y_AXIS_NAMES = Array("y", "rlon", "rlons", "lon", "lons", "cols", "nlon", "longitude", "longitudes")
+  val TIME_NAMES = Array("time", "times", "date", "dates", "julian")
 
   // TRMM default row dimension size
   val DEFAULT_TRMM_ROW_SIZE = 400

@@ -57,10 +57,10 @@ object Main {
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
      */
 
-    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jFuncs.reduceResolution(largeArray, 5)).collect
-    val MaskedArray = LowResolutionArray.map(array => BooleanIndexing.applyWhere(array, Conditions.lessThanOrEqual(241.toDouble), Identity))
+//    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jFuncs.reduceResolution(largeArray, 5)).collect
+//    val MaskedArray = LowResolutionArray.map(array => BooleanIndexing.applyWhere(array, Conditions.lessThanOrEqual(241.toDouble), Identity))
     //val collected = HighResolutionArray.collect
-    MaskedArray.map(p => println(p))
+//    MaskedArray.map(p => println(p))
   }
 }
 
