@@ -81,8 +81,6 @@ class Main$BreezePerformanceTest extends FunSuite {
       assert(slice1(::, 1) == DenseVector(14, 15, 16))
       assert(slice1(::, 1 to 2) == DenseMatrix((14, 20), (15, 21), (16, 22)))
     }
-
-
   }
 
 }

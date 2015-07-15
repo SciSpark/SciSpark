@@ -25,10 +25,10 @@ import org.scalatest.{FunSuite, Ignore}
  * The Nd4j Performance Tests
  * Created by rahulsp on 7/7/15.
  */
-@Ignore
 class Main$Nd4jPerformanceTest extends FunSuite {
 
-  test("ND4JOps2dTest") {
+  test("ND4J.element.wise.test") {
+    println("ND4J.element.wise.test")
     (1 to 100).foreach { p =>
       val m1 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
       val m2 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
@@ -37,6 +37,22 @@ class Main$Nd4jPerformanceTest extends FunSuite {
        */
       val start = System.nanoTime()
       val m3 = m1 - m2
+      val stop = System.nanoTime()
+      println(stop - start)
+    }
+    assert(true)
+  }
+
+  test("ND4J.vector.wise.test") {
+    println("ND4J.vector.wise.test")
+    (1 to 100).foreach { p =>
+      val m1 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
+      val m2 = Nd4j.create(p * 1000 * p * 1000).reshape(p * 1000, p * 1000)
+      /**
+       * Vector subtraction
+       */
+      val start = System.nanoTime()
+      val m3 = m1.mmul(m2)
       val stop = System.nanoTime()
       println(stop - start)
     }

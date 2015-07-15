@@ -1,5 +1,3 @@
-package org.dia.TRMMUtils
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,6 +15,9 @@ package org.dia.TRMMUtils
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.dia.TRMMUtils
+
+import java.nio.file.{Files, Paths}
 
 import org.scalatest.{FunSuite, Ignore}
 
@@ -27,8 +28,8 @@ import org.scalatest.{FunSuite, Ignore}
 class OpenDapTRMMURLGenerator_Test extends FunSuite {
 
   test("testLinkGeneration") {
-//    OpenDapTRMMURLGenerator.run(false, "testLinkfile.txt")
-//    assert(Files.exists(Paths.get("testLinkfile.txt")))
+    OpenDapTRMMURLGenerator.run(false, "testLinkfile.txt")
+    assert(Files.exists(Paths.get("testLinkfile.txt")))
   }
 
 }
