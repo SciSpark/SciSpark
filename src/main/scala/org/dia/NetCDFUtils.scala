@@ -128,7 +128,7 @@ object NetCDFUtils {
 
     while (it.hasNext) {
       val d = it.next()
-      println(d)
+      //TODO verify how the names map to indexes
       if(TRMMUtils.Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)){
         dSizes.put(2, d.getLength)
       } else if( TRMMUtils.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)){

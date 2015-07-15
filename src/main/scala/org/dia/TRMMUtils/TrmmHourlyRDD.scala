@@ -18,11 +18,12 @@
 package org.dia.b
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.rdd.RDD
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
 import org.dia.NetCDFUtils
-import org.joda.time.DateTime
 import org.dia.TRMMUtils._
+import org.joda.time.DateTime
+
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
