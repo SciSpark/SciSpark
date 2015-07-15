@@ -46,8 +46,9 @@ case object ND4J extends ArrayLib {
   val name = "nd4j"
 }
 
+// TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
-                                 datasets: mutable.HashMap[_, _],
+                                 datasets: mutable.HashMap[_,_],
                                  callback: (Any, Any) => ListBuffer[String],
                                  varName: String,
                                  arrayLib: ArrayLib)
