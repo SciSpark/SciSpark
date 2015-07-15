@@ -18,10 +18,13 @@ package org.dia.core
 
 import java.util
 
+import breeze.linalg.DenseMatrix
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.{Partition, TaskContext, Logging, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.dia.core.singleUrl.{sRDDPartition, sciBreezeRDD, sciNd4jRDD}
+import org.dia.NetCDFUtils
+import org.dia.b.BreezeFuncs
+import org.dia.n.Nd4jFuncs
 import org.joda.time.DateTime
 
 import scala.collection.mutable
@@ -43,7 +46,7 @@ case object ND4J extends ArrayLib {
   val name = "nd4j"
 }
 
-abstract class sRDD[T: ClassTag](sc: SparkContext,
+class sRDD[T: ClassTag](sc: SparkContext,
                                  datasets: mutable.HashMap[_, _],
                                  callback: (Any, Any) => ListBuffer[String],
                                  varName: String,
@@ -53,22 +56,69 @@ abstract class sRDD[T: ClassTag](sc: SparkContext,
   /**
    * :: DeveloperApi ::
    * Implemented by subclasses to compute a given partition.
+   * Computes the iterator needed according to the array lib needed.
    */
-  @DeveloperApi
-  def compute(split: Partition, context: TaskContext): Iterator[T]
+  def compute(split: Partition, context: TaskContext): Iterator[T] = {
+    val theSplit = split.asInstanceOf[sRDDPartition]
+    arrayLib match {
+          case ND4J => return getNd4jIterator(theSplit)
+          case BREEZE => return getBreezeIterator(theSplit)
+          case _ => throw new IllegalArgumentException("Array library not supported.")
+        }
+  }
 
   /**
-   * Return a new RDD containing only the elements that satisfy a predicate.
+   * Gets an Nd4j iterator class
+   * @param theSplit
+   * @return
    */
-//  def mapOneUrlPartition(): RDD[T] = {
-//    arrayLib match {
-//            case ND4J => new sciNd4jRDD[T](sc, datasets, varName)
-//      case BREEZE => new sciBreezeRDD[T](sc, datasets, callback, varName)
-//      case _ => throw new IllegalArgumentException("Array library not supported.")
-//    }
-//
-//  }
+  def getNd4jIterator(theSplit:sRDDPartition ): Iterator[T] = {
+    val iterator = new Iterator[T] {
+      var counter = 0
 
+      override def hasNext: Boolean = {
+        counter < theSplit.dataset.length
+      }
+
+      override def next: T = {
+                val tensor = Nd4jFuncs.getNetCDFNDVars(theSplit.dataset(counter), varName)
+                counter += 1
+                tensor.asInstanceOf[T]
+      }
+    }
+    iterator
+  }
+
+  /**
+   * Gets a Breeze iterator
+   * @param theSplit
+   * @return
+   */
+  def getBreezeIterator(theSplit:sRDDPartition ): Iterator[T] = {
+    val iterator = new Iterator[T] {
+      var counter = 0
+
+      override def hasNext: Boolean = {
+        counter < theSplit.dataset.length
+      }
+
+      override def next: T = {
+        var resultHashMap = new mutable.HashMap[String,ListBuffer[DenseMatrix[Double]]]()
+        var readings = new ListBuffer[DenseMatrix[Double]]
+        //TODO better error handling
+        for(elem :String <- theSplit.dataset) {
+          val netcdfFile = NetCDFUtils.loadNetCDFDataSet(elem)
+          val dimensions = NetCDFUtils.getDimensionSizes(netcdfFile, varName)
+          val two2dArray = BreezeFuncs.create2dArray(dimensions, netcdfFile, varName)
+          readings+=two2dArray
+        }
+        resultHashMap.put(theSplit.partId, readings)
+        counter += 1
+        (resultHashMap).asInstanceOf[T]
+      }
+    }
+    iterator
+  }
   /**
    *
    * Returns the set of partitions in this RDD. Each partition represents a single URLs.

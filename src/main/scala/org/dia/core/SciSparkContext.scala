@@ -20,7 +20,7 @@ package org.dia.core
 
 import org.apache.spark.SparkContext
 import org.dia.NetCDFUtils
-import org.dia.core.singleUrl.sciNd4jRDD
+//import org.dia.core.singleUrl.sciNd4jRDD
 import org.nd4j.linalg.api.ndarray.INDArray
 
 import scala.io.Source
@@ -46,13 +46,13 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
    * @param minPartitions the minimum number of partitions
    * @return
    */
-    def OpenDapURLFile(path: String,
-                       varName : String,
-                       minPartitions: Int = defaultMinPartitions) : sciNd4jRDD[INDArray] = {
+//    def OpenDapURLFile(path: String,
+//                       varName : String,
+//                       minPartitions: Int = defaultMinPartitions) : sciNd4jRDD[INDArray] = {
 
 //      val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
 //      new sciNd4jRDD[INDArray](this, datasetUrls, varName)
-    null
-    }
+//    null
+//    }
 
 }

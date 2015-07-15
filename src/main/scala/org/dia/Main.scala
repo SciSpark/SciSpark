@@ -51,7 +51,7 @@ object Main {
     //val cores = Runtime.getRuntime().availableProcessors() - 1;
     //TODO the number of threads should be configured at cluster level
     val scisparkContext = new SciSparkContext("local[4]", "test")
-    val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+//    val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")

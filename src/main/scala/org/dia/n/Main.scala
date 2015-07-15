@@ -40,14 +40,6 @@ object Main {
     // and the partition comes from the file name itself
     //val trmmRDD = new TrmmHourlyRDD(sc, Constants.TRMM_HOURLY_URL, 1997, 1997)
     // print content
-    println()
-    println()
-    println()
-    //println(trmmRDD.count())
-    println()
-    println()
-    println()
-
 //        val HighResolutionArray = urlRDD.map(url => Nd4jFuncs.getNd4jNetCDFVars(url, DATASET_VARS.get("ncml").toString))
 //        val nanoAfter = System.nanoTime()
 //        val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jReduceResolution(largeArray, 5)).collect
