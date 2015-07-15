@@ -20,7 +20,7 @@ class sRddTest extends FunSuite  {
     var cnt = -1
     val dataMapping = new mutable.HashMap[Int, String]()
     dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
-    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
+    val sRdd = new sRDD[Tuple2[String, INDArray]] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
 //val sRdd = new sRDD[DataObjects(String, DenseMatrix[Double])] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
 //    val sRdd = new sRDD[DataObjects] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
 

@@ -105,8 +105,8 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
    */
   test("ReadingAIRSDimensions") {
     val tensor = Nd4jFuncs.getNetCDFNDVars(airslvl3, TOTAL_LIQH20)
-    assert(tensor.rows() == 180)
-    assert(tensor.columns() == 360)
+    assert(tensor.rows() == 360)
+    assert(tensor.columns() == 180)
   }
 
   test("ndf4jReduceResolutionAvrgTest") {

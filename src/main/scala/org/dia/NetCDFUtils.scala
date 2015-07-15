@@ -68,9 +68,6 @@ object NetCDFUtils {
         println("Error while converting a netcdf.ucar.ma2 to a 1D array")
 
     }
-    println("++++++++++++")
-    coordinateArray.map(e => print(e))
-    println("++++++++++++")
     coordinateArray
   }
 
