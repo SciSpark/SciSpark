@@ -21,7 +21,7 @@ import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.TRMMUtils.Constants._
 import org.dia.core.SciSparkContext
-import org.dia.n.Nd4jFuncs
+import org.dia.n.Nd4jLib
 import org.jblas.DoubleMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j

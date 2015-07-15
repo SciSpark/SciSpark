@@ -118,7 +118,7 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
           logInfo("Reading from %s".format(n))
           try {
             var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile, varName)
-            twoDarray = BreezeFuncs.create2dArray(dimensionSizes, netCdfFile, varName)
+            twoDarray = BreezeLib.create2dArray(dimensionSizes, netCdfFile, varName)
           } catch {
             case e: Exception => logError("ERROR reading variable %s from %s".format(varName, n))
           }

@@ -19,6 +19,7 @@ package org.dia.n
 
 import org.dia.NetCDFUtils
 import org.dia.TRMMUtils.Constants._
+import org.dia.core.ArrayLib
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import ucar.nc2.dataset.NetcdfDataset
@@ -30,15 +31,16 @@ import scala.language.implicitConversions
  * The Nd4j Functional operations
  * Created by rahulsp on 7/6/15.
  */
-object Nd4jFuncs {
+object Nd4jLib extends ArrayLib[INDArray]{
 
+  val name : String = "nd4j"
   /**
    * Gets an NDimensional Array of ND4j
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getNetCDFTRMMVars(url: String, variable: String): INDArray = {
+  def LoadNetCDFTRMMVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
@@ -55,7 +57,7 @@ object Nd4jFuncs {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getNetCDFNDVars(url: String, variable: String): INDArray = {
+  def LoadNetCDFNDVars(url: String, variable: String): INDArray = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     getNetCDFNDVars(netcdfFile, variable)
   }

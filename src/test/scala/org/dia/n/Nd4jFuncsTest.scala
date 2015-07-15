@@ -25,7 +25,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex
 /**
  * Tests for the Breeze functions
  */
-class Nd4jFuncsTest extends org.scalatest.FunSuite {
+class Nd4JLibTest extends org.scalatest.FunSuite {
 
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
   val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
@@ -54,7 +54,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = Nd4jFuncs.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jLib.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -74,7 +74,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val resDenseMatrix = Nd4jFuncs.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val resDenseMatrix = Nd4jLib.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
 
     assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
     assert(ExpectedClass.rows == resDenseMatrix.rows)
@@ -92,7 +92,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
         val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
         println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
-    val fdArray = Nd4jFuncs.getNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
+    val fdArray = Nd4jLib.LoadNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
 
         assert(fdArray.getClass.equals(ExpectedType.getClass))
 
@@ -104,7 +104,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
    * test for creating a N-Dimension array from AIRS data
    */
   test("ReadingAIRSDimensions") {
-    val tensor = Nd4jFuncs.getNetCDFNDVars(airslvl3, TOTAL_LIQH20)
+    val tensor = Nd4jLib.LoadNetCDFNDVars(airslvl3, TOTAL_LIQH20)
     assert(tensor.rows() == 360)
     assert(tensor.columns() == 180)
   }
@@ -116,7 +116,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val reducedWidth = squareSize / reductionSize
     val testMatrix = Nd4j.create(squareSize, squareSize)
 
-    val resultMatrix = Nd4jFuncs.reduceResolution(testMatrix, reductionSize)
+    val resultMatrix = Nd4jLib.reduceResolution(testMatrix, reductionSize)
 
     for (i <- 0 to (reducedWidth - 1)) {
       for (j <- 0 to (reducedWidth - 1)) {
@@ -142,7 +142,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
     val resDenseMatrix = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-    val reducedMatrix = Nd4jFuncs.reduceResolution(resDenseMatrix, BLOCK_SIZE)
+    val reducedMatrix = Nd4jLib.reduceResolution(resDenseMatrix, BLOCK_SIZE)
 
 
     assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))

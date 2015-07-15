@@ -20,6 +20,7 @@ package org.dia.b
 import breeze.linalg.{DenseMatrix, sum}
 import org.dia.NetCDFUtils
 import org.dia.TRMMUtils.Constants._
+import org.dia.core.ArrayLib
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
@@ -31,18 +32,16 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-object BreezeFuncs {
+object BreezeLib extends ArrayLib[DenseMatrix[Double]]{
 
-  // Class logger
-  val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-
+  val name : String = "breeze"
   /**
    * Breeze implementation
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def getNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def LoadNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
@@ -53,21 +52,22 @@ object BreezeFuncs {
     matrix
   }
 
-  /**
-   * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
-   * @param url where the netcdf file is located
-   * @param variable the NetCDF variable to search for
-   * @return
-   */
-  def getNetCDFNDVars (url : String, variable : String) : Array[DenseMatrix[Double]] = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
-    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
-    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    // we can only do this because the height dimension is 1
-    val j = NDArray(0)(0).flatMap(f => f)
-    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-    any
+//  /**
+//   * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
+//   * @param url where the netcdf file is located
+//   * @param variable the NetCDF variable to search for
+//   * @return
+//   */
+  def LoadNetCDFNDVars (url : String, variable : String) : DenseMatrix[Double] = {
+//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+//    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
+//    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
+//    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
+//    // we can only do this because the height dimension is 1
+//    val j = NDArray(0)(0).flatMap(f => f)
+//    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
+//    any
+    null
   }
 
   /**
@@ -76,7 +76,7 @@ object BreezeFuncs {
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray: DenseMatrix[Double], blockSize: Int): DenseMatrix[Double] = {
+  def reduceResolution(largeArray : DenseMatrix[Double], blockSize: Int): DenseMatrix[Double] = {
     val numRows = largeArray.rows
     val numCols = largeArray.cols
 
@@ -117,32 +117,6 @@ object BreezeFuncs {
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
         null
     }
-  }
-
-  /**
-   * Creates a 4D dimensional array from a list of dimensions
-   * Note that this as return type gets boxed into Array[Array[Array[Array[Double]]]]
-   *
-   * TODO :: Find a better way to index the dimensions. However we may never need to use this function
-   * @param dimensionSizes hashmap of (dimension, size) pairs
-   * @param netcdfFile the NetcdfDataset to read
-   * @param variable the variable array to extract
-   * @return Array.ofDim[x,y,z,u]
-   */
-  def create4dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): Array[Array[Array[Array[Float]]]] = {
-
-    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
-
-    val sortedDimensions = dimensionSizes.toArray.sortBy(_._1).map(_._2)
-    val x = sortedDimensions(0)
-    val y = sortedDimensions(1)
-    val z = sortedDimensions(2)
-    val u = sortedDimensions(3)
-
-    val ArrayClass = Array.ofDim[Float](x, y, z, u)
-    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[Array[Array[Array[Array[Float]]]]]
-
-    NDArray
   }
 }
 
