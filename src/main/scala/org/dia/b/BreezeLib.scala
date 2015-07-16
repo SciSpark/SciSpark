@@ -22,6 +22,7 @@ import breeze.linalg.{NumericOps, ImmutableNumericOps, DenseMatrix, sum}
 import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import org.dia.core.ArrayLib
+import org.nd4j.linalg.api.ndarray.INDArray
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
@@ -33,9 +34,16 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-object BreezeLib extends ArrayLib[DenseMatrix[Double]] {
+class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
   val name : String = "breeze"
+  var denseMatrix: DenseMatrix[Double]
+
+  def this(array : DenseMatrix[Double]) {
+    this
+    denseMatrix = array
+  }
+
   /**
    * Breeze implementation for loading TRMM data
    * @param url where the netcdf file is located
@@ -121,5 +129,7 @@ object BreezeLib extends ArrayLib[DenseMatrix[Double]] {
         null
     }
   }
+
+  override implicit def +(array: DenseMatrix[Double]): DenseMatrix[Double] = ???
 }
 
