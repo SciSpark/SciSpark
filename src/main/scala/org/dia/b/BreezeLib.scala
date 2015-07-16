@@ -124,7 +124,6 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
     } catch {
       case e :
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
-        null
     }
   }
 
