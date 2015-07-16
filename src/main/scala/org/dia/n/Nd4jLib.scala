@@ -37,7 +37,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
 
   val name : String = "nd4j"
   var iNDArray : INDArray
-  this(array : INDArray) {
+  def this(array : INDArray) {
     this
     iNDArray = array
   }
