@@ -50,15 +50,14 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def loadNetCDFTRMMVars (url : String, variable : String) : Unit = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    val matrix = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
-    matrix
+    denseMatrix = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
   }
 
   /**
@@ -69,16 +68,15 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @return
    *
    */
-  def loadNetCDFNDVars (url : String, variable : String) : DenseMatrix[Double] = {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-//    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
-//    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
-//    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-//    // we can only do this because the height dimension is 1
-//    val j = NDArray(0)(0).flatMap(f => f)
-//    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-//    any
-    null
+  def loadNetCDFNDVars (url : String, variable : String) : Unit = {
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
+    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
+    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
+    // we can only do this because the height dimension is 1
+    val j = NDArray(0)(0).flatMap(f => f)
+    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
+    denseMatrix = any
   }
 
   /**
@@ -87,7 +85,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray : DenseMatrix[Double], blockSize: Int): DenseMatrix[Double] = {
+  def reduceResolution(largeArray : DenseMatrix[Double], blockSize: Int): BreezeLib = {
     val numRows = largeArray.rows
     val numCols = largeArray.cols
 
@@ -106,7 +104,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
         reducedMatrix
       }
     }
-    reducedMatrix
+    new BreezeLib(reducedMatrix)
   }
 
   /**
@@ -116,13 +114,13 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): DenseMatrix[Double] = {
+  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): Unit = {
     //TODO make sure that the dimensions are always in the order we want them to be
     try {
       val x = dimensionSizes.get(1).get
       val y = dimensionSizes.get(2).get
       val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-      new DenseMatrix[Double](x, y, coordinateArray)
+      denseMatrix = new DenseMatrix[Double](x, y, coordinateArray)
     } catch {
       case e :
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
