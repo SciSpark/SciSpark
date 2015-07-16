@@ -93,43 +93,44 @@ class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,
   }
 
   override def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    // turning split into a split we understand
-    var splitt = split.asInstanceOf[TrmmHourlyPartition]
-    // creating our own iterator
-    val iter = new Iterator[T] {
-
-      var counter = 0
-      var hNext = true
-
-      override def hasNext: Boolean = {
-        logDebug("Iterating through element %d out of %d".format(counter, splitt.readings.length))
-        counter < splitt.readings.length
-      }
-
-      // TODO fix the class type, we know what it'll be
-      override def next(): T = {
-        // for every reading fetch array
-        var n = datasetUrl + "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
-        var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
-        var twoDarray: DenseMatrix[Double] = null
-        //        var twoDarray = DenseMatrix.zeros[Double](300, 300)
-        if (netCdfFile != null) {
-          logInfo("Reading from %s".format(n))
-          try {
-            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile, varName)
-            twoDarray = BreezeLib.create2dArray(dimensionSizes, netCdfFile, varName)
-          } catch {
-            case e: Exception => logError("ERROR reading variable %s from %s".format(varName, n))
-          }
-        }
-        counter += 1
-
-        if (counter >= splitt.readings.length)
-          hNext = false
-        (n, twoDarray).asInstanceOf[T]
-      }
-    }
-    // returning our iterator
-    iter
+//    // turning split into a split we understand
+//    var splitt = split.asInstanceOf[TrmmHourlyPartition]
+//    // creating our own iterator
+//    val iter = new Iterator[T] {
+//
+//      var counter = 0
+//      var hNext = true
+//
+//      override def hasNext: Boolean = {
+//        logDebug("Iterating through element %d out of %d".format(counter, splitt.readings.length))
+//        counter < splitt.readings.length
+//      }
+//
+//      // TODO fix the class type, we know what it'll be
+//      override def next(): T = {
+//        // for every reading fetch array
+//        var n = datasetUrl + "/" + splitt.date.getYear + "/" + "%03d".format(splitt.date.getDayOfYear) + "/" + splitt.readings(counter)
+//        var netCdfFile = NetCDFUtils.loadNetCDFDataSet(n)
+//        var twoDarray: DenseMatrix[Double] = null
+//        //        var twoDarray = DenseMatrix.zeros[Double](300, 300)
+//        if (netCdfFile != null) {
+//          logInfo("Reading from %s".format(n))
+//          try {
+//            var dimensionSizes = NetCDFUtils.getDimensionSizes(netCdfFile, varName)
+//            twoDarray = BreezeLib.create2dArray(dimensionSizes, netCdfFile, varName)
+//          } catch {
+//            case e: Exception => logError("ERROR reading variable %s from %s".format(varName, n))
+//          }
+//        }
+//        counter += 1
+//
+//        if (counter >= splitt.readings.length)
+//          hNext = false
+//        (n, twoDarray).asInstanceOf[T]
+//      }
+//    }
+//    // returning our iterator
+//    iter
+    null
   }
 }

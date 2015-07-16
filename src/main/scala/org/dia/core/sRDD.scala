@@ -49,10 +49,10 @@ class sRDD[T: ClassTag](sc: SparkContext,
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    getIterator(split.asInstanceOf[sRDDPartition])
+    getIterator(split.asInstanceOf[sRDDPartition[T]])
   }
 
-  def getIterator(theSplit: sRDDPartition): Iterator[T] = {
+  def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
 //    val iterator = new Iterator[T] {
 //      var counter = 0
 //

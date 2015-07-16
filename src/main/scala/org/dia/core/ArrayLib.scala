@@ -40,7 +40,7 @@ import scala.collection.mutable
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray: T, blockSize: Int): ArrayLib
+  def reduceResolution(largeArray: T, blockSize: Int): ArrayLib[T]
 
   /**
    * Creates a 2D array from a list of dimensions using a variable
