@@ -17,9 +17,10 @@
  */
 package org.dia.b
 
-import breeze.linalg.{DenseMatrix, sum}
-import org.dia.NetCDFUtils
+import breeze.linalg.operators.DenseMatrixOps
+import breeze.linalg.{NumericOps, ImmutableNumericOps, DenseMatrix, sum}
 import org.dia.TRMMUtils.Constants._
+import org.dia.TRMMUtils.NetCDFUtils
 import org.dia.core.ArrayLib
 import org.slf4j.Logger
 import ucar.ma2
@@ -32,16 +33,16 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-object BreezeLib extends ArrayLib[DenseMatrix[Double]]{
+object BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
   val name : String = "breeze"
   /**
-   * Breeze implementation
+   * Breeze implementation for loading TRMM data
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def LoadNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def loadNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
@@ -52,13 +53,15 @@ object BreezeLib extends ArrayLib[DenseMatrix[Double]]{
     matrix
   }
 
-//  /**
-//   * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
-//   * @param url where the netcdf file is located
-//   * @param variable the NetCDF variable to search for
-//   * @return
-//   */
-  def LoadNetCDFNDVars (url : String, variable : String) : DenseMatrix[Double] = {
+  /**
+   * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
+   * TODO :: How do we return nested DenseMatrices - given the function return type has to match T
+   * @param url where the netcdf file is located
+   * @param variable the NetCDF variable to search for
+   * @return
+   *
+   */
+  def loadNetCDFNDVars (url : String, variable : String) : DenseMatrix[Double] = {
 //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 //    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
 //    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)

@@ -19,7 +19,8 @@
 package org.dia.core
 
 import org.apache.spark.SparkContext
-import org.dia.NetCDFUtils
+import org.dia.TRMMUtils.NetCDFUtils
+
 //import org.dia.core.singleUrl.sciNd4jRDD
 import org.nd4j.linalg.api.ndarray.INDArray
 

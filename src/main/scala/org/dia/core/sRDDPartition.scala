@@ -25,9 +25,9 @@ import scala.reflect.ClassTag
 /**
  * Created by marroquin on 7/13/15.
  */
-class sRDDPartition (
+class sRDDPartition[T] (
                               idx: Int,
-                              val dataset: List[DataObject]
+                              val dataset: List[DataObject[T]]
                               ) extends Partition {
   /**
    * Partition index

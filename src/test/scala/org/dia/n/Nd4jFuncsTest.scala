@@ -17,7 +17,7 @@
  */
 package org.dia.n
 
-import org.dia.NetCDFUtils
+import org.dia.TRMMUtils.NetCDFUtils
 import org.nd4j.api.linalg.DSL._
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.indexing.NDArrayIndex

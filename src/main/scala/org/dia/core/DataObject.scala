@@ -5,20 +5,16 @@ import org.dia.n.Nd4jLib
 import org.nd4j.api.linalg.DSL._;
 import org.nd4j.linalg.api.ndarray.INDArray
 import breeze.linalg.DenseMatrix
+
+import scala.collection.mutable
+
 /**
  * Created by marroqui on 7/15/15.
  */
-class DataObject  {
-//  val metaData : Map[String, String]
-//  val array : ArrayLib
+class DataObject[T]  {
+  var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
+  val arrayLibrary : T
 
-
-//  def this(url : String, varName : String, arrayLib : ArrayLib){
-//    this
-////  arrayLib match {
-////    case ND4J
-////  }
-//  }
 
   def joinMetadata(metaData: Map[String, String], metaData1: Map[String, String]): Map[String, String] = {
     null

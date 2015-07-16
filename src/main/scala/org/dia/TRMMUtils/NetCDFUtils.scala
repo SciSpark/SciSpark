@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia
+package org.dia.TRMMUtils
 
+import org.dia.TRMMUtils
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset

@@ -20,7 +20,6 @@ package org.dia.b
 import breeze.linalg.DenseMatrix
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.dia.NetCDFUtils
 import org.dia.TRMMUtils._
 import org.joda.time.DateTime
 

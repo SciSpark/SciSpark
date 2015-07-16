@@ -22,7 +22,7 @@ import breeze.linalg.DenseMatrix
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.{Partition, TaskContext, Logging, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.dia.NetCDFUtils
+import org.dia.TRMMUtils.NetCDFUtils
 import org.dia.b.BreezeLib
 import org.dia.n.Nd4jLib
 import org.joda.time.DateTime
@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  */
 // TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
-                        datasets: List[DataObject],
+                        datasets: List[DataObject[T]],
                         partitioner: (Any) => List[List[T]],
                         varName: String
                          )

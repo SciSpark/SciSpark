@@ -1,8 +1,8 @@
 package org.dia.core
 
 import breeze.linalg.DenseMatrix
-import org.dia.NetCDFUtils
 import org.dia.TRMMUtils.Constants._
+import org.dia.TRMMUtils.NetCDFUtils
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
@@ -12,27 +12,27 @@ import scala.collection.mutable
 /**
  * Created by rahulsp on 7/15/15.
  */
-trait ArrayLib[T] {
+ trait ArrayLib[T] {
   def name : String
-
+  def array : T
   // Class logger
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
-   * Breeze implementation
+   * Loads in data given that it is a TRMM Dataset
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def LoadNetCDFTRMMVars (url : String, variable : String) : T
+  def loadNetCDFTRMMVars (url : String, variable : String) : T
 
   /**
-   * Gets an NDimensional array of Breeze's DenseMatrices from a NetCDF file
+   * Gets an NDimensional array from a NetCDF file
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def LoadNetCDFNDVars (url : String, variable : String) : T
+  def loadNetCDFNDVars (url : String, variable : String) : T
 
   /**
    * Reduces the resolution of a DenseMatrix
@@ -51,4 +51,7 @@ trait ArrayLib[T] {
    */
   def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): T
 
+  implicit def +(array : T) : T
+
+  // a + b
 }

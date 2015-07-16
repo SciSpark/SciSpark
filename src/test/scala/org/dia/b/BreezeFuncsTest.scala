@@ -18,7 +18,7 @@
 package org.dia.b
 
 import breeze.linalg.DenseMatrix
-import org.dia.NetCDFUtils
+import org.dia.TRMMUtils.NetCDFUtils
 
 /**
  * Tests for the Breeze functions
@@ -103,6 +103,7 @@ class BreezeLibTest extends org.scalatest.FunSuite {
 
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
+
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 

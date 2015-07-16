@@ -19,9 +19,8 @@ package org.dia.j
 
 import breeze.linalg.{DenseMatrix, sum}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.Constants
+import org.dia.TRMMUtils.{NetCDFUtils, Constants}
 import Constants._
-import org.dia.NetCDFUtils
 import org.jblas.DoubleMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
