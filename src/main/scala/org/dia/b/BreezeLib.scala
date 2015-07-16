@@ -37,7 +37,7 @@ import scala.language.implicitConversions
 class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
   val name : String = "breeze"
-  override var array: DenseMatrix[Double] = _
+  override var array: DenseMatrix[Double]
 
   def this(arr : DenseMatrix[Double]) {
     this
@@ -124,7 +124,6 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
     } catch {
       case e :
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
-        null
     }
   }
 

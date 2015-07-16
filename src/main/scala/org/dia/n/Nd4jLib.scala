@@ -36,7 +36,7 @@ import scala.language.implicitConversions
 class Nd4jLib extends ArrayLib[INDArray]{
 
   val name : String = "nd4j"
-  override var array: INDArray = _
+  override var array: INDArray
 
   def this(arr : INDArray) {
     this

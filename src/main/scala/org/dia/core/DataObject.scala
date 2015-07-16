@@ -11,9 +11,10 @@ import scala.collection.mutable
 /**
  * Created by marroqui on 7/15/15.
  */
-class DataObject[T]  {
+class DataObject  {
   var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
-  val arrayLibrary : T
+  val arrayLibrary : ArrayLib
+
 
 
   def joinMetadata(metaData: Map[String, String], metaData1: Map[String, String]): Map[String, String] = {
