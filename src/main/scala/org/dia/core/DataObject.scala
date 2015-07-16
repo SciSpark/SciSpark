@@ -14,9 +14,10 @@ import scala.collection.mutable
 class DataObject   {
 
   var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
-  val arrayLibrary : ArrayLib = null
+  var arrayLibrary : ArrayLib = null
 
   def this(arrayLib : ArrayLib) = {
+    this
     arrayLibrary = arrayLib
   }
 
