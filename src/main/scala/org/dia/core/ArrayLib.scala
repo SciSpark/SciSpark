@@ -40,7 +40,7 @@ import scala.collection.mutable
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray: T, blockSize: Int): T
+  def reduceResolution(largeArray: T, blockSize: Int): ArrayLib
 
   /**
    * Creates a 2D array from a list of dimensions using a variable
@@ -52,6 +52,4 @@ import scala.collection.mutable
   def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): T
 
   implicit def +(array : T) : T
-
-  // a + b
 }
