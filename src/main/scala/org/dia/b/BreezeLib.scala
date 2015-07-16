@@ -37,11 +37,11 @@ import scala.language.implicitConversions
 class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
   val name : String = "breeze"
-  var denseMatrix: DenseMatrix[Double]
+  override var array: DenseMatrix[Double] = _
 
-  def this(array : DenseMatrix[Double]) {
+  def this(arr : DenseMatrix[Double]) {
     this
-    denseMatrix = array
+    array = arr
   }
 
   /**
@@ -57,7 +57,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    denseMatrix = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
+    array = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
   }
 
   /**
@@ -120,7 +120,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
       val x = dimensionSizes.get(1).get
       val y = dimensionSizes.get(2).get
       val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-      denseMatrix = new DenseMatrix[Double](x, y, coordinateArray)
+      array = new DenseMatrix[Double](x, y, coordinateArray)
     } catch {
       case e :
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
@@ -130,5 +130,6 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
   override implicit def +(array: DenseMatrix[Double]): DenseMatrix[Double] = ???
 
+  
 }
 

@@ -36,10 +36,11 @@ import scala.language.implicitConversions
 class Nd4jLib extends ArrayLib[INDArray]{
 
   val name : String = "nd4j"
-  var iNDArray : INDArray
-  def this(array : INDArray) {
+  override var array: INDArray = _
+
+  def this(arr : INDArray) {
     this
-    iNDArray = array
+    array = arr
   }
   // TODO :: Opportunity to refactor loaders
   /**
@@ -55,7 +56,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    iNDArray = Nd4j.create(coordinateArray, Array(rowDim, columnDim))
+    array = Nd4j.create(coordinateArray, Array(rowDim, columnDim))
   }
 
   /**
@@ -66,6 +67,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
    */
   def loadNetCDFNDVars(url: String, variable: String): Unit =  {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    array = LoadNetCDFNDVars(netcdfFile, variable)
     loadNetCDFNDVars(netcdfFile, variable)
   }
 
@@ -79,7 +81,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)
-    iNDArray = Nd4j.create(coordinateArray, shape)
+    array = Nd4j.create(coordinateArray, shape)
     
   }
 
@@ -97,7 +99,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
 
-    iNDArray = Nd4j.create(coordinateArray, Array(x, y))
+    array = Nd4j.create(coordinateArray, Array(x, y))
   }
 
 
