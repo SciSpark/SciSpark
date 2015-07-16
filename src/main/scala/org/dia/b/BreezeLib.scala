@@ -50,7 +50,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFTRMMVars (url : String, variable : String) : DenseMatrix[Double] = {
+  def loadNetCDFTRMMVars (url : String, variable : String) : Unit = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
@@ -58,7 +58,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val matrix = new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0)
-    matrix
+
   }
 
   /**
@@ -87,7 +87,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray : DenseMatrix[Double], blockSize: Int): DenseMatrix[Double] = {
+  def reduceResolution(largeArray : DenseMatrix[Double], blockSize: Int): BreezeLib = {
     val numRows = largeArray.rows
     val numCols = largeArray.cols
 
@@ -106,7 +106,7 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
         reducedMatrix
       }
     }
-    reducedMatrix
+    new BreezeLib(reducedMatrix)
   }
 
   /**

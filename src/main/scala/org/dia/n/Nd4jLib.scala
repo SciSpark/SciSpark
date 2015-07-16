@@ -120,7 +120,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
         reducedMatrix.put(row, col, avg)
       }
     }
-    reducedMatrix
+    new Nd4jLib(reducedMatrix)
   }
 
 
