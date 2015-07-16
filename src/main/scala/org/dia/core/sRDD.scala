@@ -26,6 +26,7 @@ import org.dia.TRMMUtils.NetCDFUtils
 import org.dia.b.BreezeLib
 import org.dia.n.Nd4jLib
 import org.joda.time.DateTime
+import org.nd4j.linalg.api.ndarray.INDArray
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -36,10 +37,10 @@ import scala.reflect.ClassTag
  */
 // TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
-                        datasets: List[DataObject[T]],
+                        datasets: List[String],
                         partitioner: (Any) => List[List[T]],
                         varName: String,
-                        arrayLib : ArrayLib
+                        arrayLib : ArrayLib[INDArray, DenseMatrix[Double]]
                          )
 
   extends RDD[T](sc, Nil) with Logging {

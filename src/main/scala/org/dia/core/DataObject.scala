@@ -1,17 +1,15 @@
 package org.dia.core
 
-import org.dia.core.ArrayLib
-import org.dia.n.Nd4jLib
-import org.nd4j.api.linalg.DSL._;
+
+import org.apache.spark.mllib.linalg.DenseMatrix
 import org.nd4j.linalg.api.ndarray.INDArray
-import breeze.linalg.DenseMatrix
 
 import scala.collection.mutable
 
 /**
  * Created by marroqui on 7/15/15.
  */
-class DataObject (var arrayLibrary : ArrayLib)   {
+class DataObject (var arrayLibrary : ArrayLib[INDArray, DenseMatrix[Double]])   {
 
   var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
 
