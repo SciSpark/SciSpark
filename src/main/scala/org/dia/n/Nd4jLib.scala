@@ -67,7 +67,6 @@ class Nd4jLib extends ArrayLib[INDArray]{
    */
   def loadNetCDFNDVars(url: String, variable: String): Unit =  {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    array = LoadNetCDFNDVars(netcdfFile, variable)
     loadNetCDFNDVars(netcdfFile, variable)
   }
 
@@ -82,7 +81,6 @@ class Nd4jLib extends ArrayLib[INDArray]{
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)
     array = Nd4j.create(coordinateArray, shape)
-    
   }
 
   /**
