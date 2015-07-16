@@ -17,15 +17,16 @@ import scala.io.Source
  */
 class sRddTest extends FunSuite  {
   test("SimplePartitionScheme") {
-//    val sc = SparkTestConstants.sc
-//    val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-//    var cnt = -1
-//    val dataMapping = new List[DataObject]
-//    dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
+    val sc = SparkTestConstants.sc
+    val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
+    var cnt = -1
+    //TODO this has to be a list
+    val dataMapping = new HashMap[Int, String]
+    dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
 //    //val sRdd = new sRDD[Tuple2[String, INDArray]] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
 ////val sRdd = new sRDD[DataObjects(String, DenseMatrix[Double])] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
-    val sRdd = new sRDD[DataObject] (sc, dataMapping, PartitionFunction, "TotCldLiqH2O_A", BreezeLib)
-    val sRdd = new sRDD[DataObject] (sc, dataMapping, PartitionFunction, "TotCldLiqH2O_A", Nd4jLib)
+    val sRdd = new sRDD[DataObject] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", BreezeLib)
+    val sRdd = new sRDD[DataObject] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", Nd4jLib)
 
 //
 //    sRdd.filter().map(element => ND4J.re...)

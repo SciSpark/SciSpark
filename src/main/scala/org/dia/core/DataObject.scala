@@ -11,10 +11,9 @@ import scala.collection.mutable
 /**
  * Created by marroqui on 7/15/15.
  */
-class DataObject   {
+class DataObject(T: classtag)(var arrayLibrary : ArrayLib[T])   {
 
   var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
-  var arrayLibrary : ArrayLib = null
 
   def this(arrayLib : ArrayLib) = {
     this
