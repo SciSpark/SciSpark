@@ -2,6 +2,7 @@ package org.dia.core
 
 import _root_.breeze.linalg.DenseMatrix
 import org.dia.TRMMUtils.HourlyTrmm
+import org.dia.b.BreezeLib
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.scalatest.FunSuite;
 
@@ -22,7 +23,7 @@ class sRddTest extends FunSuite  {
 //    dataUrls.map(elem => {cnt+=1; dataMapping.put(cnt, elem);})
 //    //val sRdd = new sRDD[Tuple2[String, INDArray]] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
 ////val sRdd = new sRDD[DataObjects(String, DenseMatrix[Double])] (sc, dataMapping, Groupers.mapUrls, "TotCldLiqH2O_A", ND4J)
-//    val sRdd = new sRDD[DataObject] (sc, dataMapping, PartitionFunction, "TotCldLiqH2O_A", ND4J)
+    val sRdd = new sRDD[DataObject[BreezeLib]] (sc, dataMapping, PartitionFunction, "TotCldLiqH2O_A")
 //
 //    sRdd.filter().map(element => ND4J.re...)
 //    sRdd.filter().map(element => element.ndarray)

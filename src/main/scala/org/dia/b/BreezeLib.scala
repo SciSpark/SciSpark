@@ -69,14 +69,14 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
    *
    */
   def loadNetCDFNDVars (url : String, variable : String) : Unit = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
-    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
-    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
-    // we can only do this because the height dimension is 1
-    val j = NDArray(0)(0).flatMap(f => f)
-    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
-    denseMatrix = any
+//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+//    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
+//    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
+//    val NDArray = SearchVariable.copyToNDJavaArray().asInstanceOf[ArrayClass.type]
+//     we can only do this because the height dimension is 1
+//    val j = NDArray(0)(0).flatMap(f => f)
+//    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
+//    denseMatrix = any
   }
 
   /**
@@ -129,5 +129,6 @@ class BreezeLib extends ArrayLib[DenseMatrix[Double]] {
   }
 
   override implicit def +(array: DenseMatrix[Double]): DenseMatrix[Double] = ???
+
 }
 

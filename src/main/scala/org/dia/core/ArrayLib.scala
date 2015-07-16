@@ -13,8 +13,8 @@ import scala.collection.mutable
  * Created by rahulsp on 7/15/15.
  */
  trait ArrayLib[T] {
-  def name : String
-  def array : T
+  val name : String
+  val array : T
   // Class logger
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
