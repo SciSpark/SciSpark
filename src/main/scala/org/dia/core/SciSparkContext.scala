@@ -35,7 +35,6 @@ import scala.io.Source
  * Created by rahulsp on 7/8/15.
  */
 class SciSparkContext(master : String, appName : String) extends SparkContext(master, appName) {
-
   /**
    * Constructs an sRDD from a file of openDap URL's pointing to NetCDF datasets.
    *

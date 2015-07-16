@@ -38,7 +38,8 @@ import scala.reflect.ClassTag
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[DataObject[T]],
                         partitioner: (Any) => List[List[T]],
-                        varName: String
+                        varName: String,
+                        arrayLib : ArrayLib
                          )
 
   extends RDD[T](sc, Nil) with Logging {
