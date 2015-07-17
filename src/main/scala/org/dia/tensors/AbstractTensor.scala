@@ -21,7 +21,8 @@ import scala.collection.mutable
    * @return
    */
   def loadNetCDFTRMMVars (url : String, variable : String) : T
-  def convert(loadFunction : X) : T
+
+  def convert(loadFunc : (Any) => (Array[Double], Array[Int])) : T
 
   /**
    * Gets an NDimensional array from a NetCDF file

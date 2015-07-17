@@ -32,10 +32,15 @@ import scala.language.implicitConversions
  * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jTensor(val iNDArray: INDArray) extends AbstractTensor {
+class Nd4jTensor(t : (Any) => (Array[Double], Array[Int])) extends AbstractTensor {
+  val tensor : INDArray = convert(t)
   type T = Nd4jTensor
   val name : String = "nd4j"
 
+  def convert(loadFunc : (Any) => (Array[Double], Array[Int])) : INDArray {
+    null
+  }
+  
   // TODO :: Opportunity to refactor loaders
   /**
    * Gets an NDimensional Array of ND4j from a TRMM dataset
