@@ -17,9 +17,9 @@
  */
 package org.dia.n
 
+import org.dia.MatrixLibrary.ArrayLib
 import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
-import org.dia.core.ArrayLib
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import ucar.nc2.dataset.NetcdfDataset

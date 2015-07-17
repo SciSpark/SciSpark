@@ -1,4 +1,4 @@
-package org.dia.core
+package org.dia.MatrixLibrary
 
 import org.slf4j.Logger
 import ucar.nc2.dataset.NetcdfDataset

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.TRMMUtils
 
 import java.io.{IOException, ObjectOutputStream}
 

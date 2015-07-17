@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.b
+package org.dia.MatrixLibrary.BreezeWrapper
 
 import breeze.linalg.{DenseMatrix, sum}
+import org.dia.MatrixLibrary.ArrayLib
 import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
-import org.dia.core.ArrayLib
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable

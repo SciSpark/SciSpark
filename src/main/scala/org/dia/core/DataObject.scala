@@ -2,6 +2,7 @@ package org.dia.core
 
 
 import org.apache.spark.mllib.linalg.DenseMatrix
+import org.dia.MatrixLibrary.ArrayLib
 import org.nd4j.linalg.api.ndarray.INDArray
 
 import scala.collection.mutable
