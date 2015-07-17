@@ -29,14 +29,24 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-class BreezeTensor(t : (Any) => (Array[Double], Array[Int])) extends AbstractTensor {
-  val tensor : DenseMatrix[Double] = convert(t)
+class BreezeTensor extends AbstractTensor {
+  var tensor : DenseMatrix[Double] = null
   type  T = BreezeTensor
   val name : String = "breeze"
 
-  def convert(loadFunc : (Any) => (Array[Double], Array[Int])) : DenseMatrix[Double] {
-    null
+  def this(loadFunc : (Any) => (Array[Double], Array[Int])) {
+    this
+    val shapePair = loadFunc()
+    val row = shapePair._2(0)
+    val col = shapePair._2(0)
+    tensor = new DenseMatrix[Double](row, col, shapePair._1, 0)
   }
+
+  def this(t : DenseMatrix[Double]) {
+    this
+    tensor = t
+  }
+
 
   /**
    * Reduces the resolution of a DenseMatrix

@@ -10,7 +10,7 @@ import scala.collection.mutable
 
 class sTensor() {
   var metaData : mutable.HashMap[String, String] = new mutable.HashMap[String, String]
-  val arrayLibrary : AbstractTensor = new Nd4jTensor()
+  val arrayLibrary : AbstractTensor = null
 
 //  def +(other:sTensor) : sTensor = {
 //    new sTensor(joinMetadata(other.metaData, this.metaData), other.iNDArray + iNDArray)

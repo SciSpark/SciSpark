@@ -17,6 +17,7 @@
  */
 package org.dia.tensors
 
+import breeze.linalg.DenseMatrix
 import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import org.nd4j.api.linalg.DSL._
@@ -32,17 +33,24 @@ import scala.language.implicitConversions
  * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jTensor(t : (Any) => (Array[Double], Array[Int])) extends AbstractTensor {
-  val tensor : INDArray = convert(t)
+class Nd4jTensor extends AbstractTensor {
+  var tensor : INDArray = null
   type T = Nd4jTensor
   val name : String = "nd4j"
 
-  def convert(loadFunc : (Any) => (Array[Double], Array[Int])) : INDArray {
-    null
+  def this(loadFunc : (Any) => (Array[Double], Array[Int])) {
+    this
+    val shapePair = loadFunc()
+    tensor = Nd4j.create(shapePair._1, shapePair._2)
   }
-  
+
+  def this(t : INDArray) {
+    this
+    tensor = t
+  }
+
   def reduceResolution(blockSize: Int): Nd4jTensor = {
-    val largeArray = iNDArray
+    val largeArray = tensor
     val numRows = largeArray.rows()
     val numCols = largeArray.columns()
 
@@ -65,6 +73,6 @@ class Nd4jTensor(t : (Any) => (Array[Double], Array[Int])) extends AbstractTenso
   }
 
   def +(array : Nd4jTensor) : Nd4jTensor = {
-    new Nd4jTensor(iNDArray + array.iNDArray)
+    new Nd4jTensor(tensor + array.tensor)
   }
 }
