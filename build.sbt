@@ -25,6 +25,7 @@ parallelExecution in Test := false
  * recency of Nd4j and it's development speed it is using the latest slf4j version.
  */
 classpathTypes += "maven-plugin"
+
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
   "org.apache.spark" % "spark-core_2.10" % "1.3.0" exclude("org.slf4j" , "slf4j-api"),

@@ -16,31 +16,18 @@
  */
 package org.dia.core
 
-import java.util
-
 import breeze.linalg.DenseMatrix
-import org.apache.spark.annotation.DeveloperApi
-import org.apache.spark.{Partition, TaskContext, Logging, SparkContext}
 import org.apache.spark.rdd.RDD
-import org.dia.TRMMUtils.NetCDFUtils
-import org.dia.b.BreezeLib
-import org.dia.n.Nd4jLib
-import org.joda.time.DateTime
+import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
 import org.nd4j.linalg.api.ndarray.INDArray
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 
-/**
- * Created by marroquin on 7/13/15.
- */
 // TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
-                        partitioner: (Any) => List[List[T]],
                         varName: String,
-                        arrayLib : ArrayLib[INDArray, DenseMatrix[Double]]
+                        arrayLib : String
                          )
 
   extends RDD[T](sc, Nil) with Logging {

@@ -1,7 +1,5 @@
 package org.dia.core
 
-import org.apache.spark.SparkContext
-
 /**
  * Created by rahulsp on 7/9/15.
  */

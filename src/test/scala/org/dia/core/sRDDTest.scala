@@ -1,26 +1,21 @@
 package org.dia.core
 
-import _root_.breeze.linalg.DenseMatrix
 import org.dia.TRMMUtils.HourlyTrmm
-import org.dia.b.BreezeLib
-import org.dia.n.Nd4jLib
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.scalatest.FunSuite;
+import org.scalatest.FunSuite
 
-import scala.collection.mutable
-import scala.collection.mutable.{ListBuffer, HashMap}
+import scala.collection.mutable.{HashMap, ListBuffer}
 import scala.io.Source
 
 /**
  * Tests for creating different Rdd types.
  * Created by marroquin on 7/14/15.
  */
-class sRddTest extends FunSuite  {
+class sRDDTest extends FunSuite  {
   test("SimplePartitionScheme") {
     val sc = SparkTestConstants.sc
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sRdd = new sRDD[DataObject] (sc, dataUrls, Groupers.mapUrls, "TotCldLiqH2O_A", BreezeLib)
-    val sRdd = new sRDD[DataObject] (sc, dataUrls, Groupers.mapUrls, "TotCldLiqH2O_A", Nd4jLib)
+    val sRdd = new sRDD[DataObject] (sc, dataUrls, "TotCldLiqH2O_A", "Breeze")
+    val sRdsd = new sRDD[DataObject] (sc, dataUrls, "TotCldLiqH2O_A", "Nd4j")
 
 //
 //    sRdd.filter().map(element => ND4J.re...)

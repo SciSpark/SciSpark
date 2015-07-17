@@ -42,12 +42,13 @@ object Groupers {
   }
 
   //TODO better name?
-  def mapUrls(key:Any, value:Any) : ListBuffer[String] = {
+  def mapUrls(key:Any, value:Any) : ListBuffer[DataObject] = {
     var urls = new ListBuffer[String]
     val actualKey = key.asInstanceOf[Int]
     val actualValue = value.asInstanceOf[String]
     urls+=actualValue
     urls
+    null
   }
 }
 

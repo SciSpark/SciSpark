@@ -19,12 +19,8 @@
 package org.dia.core
 
 import org.apache.spark.SparkContext
-import org.dia.TRMMUtils.NetCDFUtils
 
 //import org.dia.core.singleUrl.sciNd4jRDD
-import org.nd4j.linalg.api.ndarray.INDArray
-
-import scala.io.Source
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext

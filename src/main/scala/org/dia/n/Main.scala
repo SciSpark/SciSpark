@@ -18,8 +18,6 @@
 package org.dia.n
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.Constants
-import org.dia.b.TrmmHourlyRDD
 
 import scala.language.implicitConversions
 

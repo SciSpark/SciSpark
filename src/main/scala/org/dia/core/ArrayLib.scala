@@ -1,10 +1,6 @@
 package org.dia.core
 
-import breeze.linalg.DenseMatrix
-import org.dia.TRMMUtils.Constants._
-import org.dia.TRMMUtils.NetCDFUtils
 import org.slf4j.Logger
-import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable
@@ -12,9 +8,9 @@ import scala.collection.mutable
 /**
  * Created by rahulsp on 7/15/15.
  */
- trait ArrayLib[T] {
+ trait ArrayLib {
+ type T <: ArrayLib
   val name : String
-  var array : T
   // Class logger
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -36,11 +32,10 @@ import scala.collection.mutable
 
   /**
    * Reduces the resolution of a DenseMatrix
-   * @param largeArray the array that will be reduced
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution(largeArray: T, blockSize: Int): ArrayLib[T]
+  def reduceResolution (blockSize: Int): T
 
   /**
    * Creates a 2D array from a list of dimensions using a variable
@@ -49,7 +44,7 @@ import scala.collection.mutable
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): T
+  def create2dArray (dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): T
 
-  implicit def +(array : T) : T
+  implicit def + (array : T) : T
 }

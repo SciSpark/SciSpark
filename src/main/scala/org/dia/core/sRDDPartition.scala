@@ -19,9 +19,6 @@ package org.dia.core
 
 import org.apache.spark.Partition
 
-import scala.collection.mutable.ListBuffer
-import scala.reflect.ClassTag
-
 /**
  * Created by marroquin on 7/13/15.
  */

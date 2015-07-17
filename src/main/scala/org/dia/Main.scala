@@ -17,19 +17,7 @@
  */
 package org.dia
 
-import breeze.linalg.{DenseMatrix, sum}
-import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.Constants._
 import org.dia.core.SciSparkContext
-import org.dia.n.Nd4jLib
-import org.jblas.DoubleMatrix
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.indexing.BooleanIndexing
-import org.nd4j.linalg.indexing.conditions.Conditions
-import org.nd4j.linalg.indexing.functions.Identity
-import ucar.ma2
-import ucar.nc2.dataset.NetcdfDataset
 
 import scala.language.implicitConversions
 

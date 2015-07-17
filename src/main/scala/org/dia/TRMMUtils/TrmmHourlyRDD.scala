@@ -17,7 +17,6 @@
  */
 package org.dia.b
 
-import breeze.linalg.DenseMatrix
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 import org.dia.TRMMUtils._
@@ -60,7 +59,6 @@ class TrmmHourlyPartition(
  * @param datasetUrl
  * @param iniYear
  * @param finalYear
- * @param ev1
  * @tparam T
  */
 class TrmmHourlyRDD[T: ClassTag](sc: SparkContext,

@@ -21,10 +21,9 @@ import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import org.dia.core.ArrayLib
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.api.linalg.{RichNDArray, DSL}
 import org.nd4j.linalg.factory.Nd4j
 import ucar.nc2.dataset.NetcdfDataset
-
+import org.nd4j.api.linalg.DSL._
 import scala.collection.mutable
 import scala.language.implicitConversions
 
@@ -33,15 +32,10 @@ import scala.language.implicitConversions
  * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jLib extends ArrayLib[INDArray]{
-
+class Nd4jLib(val iNDArray: INDArray) extends ArrayLib {
+  type T = Nd4jLib
   val name : String = "nd4j"
-  override var array: INDArray
 
-  def this(arr : INDArray) {
-    this
-    array = arr
-  }
   // TODO :: Opportunity to refactor loaders
   /**
    * Gets an NDimensional Array of ND4j from a TRMM dataset
@@ -49,14 +43,14 @@ class Nd4jLib extends ArrayLib[INDArray]{
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFTRMMVars(url: String, variable: String): Unit = {
+  def loadNetCDFTRMMVars(url: String, variable: String): Nd4jLib = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    array = Nd4j.create(coordinateArray, Array(rowDim, columnDim))
+    new Nd4jLib(Nd4j.create(coordinateArray, Array(rowDim, columnDim)))
   }
 
   /**
@@ -65,7 +59,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFNDVars(url: String, variable: String): Unit =  {
+  def loadNetCDFNDVars(url: String, variable: String): Nd4jLib =  {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     loadNetCDFNDVars(netcdfFile, variable)
   }
@@ -76,11 +70,11 @@ class Nd4jLib extends ArrayLib[INDArray]{
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFNDVars(netcdfFile: NetcdfDataset, variable: String): Unit = {
+  def loadNetCDFNDVars(netcdfFile: NetcdfDataset, variable: String): Nd4jLib = {
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)
-    array = Nd4j.create(coordinateArray, shape)
+    new Nd4jLib(Nd4j.create(coordinateArray, shape))
   }
 
   /**
@@ -90,18 +84,19 @@ class Nd4jLib extends ArrayLib[INDArray]{
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): Unit = {
+  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): Nd4jLib = {
 
     val x = dimensionSizes.get(1).get
     val y = dimensionSizes.get(2).get
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
 
-    array = Nd4j.create(coordinateArray, Array(x, y))
+    new Nd4jLib(Nd4j.create(coordinateArray, Array(x, y)))
   }
 
 
-  def reduceResolution(largeArray: INDArray, blockSize: Int): Nd4jLib = {
+  def reduceResolution(blockSize: Int): Nd4jLib = {
+    val largeArray = iNDArray
     val numRows = largeArray.rows()
     val numCols = largeArray.columns()
 
@@ -123,5 +118,7 @@ class Nd4jLib extends ArrayLib[INDArray]{
     new Nd4jLib(reducedMatrix)
   }
 
-
+  def +(array : Nd4jLib) : Nd4jLib = {
+    new Nd4jLib(iNDArray + array.iNDArray)
+  }
 }

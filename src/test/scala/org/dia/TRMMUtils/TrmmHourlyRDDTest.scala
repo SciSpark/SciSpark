@@ -18,11 +18,9 @@
 package org.dia.TRMMUtils
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.SparkContext
 import org.dia.b.{TrmmBiasRDD, TrmmHourlyRDD}
 import org.dia.core.SparkTestConstants
 import org.joda.time.DateTime
-import org.scalatest.Ignore
 
 import scala.collection.mutable.ListBuffer
 

@@ -20,8 +20,8 @@ package org.dia.b
 import java.io.{IOException, ObjectOutputStream}
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.rdd.RDD
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
