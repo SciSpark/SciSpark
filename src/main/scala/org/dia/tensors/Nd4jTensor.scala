@@ -38,7 +38,7 @@ class Nd4jTensor extends AbstractTensor {
   type T = Nd4jTensor
   val name : String = "nd4j"
 
-  def this(loadFunc : (Any) => (Array[Double], Array[Int])) {
+  def this(loadFunc : (String, String) => (Array[Double], Array[Int])) {
     this
     val shapePair = loadFunc()
     tensor = Nd4j.create(shapePair._1, shapePair._2)

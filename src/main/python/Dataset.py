@@ -17,7 +17,7 @@
 
 '''
 Classes:
-    Dataset - Container for a dataset's attributes and data.
+    Dataset - Container for a tensors's attributes and data.
     Bounds - Container for holding spatial and temporal bounds information
                 for operations on a Dataset.
 '''
@@ -33,7 +33,7 @@ import utils as utils
 logger = logging.getLogger(__name__)
 
 class Dataset:
-    '''Container for a dataset's attributes and data.'''
+    '''Container for a tensors's attributes and data.'''
 
     def __init__(self, lats, lons, times, values, variable=None, units=None,
                  origin=None, name=""):
@@ -63,7 +63,7 @@ class Dataset:
         :type name: :mod:`string`
 
         :param origin: An optional object used to specify information on where
-            this dataset was loaded from.
+            this tensors was loaded from.
         :type origin: :class:`dict`
 
         :raises: ValueError
@@ -150,7 +150,7 @@ class Dataset:
         else:
             error = (
                 "Unable to calculate the temporal resolution for the "
-                "dataset. The number of days between two time values is "
+                "tensors. The number of days between two time values is "
                 "an unexpected value: " + str(num_days)
             )
 

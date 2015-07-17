@@ -25,24 +25,17 @@ import scala.language.implicitConversions
 /**
  * Functions needed to map keys to values
  */
-object Groupers {
+object sPartitioner {
 
   /**
    * Sort of an identity mapping
-   * @param key
-   * @param value
-   * @return
    */
-  //TODO better name?
-  def mapDayUrls(key: Any, value: Any) : ListBuffer[String] = {
-    var urls = new ListBuffer[String]
-    val actualValue = value.asInstanceOf[ListBuffer[String]]
-    val actualKey = key.asInstanceOf[DateTime]
-    actualValue
+  def mapOneUrlToOneTensor(urls : List[String]) : List[List[sTensor]] = {
+    urls.map( elem => List(new sTensor(elem)) )
   }
 
   //TODO better name?
-  def mapUrls(key:Any, value:Any) : ListBuffer[sTensor] = {
+  def mapUrls(key:Any, value:Any) : List[sTensor] = {
     var urls = new ListBuffer[String]
     val actualKey = key.asInstanceOf[Int]
     val actualValue = value.asInstanceOf[String]

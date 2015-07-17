@@ -10,10 +10,9 @@ import scala.collection.mutable
 /**
  * Created by marroqui on 7/17/15.
  */
-class NetCDFLoader {
-  // TODO :: Opportunity to refactor loaders
+object NetCDFLoader {
   /**
-   * Gets an NDimensional Array of ND4j from a TRMM dataset
+   * Gets an NDimensional Array of ND4j from a TRMM tensors
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
@@ -37,16 +36,6 @@ class NetCDFLoader {
    */
   def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) =  {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    loadNetCDFNDVars(netcdfFile, variable)
-  }
-
-  /**
-   * Gets an NDimensional array of INDArray from a NetCDF file
-   * @param netcdfFile where the netcdf file is located
-   * @param variable the NetCDF variable to search for
-   * @return
-   */
-  def loadNetCDFNDVars(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)

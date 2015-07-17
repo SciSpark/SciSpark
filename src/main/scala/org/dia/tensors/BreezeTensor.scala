@@ -34,9 +34,10 @@ class BreezeTensor extends AbstractTensor {
   type  T = BreezeTensor
   val name : String = "breeze"
 
-  def this(loadFunc : (Any) => (Array[Double], Array[Int])) {
+  //TODO check if using partialy applied functions can be used here
+  def this(loadFunc : (String, String) => (Array[Double], Array[Int]), url: String, variable: String) {
     this
-    val shapePair = loadFunc()
+    val shapePair = loadFunc(url, variable)
     val row = shapePair._2(0)
     val col = shapePair._2(0)
     tensor = new DenseMatrix[Double](row, col, shapePair._1, 0)

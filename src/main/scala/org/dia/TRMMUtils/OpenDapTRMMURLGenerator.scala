@@ -26,7 +26,7 @@ import org.joda.time.DateTime
 import scala.collection.JavaConversions._
 
 /**
- * Generates a list of links for the TRMM dataset
+ * Generates a list of links for the TRMM tensors
  */
 object OpenDapTRMMURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"

@@ -16,19 +16,17 @@
  */
 package org.dia.core
 
-import breeze.linalg.DenseMatrix
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.tensors.AbstractTensor
-import org.nd4j.linalg.api.ndarray.INDArray
+import org.dia.tensors.BreezeTensor
 
 import scala.reflect.ClassTag
 
-// TODO review usage of HashMap, it might be overcomplicating things
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
-                        arrayLib : AbstractTensor
+                        loadFunc: (String, String) => (Array[Double], Array[Int]),
+                        partitionFunc: List[String] => (List[List[sTensor]])
                          )
 
   extends RDD[T](sc, Nil) with Logging {
@@ -39,25 +37,31 @@ class sRDD[T: ClassTag](sc: SparkContext,
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
+    // call the loader/constructor
     getIterator(split.asInstanceOf[sRDDPartition[T]])
   }
 
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
-//    val iterator = new Iterator[T] {
-//      var counter = 0
-//
-//      override def hasNext: Boolean = {
-//        counter < theSplit.dataset.length
-//      }
-//
-//      override def next(): T = {
-//        val tensor = theSplit.dataset(counter).asInstanceOf[sTensor].load(varName)
-//        counter += 1
-//        new sTensor(null, tensor).asInstanceOf[T]
-//      }
-//    }
-//    iterator
-    null.asInstanceOf[Iterator[T]]
+
+    val iterator = new Iterator[T] {
+      var counter = 0
+
+      //
+      override def hasNext: Boolean = {
+        counter < theSplit.tensors.length
+      }
+
+      //
+      override def next(): T = {
+        var tensor = theSplit.tensors(counter).tensor
+        //TODO check that tensor is a reference not a copy
+        tensor = new BreezeTensor(loadFunc, theSplit.tensors(counter).urlValue, varName)
+        val filledTensor = theSplit.tensors(counter)
+        counter += 1
+        filledTensor.asInstanceOf[T]
+      }
+    }
+    iterator
   }
 
   /**
@@ -68,15 +72,15 @@ class sRDD[T: ClassTag](sc: SparkContext,
    * @return
    */
   override def getPartitions: Array[Partition] = {
-//    var pos = 0
-//    val array = new Array[Partition](datasets.length)
-//    val listOfLists = partitioner(datasets)
-//    for (list <- listOfLists) {
-//      array(pos) = new sRDDPartition(pos, list)
-//      pos += 1
-//    }
-//    array
-    null
+    var pos = 0
+    val array = new Array[Partition](datasets.length)
+    // will create a list of lists of empty sTensors
+    val listOfLists = partitionFunc(datasets)
+    for (list <- listOfLists) {
+      array(pos) = new sRDDPartition(pos, list)
+      pos += 1
+    }
+    array
   }
 
 }

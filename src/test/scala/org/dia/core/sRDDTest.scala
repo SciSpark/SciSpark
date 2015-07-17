@@ -5,6 +5,8 @@ import org.dia.TRMMUtils.HourlyTrmm
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.{HashMap, ListBuffer}
+import org.dia.loaders.NetCDFLoader._
+import org.dia.core.sPartitioner._
 import scala.io.Source
 
 /**
@@ -15,8 +17,10 @@ class sRDDTest extends FunSuite  {
   test("SimplePartitionScheme") {
     val sc = SparkTestConstants.sc
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", "Breeze")
-    val sRdsd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", "Nd4j")
+    var conf = "Breeze"
+    val sRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+    conf = "nd4j"
+//    val sRdsd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", HadoopLoader)
 
 //
 //    sRdd.filter().map(element => ND4J.re...)
@@ -31,8 +35,8 @@ class sRDDTest extends FunSuite  {
   test("GroupingByDayPartitioning") {
     val dataMapping = HourlyTrmm.generateTrmmDaily(1999)
     val sc = SparkTestConstants.sc
-//    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", BREEZE)
-//    val sRdd = new sRDD[HashMap[String, INDArray]] (sc, dataMapping, Groupers.mapDayUrls, "precipitation", ND4J)
+//    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", BREEZE)
+//    val sRdd = new sRDD[HashMap[String, INDArray]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", ND4J)
 //    println()
 //    println(sRdd.collect().length)
 //    println()

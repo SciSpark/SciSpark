@@ -28,16 +28,16 @@ from dateutil.relativedelta import relativedelta
 def decode_time_values(dataset, time_var_name):
     ''' Decode NetCDF time values into Python datetime objects.
 
-    :param dataset: The dataset from which time values should be extracted.
+    :param dataset: The tensors from which time values should be extracted.
     :type dataset: netCDF4.Dataset
-    :param time_var_name: The name of the time variable in dataset.
+    :param time_var_name: The name of the time variable in tensors.
     :type time_var_name: :mod:`string`
 
     :returns: The list of converted datetime values.
 
     :raises ValueError: If the time units value couldn't be parsed, if the
         base time value couldn't be parsed, or if the time_var_name could not
-        be found in the dataset.
+        be found in the tensors.
     '''
     time_data = dataset.variables[time_var_name]
     time_format = time_data.units
@@ -65,7 +65,7 @@ def parse_time_units(time_format):
     The only units that are supported are: seconds, minutes, hours, days,
         months, or years.
 
-    :param time_format: The time data units string from the dataset
+    :param time_format: The time data units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -90,7 +90,7 @@ def parse_time_units(time_format):
 def parse_time_base(time_format):
     ''' Parse time base object from the time units string.
 
-    :param time_format: The time data units string from the dataset
+    :param time_format: The time data units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -142,7 +142,7 @@ def parse_time_base(time_format):
 def parse_base_time_string(time_format):
     ''' Retrieve base time string from time data units information.
 
-    :param time_format: The time data units string from the dataset
+    :param time_format: The time data units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -222,22 +222,22 @@ def normalize_lat_lon_values(lats, lons, values):
 
 
 def reshape_monthly_to_annually(dataset):
-    ''' Reshape monthly binned dataset to annual bins.
+    ''' Reshape monthly binned tensors to annual bins.
 
-    Reshape a monthly binned dataset's 3D value array with shape
+    Reshape a monthly binned tensors's 3D value array with shape
     (num_months, num_lats, num_lons) to a 4D array with shape
     (num_years, 12, num_lats, num_lons). This causes the data to be binned
     annually while retaining its original shape.
 
-    It is assumed that the number of months in the dataset is evenly
+    It is assumed that the number of months in the tensors is evenly
     divisible by 12. If it is not you will receive error due to
     an invalid shape.
 
-    Example change of a dataset's shape:
+    Example change of a tensors's shape:
     (24, 90, 180) -> (2, 12, 90, 180)
 
     :param dataset: Dataset object with full-year format
-    :type dataset: :class:`dataset.Dataset`
+    :type dataset: :class:`tensors.Dataset`
 
     :returns: Dataset values array with shape (num_year, 12, num_lat, num_lon)
     '''
@@ -257,11 +257,11 @@ def reshape_monthly_to_annually(dataset):
     return values
 
 def calc_climatology_year(dataset):
-    ''' Calculate climatology of dataset's values for each year
+    ''' Calculate climatology of tensors's values for each year
     
     :param dataset: Monthly binned Dataset object with an evenly divisible
         number of months.
-    :type dataset: :class:`dataset.Dataset`
+    :type dataset: :class:`tensors.Dataset`
 
     :returns: Mean values for each year (annual_mean) and mean values for all
         years (total_mean)
@@ -273,7 +273,7 @@ def calc_climatology_year(dataset):
     values_shape = dataset.values.shape
     time_shape = values_shape[0]
     if time_shape % 12:
-        raise ValueError('The dataset should be in full-time format.')
+        raise ValueError('The tensors should be in full-time format.')
     else:
         # Get values reshaped to (num_year, 12, num_lats, num_lons)
         values = reshape_monthly_to_annually(dataset)
@@ -294,7 +294,7 @@ def calc_climatology_season(month_start, month_end, dataset):
     :type month_end: :class:`int`
 
     :param dataset: Dataset object with full-year format
-    :type dataset: :class:`dataset.Dataset`
+    :type dataset: :class:`tensors.Dataset`
 
     :returns: t_series - monthly average over the given season
         means - mean over the entire season
@@ -319,14 +319,14 @@ def calc_climatology_season(month_start, month_end, dataset):
 
 
 def calc_climatology_monthly(dataset):
-    ''' Calculate monthly mean values for a dataset.
+    ''' Calculate monthly mean values for a tensors.
     Follow COARDS climo stats calculation, the year can be given as 0 
     but the min year allowed in Python is 1
     http://www.cgd.ucar.edu/cms/eaton/netcdf/CF-20010629.htm#climatology
 
     :param dataset: Monthly binned Dataset object with the number of months
         divisible by 12
-    :type dataset: :class:`dataset.Dataset`
+    :type dataset: :class:`tensors.Dataset`
 
     :returns: Mean values for each month of the year of shape (12, num_lats, num_lons)
               and times array of datetime objects of length 12
@@ -350,12 +350,12 @@ def calc_climatology_monthly(dataset):
         return values, times
 
 def calc_time_series(dataset):
-    ''' Calculate time series mean values for a dataset
+    ''' Calculate time series mean values for a tensors
 
     :param dataset: Dataset object 
-    :type dataset: :class:`dataset.Dataset`
+    :type dataset: :class:`tensors.Dataset`
 
-    :returns: time series for the dataset of shape (nT)
+    :returns: time series for the tensors of shape (nT)
     '''
 
     t_series =[]

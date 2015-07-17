@@ -24,7 +24,7 @@ import org.apache.spark.Partition
  */
 class sRDDPartition[T] (
                               idx: Int,
-                              val dataset: List[sTensor]
+                              val tensors: List[sTensor]
                               ) extends Partition {
   /**
    * Partition index
@@ -38,7 +38,7 @@ class sRDDPartition[T] (
   override def toString() = {
     val sb = new StringBuilder
     sb.append("{idx:").append(idx).append(",")
-    sb.append("urls:").append(dataset).append("}")
+    sb.append("urls:").append(tensors).append("}")
     sb.toString
   }
 }

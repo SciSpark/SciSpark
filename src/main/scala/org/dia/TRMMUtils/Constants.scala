@@ -33,7 +33,7 @@ object Constants {
   val DEFAULT_TRMM_ROW_SIZE = 400
   // TRMM default col dimension size
   val DEFAULT_TRMM_COL_SIZE = 1440
-  // TRMMHourly dataset url
+  // TRMMHourly tensors url
   val TRMM_HOURLY_URL = "http://disc2.nascom.nasa.gov/opendap/TRMM_3Hourly_3B42/"
   val TRMM_HOURLY_DATA_PREFFIX = "3B42"
   val TRMM_HOURLY_DATA_SUFFIX = ".7.HDF.Z"

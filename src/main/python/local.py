@@ -36,7 +36,7 @@ def _get_netcdf_variable_name(valid_var_names, netcdf, netcdf_var):
 
     Looks for an occurrence of a valid_var_name in the NetCDF variable data.
     This is useful for automatically determining the names of the lat, lon,
-    and time variable names inside of a dataset object.
+    and time variable names inside of a tensors object.
 
     :param valid_var_names: The possible variable names to search for in
         the netCDF object.
@@ -113,18 +113,18 @@ def load_WRF_2d_files(file_path,
                       variable_name,
                       name=''):
     ''' Load multiple WRF (or nuWRF) original output files containing 2D fields such as precipitation and surface variables into a Dataset.
-    The dataset can be spatially subset.
+    The tensors can be spatially subset.
     :param file_path: Directory to the NetCDF file to load.
     :type file_path: :mod:`string`
     :param filename_pattern: Path to the NetCDF file to load.
     :type filename_pattern: :list:`string`
     :param variable_name: The variable name to load from the NetCDF file.
     :type variable_name: :mod:`string`
-    :param name: (Optional) A name for the loaded dataset.
+    :param name: (Optional) A name for the loaded tensors.
     :type name: :mod:`string`
     :returns: An OCW Dataset object with the requested variable's data from
         the NetCDF file.
-    :rtype: :class:`dataset.Dataset`
+    :rtype: :class:`tensors.Dataset`
     :raises ValueError:
     '''
 
@@ -179,24 +179,24 @@ def load_file(file_path,
         specify the elevation value to use.
     :type elevation_index: :class:`int`
 
-    :param name: (Optional) A name for the loaded dataset.
+    :param name: (Optional) A name for the loaded tensors.
     :type name: :mod:`string`
 
     :param lat_name: (Optional) The latitude variable name to extract from the
-        dataset.
+        tensors.
     :type lat_name: :mod:`string`
 
     :param lon_name: (Optional) The longitude variable name to extract from the
-        dataset.
+        tensors.
     :type lon_name: :mod:`string`
 
     :param time_name: (Optional) The time variable name to extract from the
-        dataset.
+        tensors.
     :type time_name: :mod:`string`
 
     :returns: An OCW Dataset object with the requested variable's data from
         the NetCDF file.
-    :rtype: :class:`dataset.Dataset`
+    :rtype: :class:`tensors.Dataset`
 
     :raises ValueError: When the specified file path cannot be loaded by ndfCDF4
         or when the lat/lon/time variable name cannot be determined
