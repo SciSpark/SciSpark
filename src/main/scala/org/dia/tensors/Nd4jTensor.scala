@@ -17,30 +17,24 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.DenseMatrix
-import org.dia.TRMMUtils.Constants._
-import org.dia.TRMMUtils.NetCDFUtils
 import org.nd4j.api.linalg.DSL._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
-import ucar.nc2.dataset.NetcdfDataset
 
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
  * The Nd4j Functional operations
  * Created by rahulsp on 7/6/15.
  */
-
 class Nd4jTensor extends AbstractTensor {
   var tensor : INDArray = null
   type T = Nd4jTensor
   val name : String = "nd4j"
 
-  def this(loadFunc : (String, String) => (Array[Double], Array[Int])) {
+  def this(loadFunc : (String, String) => (Array[Double], Array[Int]), url: String, variable: String) {
     this
-    val shapePair = loadFunc()
+    val shapePair = loadFunc(url, variable)
     tensor = Nd4j.create(shapePair._1, shapePair._2)
   }
 
