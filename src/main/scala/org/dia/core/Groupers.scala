@@ -42,7 +42,7 @@ object Groupers {
   }
 
   //TODO better name?
-  def mapUrls(key:Any, value:Any) : ListBuffer[DataObject] = {
+  def mapUrls(key:Any, value:Any) : ListBuffer[sTensor] = {
     var urls = new ListBuffer[String]
     val actualKey = key.asInstanceOf[Int]
     val actualValue = value.asInstanceOf[String]

@@ -24,7 +24,7 @@ import org.apache.spark.Partition
  */
 class sRDDPartition[T] (
                               idx: Int,
-                              val dataset: List[DataObject]
+                              val dataset: List[sTensor]
                               ) extends Partition {
   /**
    * Partition index

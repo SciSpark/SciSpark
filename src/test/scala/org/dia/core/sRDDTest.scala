@@ -1,5 +1,6 @@
 package org.dia.core
 
+import org.dia.tensors.BreezeTensor
 import org.dia.TRMMUtils.HourlyTrmm
 import org.scalatest.FunSuite
 
@@ -14,8 +15,8 @@ class sRDDTest extends FunSuite  {
   test("SimplePartitionScheme") {
     val sc = SparkTestConstants.sc
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sRdd = new sRDD[DataObject] (sc, dataUrls, "TotCldLiqH2O_A", "Breeze")
-    val sRdsd = new sRDD[DataObject] (sc, dataUrls, "TotCldLiqH2O_A", "Nd4j")
+    val sRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", "Breeze")
+    val sRdsd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", "Nd4j")
 
 //
 //    sRdd.filter().map(element => ND4J.re...)

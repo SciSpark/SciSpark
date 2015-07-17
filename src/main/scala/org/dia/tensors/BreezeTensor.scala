@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.MatrixLibrary.BreezeWrapper
+package org.dia.tensors
 
 import breeze.linalg.{DenseMatrix, sum}
-import org.dia.MatrixLibrary.ArrayLib
 import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import ucar.nc2.dataset.NetcdfDataset
@@ -30,8 +29,9 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
-  type  T = BreezeLib
+class BreezeTensor() extends AbstractTensor {
+  val tensor : DenseMatrix[Double]
+  type  T = BreezeTensor
   val name : String = "breeze"
 
   /**
@@ -40,14 +40,14 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFTRMMVars (url : String, variable : String) : BreezeLib = {
+  def loadNetCDFTRMMVars (url : String, variable : String) : BreezeTensor = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    new BreezeLib(new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0))
+    new BreezeTensor(new DenseMatrix[Double](rowDim, columnDim, coordinateArray, 0))
   }
 
   /**
@@ -58,7 +58,7 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
    * @return
    *
    */
-  def loadNetCDFNDVars (url : String, variable : String) : BreezeLib = {
+  def loadNetCDFNDVars (url : String, variable : String) : BreezeTensor = {
 //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 //    val SearchVariable: ma2.Array = NetCDFUtils.getNetCDFVariableArray(netcdfFile, variable)
 //    val ArrayClass = Array.ofDim[Float](240, 1, 201 ,194)
@@ -67,7 +67,7 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
 //    val j = NDArray(0)(0).flatMap(f => f)
 //    val any = NDArray.map(p => new DenseMatrix[Double](201, 194, p(0).flatMap(f => f).map(d => d.toDouble), 0))
 //    denseMatrix = any
-    null.asInstanceOf[BreezeLib]
+    null.asInstanceOf[BreezeTensor]
   }
 
   /**
@@ -75,7 +75,7 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
    * @param blockSize the size of n x n size of blocks.
    * @return
    */
-  def reduceResolution (blockSize: Int): BreezeLib = {
+  def reduceResolution (blockSize: Int): BreezeTensor = {
     val largeArray = tensor
     val numRows = largeArray.rows
     val numCols = largeArray.cols
@@ -95,7 +95,7 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
         reducedMatrix
       }
     }
-    new BreezeLib(reducedMatrix)
+    new BreezeTensor(reducedMatrix)
   }
 
   /**
@@ -105,13 +105,13 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
    * @param variable the variable array to extract
    * @return DenseMatrix
    */
-  def create2dArray (dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): BreezeLib = {
+  def create2dArray (dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): BreezeTensor = {
     //TODO make sure that the dimensions are always in the order we want them to be
     try {
       val x = dimensionSizes.get(1).get
       val y = dimensionSizes.get(2).get
       val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-      new BreezeLib(new DenseMatrix[Double](x, y, coordinateArray))
+      new BreezeTensor(new DenseMatrix[Double](x, y, coordinateArray))
     } catch {
       case e :
         java.util.NoSuchElementException => LOG.error("Required dimensions not found. Found:%s".format(dimensionSizes.toString()))
@@ -119,9 +119,9 @@ class BreezeLib(val tensor : DenseMatrix[Double]) extends ArrayLib {
     }
   }
 
-  def +(array: BreezeLib): BreezeLib = {
+  def +(array: BreezeTensor): BreezeTensor = {
     val sum = array.tensor + tensor
-    new BreezeLib(sum)
+    new BreezeTensor(sum)
   }
 
 }

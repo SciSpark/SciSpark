@@ -19,6 +19,7 @@ package org.dia.core
 import breeze.linalg.DenseMatrix
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
+import org.dia.tensors.AbstractTensor
 import org.nd4j.linalg.api.ndarray.INDArray
 
 import scala.reflect.ClassTag
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
-                        arrayLib : String
+                        arrayLib : AbstractTensor
                          )
 
   extends RDD[T](sc, Nil) with Logging {
@@ -50,9 +51,9 @@ class sRDD[T: ClassTag](sc: SparkContext,
 //      }
 //
 //      override def next(): T = {
-//        val tensor = theSplit.dataset(counter).asInstanceOf[DataObject].load(varName)
+//        val tensor = theSplit.dataset(counter).asInstanceOf[sTensor].load(varName)
 //        counter += 1
-//        new DataObject(null, tensor).asInstanceOf[T]
+//        new sTensor(null, tensor).asInstanceOf[T]
 //      }
 //    }
 //    iterator

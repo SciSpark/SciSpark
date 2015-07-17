@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.MatrixLibrary.JBlasWrapper
+package org.dia.tensors
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.TRMMUtils.NetCDFUtils
@@ -28,7 +28,7 @@ import scala.language.implicitConversions
 /**
  * Functions needed to perform operations with JBlas
  */
-object MainJblas {
+class JblasTensor {
 
   /**
    * NetCDF variables to use

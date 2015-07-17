@@ -1,4 +1,4 @@
-package org.dia.MatrixLibrary
+package org.dia.tensors
 
 import org.slf4j.Logger
 import ucar.nc2.dataset.NetcdfDataset
@@ -8,10 +8,10 @@ import scala.collection.mutable
 /**
  * Created by rahulsp on 7/15/15.
  */
- trait ArrayLib {
- type T <: ArrayLib
+ trait AbstractTensor {
+ type T <: AbstractTensor
   val name : String
-  // Class logger
+
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -21,6 +21,7 @@ import scala.collection.mutable
    * @return
    */
   def loadNetCDFTRMMVars (url : String, variable : String) : T
+  def convert(loadFunction : X) : T
 
   /**
    * Gets an NDimensional array from a NetCDF file
