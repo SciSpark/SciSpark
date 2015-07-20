@@ -40,7 +40,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     //val cores = Runtime.getRuntime().availableProcessors() - 1;
     //TODO the number of threads should be configured at cluster level
-    //val scisparkContext = new SciSparkContext("local[4]", "test")
+    val scisparkContext = new SciSparkContext("local[4]", "test")
     val ArrayList = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
     val s = new sciTensor(ArrayList)
     val x = s + s

@@ -56,5 +56,11 @@ import org.slf4j.Logger
 
   def toString : String
 
+  def equals(array : T) : Boolean
 
+  def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
+
+  def data : Array[Double]
+
+  def shape : Array[Int]
 }
