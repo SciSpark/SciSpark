@@ -20,7 +20,7 @@ package org.dia
 /**
  * Constants
  */
-object Constants {
+object Constants extends Serializable {
   // mapping between data set and variables
   // TODO find a better way to retrieve the variables per dataSet
   val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "data", "ncml" -> "TotCldLiqH2O_A")

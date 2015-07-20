@@ -31,6 +31,8 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
   extends RDD[T](sc, Nil) with Logging {
 
+  val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
+
   /**
    * :: DeveloperApi ::
    * Implemented by subclasses to compute a given partition.
@@ -55,8 +57,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
       override def next(): T = {
         val urlValue = theSplit.tensors(counter)
         val loader = () => {loadFunc(urlValue, varName)}
-        val libraryProperty = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
-        val tensor = TensorFactory.getTensor(libraryProperty, loader)
+        val tensor = TensorFactory.getTensor(arrLib, loader)
         counter += 1
         val abstracttensor = new sTensor(tensor)
         abstracttensor.asInstanceOf[T]

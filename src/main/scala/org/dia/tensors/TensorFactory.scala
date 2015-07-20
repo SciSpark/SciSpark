@@ -27,8 +27,6 @@ object TensorFactory {
    * Gets specific tensor
    * @param arrayLib
    * @param loadFunc
-   * @param urlValue
-   * @param varName
    * @return
    */
   def getTensor(arrayLib:String, loadFunc: () => (Array[Double], Array[Int])) : AbstractTensor = {

@@ -21,9 +21,11 @@ class sRDDTest extends FunSuite  {
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sBreezeRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+    println(sBreezeRdd.collect().length)
 
-    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val sNd4jRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+
+//    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+//    val sNd4jRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
 
 //
 //    sRdd.filter().map(element => ND4J.re...)
