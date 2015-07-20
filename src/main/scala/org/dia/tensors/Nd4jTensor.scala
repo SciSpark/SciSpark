@@ -18,6 +18,7 @@
 package org.dia.tensors
 
 import org.nd4j.api.linalg.DSL._
+
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 
@@ -63,7 +64,23 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
     new Nd4jTensor(reducedMatrix)
   }
 
-  def +(array : Nd4jTensor) : Nd4jTensor = {
-    new Nd4jTensor(tensor + array.tensor)
-  }
+  implicit def convert(array : INDArray) : Nd4jTensor = new Nd4jTensor(array)
+
+  override implicit def +(array : Nd4jTensor) : Nd4jTensor = tensor + array.tensor
+
+  override implicit def -(array: Nd4jTensor): Nd4jTensor = tensor - array.tensor
+
+  override implicit def \(array: Nd4jTensor): Nd4jTensor = tensor \ array.tensor
+
+  override implicit def /(array: Nd4jTensor): Nd4jTensor = tensor / array.tensor
+
+  override implicit def *(array: Nd4jTensor): Nd4jTensor = tensor * array.tensor
+
+  /**
+   * Linear Algebra Operations
+   */
+  override implicit def **(array: Nd4jTensor): Nd4jTensor = tensor ** array.tensor
+
+
+
 }
