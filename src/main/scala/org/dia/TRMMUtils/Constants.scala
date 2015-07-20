@@ -37,4 +37,7 @@ object Constants {
   val TRMM_HOURLY_URL = "http://disc2.nascom.nasa.gov/opendap/TRMM_3Hourly_3B42/"
   val TRMM_HOURLY_DATA_PREFFIX = "3B42"
   val TRMM_HOURLY_DATA_SUFFIX = ".7.HDF.Z"
+  val ARRAY_LIB = "array-lib"
+  val BREEZE_LIB = "breeze"
+  val ND4J_LIB = "nd4j"
 }

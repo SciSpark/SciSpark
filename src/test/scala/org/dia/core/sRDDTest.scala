@@ -1,6 +1,6 @@
 package org.dia.core
 
-import org.dia.tensors.BreezeTensor
+import org.dia.TRMMUtils.Constants._
 import org.dia.TRMMUtils.HourlyTrmm
 import org.scalatest.FunSuite
 
@@ -15,12 +15,14 @@ import scala.io.Source
  */
 class sRDDTest extends FunSuite  {
   test("SimplePartitionScheme") {
-    val sc = SparkTestConstants.sc
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    var conf = "Breeze"
-    val sRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    conf = "nd4j"
-//    val sRdsd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", HadoopLoader)
+    val sc = new SciSparkContext("local[4]", "test")
+
+    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
+    val sBreezeRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    val sNd4jRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
 
 //
 //    sRdd.filter().map(element => ND4J.re...)

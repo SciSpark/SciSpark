@@ -18,8 +18,7 @@ package org.dia.core
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.tensors.{Nd4jTensor, BreezeTensor}
-import org.nd4j.linalg.factory.Nd4j
+import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
 
@@ -54,10 +53,14 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def next(): T = {
-        val urlValue = theSplit.tensors(counter)
-        counter += 1
+        var urlValue = theSplit.tensors(counter)
+        //TODO check that tensor is a reference not a copy
         val loader = () => {loadFunc(urlValue, varName)}
-        val abstracttensor = new sTensor(new BreezeTensor(loader))
+        val tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
+          loader)
+        counter += 1
+
+        val abstracttensor = new sTensor(tensor)
         abstracttensor.asInstanceOf[T]
       }
     }
