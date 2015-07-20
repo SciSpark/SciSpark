@@ -16,42 +16,48 @@ import scala.io.Source
  * Created by marroquin on 7/14/15.
  */
 class sRDDTest extends FunSuite  {
-  test("SimplePartitionScheme") {
+  test("ArrayLibsSanityTest") {
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sc = new SciSparkContext("local[4]", "test")
+    val sc = SparkTestConstants.sc
 
+    // Breeze library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    var start = System.nanoTime()
     sBreezeRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    sBreezeRdd.collect()
+    var start = System.nanoTime()
+    val breezeTensors = sBreezeRdd.collect()
     var end = System.nanoTime()
-    println("====")
-    println((end-start)/1000000000.0)
-    println("====")
+    var breezeTime = (end - start)/1000000000.0
 
+    // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    start = System.nanoTime()
     sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    sNd4jRdd.collect()
+    start = System.nanoTime()
+    val nd4jTensors = sNd4jRdd.collect()
     end = System.nanoTime()
-    println("====")
-    println((end-start)/1000000000.0)
-    println("====")
-//
-//    sRdd.filter().map(element => ND4J.re...)
-//    sRdd.filter().map(element => element.ndarray)
-//
-//    println()
-//    println(sRdd.collect().length)
-//    println()
-//    sc.stop
+    var nd4jTime = (end - start)/1000000000.0
+
+    // element comparison
+    var flg = true
+    var cnt = 0
+    nd4jTensors(0).tensor.data.map(e => {
+      if(e != breezeTensors(0).tensor.data(cnt))
+        flg = false
+      cnt+=1
+    })
+
+    // printing out messages
+    println("BREEZE : %.6f".format(breezeTime))
+    println("ND4J : %.6f".format(nd4jTime))
+    println("EQUAL ELEMENTS? %b".format(flg))
   }
 
   test("GroupingByDayPartitioning") {
     val dataMapping = HourlyTrmmUrlGenerator.generateTrmmDaily(1999)
     val sc = SparkTestConstants.sc
+//    val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+
 //    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", BREEZE)
 //    val sRdd = new sRDD[HashMap[String, INDArray]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", ND4J)
 //    println()

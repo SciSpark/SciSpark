@@ -18,6 +18,7 @@ import org.slf4j.Logger
    */
   def reduceResolution (blockSize: Int): T
 
+ implicit def data : Array[Double]
   /**
    * Elementwise Operations
    */
