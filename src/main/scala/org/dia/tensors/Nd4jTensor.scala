@@ -82,5 +82,5 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
   override implicit def **(array: Nd4jTensor): Nd4jTensor = tensor ** array.tensor
 
 
-
+  override def toString : String = tensor.toString
 }
