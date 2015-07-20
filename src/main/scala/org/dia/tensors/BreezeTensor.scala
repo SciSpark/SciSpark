@@ -18,13 +18,7 @@
 package org.dia.tensors
 
 import breeze.linalg.{DenseMatrix, sum}
-import org.dia.Constants
-import Constants._
-import org.dia.loaders.NetCDFUtils
-import org.nd4j.linalg.factory.Nd4j
-import ucar.nc2.dataset.NetcdfDataset
 
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
@@ -71,9 +65,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     new BreezeTensor(reducedMatrix)
   }
 
-  implicit def convert(array : DenseMatrix[Double]) = {
-    new BreezeTensor(array)
-  }
+  implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
 
   override def getArray: Unit = {
     return tensor
@@ -101,5 +93,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
    * Linear Algebra Operations
    */
   override implicit def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
+
+  override def toString : String = tensor.toString
 }
 

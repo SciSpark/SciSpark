@@ -18,17 +18,14 @@
 package org.dia.tensors
 
 import org.slf4j.Logger
-import ucar.nc2.dataset.NetcdfDataset
-
-import scala.collection.mutable
 
 /**
  * Created by rahulsp on 7/15/15.
  */
  trait AbstractTensor  extends Serializable {
+
  type T <: AbstractTensor
   val name : String
-
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
@@ -76,7 +73,7 @@ import scala.collection.mutable
 //
 //  implicit def \=(array : T) : T
 
-
+  def toString : String
 
 
 }
