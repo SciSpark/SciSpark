@@ -43,6 +43,7 @@ object Main {
     val scisparkContext = new SciSparkContext("local[4]", "test")
     val ArrayList = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
 //    val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+
     /**
      * Uncomment this line in order to test on a normal scala array
      * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")

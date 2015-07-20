@@ -28,8 +28,8 @@ object sPartitioner {
   /**
    * Sort of an identity mapping
    */
-  def mapOneUrlToOneTensor(urls : List[String]) : List[List[sTensor]] = {
-    urls.map( elem => List(new sTensor(elem)) )
+  def mapOneUrlToOneTensor(urls : List[String]) : List[List[String]] = {
+    urls.map( elem => List(elem))
   }
 
   //TODO better name?

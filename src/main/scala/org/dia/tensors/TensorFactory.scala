@@ -30,10 +30,10 @@ object TensorFactory {
    * @param varName
    * @return
    */
-  def getTensor(arrayLib:String, loadFunc: (String, String) => (Array[Double], Array[Int]), urlValue : String, varName : String) : AbstractTensor = {
+  def getTensor(arrayLib:String, loadFunc: () => (Array[Double], Array[Int])) : AbstractTensor = {
     arrayLib match {
-      case BREEZE_LIB  => return new BreezeTensor(loadFunc, urlValue, varName)
-      case ND4J_LIB  => return new Nd4jTensor(loadFunc, urlValue, varName)
+      case BREEZE_LIB  => return new BreezeTensor(loadFunc)
+      case ND4J_LIB  => return new Nd4jTensor(loadFunc)
     }
   }
 }

@@ -26,7 +26,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
                         loadFunc: (String, String) => (Array[Double], Array[Int]),
-                        partitionFunc: List[String] => (List[List[sTensor]])
+                        partitionFunc: List[String] => (List[List[String]])
                          )
 
   extends RDD[T](sc, Nil) with Logging {
@@ -54,13 +54,15 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def next(): T = {
-        var tensor = theSplit.tensors(counter).tensor
+        var urlValue = theSplit.tensors(counter)
         //TODO check that tensor is a reference not a copy
-        tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
-          loadFunc, theSplit.tensors(counter).urlValue, varName)
-        val filledTensor = theSplit.tensors(counter)
+        val loader = () => {loadFunc(urlValue, varName)}
+        val tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
+          loader)
         counter += 1
-        filledTensor.asInstanceOf[T]
+
+        val abstracttensor = new sTensor(tensor)
+        abstracttensor.asInstanceOf[T]
       }
     }
     iterator
