@@ -19,7 +19,7 @@ package org.dia
 
 import breeze.linalg.DenseMatrix
 import org.dia.tensors.BreezeTensor
-import org.dia.core.{sTensor, SciSparkContext}
+import org.dia.core.{sciTensor, SciSparkContext}
 
 import scala.language.implicitConversions
 
@@ -42,7 +42,7 @@ object Main {
     //TODO the number of threads should be configured at cluster level
     //val scisparkContext = new SciSparkContext("local[4]", "test")
     val ArrayList = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
-    val s = new sTensor(ArrayList)
+    val s = new sciTensor(ArrayList)
     val x = s + s
     println(x)
     //val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")

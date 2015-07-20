@@ -1,35 +1,50 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.dia.core
 
+
+import breeze.linalg.DenseMatrix
 import org.dia.tensors.AbstractTensor
 
 import scala.collection.mutable
 
-/**
- * Manages the actual tensor and the metadata associated to it
- * @param tensor
- */
-class sciTensor(val tensor : AbstractTensor) extends Serializable {
+
+class sciTensor(val tensor : AbstractTensor) {
 
   var metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
   def this (tensor : AbstractTensor, metaDataVar : (String, String)*){
     this(tensor)
     metaDataVar.map(p => metaData += p)
   }
+
+  implicit def convert(array : AbstractTensor) = new sciTensor(array)
+  implicit def typeConvert(array : AbstractTensor) : this.tensor.T = {
+    if(array.getClass != this.tensor.getClass) {
+     throw new Exception("Incompatible types" + this.tensor.getClass + " with " + array.getClass)
+    }
+    array.asInstanceOf[this.tensor.T]
+  }
+
+  /**
+   * Due to implicit conversions we can do operations on sTensors and DenseMatrix
+   */
+
+  def +(array: sciTensor): sciTensor = tensor + array.tensor
+
+//  override implicit def -(array: sTensor): sTensor = tensor - array.tensor
+//
+//  override implicit def \(array: sTensor): sTensor = tensor \ array.tensor
+//
+//  override implicit def /(array: sTensor): sTensor = tensor / array.tensor
+//
+//  override implicit def *(array: sTensor): sTensor = tensor :* array.tensor
+
+  /**
+   * Linear Algebra Operations
+   */
+//  override implicit def **(array: sTensor): sTensor = tensor * array.tensor
+
+  override def toString : String = tensor.toString
+//  def +(other:sTensor) : sTensor = {
+//    new sTensor(joinMetadata(other.metaData, this.metaData), other.iNDArray + iNDArray)
+//  }
 
 }
