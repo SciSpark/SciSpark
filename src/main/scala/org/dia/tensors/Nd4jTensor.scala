@@ -66,4 +66,7 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
   def +(array : Nd4jTensor) : Nd4jTensor = {
     new Nd4jTensor(tensor + array.tensor)
   }
+  override def getArray: Unit = {
+    return tensor
+  }
 }

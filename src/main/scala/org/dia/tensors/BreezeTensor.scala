@@ -77,5 +77,8 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     new BreezeTensor(sum)
   }
 
+  override def getArray: Unit = {
+    return tensor
+  }
 }
 

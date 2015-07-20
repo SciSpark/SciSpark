@@ -58,9 +58,11 @@ class sRDD[T: ClassTag](sc: SparkContext,
         val urlValue = theSplit.tensors(counter)
         val loader = () => {loadFunc(urlValue, varName)}
         val tensor = TensorFactory.getTensor(arrLib, loader)
+
         counter += 1
-        val abstracttensor = new sTensor(tensor)
-        abstracttensor.asInstanceOf[T]
+        val sciTensor = new sciTensor(tensor)
+        println(sciTensor.tensor.getArray)
+        sciTensor.asInstanceOf[T]
       }
     }
     iterator
