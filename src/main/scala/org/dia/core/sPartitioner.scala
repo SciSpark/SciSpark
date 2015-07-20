@@ -33,11 +33,11 @@ object sPartitioner {
   }
 
   //TODO better name?
-  def mapUrls(key:Any, value:Any) : List[sciTensor] = {
+  def mapOneUrlToManyTensor(urls : List[String]) : List[sciTensor] = {
     var urls = new ListBuffer[String]
-    val actualKey = key.asInstanceOf[Int]
-    val actualValue = value.asInstanceOf[String]
-    urls+=actualValue
+//    val actualKey = key.asInstanceOf[Int]
+//    val actualValue = value.asInstanceOf[String]
+//    urls+=actualValue
     urls
     null
   }

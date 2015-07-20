@@ -64,6 +64,8 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
     new Nd4jTensor(reducedMatrix)
   }
 
+  override implicit def data : Array[Double] = tensor.data.asDouble()
+
   implicit def convert(array : INDArray) : Nd4jTensor = new Nd4jTensor(array)
 
   override implicit def +(array : Nd4jTensor) : Nd4jTensor = tensor + array.tensor

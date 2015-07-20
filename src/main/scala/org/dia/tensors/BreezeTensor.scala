@@ -71,7 +71,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 //    val sum = array.tensor + tensor
 //    new BreezeTensor(sum)
 //  }
-
+  override implicit def data : Array[Double] = tensor.data
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */

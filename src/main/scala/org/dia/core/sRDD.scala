@@ -16,10 +16,9 @@
  */
 package org.dia.core
 
-import breeze.linalg.DenseMatrix
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.tensors.{BreezeTensor, TensorFactory}
+import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
 

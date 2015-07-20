@@ -7,7 +7,7 @@ import org.dia.tensors.AbstractTensor
 import scala.collection.mutable
 
 
-class sciTensor(val tensor : AbstractTensor) {
+class sciTensor(val tensor : AbstractTensor) extends Serializable {
 
   var metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
   def this (tensor : AbstractTensor, metaDataVar : (String, String)*){
