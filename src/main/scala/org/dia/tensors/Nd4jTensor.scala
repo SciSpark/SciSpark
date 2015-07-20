@@ -33,20 +33,16 @@ import scala.language.implicitConversions
  * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jTensor extends AbstractTensor {
-  var tensor : INDArray = null
+class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
   type T = Nd4jTensor
   val name : String = "nd4j"
 
-  def this(loadFunc : (String, String) => (Array[Double], Array[Int])) {
-    this
-    val shapePair = loadFunc()
-    tensor = Nd4j.create(shapePair._1, shapePair._2)
+  def this(shapePair : (Array[Double], Array[Int])) {
+    this(Nd4j.create(shapePair._1, shapePair._2))
   }
 
-  def this(t : INDArray) {
-    this
-    tensor = t
+  def this(loadFunc : () => (Array[Double], Array[Int])) {
+    this(loadFunc())
   }
 
   def reduceResolution(blockSize: Int): Nd4jTensor = {
