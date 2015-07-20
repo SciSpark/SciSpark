@@ -64,6 +64,9 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
     new Nd4jTensor(reducedMatrix)
   }
 
+  override def getArray: Unit = {
+    return tensor
+  }
   implicit def convert(array : INDArray) : Nd4jTensor = new Nd4jTensor(array)
 
   override implicit def +(array : Nd4jTensor) : Nd4jTensor = tensor + array.tensor
@@ -80,7 +83,6 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
    * Linear Algebra Operations
    */
   override implicit def **(array: Nd4jTensor): Nd4jTensor = tensor ** array.tensor
-
 
   override def toString : String = tensor.toString
 

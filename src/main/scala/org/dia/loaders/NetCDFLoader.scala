@@ -18,10 +18,12 @@ object NetCDFLoader {
   def loadNetCDFTRMMVars(url: String, variable: String): (Array[Double], Array[Int]) = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
+
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
+
     (coordinateArray, Array(rowDim, columnDim))
     //new Nd4jTensor(Nd4j.create(coordinateArray, Array(rowDim, columnDim)))
   }
@@ -33,10 +35,12 @@ object NetCDFLoader {
    * @return
    */
   def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) =  {
+    println("-------------")
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)
+    println("-------------")
     (coordinateArray, shape)
   }
 

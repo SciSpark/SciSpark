@@ -20,12 +20,12 @@ class sRDDTest extends FunSuite  {
     val sc = new SciSparkContext("local[4]", "test")
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sBreezeRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    println(sBreezeRdd.collect().length)
+    val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+    println(sBreezeRdd.collect().getClass)
 
 
 //    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-//    val sNd4jRdd = new sRDD[sTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+//    val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
 
 //
 //    sRdd.filter().map(element => ND4J.re...)
