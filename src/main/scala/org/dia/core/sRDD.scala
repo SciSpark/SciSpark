@@ -53,13 +53,11 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def next(): T = {
-        var urlValue = theSplit.tensors(counter)
-        //TODO check that tensor is a reference not a copy
+        val urlValue = theSplit.tensors(counter)
         val loader = () => {loadFunc(urlValue, varName)}
-        val tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
-          loader)
+        val libraryProperty = sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB)
+        val tensor = TensorFactory.getTensor(libraryProperty, loader)
         counter += 1
-
         val abstracttensor = new sTensor(tensor)
         abstracttensor.asInstanceOf[T]
       }
