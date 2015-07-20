@@ -47,17 +47,17 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
   test("basic functionality") {
     val sc = SparkTestConstants.sc
-    val rdd = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1998, 1998)
-    val rdd2 = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 1999)
-
-    // operation
-    //      val threshold = 45
-    //      rdd.collect().map( m =>
-    //        if (m._2.max > threshold)
-    //          println(m._1)
-    //      )
-
-    val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
+//    val rdd = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1998, 1998)
+//    val rdd2 = new TrmmHourlyRDD[(String, DenseMatrix[Double])](sc, Constants.TRMM_HOURLY_URL, HOURLY_TRMM_DATA_VAR, 1999, 1999)
+//
+//    // operation
+//    //      val threshold = 45
+//    //      rdd.collect().map( m =>
+//    //        if (m._2.max > threshold)
+//    //          println(m._1)
+//    //      )
+//
+//    val rdd3 = new TrmmBiasRDD[(String, DenseMatrix[Double])](sc, rdd, rdd2)
 
     //println(rdd3.collect()(0))
     //println()

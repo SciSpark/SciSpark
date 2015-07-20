@@ -18,7 +18,7 @@
 package org.dia.tensors
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.TRMMUtils.NetCDFUtils
+import org.dia.loaders.NetCDFUtils
 import org.jblas.DoubleMatrix
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset

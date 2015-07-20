@@ -18,7 +18,7 @@
 package org.dia.b
 
 import breeze.linalg.DenseMatrix
-import org.dia.TRMMUtils.NetCDFUtils
+import org.dia.loaders.NetCDFUtils
 
 /**
  * Tests for the Breeze functions

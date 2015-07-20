@@ -18,7 +18,6 @@ package org.dia.core
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.Constants
 import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
@@ -40,7 +39,6 @@ class sRDD[T: ClassTag](sc: SparkContext,
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
     // call the loader/constructor
     getIterator(split.asInstanceOf[sRDDPartition[T]])
-
   }
 
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
@@ -55,13 +53,11 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def next(): T = {
-        var urlValue = theSplit.tensors(counter)
-        //TODO check that tensor is a reference not a copy
+        val urlValue = theSplit.tensors(counter)
         val loader = () => {loadFunc(urlValue, varName)}
-        val tensor = TensorFactory.getTensor(sc.getLocalProperty(Constants.ARRAY_LIB),
-          loader)
+        val libraryProperty = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
+        val tensor = TensorFactory.getTensor(libraryProperty, loader)
         counter += 1
-
         val abstracttensor = new sTensor(tensor)
         abstracttensor.asInstanceOf[T]
       }

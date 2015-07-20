@@ -20,7 +20,8 @@ package org.dia.tensors
 import breeze.linalg.{DenseMatrix, sum}
 import org.dia.Constants
 import Constants._
-import org.dia.TRMMUtils.NetCDFUtils
+import org.dia.loaders.NetCDFUtils
+import org.nd4j.linalg.factory.Nd4j
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable
@@ -30,25 +31,17 @@ import scala.language.implicitConversions
  * Functions needed to perform operations with Breeze
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
-class BreezeTensor extends AbstractTensor {
-  var tensor : DenseMatrix[Double] = null
+class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   type  T = BreezeTensor
   val name : String = "breeze"
 
-  //TODO check if using partialy applied functions can be used here
-  def this(loadFunc : (String, String) => (Array[Double], Array[Int]), url: String, variable: String) {
-    this
-    val shapePair = loadFunc(url, variable)
-    val row = shapePair._2(0)
-    val col = shapePair._2(0)
-    tensor = new DenseMatrix[Double](row, col, shapePair._1, 0)
+  def this(shapePair : (Array[Double], Array[Int])) {
+    this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1, 0))
   }
 
-  def this(t : DenseMatrix[Double]) {
-    this
-    tensor = t
+  def this(loadFunc : () => (Array[Double], Array[Int])) {
+    this(loadFunc())
   }
-
 
   /**
    * Reduces the resolution of a DenseMatrix

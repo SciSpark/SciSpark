@@ -1,9 +1,6 @@
 package org.dia.loaders
 
-import org.dia.Constants
-import Constants._
-import org.dia.TRMMUtils.NetCDFUtils
-import org.nd4j.linalg.factory.Nd4j
+import org.dia.Constants._
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable

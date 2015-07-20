@@ -17,7 +17,7 @@
  */
 package org.dia.n
 
-import org.dia.TRMMUtils.NetCDFUtils
+import org.dia.loaders.NetCDFUtils
 import org.nd4j.linalg.factory.Nd4j
 
 /**
