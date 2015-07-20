@@ -39,6 +39,44 @@ import scala.collection.mutable
   def reduceResolution (blockSize: Int): T
 
   def getArray : Unit
+  /**
+   * Elementwise Operations
+   */
 
   implicit def + (array : T) : T
+
+  implicit def - (array : T) : T
+
+  implicit def *(array : T) : T
+
+  implicit def /(array : T) : T
+
+  implicit def \ (array : T) : T
+
+  /**
+   * Linear Algebra Operations
+   */
+
+  implicit def **(array : T) : T
+
+
+  /**
+   * In place operations
+   */
+
+//  implicit def +=(array : T) : T
+//
+//  implicit def -=(array : T) : T
+//
+//  implicit def *=(array : T) : T
+//
+//  implicit def **=(array : T) : T
+//
+//  implicit def /=(array : T) : T
+//
+//  implicit def \=(array : T) : T
+
+
+
+
 }

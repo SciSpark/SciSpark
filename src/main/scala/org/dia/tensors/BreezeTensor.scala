@@ -71,14 +71,35 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     new BreezeTensor(reducedMatrix)
   }
 
-
-  def +(array: BreezeTensor): BreezeTensor = {
-    val sum = array.tensor + tensor
-    new BreezeTensor(sum)
+  implicit def convert(array : DenseMatrix[Double]) = {
+    new BreezeTensor(array)
   }
 
   override def getArray: Unit = {
     return tensor
   }
+//  override implicit def +(array: BreezeTensor): BreezeTensor = {
+//    val sum = array.tensor + tensor
+//    new BreezeTensor(sum)
+//  }
+
+  /**
+   * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
+   */
+
+  override implicit def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
+
+  override implicit def -(array: BreezeTensor): BreezeTensor = tensor - array.tensor
+
+  override implicit def \(array: BreezeTensor): BreezeTensor = tensor \ array.tensor
+
+  override implicit def /(array: BreezeTensor): BreezeTensor = tensor / array.tensor
+
+  override implicit def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
+
+  /**
+   * Linear Algebra Operations
+   */
+  override implicit def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
 }
 
