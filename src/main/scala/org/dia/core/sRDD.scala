@@ -18,6 +18,7 @@ package org.dia.core
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
+import org.dia.Constants
 import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
@@ -57,7 +58,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
         var urlValue = theSplit.tensors(counter)
         //TODO check that tensor is a reference not a copy
         val loader = () => {loadFunc(urlValue, varName)}
-        val tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
+        val tensor = TensorFactory.getTensor(sc.getLocalProperty(Constants.ARRAY_LIB),
           loader)
         counter += 1
 

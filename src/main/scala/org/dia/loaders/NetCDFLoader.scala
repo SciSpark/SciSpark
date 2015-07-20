@@ -1,6 +1,7 @@
 package org.dia.loaders
 
-import org.dia.TRMMUtils.Constants._
+import org.dia.Constants
+import Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import org.nd4j.linalg.factory.Nd4j
 import ucar.nc2.dataset.NetcdfDataset

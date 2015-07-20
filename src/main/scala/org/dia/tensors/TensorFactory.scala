@@ -16,7 +16,8 @@
  */
 package org.dia.tensors
 
-import org.dia.TRMMUtils.Constants.{BREEZE_LIB, ND4J_LIB}
+import org.dia.Constants
+import Constants.{BREEZE_LIB, ND4J_LIB}
 
 /**
  * Tensor factory

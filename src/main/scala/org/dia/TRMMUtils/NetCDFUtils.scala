@@ -17,7 +17,8 @@
  */
 package org.dia.TRMMUtils
 
-import org.dia.TRMMUtils
+import org.dia
+import org.dia.{Constants, TRMMUtils}
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
@@ -127,9 +128,9 @@ object NetCDFUtils {
     while (it.hasNext) {
       val d = it.next()
       //TODO verify how the names map to indexes
-      if(TRMMUtils.Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)){
+      if(Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)){
         dSizes.put(2, d.getLength)
-      } else if( TRMMUtils.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)){
+      } else if( dia.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)){
         dSizes.put(1, d.getLength)
       } else {
         dSizes.put(iterate, d.getLength)

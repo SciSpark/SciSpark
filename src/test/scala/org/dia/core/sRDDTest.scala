@@ -1,7 +1,8 @@
 package org.dia.core
 
-import org.dia.TRMMUtils.Constants._
-import org.dia.TRMMUtils.HourlyTrmm
+import org.dia.Constants
+import Constants._
+import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.{HashMap, ListBuffer}
@@ -35,7 +36,7 @@ class sRDDTest extends FunSuite  {
   }
 
   test("GroupingByDayPartitioning") {
-    val dataMapping = HourlyTrmm.generateTrmmDaily(1999)
+    val dataMapping = HourlyTrmmUrlGenerator.generateTrmmDaily(1999)
     val sc = SparkTestConstants.sc
 //    val sRdd = new sRDD[HashMap[String, DenseMatrix[Double]]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", BREEZE)
 //    val sRdd = new sRDD[HashMap[String, INDArray]] (sc, dataMapping, sPartitioner.mapOneUrlToOneTensor, "precipitation", ND4J)
@@ -46,7 +47,7 @@ class sRDDTest extends FunSuite  {
   }
 
   test("GroupingByMonthPartitioning") {
-    var dataUrls = HourlyTrmm.generateTrmmDaily(1999)
+    var dataUrls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999)
     val dataMapping = new HashMap[String, HashMap[String, ListBuffer[String]]]()
     for ((key, value) <- dataUrls) {
       val newKey = key.toString("yyyy-MM")
@@ -65,7 +66,7 @@ class sRDDTest extends FunSuite  {
   }
 
   test("GroupingByYearPartitioning") {
-    var dataUrls = HourlyTrmm.generateTrmmDaily(1999,2000)
+    var dataUrls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999,2000)
     val dataMapping = new HashMap[String, HashMap[String, ListBuffer[String]]]()
     for ((key, value) <- dataUrls) {
       val newKey = key.toString("yyyy")

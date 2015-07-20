@@ -18,6 +18,7 @@
 package org.dia.TRMMUtils
 
 import breeze.linalg.DenseMatrix
+import org.dia.Constants
 import org.dia.core.SparkTestConstants
 import org.joda.time.DateTime
 
@@ -40,7 +41,7 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings +=("3B42.19980307.03.7.HDF.Z", "3B42.19980307.06.7.HDF.Z",
       "3B42.19980307.09.7.HDF.Z", "3B42.19980307.12.7.HDF.Z", "3B42.19980307.15.7.HDF.Z",
       "3B42.19980307.18.7.HDF.Z", "3B42.19980307.21.7.HDF.Z", "3B42.19980308.00.7.HDF.Z")
-    val trmmHourlyUrls = HourlyTrmm.generateDayReadings(realDate)
+    val trmmHourlyUrls = HourlyTrmmUrlGenerator.generateDayReadings(realDate)
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 

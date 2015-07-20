@@ -18,7 +18,8 @@
 package org.dia.tensors
 
 import breeze.linalg.{DenseMatrix, sum}
-import org.dia.TRMMUtils.Constants._
+import org.dia.Constants
+import Constants._
 import org.dia.TRMMUtils.NetCDFUtils
 import ucar.nc2.dataset.NetcdfDataset
 
