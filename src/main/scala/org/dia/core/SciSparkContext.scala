@@ -20,7 +20,6 @@ package org.dia.core
 
 import org.apache.spark.SparkContext
 
-//import org.dia.core.singleUrl.sciNd4jRDD
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext
@@ -28,7 +27,6 @@ import org.apache.spark.SparkContext
  * executing one of the functions after the SparkContext has been stopped.
  *
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
- * Created by rahulsp on 7/8/15.
  */
 class SciSparkContext(master : String, appName : String) extends SparkContext(master, appName) {
   /**

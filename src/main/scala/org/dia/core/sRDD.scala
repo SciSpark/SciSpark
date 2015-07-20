@@ -18,7 +18,7 @@ package org.dia.core
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.tensors.BreezeTensor
+import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
 
@@ -39,6 +39,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
     // call the loader/constructor
     getIterator(split.asInstanceOf[sRDDPartition[T]])
+
   }
 
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
@@ -55,7 +56,8 @@ class sRDD[T: ClassTag](sc: SparkContext,
       override def next(): T = {
         var tensor = theSplit.tensors(counter).tensor
         //TODO check that tensor is a reference not a copy
-        tensor = new BreezeTensor(loadFunc, theSplit.tensors(counter).urlValue, varName)
+        tensor = TensorFactory.getTensor(sc.getLocalProperty(org.dia.TRMMUtils.Constants.ARRAY_LIB),
+          loadFunc, theSplit.tensors(counter).urlValue, varName)
         val filledTensor = theSplit.tensors(counter)
         counter += 1
         filledTensor.asInstanceOf[T]
