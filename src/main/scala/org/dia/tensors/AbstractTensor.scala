@@ -11,7 +11,7 @@ import scala.collection.mutable
  * Created by rahulsp on 7/15/15.
  */
 
- trait AbstractTensor {
+ abstract class AbstractTensor {
  type T <: AbstractTensor
   val name : String
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -29,7 +29,6 @@ import scala.collection.mutable
 
 
   implicit def + (array : T) : T
-
   implicit def - (array : T) : T
 
   implicit def *(array : T) : T
@@ -62,6 +61,8 @@ import scala.collection.mutable
 //  implicit def \=(array : T) : T
 
   def toString : String
+
+  implicit def apply : T
 
 
 }

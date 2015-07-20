@@ -94,5 +94,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   override implicit def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
 
   override def toString : String = tensor.toString
+
+  implicit def apply : BreezeTensor = this
 }
 
