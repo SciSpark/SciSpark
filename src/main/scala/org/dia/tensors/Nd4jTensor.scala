@@ -17,15 +17,10 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.DenseMatrix
-import org.dia.TRMMUtils.Constants._
-import org.dia.TRMMUtils.NetCDFUtils
 import org.nd4j.api.linalg.DSL._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
-import ucar.nc2.dataset.NetcdfDataset
 
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
