@@ -35,12 +35,10 @@ object NetCDFLoader {
    * @return
    */
   def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) =  {
-    println("-------------")
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
     val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
     val shape = dims.toArray.sortBy(_._1).map(_._2)
-    println("-------------")
     (coordinateArray, shape)
   }
 

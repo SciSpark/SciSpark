@@ -1,5 +1,6 @@
 package org.dia.core
 
+import org.apache.spark.storage.StorageLevel
 import org.dia.Constants
 import Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
@@ -21,12 +22,23 @@ class sRDDTest extends FunSuite  {
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    println(sBreezeRdd.collect().getClass)
+    var start = System.nanoTime()
+    sBreezeRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    sBreezeRdd.collect()
+    var end = System.nanoTime()
+    println("====")
+    println((end-start)/1000000000.0)
+    println("====")
 
-
-//    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-//    val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
+    start = System.nanoTime()
+    sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
+    sNd4jRdd.collect()
+    end = System.nanoTime()
+    println("====")
+    println((end-start)/1000000000.0)
+    println("====")
 //
 //    sRdd.filter().map(element => ND4J.re...)
 //    sRdd.filter().map(element => element.ndarray)

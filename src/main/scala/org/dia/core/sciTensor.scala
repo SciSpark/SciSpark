@@ -32,4 +32,9 @@ class sciTensor(val tensor : AbstractTensor) extends Serializable {
     metaDataVar.map(p => metaData += p)
   }
 
+  implicit def + (array : sciTensor) : sciTensor = {
+    new sciTensor(tensor + array.tensor)
+
+  }
+
 }

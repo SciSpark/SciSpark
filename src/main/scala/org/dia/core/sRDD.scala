@@ -16,9 +16,10 @@
  */
 package org.dia.core
 
+import breeze.linalg.DenseMatrix
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
-import org.dia.tensors.TensorFactory
+import org.dia.tensors.{BreezeTensor, TensorFactory}
 
 import scala.reflect.ClassTag
 
@@ -61,7 +62,6 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
         counter += 1
         val sciTensor = new sciTensor(tensor)
-        println(sciTensor.tensor.getArray)
         sciTensor.asInstanceOf[T]
       }
     }

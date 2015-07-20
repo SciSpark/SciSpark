@@ -35,7 +35,6 @@ import org.slf4j.Logger
    */
   def reduceResolution (blockSize: Int): T
 
-  def getArray : Unit
   /**
    * Elementwise Operations
    */
