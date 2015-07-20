@@ -57,7 +57,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
         val urlValue = theSplit.tensors(counter)
         counter += 1
         val loader = () => {loadFunc(urlValue, varName)}
-        val abstracttensor = new sTensor(new Nd4jTensor(loader))
+        val abstracttensor = new sTensor(new BreezeTensor(loader))
         abstracttensor.asInstanceOf[T]
       }
     }
