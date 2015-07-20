@@ -29,8 +29,8 @@ import scala.language.implicitConversions
  * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
-  type T = Nd4jTensor
+class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
+  override type T = Nd4jTensor
   val name : String = "nd4j"
 
   def this(shapePair : (Array[Double], Array[Int])) {
@@ -82,4 +82,6 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
   override implicit def **(array: Nd4jTensor): Nd4jTensor = tensor ** array.tensor
 
   override def toString : String = tensor.toString
+
+  implicit def apply : Nd4jTensor = this
 }
