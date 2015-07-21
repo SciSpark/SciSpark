@@ -61,9 +61,10 @@ class sRDDTest extends FunSuite  {
   test("GroupingByDayPartitioning") {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2001).toList
     val sc = SparkTestConstants.sc
+    sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
 
     // Nd4j library
-    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val nd4jTensors = sNd4jRdd.collect()
     for (nd4jTensor <- nd4jTensors) {
