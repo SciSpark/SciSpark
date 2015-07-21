@@ -40,8 +40,15 @@ object NetCDFUtils {
    */
   def loadNetCDFDataSet(url : String) : NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
-    val netcdfFile = NetcdfDataset.openDataset(url)
-    netcdfFile
+    try {
+      var netcdfFile = NetcdfDataset.openDataset(url)
+      netcdfFile
+    } catch {
+      case e : java.io.IOException => LOG.error("Couldn't open dataset %s".format(url))
+        null
+      case ex : Exception => LOG.error("Something went wrong while reading %s".format(url))
+        null
+    }
   }
 
   /**
@@ -55,7 +62,7 @@ object NetCDFUtils {
     var coordinateArray: Array[Double] = Array.empty
 
     if (SearchVariable == null) {
-      LOG.error("Variable '%s' not found. Can't create array.".format(variable))
+      LOG.error("Variable '%s' not found. Can't create array. Returning empty array.".format(variable))
       return coordinateArray
     }
 
@@ -88,12 +95,17 @@ object NetCDFUtils {
   def getNetCDFVariableArray(netcdfFile: NetcdfDataset, variable: String): ma2.Array = {
     var SearchVariable: ma2.Array = null
     try {
-      SearchVariable = netcdfFile.findVariable(variable).read()
+      if (netcdfFile == null)
+        throw new IllegalStateException("NetCDFDataset was not loaded")
+      val netcdfVal = netcdfFile.findVariable(variable)
+      if (netcdfVal == null)
+        throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
+      SearchVariable = netcdfVal.read()
     } catch {
       case ex: Exception =>
-        LOG.error("Variable '%s' not found when reading source %s.".format(variable, netcdfFile.getFileTypeId))
-        LOG.debug("Variables available: " + netcdfFile.getVariables)
-        ex.printStackTrace()
+        LOG.error("Variable '%s' not found when reading source %s.".format(variable, netcdfFile))
+        LOG.info("Variables available: " + netcdfFile.getVariables)
+        LOG.error(ex.getMessage)
     }
     SearchVariable
   }
@@ -128,7 +140,16 @@ object NetCDFUtils {
    */
   def getDimensionSizes(netcdfFile: NetcdfDataset, variable: String): mutable.HashMap[Int, Int] = {
     //TODO verify if the variable name actually exists
-    val dimensions = netcdfFile.findVariable(variable).getDimensions
+    // if the netcdf doesn't exists
+    if (netcdfFile == null)
+      return  new mutable.HashMap[Int, Int]()
+
+    // if the variable doesn't exist
+    var netcdfVariable = netcdfFile.findVariable(variable)
+    if (netcdfVariable == null)
+      return  new mutable.HashMap[Int, Int]()
+
+    var dimensions = netcdfVariable.getDimensions
     val it = dimensions.iterator
     val dSizes = new mutable.HashMap[Int, Int]()
     var iterate = 3

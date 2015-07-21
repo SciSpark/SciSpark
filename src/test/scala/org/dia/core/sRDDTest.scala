@@ -58,40 +58,32 @@ class sRDDTest extends FunSuite  {
     println("EQUAL ELEMENTS? %b".format(flg))
   }
 
-  test("GroupingByDayPartitioning") {
-    val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2001).toList
+  test("GroupingByYearPartitioning") {
+    val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList
     val sc = SparkTestConstants.sc
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
 
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
-    val nd4jTensors = sNd4jRdd.collect()
-    for (nd4jTensor <- nd4jTensors) {
-      println(nd4jTensor.tensor.data.length)
-    }
+    val nd4jTensor = sNd4jRdd.collect()(0)
+    nd4jTensor.tensor.data.map(e => println(e))
+    assert(true)
   }
 
-  test("GroupingByMonthPartitioning") {
-//    var dataUrls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999)
-//    val dataMapping = new HashMap[String, HashMap[String, ListBuffer[String]]]()
-//    for ((key, value) <- dataUrls) {
-//      val newKey = key.toString("yyyy-MM")
-//      var keyDay = new HashMap[String, ListBuffer[String]]
-//      if (dataMapping.get(newKey) != None) {
-//        keyDay = dataMapping.get(newKey).get
-//      }
-//      keyDay.put(key.getDayOfYear.toString, value)
-//      dataMapping.put(newKey, keyDay)
-//    }
-//    for ((k,v) <- dataMapping) {
-//      println(v.keySet)
-//    }
-//    val sc = SparkTestConstants.sc
-//    val srdd = new sciBreezeRDD[DenseMatrix[Double]] (sc, dataMapping, "TotCldLiqH2O_A")
+  test("GroupingByDayPartitioning") {
+    val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList
+    val sc = SparkTestConstants.sc
+    sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
+
+    // Nd4j library
+    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
+    val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
+    val nd4jTensor = sNd4jRdd.collect()(0)
+    println(nd4jTensor.tensor.data)
   }
 
-  test("GroupingByYearPartitioning") {
+  test("GroupingBySomethingPartitioning") {
 //    var dataUrls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999,2000)
 //    val dataMapping = new HashMap[String, HashMap[String, ListBuffer[String]]]()
 //    for ((key, value) <- dataUrls) {
