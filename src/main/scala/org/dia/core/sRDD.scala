@@ -79,6 +79,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
     val array = new Array[Partition](datasets.length)
     // will create a list of lists of empty sTensors
     val listOfLists = partitionFunc(datasets)
+
     for (list <- listOfLists) {
       array(pos) = new sRDDPartition(pos, list)
       pos += 1

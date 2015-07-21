@@ -53,6 +53,12 @@ object NetCDFUtils {
   def convertMa2ArrayTo1DJavaArray(netcdfFile: NetcdfDataset, variable: String): Array[Double] = {
     val SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
     var coordinateArray: Array[Double] = Array.empty
+
+    if (SearchVariable == null) {
+      LOG.error("Variable '%s' not found. Can't create array.".format(variable))
+      return coordinateArray
+    }
+
     val oneDarray = SearchVariable.copyTo1DJavaArray()
     // convert to doubles
     try {
@@ -85,6 +91,8 @@ object NetCDFUtils {
       SearchVariable = netcdfFile.findVariable(variable).read()
     } catch {
       case ex: Exception =>
+        LOG.error("Variable '%s' not found when reading source %s.".format(variable, netcdfFile.getFileTypeId))
+        LOG.debug("Variables available: " + netcdfFile.getVariables)
         ex.printStackTrace()
     }
     SearchVariable

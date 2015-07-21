@@ -17,7 +17,9 @@
  */
 package org.dia.core
 
-import scala.collection.mutable.ListBuffer
+
+import org.dia.Constants
+
 import scala.language.implicitConversions
 
 /**
@@ -32,14 +34,39 @@ object sPartitioner {
     urls.map( elem => List(elem))
   }
 
-  //TODO better name?
-  def mapOneUrlToManyTensor(urls : List[String]) : List[sciTensor] = {
-    var urls = new ListBuffer[String]
-//    val actualKey = key.asInstanceOf[Int]
-//    val actualValue = value.asInstanceOf[String]
-//    urls+=actualValue
-    urls
-    null
+
+  /**
+   * Groups strings by the string passed along
+   */
+  def mapOneUrlToManyTensorTRMM(urls : List[String], groupedBy : String) : List[List[String]] = {
+    var mappedUrls : List[List[String]] = Nil
+    var pos = 0
+    groupedBy match {
+
+      case Constants.GROUP_BY_DAY => pos = 8;
+      case Constants.GROUP_BY_YEAR => pos = 4;
+    }
+    val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
+    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    mappedUrls
+  }
+
+  def mapOneYearToManyTensorTRMM(urls : List[String]) : List[List[String]] = {
+    var mappedUrls : List[List[String]] = Nil
+    //We know how the url is constructed so this shouldn't be a problem
+    var pos = 4
+    val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
+    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    mappedUrls
+  }
+
+  def mapOneDayToManyTensorTRMM(urls : List[String]) : List[List[String]] = {
+    var mappedUrls : List[List[String]] = Nil
+    //We know how the url is constructed so this shouldn't be a problem
+    var pos = 8
+    val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
+    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    mappedUrls
   }
 }
 
