@@ -32,6 +32,8 @@ import scala.language.implicitConversions
 class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
   override type T = Nd4jTensor
   val name : String = "nd4j"
+  val data : Array[Double] = tensor.data
+  val shape = tensor.shape
 
   def this(shapePair : (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
@@ -86,4 +88,6 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor { self =>
   override def toString : String = tensor.toString
 
   implicit def apply : Nd4jTensor = this
+
+  override def equals(array : Nd4jTensor) : Boolean = tensor == array.tensor
 }

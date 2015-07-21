@@ -19,7 +19,10 @@
 package org.dia.core
 
 import org.apache.spark.SparkContext
-
+import scala.io.Source
+import org.dia.loaders.NetCDFLoader._
+import org.dia.core.sPartitioner._
+import org.dia.Constants._
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext
@@ -29,6 +32,7 @@ import org.apache.spark.SparkContext
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
  */
 class SciSparkContext(master : String, appName : String) extends SparkContext(master, appName) {
+  this.setLocalProperty(ARRAY_LIB, ND4J_LIB)
   /**
    * Constructs an sRDD from a file of openDap URL's pointing to NetCDF datasets.
    *
@@ -40,13 +44,12 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
    * @param minPartitions the minimum number of partitions
    * @return
    */
-//    def OpenDapURLFile(path: String,
-//                       varName : String,
-//                       minPartitions: Int = defaultMinPartitions) : sciNd4jRDD[INDArray] = {
+    def OpenDapURLFile(path: String,
+                       varName : String,
+                       minPartitions: Int = defaultMinPartitions) : sRDD[sciTensor] = {
 
-//      val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-//      new sciNd4jRDD[INDArray](this, datasetUrls, varName)
-//    null
-//    }
+      val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
+      new sRDD[sciTensor](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
+    }
 
 }
