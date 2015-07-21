@@ -1,16 +1,12 @@
 package org.dia.core
 
-import org._
 import org.apache.spark.storage.StorageLevel
-import org.dia._
 import org.dia.Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
+import org.dia.core.sPartitioner._
+import org.dia.loaders.NetCDFLoader._
 import org.scalatest.FunSuite
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable.{HashMap, ListBuffer}
-import org.dia.loaders.NetCDFLoader._
-import org.dia.core.sPartitioner._
 import scala.io.Source
 
 /**
@@ -64,19 +60,15 @@ class sRDDTest extends FunSuite  {
 
   test("GroupingByDayPartitioning") {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2001).toList
-//    println(urls)
-//    val mapped = mapOneUrlToManyTensorTRMM(urls, GROUP_BY_DAY)
-//    println(mapped)
     val sc = SparkTestConstants.sc
+
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-
-    val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneToOneTensor)
+    val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val nd4jTensors = sNd4jRdd.collect()
     for (nd4jTensor <- nd4jTensors) {
       println(nd4jTensor.tensor.data.length)
     }
-//    sc.stop
   }
 
   test("GroupingByMonthPartitioning") {

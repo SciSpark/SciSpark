@@ -18,7 +18,6 @@ import org.slf4j.Logger
    */
   def reduceResolution (blockSize: Int): T
 
- implicit def data : Array[Double]
   /**
    * Elementwise Operations
    */
@@ -31,6 +30,8 @@ import org.slf4j.Logger
   implicit def /(array : T) : T
 
   implicit def \ (array : T) : T
+
+  implicit def data : Array[Double]
 
   /**
    * Linear Algebra Operations
@@ -60,8 +61,6 @@ import org.slf4j.Logger
   def equals(array : T) : Boolean
 
   def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
-
-  def data : Array[Double]
 
   def shape : Array[Int]
 }

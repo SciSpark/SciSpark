@@ -28,8 +28,8 @@ import scala.language.implicitConversions
 class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   type  T = BreezeTensor
   val name : String = "breeze"
-  val shape = (tensor.rows, tensor.cols)
-  val underlying = tensor.data
+  val shape = Array(tensor.rows, tensor.cols)
+
   def this(shapePair : (Array[Double], Array[Int])) {
     this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1, 0))
   }
@@ -68,11 +68,8 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
 
-//  override implicit def +(array: BreezeTensor): BreezeTensor = {
-//    val sum = array.tensor + tensor
-//    new BreezeTensor(sum)
-//  }
   override implicit def data : Array[Double] = tensor.data
+
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
@@ -98,6 +95,6 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   override def equals(array : BreezeTensor) : Boolean = tensor == array.tensor
 
-  override def getUnderlying() : (Array[Double], Array[Int]) = (tensor.data, (tensor.rows, tensor.cols))
+  override def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
 }
 
