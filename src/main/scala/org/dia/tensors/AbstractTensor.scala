@@ -18,7 +18,12 @@ import org.slf4j.Logger
    */
   def reduceResolution (blockSize: Int): T
 
+  /**
+   *
+   * @return c-ordered linear array of data elements
+   */
  implicit def data : Array[Double]
+
   /**
    * Elementwise Operations
    */
@@ -40,6 +45,11 @@ import org.slf4j.Logger
 
 
   /**
+   * Masking operations
+   */
+
+  //implicit def <=(num : Double) : T
+  /**
    * In place operations
    */
 
@@ -60,8 +70,6 @@ import org.slf4j.Logger
   def equals(array : T) : Boolean
 
   def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
-
-  def data : Array[Double]
 
   def shape : Array[Int]
 }

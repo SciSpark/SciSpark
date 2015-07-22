@@ -48,4 +48,6 @@ class sciTensor(val tensor : AbstractTensor) extends Serializable {
   override def toString : String = tensor.toString
 
   def equals(array : sciTensor) : Boolean = tensor == array.tensor
+
+  def data : Array[Double] = tensor.data
 }

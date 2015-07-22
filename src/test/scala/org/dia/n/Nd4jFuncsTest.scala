@@ -18,7 +18,9 @@
 package org.dia.n
 
 import org.dia.loaders.NetCDFUtils
+import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.api.Implicits._
 
 /**
  * Tests for the Breeze functions
@@ -108,23 +110,21 @@ class Nd4JLibTest extends org.scalatest.FunSuite {
   }
 
   test("ndf4jReduceResolutionAvrgTest") {
-//    val squareSize = 100
-//    val reductionSize = 50
-//    val accuracy = 1E-15
-//    val reducedWidth = squareSize / reductionSize
-//    val testMatrix = Nd4j.create(squareSize, squareSize)
-//
-//    val resultMatrix = Nd4jTensor.reduceResolution(testMatrix, reductionSize)
-//
-//    for (i <- 0 to (reducedWidth - 1)) {
-//      for (j <- 0 to (reducedWidth - 1)) {
-//        val error = Math.abs(resultMatrix(i, j) - 1)
-//        if (error >= accuracy) {
-//          assert(error >= accuracy, "The error is not even close for indices " + i + " " + j + "with value : " + resultMatrix(i, j))
-//        }
-//      }
-//    }
-//    assert(true)
+    val squareSize = 100
+    val reductionSize = 50
+    val accuracy = 1E-15
+    val reducedWidth = squareSize / reductionSize
+    val testMatrix = new Nd4jTensor((0d to 10000d by 1d) asNDArray (squareSize, squareSize))
+
+    val resultMatrix = testMatrix.reduceResolution(reductionSize).data
+
+    for (i <- 0 to resultMatrix.length - 1) {
+        val error = Math.abs(resultMatrix(i) - 1)
+        if (error >= accuracy) {
+          assert(error >= accuracy, "The error is not even close for indices " + i  + "with value : " + resultMatrix(i))
+        }
+    }
+    assert(true)
   }
 
   /**

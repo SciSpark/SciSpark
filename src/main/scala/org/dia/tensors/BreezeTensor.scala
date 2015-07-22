@@ -17,7 +17,7 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.{DenseMatrix, sum}
+import breeze.linalg.{DenseMatrix, NumericOps, sum}
 
 import scala.language.implicitConversions
 
@@ -28,10 +28,10 @@ import scala.language.implicitConversions
 class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   type  T = BreezeTensor
   val name : String = "breeze"
-  val shape = (tensor.rows, tensor.cols)
-  val underlying = tensor.data
+  val shape = Array(tensor.rows, tensor.cols)
+
   def this(shapePair : (Array[Double], Array[Int])) {
-    this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1, 0))
+    this(new DenseMatrix[Double](shapePair._2(0),shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
   }
 
   def this(loadFunc : () => (Array[Double], Array[Int])) {
@@ -47,7 +47,6 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     val largeArray = tensor
     val numRows = largeArray.rows
     val numCols = largeArray.cols
-
     val reducedSize = numRows * numCols / (blockSize * blockSize)
     val reducedMatrix = DenseMatrix.zeros[Double](numRows / blockSize, numCols / blockSize)
 
@@ -72,7 +71,15 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 //    val sum = array.tensor + tensor
 //    new BreezeTensor(sum)
 //  }
-  override implicit def data : Array[Double] = tensor.data
+
+  /**
+   * Note that breeze by default uses fortran ordering (column major).
+   * We take the transpose for comparison sake with nd4j, since it supports
+   * c ordering.
+   * @return
+   */
+  override implicit def data : Array[Double] = tensor.t.toArray
+
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
@@ -87,6 +94,18 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   override implicit def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
 
+//  override implicit def <=(num : Double) : BreezeTensor = {
+//    val compare = DenseMatrix.ones[Double](tensor.rows, tensor.cols) *= num
+//    val filtered = (tensor :<= compare).map(p => {
+//      val r : Double = p match {
+//        case true => 1.0
+//        case false => 0.0
+//      }
+//      r
+//    })
+//    filtered
+//  }
+
   /**
    * Linear Algebra Operations
    */
@@ -97,7 +116,5 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   implicit def apply : BreezeTensor = this
 
   override def equals(array : BreezeTensor) : Boolean = tensor == array.tensor
-
-  override def getUnderlying() : (Array[Double], Array[Int]) = (tensor.data, (tensor.rows, tensor.cols))
 }
 
