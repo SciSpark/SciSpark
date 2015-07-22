@@ -49,13 +49,13 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def hasNext: Boolean = {
-        counter < theSplit.tensors.length
+        counter < theSplit.uriList.length
       }
 
       //
       override def next(): T = {
 
-        val urlValue = theSplit.tensors(counter)
+        val urlValue = theSplit.uriList(counter)
         val loader = () => {loadFunc(urlValue, varName)}
         val tensor = TensorFactory.getTensor(arrLib, loader)
 

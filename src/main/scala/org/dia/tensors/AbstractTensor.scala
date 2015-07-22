@@ -48,7 +48,7 @@ import org.slf4j.Logger
    * Masking operations
    */
 
-  //implicit def <=(num : Double) : T
+  implicit def <=(num : Double) : T
   /**
    * In place operations
    */

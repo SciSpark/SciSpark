@@ -22,14 +22,10 @@ import org.apache.spark.Partition
 /**
  * Created by marroquin on 7/13/15.
  */
-class sRDDPartition[T] (
-                              idx: Int,
-                              val tensors: List[String]
-                              ) extends Partition {
-  /**
-   * Partition index
-   */
-  override def index: Int = idx
+class sRDDPartition[T] ( val index: Int,
+                         val uriList: List[String]
+                         ) extends Partition {
+
 
   /**
    * To string method
@@ -37,8 +33,8 @@ class sRDDPartition[T] (
    */
   override def toString() = {
     val sb = new StringBuilder
-    sb.append("{idx:").append(idx).append(",")
-    sb.append("urls:").append(tensors).append("}")
+    sb.append("{idx:").append(index).append(",")
+    sb.append("urls:").append(uriList).append("}")
     sb.toString
   }
 }
