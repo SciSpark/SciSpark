@@ -35,6 +35,8 @@ class sciTensor(val tensor : AbstractTensor) extends Serializable {
 
   implicit def *(array: sciTensor): sciTensor = tensor * array.tensor
 
+  implicit def <=(num : Double): sciTensor = tensor <= num
+
   /**
    * Linear Algebra Operations
    */

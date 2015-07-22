@@ -20,7 +20,9 @@ package org.dia.tensors
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
-
+import org.nd4j.linalg.indexing.BooleanIndexing
+import org.nd4j.linalg.indexing.conditions.LessThanOrEqual
+import org.nd4j.linalg.indexing.functions.Identity
 import scala.language.implicitConversions
 
 /**
@@ -45,19 +47,15 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
     val largeArray = tensor
     val numRows = largeArray.rows()
     val numCols = largeArray.columns()
-    println(numRows)
-    println(numCols)
     val reducedSize = numRows * numCols / (blockSize * blockSize)
 
     val reducedMatrix = Nd4j.create(numRows / blockSize, numCols / blockSize)
 
     for(row <- 0 to reducedMatrix.rows - 1){
       for(col <- 0 to reducedMatrix.columns - 1){
-
         val rowRange = (row*blockSize) to (((row + 1) * blockSize) - 1)
         val columnRange = (col * blockSize) to (((col + 1) * blockSize) - 1)
         val block = tensor(rowRange, columnRange)
-        println(row + " " + col)
         val numNonZero = block.data.asDouble.filter(p => p != 0).size
         val avg = if (numNonZero > 0) (block.sum(Integer.MAX_VALUE).getDouble(0) / numNonZero) else 0.0
         reducedMatrix.put(row, col, avg)
@@ -85,8 +83,9 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
    */
 
   override implicit def <=(num : Double) : Nd4jTensor ={
-    val t = tensor <= num
-    t
+    val tensorCopy = tensor
+    BooleanIndexing.applyWhere(tensorCopy, new LessThanOrEqual(num), new Identity)
+    new Nd4jTensor(tensorCopy)
   }
 
   /**

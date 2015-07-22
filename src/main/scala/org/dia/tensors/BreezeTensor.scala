@@ -83,17 +83,17 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   override implicit def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
 
-//  override implicit def <=(num : Double) : BreezeTensor = {
-//    val compare = DenseMatrix.ones[Double](tensor.rows, tensor.cols) *= num
-//    val filtered = (tensor :<= compare).map(p => {
-//      val r : Double = p match {
-//        case true => 1.0
-//        case false => 0.0
-//      }
-//      r
-//    })
-//    filtered
-//  }
+  override implicit def <=(num : Double) : BreezeTensor = {
+    val compare = DenseMatrix.ones[Double](tensor.rows, tensor.cols) *= num
+    val filtered = (tensor :<= compare).map(p => {
+      val r : Double = p match {
+        case true => 1.0
+        case false => 0.0
+      }
+      r
+    })
+    filtered
+  }
 
   /**
    * Linear Algebra Operations

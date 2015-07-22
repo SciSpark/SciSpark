@@ -16,12 +16,13 @@
  */
 package org.dia.core
 
+import com.twitter.chill.ClosureCleaner
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{Logging, Partition, SparkContext, TaskContext}
+import org.apache.spark._
 import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
-
+import scala.util.control.NonFatal
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
@@ -85,5 +86,15 @@ class sRDD[T: ClassTag](sc: SparkContext,
     }
     array
   }
+
+//  /**
+//   * Return a new RDD by applying a function to all elements of this RDD.
+//   */
+//  def map[U: ClassTag](f: T => U): sRDD[U] = {
+//    val cleanF = sc.clean(f)
+//    new sRDDPartition[U, T](this, (context, pid, iter) => iter.map(cleanF))
+//  }
+
+
 
 }
