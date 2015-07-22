@@ -17,7 +17,7 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.{DenseMatrix, NumericOps, sum}
+import breeze.linalg.{DenseMatrix, sum}
 
 import scala.language.implicitConversions
 
@@ -67,18 +67,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
 
-//  override implicit def +(array: BreezeTensor): BreezeTensor = {
-//    val sum = array.tensor + tensor
-//    new BreezeTensor(sum)
-//  }
-
-  /**
-   * Note that breeze by default uses fortran ordering (column major).
-   * We take the transpose for comparison sake with nd4j, since it supports
-   * c ordering.
-   * @return
-   */
-  override implicit def data : Array[Double] = tensor.t.toArray
+  override implicit def data : Array[Double] = tensor.data
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
@@ -116,5 +105,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   implicit def apply : BreezeTensor = this
 
   override def equals(array : BreezeTensor) : Boolean = tensor == array.tensor
+
+  override def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
 }
 

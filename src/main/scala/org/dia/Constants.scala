@@ -40,4 +40,6 @@ object Constants extends Serializable {
   val ARRAY_LIB = "array-lib"
   val BREEZE_LIB = "breeze"
   val ND4J_LIB = "nd4j"
+  val GROUP_BY_YEAR = "group_by_year"
+  val GROUP_BY_DAY = "group_by_day"
 }

@@ -44,7 +44,6 @@ class sRDD[T: ClassTag](sc: SparkContext,
   }
 
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
-
     val iterator = new Iterator[T] {
       var counter = 0
 
@@ -55,6 +54,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
 
       //
       override def next(): T = {
+
         val urlValue = theSplit.tensors(counter)
         val loader = () => {loadFunc(urlValue, varName)}
         val tensor = TensorFactory.getTensor(arrLib, loader)
@@ -68,7 +68,6 @@ class sRDD[T: ClassTag](sc: SparkContext,
   }
 
   /**
-   *
    * Returns the set of partitions in this RDD. Each partition represents a single URLs.
    * The default setting is a grouping of 1 url.
    *
@@ -76,9 +75,10 @@ class sRDD[T: ClassTag](sc: SparkContext,
    */
   override def getPartitions: Array[Partition] = {
     var pos = 0
-    val array = new Array[Partition](datasets.length)
     // will create a list of lists of empty sTensors
     val listOfLists = partitionFunc(datasets)
+    val array = new Array[Partition](listOfLists.size)
+
     for (list <- listOfLists) {
       array(pos) = new sRDDPartition(pos, list)
       pos += 1

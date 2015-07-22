@@ -1,14 +1,18 @@
 package org.dia.loaders
 
 import org.dia.Constants._
+import org.slf4j.Logger
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable
 
 /**
- * Created by marroqui on 7/17/15.
+ * Created by marroquin on 7/17/15.
  */
 object NetCDFLoader {
+  // Class logger
+  val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+
   /**
    * Gets an NDimensional Array of ND4j from a TRMM tensors
    * @param url where the netcdf file is located
@@ -17,7 +21,8 @@ object NetCDFLoader {
    */
   def loadNetCDFTRMMVars(url: String, variable: String): (Array[Double], Array[Int]) = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-
+    if (netcdfFile != null)
+      println("++++++++++" + netcdfFile.getVariables)
 
     val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
     val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
@@ -25,7 +30,6 @@ object NetCDFLoader {
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
 
     (coordinateArray, Array(rowDim, columnDim))
-    //new Nd4jTensor(Nd4j.create(coordinateArray, Array(rowDim, columnDim)))
   }
 
   /**
@@ -36,10 +40,19 @@ object NetCDFLoader {
    */
   def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) =  {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
-    val shape = dims.toArray.sortBy(_._1).map(_._2)
-    (coordinateArray, shape)
+
+    if (netcdfFile != null) {
+      val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
+      if (coordinateArray.length > 0) {
+        val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
+        val shape = dims.toArray.sortBy(_._1).map(_._2)
+        return (coordinateArray, shape)
+      }
+      LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
+      return (Array.empty, Array(0,0))
+    }
+    LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
+    return (Array.empty, Array(0,0))
   }
 
   /**
@@ -55,7 +68,6 @@ object NetCDFLoader {
     val y = dimensionSizes.get(2).get
 
     val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-
     (coordinateArray, Array(x, y))
   }
 }

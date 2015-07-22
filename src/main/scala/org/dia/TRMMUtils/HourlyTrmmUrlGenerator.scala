@@ -35,16 +35,16 @@ object HourlyTrmmUrlGenerator {
    * @return HashMap grouping readings per day
    */
   def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
-    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
-//    var yearReadings = new ListBuffer[String]()
+//    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
+    var yearReadings = new ListBuffer[String]()
     //val maxDays = if (iniYear%4 == 0) 366 else 355
     val maxDays = 2
     // only a single year
     if (finalYear == 0) {
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-        dailyReadings.put(realDate,generateDayReadings(realDate))
-//        yearReadings.appendAll(generateDayReadings(realDate))
+//        dailyReadings.put(realDate,generateDayReadings(realDate))
+        yearReadings.appendAll(generateDayReadings(realDate))
 //        println(yearReadings)
       }
     } else {
@@ -52,13 +52,13 @@ object HourlyTrmmUrlGenerator {
       for (iYear <- iniYear to finalYear by 1) {
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
-          dailyReadings.put(realDate,generateDayReadings(realDate))
-//          yearReadings.appendAll(generateDayReadings(realDate))
+//          dailyReadings.put(realDate,generateDayReadings(realDate))
+          yearReadings.appendAll(generateDayReadings(realDate))
 //          println(yearReadings)
         }
       }
     }
-    dailyReadings
+    yearReadings
   }
 
   /**
