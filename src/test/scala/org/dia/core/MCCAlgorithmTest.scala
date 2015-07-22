@@ -15,11 +15,11 @@ class MCCAlgorithmTest extends FunSuite {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val nd4jRDD = sc.OpenDapURLFile("TestLinks2", "TotCldLiqH2O_A")
-    val collect = nd4jRDD.map(p => p.reduceResolution(5)).collect
+    val collect = nd4jRDD.map(p => p.reduceResolution(90)).collect
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val breezeRDD = sc.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
-    val breezeCollect = breezeRDD.map(p => p.reduceResolution(5)).collect
+    val breezeRDD = sc.OpenDapURLFile("TestLinks2", "TotCldLiqH2O_A")
+    val breezeCollect = breezeRDD.map(p => p.reduceResolution(90)).collect
 
 
     val underlying = collect(0).tensor.data.toList
@@ -29,7 +29,7 @@ class MCCAlgorithmTest extends FunSuite {
     var i = 0
     while(i < underlying.length) {
       if((Math.abs(underlying(i) - breezeData(i)) / underlying(i)) > .01){
-        println(i + ": Underlying " + underlying(i) + " Breeze " + breezeData(i))
+        //println(i + ": Underlying " + underlying(i) + " Breeze " + breezeData(i))
       }
       i += 1
     }
@@ -38,7 +38,7 @@ class MCCAlgorithmTest extends FunSuite {
   }
 
   test("sampleApiTest") {
-    val sc = SparkTestConstants.sc
+    val sc : SciSparkContext = SparkTestConstants.sc
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
@@ -53,8 +53,8 @@ class MCCAlgorithmTest extends FunSuite {
     assert(true)
   }
   test("reduceResolutionTest") {
-    val dense = new DenseMatrix[Double](4, 4, 1d to 16d by 1d toArray, 0, 4, true)
-    val nd = Nd4j.create(1d to 16d by 1d toArray, Array(4,4))
+    val dense = new DenseMatrix[Double](4, 3, 1d to 12d by 1d toArray, 0, 4, true)
+    val nd = Nd4j.create(1d to 12d by 1d toArray, Array(4,3))
     val breeze = new BreezeTensor(dense)
     val nd4j = new Nd4jTensor(nd)
     println(breeze)

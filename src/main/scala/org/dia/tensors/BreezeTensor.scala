@@ -18,6 +18,7 @@
 package org.dia.tensors
 
 import breeze.linalg.{DenseMatrix, sum}
+import breeze.numerics.I
 
 import scala.language.implicitConversions
 
@@ -31,7 +32,8 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   val shape = Array(tensor.rows, tensor.cols)
 
   def this(shapePair : (Array[Double], Array[Int])) {
-    this(new DenseMatrix[Double](shapePair._2(0),shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
+    this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1))
+    //this(new DenseMatrix[Double](shapePair._2(0),shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
   }
 
   def this(loadFunc : () => (Array[Double], Array[Int])) {
@@ -50,10 +52,10 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     val reducedSize = numRows * numCols / (blockSize * blockSize)
     val reducedMatrix = DenseMatrix.zeros[Double](numRows / blockSize, numCols / blockSize)
 
-    for(row <- 0 to reducedMatrix.rows - 1){
-      for(col <- 0 to reducedMatrix.cols - 1){
-        val rowIndices = (row * blockSize) to ((row + 1) * blockSize - 1)
-        val colIndices = (col * blockSize) to ((col + 1) * blockSize - 1)
+    for(row <- 0 to (reducedMatrix.rows - 1)){
+      for(col <- 0 to (reducedMatrix.cols - 1)){
+        val rowIndices = (row * blockSize) to (((row + 1) * blockSize) - 1)
+        val colIndices = (col * blockSize) to (((col + 1) * blockSize) - 1)
         val block = largeArray(rowIndices, colIndices)
         val totalsum = sum(block)
         val validCount = block.findAll(p => p != 0.0).size.toDouble
@@ -83,17 +85,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   override implicit def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
 
-  override implicit def <=(num : Double) : BreezeTensor = {
-    val compare = DenseMatrix.ones[Double](tensor.rows, tensor.cols) *= num
-    val filtered = (tensor :<= compare).map(p => {
-      val r : Double = p match {
-        case true => 1.0
-        case false => 0.0
-      }
-      r
-    })
-    filtered
-  }
+  override implicit def <=(num : Double) : BreezeTensor = tensor.map(v => if( v <= num) v else 0.0)
 
   /**
    * Linear Algebra Operations
