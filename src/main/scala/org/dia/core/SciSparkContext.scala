@@ -66,8 +66,8 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
    * @throws SparkException if <tt>checkSerializable</tt> is set but <tt>f</tt> is not
    *   serializable
    */
-  private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
-    ClosureCleaner(f)
-    f
-  }
+//  private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
+//    ClosureCleaner(f)
+//    f
+//  }
 }
