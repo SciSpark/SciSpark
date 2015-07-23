@@ -15,12 +15,13 @@ class MCCAlgorithmTest extends FunSuite {
   test("mappedReduceResolutionTest") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    val variable = "TotCldLiqH2O_A"
     val nd4jRDD = sc.OpenDapURLFile("TestLinks2", "TotCldLiqH2O_A")
-    val collect = nd4jRDD.map(p => p.reduceResolution(5)).collect
+    val collect = nd4jRDD.map(p => p(variable).reduceResolution(5)).collect
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val breezeRDD = sc.OpenDapURLFile("TestLinks2", "TotCldLiqH2O_A")
-    val breezeCollect = breezeRDD.map(p => p.reduceResolution(5)).collect
+    val breezeCollect = breezeRDD.map(p => p(variable).reduceResolution(5)).collect
 
 
     val underlying = collect(0).tensor.data.toList
@@ -43,10 +44,10 @@ class MCCAlgorithmTest extends FunSuite {
     val sc : SciSparkContext = SparkTestConstants.sc
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    val variable = "TotCldLiqH2O_A"
+    val nd4jRDD : sRDD[NDArray] = sc.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
 
-    val nd4jRDD : sRDD[sciTensor] = sc.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
-
-    val smoothRDD : RDD[sciTensor] = nd4jRDD.map(p => p.reduceResolution(5))
+    val smoothRDD : RDD[sciTensor] = nd4jRDD.map(p => p(variable).reduceResolution(5))
 
     val collect : Array[sciTensor] = smoothRDD.map(p => p <= 241.0).collect
 
