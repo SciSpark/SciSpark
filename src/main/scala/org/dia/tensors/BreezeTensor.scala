@@ -92,7 +92,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
       }
       r
     })
-    filtered
+    filtered * tensor
   }
 
   /**

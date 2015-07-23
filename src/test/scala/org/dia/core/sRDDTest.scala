@@ -3,7 +3,9 @@ package org.dia.core
 import org.apache.spark.storage.StorageLevel
 import org.dia.Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
-import org.dia.core.sPartitioner._
+import org.dia.partitioners.sPartitioner
+import sPartitioner._
+import org.dia.partitioners.sTrmmPartitioner._
 import org.dia.loaders.NetCDFLoader._
 import org.scalatest.FunSuite
 
@@ -23,10 +25,6 @@ class sRDDTest extends FunSuite  {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
     val sBreezeRdd2 = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_B", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    // get lat vector
-    // get long vector
-    //
-
     sBreezeRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
     var start = System.nanoTime()
     val breezeTensors = sBreezeRdd.collect()
@@ -83,20 +81,6 @@ class sRDDTest extends FunSuite  {
     println(nd4jTensor.tensor.data)
   }
 
-  test("GroupingBySomethingPartitioning") {
-//    var dataUrls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999,2000)
-//    val dataMapping = new HashMap[String, HashMap[String, ListBuffer[String]]]()
-//    for ((key, value) <- dataUrls) {
-//      val newKey = key.toString("yyyy")
-//      var keyYear= new HashMap[String, ListBuffer[String]]
-//      if (dataMapping.get(newKey) != None)
-//        keyYear = dataMapping.get(newKey).get
-//      dataMapping.put(newKey, keyYear)
-//    }
-//        val data = dataUrls.keySet.foreach(elem => println(elem.getYear))
-//    println(dataMapping)
-  }
-
   test("BreezeRdd.basic") {
 //    val sc = SparkTestConstants.sc
 //    val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
@@ -121,12 +105,4 @@ class sRDDTest extends FunSuite  {
     assert(true)
   }
 
-  test("testOpenDapURLFile") {
-//    val sciContext = SparkTestConstants.sc
-//    val srdd = sciContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
-//
-//    val collected = srdd.collect
-//    collected.map(p => println(p))
-    assert(true)
-  }
 }

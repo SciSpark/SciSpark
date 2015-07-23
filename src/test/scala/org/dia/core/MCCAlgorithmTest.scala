@@ -52,6 +52,7 @@ class MCCAlgorithmTest extends FunSuite {
 
     assert(true)
   }
+
   test("reduceResolutionTest") {
     val dense = new DenseMatrix[Double](4, 4, 1d to 16d by 1d toArray, 0, 4, true)
     val nd = Nd4j.create(1d to 16d by 1d toArray, Array(4,4))

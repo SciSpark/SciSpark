@@ -17,8 +17,9 @@
  */
 package org.dia.n
 
-import org.dia.loaders.NetCDFUtils
+import org.dia.loaders.{NetCDFLoader, NetCDFUtils}
 import org.dia.tensors.Nd4jTensor
+import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.api.Implicits._
 
@@ -26,126 +27,85 @@ import org.nd4j.api.Implicits._
  * Tests for the Breeze functions
  */
 class Nd4JLibTest extends org.scalatest.FunSuite {
-
+  // urls
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
   val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
   val airslvl3 = "http://acdisc.sci.gsfc.nasa.gov/opendap/ncml/Aqua_AIRS_Level3/AIRH3STD.005/2003/AIRS.2003.01.01.L3.RetStd_H001.v5.0.14.0.G07285113200.hdf.ncml"
   val knmiUrl = "http://zipper.jpl.nasa.gov/dist/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
-
+  // variables
   val KMNI_BNDS_DIMENSION = "bnds"
   val KNMI_TASMAX_VAR = "tasmax"
   val DAILY_TRMM_DATA_VAR = "data"
   val HOURLY_TRMM_DATA_VAR = "precipitation"
   val TOTAL_LIQH20 = "TotCldLiqH2O_A"
-
-  val EXPECTED_COLS = 1440
-  val EXPECTED_ROWS = 400
-  val BLOCK_SIZE = 5
+  // expected column and row numbers
+  val EXPECTED_COLS = 400
+  val EXPECTED_ROWS = 1440
 
   /**
    * Testing creation of 2D Array (INDArray) from daily collected TRMM data
-   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingDailyTRMMDimensions") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
-//    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = Nd4jTensor.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
-//
-//    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == resDenseMatrix.rows)
-//    assert(ExpectedClass.columns == resDenseMatrix.columns)
-//    assert(true)
+    // creating expected
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
+    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
+    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
+    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //creating result
+    val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(dailyTrmmUrl, DAILY_TRMM_DATA_VAR))
+    runAssertions(realTensor, ExpectedClass)
   }
 
   /**
    * Testing creation of 2D Array (Nd4j) from hourly collected TRMM data
-   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingHourlyTRMMDimensions") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = Nd4jTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
-//
-//    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == resDenseMatrix.rows)
-//    assert(ExpectedClass.columns == resDenseMatrix.columns)
-//    assert(true)
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
+    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    // creating result
+    val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR))
+    runAssertions(realTensor, ExpectedClass)
   }
-
 
   /**
    * test for creating a N-Dimension array from KNMI data
    */
   test("ReadingKNMIDimensions") {
-//        val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
-//        val ExpectedType = Nd4j.zeros(240, 1, 201, 194)
-//        val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
-//        println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
-//
-//    val fdArray = Nd4jTensor.LoadNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
-//
-//        assert(fdArray.getClass.equals(ExpectedType.getClass))
-//
-//    assert(fdArray.shape.deep == ExpectedType.shape.deep)
-//    assert(true)
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
+    val ExpectedType = Nd4j.zeros(194, 201, 240, 1)
+    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
+    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+    // creating result
+    val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR))
+    assert(realTensor.tensor.getClass.equals(ExpectedType.getClass))
+    assert(realTensor.shape.deep == ExpectedType.shape.deep)
   }
 
   /**
    * test for creating a N-Dimension array from AIRS data
    */
   test("ReadingAIRSDimensions") {
-//    val tensor = Nd4jTensor.LoadNetCDFNDVars(airslvl3, TOTAL_LIQH20)
-//    assert(tensor.rows() == 360)
-//    assert(tensor.columns() == 180)
-  }
-
-  test("ndf4jReduceResolutionAvrgTest") {
-    val squareSize = 100
-    val reductionSize = 50
-    val accuracy = 1E-15
-    val reducedWidth = squareSize / reductionSize
-    val testMatrix = new Nd4jTensor((0d to 10000d by 1d) asNDArray (squareSize, squareSize))
-
-    val resultMatrix = testMatrix.reduceResolution(reductionSize).data
-
-    for (i <- 0 to resultMatrix.length - 1) {
-        val error = Math.abs(resultMatrix(i) - 1)
-        if (error >= accuracy) {
-          assert(error >= accuracy, "The error is not even close for indices " + i  + "with value : " + resultMatrix(i))
-        }
-    }
-    assert(true)
+    val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(airslvl3, TOTAL_LIQH20))
+    assert(realTensor.tensor.rows() == 360)
+    assert(realTensor.tensor.columns() == 180)
   }
 
   /**
-   * Tests the ReduceResolution function.
-   * Assert Criteria : Proper reduction of dimensions by the factor BLOCK_SIZE
+   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
+   * @param realTensor
+   * @param ExpectedClass
    */
-  test("ReduceResolutionTest") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE))
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
-//    val reducedMatrix = Nd4jTensor.reduceResolution(resDenseMatrix, BLOCK_SIZE)
-//
-//
-//    assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == reducedMatrix.rows)
-//    assert(ExpectedClass.columns == reducedMatrix.columns)
+  def runAssertions(realTensor: Nd4jTensor, ExpectedClass: INDArray): Unit = {
+    // checking correct size
+    assert(realTensor.getUnderlying()._1.size == realTensor.getUnderlying()._2(0) * realTensor.getUnderlying()._2(1))
+    // check for correct valuye\ type
+    assert(realTensor.tensor.columns() == EXPECTED_COLS)
+    assert(realTensor.tensor.rows() == EXPECTED_ROWS)
+    assert(realTensor.tensor.getClass.equals(ExpectedClass.getClass))
   }
 
 }

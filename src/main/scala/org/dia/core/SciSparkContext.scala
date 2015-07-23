@@ -18,12 +18,14 @@
 
 package org.dia.core
 
-import com.twitter.chill.ClosureCleaner
-import org.apache.spark.{SparkException, SparkContext}
-import scala.io.Source
-import org.dia.loaders.NetCDFLoader._
-import org.dia.core.sPartitioner._
+import org.apache.spark.{SparkContext, SparkException}
 import org.dia.Constants._
+import org.dia.loaders.PathUtils.mapSubFoldersToFolders
+import org.dia.partitioners.sPartitioner
+import sPartitioner._
+import org.dia.loaders.NetCDFLoader._
+
+import scala.io.Source
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext
@@ -53,6 +55,10 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
       new sRDD[sciTensor](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
     }
 
+    def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {
+      val datasetPaths = List(path)
+      new sRDD[sciTensor](this, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+    }
 
   /**
    * Clean a closure to make it ready to serialized and send to tasks
