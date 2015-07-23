@@ -15,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.core
-
+package org.dia.partitioners
 
 import org.dia.Constants
 
@@ -25,16 +24,8 @@ import scala.language.implicitConversions
 /**
  * Functions needed to map keys to values
  */
-object sPartitioner {
-
-  /**
-   * Sort of an identity mapping
-   */
-  def mapOneUrlToOneTensor(urls : List[String]) : List[List[String]] = {
-    urls.map( elem => List(elem))
-  }
-
-
+object sTrmmPartitioner {
+  
   /**
    * Groups strings by the string passed along
    */
