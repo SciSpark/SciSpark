@@ -24,12 +24,12 @@ class MCCAlgorithmTest extends FunSuite {
 
     val underlying = collect(0).tensor.data.toList
     val breezeData = breezeCollect(0).tensor.data.toList
-    println(underlying)
-    println(breezeData)
+    //println(underlying)
+    //println(breezeData)
     var i = 0
     while(i < underlying.length) {
       if((Math.abs(underlying(i) - breezeData(i)) / underlying(i)) > .01){
-        //println(i + ": Underlying " + underlying(i) + " Breeze " + breezeData(i))
+        println(i + ": Underlying " + underlying(i) + " Breeze " + breezeData(i))
       }
       i += 1
     }
@@ -53,13 +53,14 @@ class MCCAlgorithmTest extends FunSuite {
     assert(true)
   }
   test("reduceResolutionTest") {
-    val dense = new DenseMatrix[Double](4, 3, 1d to 12d by 1d toArray, 0, 4, true)
-    val nd = Nd4j.create(1d to 12d by 1d toArray, Array(4,3))
+    val dense = new DenseMatrix[Double](4, 3, 1d to 12d by 1d toArray, 0, 3, true)
+    val nd = Nd4j.create(1d to 8d by 1d toArray, Array(4,2))
     val breeze = new BreezeTensor(dense)
     val nd4j = new Nd4jTensor(nd)
     println(breeze)
     println(nd)
-
+    println(nd(0->2, ->))
+    println(nd(3->5, ->))
     println("rows" + dense(0, ::))
     println("rows" + nd.getRow(0))
 
