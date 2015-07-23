@@ -55,6 +55,7 @@ object NetCDFLoader {
     return (Array.empty, Array(0,0))
   }
 
+
   /**
    * Creates a 2D array from a list of dimensions using a variable
    * @param dimensionSizes hashmap of (dimension, size) pairs

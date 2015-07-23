@@ -71,5 +71,7 @@ import org.slf4j.Logger
 
   def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
 
+  def apply(ranges : (Int, Int)*) : T
+
   def shape : Array[Int]
 }

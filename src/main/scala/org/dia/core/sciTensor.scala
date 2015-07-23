@@ -3,47 +3,24 @@ package org.dia.core
 
 import org.dia.tensors.AbstractTensor
 import scala.collection.mutable
+import scala.collection.mutable.HashMap
 
 
-class sciTensor(val tensor : AbstractTensor) extends Serializable {
+class sciTensor(var variables : HashMap[String, AbstractTensor]) extends Serializable {
 
-  implicit def convert(array : AbstractTensor) = new sciTensor(array)
-  implicit def typeConvert(array : AbstractTensor) : this.tensor.T = {
-    if(array.getClass != this.tensor.getClass) {
-     throw new Exception("Incompatible types" + this.tensor.getClass + " with " + array.getClass)
-    }
-    array.asInstanceOf[this.tensor.T]
+  var metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
+
+  def this(variableName : String, array : AbstractTensor){
+    this(new mutable.HashMap[String, AbstractTensor])
+    variables += ((variableName, array))
   }
 
-  /**
-   * Due to implicit conversions we can do operations on sTensors and DenseMatrix
-   */
+  def this (variableName : String, array : AbstractTensor, metaDataVar : (String, String)*){
+    this(variableName, array)
+    metaDataVar.map(p => metaData += p)
+  }
 
-  implicit def +(array: sciTensor): sciTensor = tensor + array.tensor
+  def apply(variable : String) : sciTensor = new sciTensor(variable, variables(variable))
 
-  implicit def -(array: sciTensor): sciTensor = tensor - array.tensor
-
-  implicit def \(array: sciTensor): sciTensor = tensor \ array.tensor
-
-  implicit def /(array: sciTensor): sciTensor = tensor / array.tensor
-
-  implicit def *(array: sciTensor): sciTensor = tensor * array.tensor
-
-  implicit def <=(num : Double): sciTensor = tensor <= num
-
-  /**
-   * Linear Algebra Operations
-   */
-  implicit def **(array: sciTensor): sciTensor = tensor * array.tensor
-
-  /**
-   * Application Specific Operations
-   */
-  implicit def reduceResolution(blockSize : Int) : sciTensor = tensor.reduceResolution(blockSize)
-
-  override def toString : String = tensor.toString
-
-  def equals(array : sciTensor) : Boolean = tensor == array.tensor
-
-  def data : Array[Double] = tensor.data
 }
+
