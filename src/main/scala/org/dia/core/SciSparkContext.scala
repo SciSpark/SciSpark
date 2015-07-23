@@ -49,10 +49,10 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
    */
     def OpenDapURLFile(path: String,
                        varName : String,
-                       minPartitions: Int = defaultMinPartitions) : sRDD[NDArray] = {
+                       minPartitions: Int = defaultMinPartitions) : sRDD[sciTensor] = {
 
       val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-      new sRDD[NDArray](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
+      new sRDD[sciTensor](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
     }
 
     def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {

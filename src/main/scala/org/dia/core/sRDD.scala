@@ -16,14 +16,12 @@
  */
 package org.dia.core
 
-import com.twitter.chill.ClosureCleaner
-import org.apache.spark.rdd.RDD
 import org.apache.spark._
+import org.apache.spark.rdd.RDD
 import org.dia.tensors.TensorFactory
 
-import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
+//TODO the default constructor shouldn't take the varName anymore
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
@@ -61,7 +59,7 @@ class sRDD[T: ClassTag](sc: SparkContext,
         val tensor = TensorFactory.getTensors(arrLib, loader)
 
         counter += 1
-        val sciArray = new NDArray(varName, new sciTensor(tensor))
+        val sciArray = new sciTensor(varName, tensor)
         sciArray.asInstanceOf[T]
       }
     }

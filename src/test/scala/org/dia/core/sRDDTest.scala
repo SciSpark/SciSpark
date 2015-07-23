@@ -34,7 +34,9 @@ class sRDDTest extends FunSuite  {
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    sNd4jRdd.map(e => e.tensor.data)
+    sNd4jRdd.map( e => e("var1"))
+
+    sNd4jRdd.map(e => e..data)
     sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
     start = System.nanoTime()
     val nd4jTensors = sNd4jRdd.collect()

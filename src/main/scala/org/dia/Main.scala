@@ -42,7 +42,7 @@ object Main {
     //TODO the number of threads should be configured at cluster level
     val scisparkContext = new SciSparkContext("local[4]", "test")
     val ArrayList = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
-    val s = new BreezeTensor(ArrayList)
+    val s = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
     val x = s + s
     println(x)
     //val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
