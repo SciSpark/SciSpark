@@ -60,7 +60,7 @@ class MCCAlgorithmTest extends FunSuite {
     println(breeze)
     println(nd)
     println(nd(0->2, ->))
-    println(nd(3->5, ->))
+    println(nd(2->4, ->))
     println("rows" + dense(0, ::))
     println("rows" + nd.getRow(0))
 

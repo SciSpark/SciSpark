@@ -32,8 +32,8 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   val shape = Array(tensor.rows, tensor.cols)
 
   def this(shapePair : (Array[Double], Array[Int])) {
-    this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1))
-    //this(new DenseMatrix[Double](shapePair._2(0),shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
+    this(new DenseMatrix[Double](shapePair._2(0),shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
+    //this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1))
   }
 
   def this(loadFunc : () => (Array[Double], Array[Int])) {

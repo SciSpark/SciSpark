@@ -53,7 +53,7 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
 
     for(row <- 0 to (reducedMatrix.rows - 1)){
       for(col <- 0 to (reducedMatrix.columns - 1)){
-        val rowRange = (row*blockSize + 1) -> (((row + 1) * blockSize))
+        val rowRange = (row*blockSize) -> (((row + 1) * blockSize))
         val columnRange = (col * blockSize) -> (((col + 1) * blockSize))
         val block = tensor(rowRange, columnRange)
         println(block)
