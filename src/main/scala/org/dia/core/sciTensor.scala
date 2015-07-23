@@ -7,12 +7,6 @@ import scala.collection.mutable
 
 class sciTensor(val tensor : AbstractTensor) extends Serializable {
 
-  var metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
-  def this (tensor : AbstractTensor, metaDataVar : (String, String)*){
-    this(tensor)
-    metaDataVar.map(p => metaData += p)
-  }
-
   implicit def convert(array : AbstractTensor) = new sciTensor(array)
   implicit def typeConvert(array : AbstractTensor) : this.tensor.T = {
     if(array.getClass != this.tensor.getClass) {

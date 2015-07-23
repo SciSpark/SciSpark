@@ -21,6 +21,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark._
 import org.dia.tensors.TensorFactory
 
+import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 class sRDD[T: ClassTag](sc: SparkContext,
@@ -53,16 +54,15 @@ class sRDD[T: ClassTag](sc: SparkContext,
         counter < theSplit.uriList.length
       }
 
-      //
       override def next(): T = {
 
         val urlValue = theSplit.uriList(counter)
         val loader = () => {loadFunc(urlValue, varName)}
-        val tensor = TensorFactory.getTensor(arrLib, loader)
+        val tensor = TensorFactory.getTensors(arrLib, loader)
 
         counter += 1
-        val sciTensor = new sciTensor(tensor)
-        sciTensor.asInstanceOf[T]
+        val sciArray = new NDArray(varName, new sciTensor(tensor))
+        sciArray.asInstanceOf[T]
       }
     }
     iterator
