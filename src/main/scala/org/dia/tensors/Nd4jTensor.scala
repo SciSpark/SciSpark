@@ -53,9 +53,12 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
 
     for(row <- 0 to (reducedMatrix.rows - 1)){
       for(col <- 0 to (reducedMatrix.columns - 1)){
-        val rowRange = (row*blockSize) to (((row + 1) * blockSize))
-        val columnRange = (col * blockSize) to (((col + 1) * blockSize))
+        val rowRange = (row*blockSize + 1) -> (((row + 1) * blockSize))
+        val columnRange = (col * blockSize) -> (((col + 1) * blockSize))
         val block = tensor(rowRange, columnRange)
+        println(block)
+        println(rowRange)
+        println(columnRange)
         val numNonZero = block.data.asDouble.filter(p => p != 0).size
         val avg = if (numNonZero > 0) (block.sum(Integer.MAX_VALUE).getDouble(0) / numNonZero) else 0.0
         reducedMatrix.put(row, col, avg)

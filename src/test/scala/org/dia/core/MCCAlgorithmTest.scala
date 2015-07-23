@@ -11,6 +11,7 @@ import org.nd4j.api.Implicits._
  * Created by rahulsp on 7/20/15.
  */
 class MCCAlgorithmTest extends FunSuite {
+
   test("mappedReduceResolutionTest") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
@@ -34,7 +35,6 @@ class MCCAlgorithmTest extends FunSuite {
       i += 1
     }
     assert(underlying == breezeData)
-
   }
 
   test("sampleApiTest") {
