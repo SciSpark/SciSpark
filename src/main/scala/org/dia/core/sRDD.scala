@@ -21,7 +21,17 @@ import org.apache.spark.rdd.RDD
 import org.dia.tensors.TensorFactory
 
 import scala.reflect.ClassTag
-//TODO the default constructor shouldn't take the varName anymore
+
+/**
+ * Scientific RDD class
+ * @param sc  SparkContext
+ * @param datasets  list of URIs to be used
+ * @param varName   Variable name to be used
+ *                  //TODO the default constructor shouldn't take the varName anymore
+ * @param loadFunc  Loading function
+ * @param partitionFunc Partitioning function
+ * @tparam T  Type to be used. It should be sciTensor
+ */
 class sRDD[T: ClassTag](sc: SparkContext,
                         datasets: List[String],
                         varName: String,
@@ -32,6 +42,19 @@ class sRDD[T: ClassTag](sc: SparkContext,
   extends RDD[T](sc, Nil) with Logging {
 
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
+//   TODO this needs to handled
+//  var sRddDeps: Seq[Dependency[_]] = null
+
+  def this(@transient _sc: SparkContext, @transient deps: Seq[Dependency[_]]) = {
+    this(_sc, null, "", null, null)
+//    sRddDeps = deps
+  }
+
+  /** Construct an RDD with just a one-to-one dependency on one parent */
+  def this(@transient oneParent: RDD[_]) = {
+    this(oneParent.context , List(new OneToOneDependency(oneParent)))
+  }
+
 
   /**
    * :: DeveloperApi ::
@@ -92,7 +115,12 @@ class sRDD[T: ClassTag](sc: SparkContext,
 //    val cleanF = sc.clean(f)
 //    new sRDDPartition[U, T](this, (context, pid, iter) => iter.map(cleanF))
 //  }
-
+  /**
+   * Return a new RDD by applying a function to all elements of this RDD.
+   */
+  override def map[U: ClassTag](f: T => U): sRDD[U] = {
+    new sMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
+  }
 
 
 }

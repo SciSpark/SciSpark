@@ -1,9 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dia.core
 
+import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.dia.Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
 import org.dia.partitioners.sPartitioner
+import org.dia.tensors.AbstractTensor
 import sPartitioner._
 import org.dia.partitioners.sTrmmPartitioner._
 import org.dia.loaders.NetCDFLoader._
@@ -13,7 +32,6 @@ import scala.io.Source
 
 /**
  * Tests for creating different Rdd types.
- * Created by marroquin on 7/14/15.
  */
 class sRDDTest extends FunSuite  {
 
@@ -34,9 +52,8 @@ class sRDDTest extends FunSuite  {
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    sNd4jRdd.map( e => e("var1"))
+//    sNd4jRdd.map( e => e("var1"))
 
-    sNd4jRdd.map(e => e..data)
     sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
     start = System.nanoTime()
     val nd4jTensors = sNd4jRdd.collect()
@@ -46,8 +63,8 @@ class sRDDTest extends FunSuite  {
     // element comparison
     var flg = true
     var cnt = 0
-    nd4jTensors(0).tensor.data.map(e => {
-      if(e != breezeTensors(0).tensor.data(cnt))
+    nd4jTensors(0).variables("TotCldLiqH2O_A").data.map(e => {
+      if(e != breezeTensors(0).variables("TotCldLiqH2O_A").data(cnt))
         flg = false
       cnt+=1
     })
@@ -67,7 +84,7 @@ class sRDDTest extends FunSuite  {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
-    nd4jTensor.tensor.data.map(e => println(e))
+    nd4jTensor.variables("TotCldLiqH2O_A").data.map(e => println(e))
     assert(true)
   }
 
@@ -80,7 +97,24 @@ class sRDDTest extends FunSuite  {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
-    println(nd4jTensor.tensor.data)
+    println(nd4jTensor.variables("TotCldLiqH2O_A").data)
+  }
+
+  test("sampleApiTest") {
+    val sc: SciSparkContext = SparkTestConstants.sc
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    val variable = "TotCldLiqH2O_A"
+    val nd4jRDD: sRDD[sciTensor] = sc.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+    val mappedRdd = nd4jRDD.map(p => p)
+    mappedRdd.collect()
+
+//    val smoothRDD: RDD[AbstractTensor] = nd4jRDD.map(p => p.variables(variable).reduceResolution(5))
+
+    //    val collect : Array[sciTensor] = smoothRDD.map(p => p <= 241.0).collect
+
+    //    println(collect.toList)
+
+    assert(true)
   }
 
   test("BreezeRdd.basic") {

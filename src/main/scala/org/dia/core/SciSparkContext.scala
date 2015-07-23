@@ -20,7 +20,6 @@ package org.dia.core
 
 import org.apache.spark.{SparkContext, SparkException}
 import org.dia.Constants._
-import org.dia.loaders.PathUtils.mapSubFoldersToFolders
 import org.dia.partitioners.sPartitioner
 import sPartitioner._
 import org.dia.loaders.NetCDFLoader._
