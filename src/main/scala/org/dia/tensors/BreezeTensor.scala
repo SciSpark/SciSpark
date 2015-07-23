@@ -69,7 +69,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
 
-  override implicit def data : Array[Double] = tensor.data
+  override implicit def data : Array[Double] = tensor.t.toArray
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

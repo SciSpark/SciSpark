@@ -53,7 +53,6 @@ class sRDD[T: ClassTag](sc: SparkContext,
         counter < theSplit.uriList.length
       }
 
-      //
       override def next(): T = {
 
         val urlValue = theSplit.uriList(counter)
