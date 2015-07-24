@@ -23,23 +23,16 @@ import org.dia.tensors.TensorFactory
 import scala.reflect.ClassTag
 
 /**
- * Scientific RDD class
- * @param sc  SparkContext
- * @param datasets  list of URIs to be used
- * @param varName   Variable name to be used
- *                  //TODO the default constructor shouldn't take the varName anymore
- * @param loadFunc  Loading function
- * @param partitionFunc Partitioning function
- * @tparam T  Type to be used. It should be sciTensor
+ * Scientific RDD classr
  */
-class sRDD[T: ClassTag](val sc : SparkContext, val deps : Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+class sRDD[T: ClassTag](@transient var sc : SparkContext, @transient var deps : Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   var datasets : List[String] = null
   var varName : String = null
   var loadFunc : (String, String) => (Array[Double], Array[Int]) = null
   var partitionFunc : List[String] =>List[List[String]] = null
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
 
-def this (sc: SparkContext, data: List[String], name: String, loader: (String, String) => (Array[Double], Array[Int]), partitionerer: List[String] => List[List[String]]) {
+def this (@ transient sc: SparkContext, data: List[String], name: String, loader: (String, String) => (Array[Double], Array[Int]), partitionerer: List[String] => List[List[String]]) {
   this(sc, Nil)
   datasets = data
   varName = name

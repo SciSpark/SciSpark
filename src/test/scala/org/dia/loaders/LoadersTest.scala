@@ -34,8 +34,9 @@ class LoadersTest extends org.scalatest.FunSuite {
     val files = PathUtils.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(files.size))
     files.map(vals => {
-      if (vals._2.size > 0) {
-        vals._2.map(e => println(e)); println;
+      if (vals._2.length > 0) {
+        vals._2.map(e => println(e));
+        println()
       } else {
         println("Empty")
       }
@@ -45,7 +46,7 @@ class LoadersTest extends org.scalatest.FunSuite {
 
   test("LoadPathGrouping") {
     val dataUrls = List("/Users/marroqui/Documents/projects/scipark/data/TRMM_3Hourly_3B42_1998/")
-    val sc = SparkTestConstants.sc
+    val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 

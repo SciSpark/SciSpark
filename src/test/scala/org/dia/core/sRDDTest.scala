@@ -37,7 +37,7 @@ class sRDDTest extends FunSuite  {
 
   test("ArrayLibsSanityTest") {
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sc = SparkTestConstants.sc
+    val sc = SparkTestConstants.sc.sparkContext
 
     // Breeze library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
@@ -77,7 +77,7 @@ class sRDDTest extends FunSuite  {
 
   test("GroupingByYearPartitioning") {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList
-    val sc = SparkTestConstants.sc
+    val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
 
     // Nd4j library
@@ -90,7 +90,7 @@ class sRDDTest extends FunSuite  {
 
   test("GroupingByDayPartitioning") {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList
-    val sc = SparkTestConstants.sc
+    val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
 
     // Nd4j library

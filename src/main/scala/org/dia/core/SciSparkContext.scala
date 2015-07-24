@@ -33,12 +33,20 @@ import scala.io.Source
  *
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
  */
-class SciSparkContext(override val conf : SparkConf) extends SparkContext(conf) with Serializable {
-  this.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+class SciSparkContext(@transient val conf : SparkConf){
+
+  @transient val sparkContext = new SparkContext(conf)
+  sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
   def this(url : String, name : String){
     this(new SparkConf().setMaster(url).setAppName(name))
   }
+
+  def setLocalProperty(key : String, value : String): Unit = {
+    sparkContext.setLocalProperty(key, value)
+  }
+
+  def getConf : SparkConf = sparkContext.getConf
   /**
    * Constructs an sRDD from a file of openDap URL's pointing to NetCDF datasets.
    *
@@ -52,31 +60,15 @@ class SciSparkContext(override val conf : SparkConf) extends SparkContext(conf) 
    */
     @transient def OpenDapURLFile(path: String,
                        varName : String,
-                       minPartitions: Int = defaultMinPartitions) : sRDD[sciTensor] = {
+                       minPartitions: Int = sparkContext.defaultMinPartitions) : sRDD[sciTensor] = {
 
       val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-      new sRDD[sciTensor](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
+      new sRDD[sciTensor](sparkContext, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
     }
 
     @transient def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {
       val datasetPaths = List(path)
-      new sRDD[sciTensor](this, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+      new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
     }
 
-  /**
-   * Clean a closure to make it ready to serialized and send to tasks
-   * (removes unreferenced variables in $outer's, updates REPL variables)
-   * If <tt>checkSerializable</tt> is set, <tt>clean</tt> will also proactively
-   * check to see if <tt>f</tt> is serializable and throw a <tt>SparkException</tt>
-   * if not.
-   *
-   * @param f the closure to clean
-   * @param checkSerializable whether or not to immediately check <tt>f</tt> for serializability
-   * @throws SparkException if <tt>checkSerializable</tt> is set but <tt>f</tt> is not
-   *   serializable
-   */
-//  private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
-//    ClosureCleaner(f)
-//    f
-//  }
 }
