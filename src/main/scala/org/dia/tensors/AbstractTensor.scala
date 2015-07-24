@@ -73,4 +73,6 @@ import org.slf4j.Logger
 //  def apply(ranges : (Int, Int)*) : T
 
   def shape : Array[Int]
+
+ def apply(ranges : (Int, Int)*) : T
 }

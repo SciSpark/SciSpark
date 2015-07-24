@@ -18,6 +18,7 @@
 package org.dia
 
 import breeze.linalg.DenseMatrix
+import org.dia.Constants._
 import org.dia.tensors.BreezeTensor
 import org.dia.core.{sciTensor, SciSparkContext}
 
@@ -37,24 +38,23 @@ object Main {
 
 
   def main(args: Array[String]): Unit = {
-    //val cores = Runtime.getRuntime().availableProcessors() - 1;
-    //TODO the number of threads should be configured at cluster level
-    val scisparkContext = new SciSparkContext("local[4]", "test")
-    val ArrayList = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
-    val s = new BreezeTensor(DenseMatrix.zeros[Double](289, 555))
-    val x = s + s
-    println(x)
-    //val HighResolutionArray = scisparkContext.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+    val sc = new SciSparkContext("local[4]", "test")
 
-    /**
-     * Uncomment this line in order to test on a normal scala array
-     * val urlRDD = Source.fromFile("TestLinks").mkString.split("\n")
-     */
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
-//    val LowResolutionArray = HighResolutionArray.map(largeArray => Nd4jFuncs.reduceResolution(largeArray, 5)).collect
-//    val MaskedArray = LowResolutionArray.map(array => BooleanIndexing.applyWhere(array, Conditions.lessThanOrEqual(241.toDouble), Identity))
-    //val collected = HighResolutionArray.collect
-//    MaskedArray.map(p => println(p))
+    val variable = "TotCldLiqH2O_A"
+
+    val nd4jRDD = sc.OpenDapURLFile("TestLinks2", variable)
+
+    val preCollected  = nd4jRDD.map(p => p(variable).reduceResolution(5))
+
+    val filtered = preCollected.map(p => p(variable) <= 241.0)
+
+    val Sliced = filtered.map(p => p(variable)(4 -> 9, 2 -> 5))
+
+    val collected: Array[sciTensor] = Sliced.collect
+
+    println(collected.toList)
   }
 }
 

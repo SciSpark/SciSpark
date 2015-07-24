@@ -33,9 +33,9 @@ import scala.io.Source
  *
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
  */
-class SciSparkContext(@transient val conf : SparkConf){
+class SciSparkContext(val conf : SparkConf) {
 
-  @transient val sparkContext = new SparkContext(conf)
+  val sparkContext = new SparkContext(conf)
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
   def this(url : String, name : String){

@@ -23,7 +23,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.indexing.BooleanIndexing
 import org.nd4j.linalg.indexing.conditions.LessThanOrEqual
-import org.nd4j.linalg.indexing.functions.Identity
+import org.nd4j.linalg.indexing.functions.{Zero, Identity}
 import scala.language.implicitConversions
 
 /**
@@ -84,7 +84,7 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
 
   override implicit def <=(num : Double) : Nd4jTensor ={
     val tensorCopy = tensor
-    BooleanIndexing.applyWhere(tensorCopy, new LessThanOrEqual(num), new Identity)
+    BooleanIndexing.applyWhere(tensorCopy, new LessThanOrEqual(num), new Identity, new Zero)
     new Nd4jTensor(tensorCopy)
   }
 

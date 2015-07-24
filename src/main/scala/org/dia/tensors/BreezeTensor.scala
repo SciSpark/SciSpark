@@ -96,7 +96,7 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
 
   implicit def apply : BreezeTensor = this
 
-  implicit def apply(ranges : (Int, Int)*) : BreezeTensor = tensor(ranges(0)._1 to ranges(0)._2, ranges(1)._1 to ranges(1)._2)
+  implicit def apply(ranges : (Int, Int)*) : BreezeTensor = tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
 
 
   override def equals(array : BreezeTensor) : Boolean = tensor == array.tensor

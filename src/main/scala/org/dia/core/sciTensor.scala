@@ -23,13 +23,20 @@ class sciTensor(val variables : HashMap[String, AbstractTensor]) extends Seriali
     metaDataVar.map(p => metaData += p)
   }
 
+  implicit def convert(tensor : AbstractTensor) = new sciTensor(varInUse, tensor)
+
+  def apply(ranges : (Int, Int)*) : sciTensor = {
+    variables(varInUse)(ranges:_*)
+  }
+
   def apply(variable : String) : sciTensor = {
     varInUse = variable
     this
   }
 
-  implicit def convert(tensor : AbstractTensor) = new sciTensor(varInUse, tensor)
-
+  def <=(num : Double) : sciTensor = variables(varInUse) <= num
   def reduceResolution(blockInt : Int) :sciTensor = variables(varInUse).reduceResolution(blockInt)
+
+  override def toString : String = variables(varInUse).toString
 }
 
