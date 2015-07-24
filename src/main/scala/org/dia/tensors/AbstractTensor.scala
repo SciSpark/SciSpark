@@ -3,11 +3,10 @@ package org.dia.tensors
 import org.slf4j.Logger
 
 /**
- * Created by rahulsp on 7/15/15.
  */
  trait AbstractTensor  extends Serializable {
+  type T <: AbstractTensor
 
- type T <: AbstractTensor
   val name : String
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 

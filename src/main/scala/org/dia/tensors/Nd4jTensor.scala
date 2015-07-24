@@ -17,6 +17,7 @@
  */
 package org.dia.tensors
 
+import org.nd4j.api.Implicits
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
@@ -27,10 +28,9 @@ import scala.language.implicitConversions
 
 /**
  * The Nd4j Functional operations
- * Created by rahulsp on 7/6/15.
  */
 
-class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
+class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
   override type T = Nd4jTensor
   val name : String = "nd4j"
   val shape = tensor.shape
@@ -96,6 +96,12 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor {
   override def toString : String = tensor.toString
 
   implicit def apply : Nd4jTensor = this
+
+  implicit def apply(ranges : (Int, Int)*) : Nd4jTensor = {
+    val rangeMap = ranges.map(p => TupleRange(p))
+    val IndArray = tensor(rangeMap:_*)
+    new Nd4jTensor(IndArray)
+  }
 
   override def equals(array : Nd4jTensor) : Boolean = tensor == array.tensor
 

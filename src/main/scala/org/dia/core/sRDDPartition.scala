@@ -20,7 +20,6 @@ package org.dia.core
 import org.apache.spark.Partition
 
 /**
- * Created by marroquin on 7/13/15.
  */
 class sRDDPartition[T] ( val index: Int,
                          val uriList: List[String]

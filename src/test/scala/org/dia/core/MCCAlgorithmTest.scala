@@ -34,8 +34,8 @@ class MCCAlgorithmTest extends FunSuite {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = "TotCldLiqH2O_A"
     val nd4jRDD = sc.OpenDapURLFile("TestLinks2", variable)
-    val preCollected: RDD[sciTensor] = nd4jRDD.map(p => p(variable).reduceResolution(5))
-    var collected: Array[sciTensor] = preCollected.collect
+    val preCollected  = nd4jRDD.map(p => p(variable).reduceResolution(5))
+    val collected: Array[sciTensor] = preCollected.collect
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val breezeRDD = sc.OpenDapURLFile("TestLinks2", variable)

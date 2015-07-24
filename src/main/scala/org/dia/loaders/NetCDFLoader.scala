@@ -24,7 +24,6 @@ import ucar.nc2.dataset.NetcdfDataset
 import scala.collection.mutable
 
 /**
- * Created by marroquin on 7/17/15.
  */
 object NetCDFLoader {
   // Class logger

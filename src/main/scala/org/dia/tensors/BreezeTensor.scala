@@ -27,7 +27,7 @@ import scala.language.implicitConversions
  * We map every dimension to an index ex : dimension 1 -> Int 1, dimension 2 -> Int 2 etc.
  */
 class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
-  type  T = BreezeTensor
+  override type  T = BreezeTensor
   val name : String = "breeze"
   val shape = Array(tensor.rows, tensor.cols)
 
@@ -95,6 +95,9 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
   override def toString : String = tensor.toString
 
   implicit def apply : BreezeTensor = this
+
+  implicit def apply(ranges : (Int, Int)*) : BreezeTensor = tensor(ranges(0)._1 to ranges(0)._2, ranges(1)._1 to ranges(1)._2)
+
 
   override def equals(array : BreezeTensor) : Boolean = tensor == array.tensor
 

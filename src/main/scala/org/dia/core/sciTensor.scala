@@ -7,9 +7,9 @@ import scala.collection.mutable
 import scala.collection.mutable.HashMap
 
 
-class sciTensor(var variables : HashMap[String, AbstractTensor]) extends Serializable {
+class sciTensor(val variables : HashMap[String, AbstractTensor]) extends Serializable {
 
-  var metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
+  val metaData : mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
   var varInUse : String = ""
 
   def this(variableName : String, array : AbstractTensor){

@@ -24,7 +24,6 @@ import org.dia.core.{sciTensor, SciSparkContext}
 import scala.language.implicitConversions
 
 /**
- * Created by rahulsp on 6/17/15.
  */
 object Main {
 

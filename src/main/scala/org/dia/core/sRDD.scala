@@ -32,28 +32,46 @@ import scala.reflect.ClassTag
  * @param partitionFunc Partitioning function
  * @tparam T  Type to be used. It should be sciTensor
  */
-class sRDD[T: ClassTag](sc: SparkContext,
-                        datasets: List[String],
-                        varName: String,
-                        loadFunc: (String, String) => (Array[Double], Array[Int]),
-                        partitionFunc: List[String] => (List[List[String]])
-                         )
-
-  extends RDD[T](sc, Nil) with Logging {
-
+class sRDD[T: ClassTag](val sc : SparkContext, val deps : Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+  var datasets : List[String] = null
+  var varName : String = null
+  var loadFunc : (String, String) => (Array[Double], Array[Int]) = null
+  var partitionFunc : List[String] =>List[List[String]] = null
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
+
+def this (sc: SparkContext, data: List[String], name: String, loader: (String, String) => (Array[Double], Array[Int]), partitionerer: List[String] => List[List[String]]) {
+  this(sc, Nil)
+  datasets = data
+  varName = name
+  loadFunc = loader
+  partitionFunc = partitionerer
+}
+
+  def this(@transient oneParent : sRDD[_]) = {
+    this(oneParent.context , List(new OneToOneDependency(oneParent)))
+  }
+
+  override def context : SparkContext = sc
+
+  /**
+   * Return an array that contains all of the elements in this RDD.
+   */
+  override def collect(): Array[T] = {
+    val results = sc.runJob(this, (iter: Iterator[T]) => iter.toArray)
+    Array.concat(results: _*)
+  }
 //   TODO this needs to handled
 //  var sRddDeps: Seq[Dependency[_]] = null
 
-  def this(@transient _sc: SparkContext, @transient deps: Seq[Dependency[_]]) = {
-    this(_sc, null, "", null, null)
-//    sRddDeps = deps
-  }
-
-  /** Construct an RDD with just a one-to-one dependency on one parent */
-  def this(@transient oneParent: RDD[_]) = {
-    this(oneParent.context , List(new OneToOneDependency(oneParent)))
-  }
+//  def this(@transient _sc: SparkContext, @transient deps: Seq[Dependency[_]]) = {
+//    this(_sc, null, "", null, null)
+////    sRddDeps = deps
+//  }
+//
+//  /** Construct an RDD with just a one-to-one dependency on one parent */
+//  def this(@transient oneParent: RDD[_]) = {
+//    this(oneParent.context , List(new OneToOneDependency(oneParent)))
+//  }
 
 
   /**

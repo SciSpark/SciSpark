@@ -18,7 +18,7 @@
 
 package org.dia.core
 
-import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.dia.Constants._
 import org.dia.partitioners.sPartitioner
 import sPartitioner._
@@ -33,8 +33,12 @@ import scala.io.Source
  *
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
  */
-class SciSparkContext(master : String, appName : String) extends SparkContext(master, appName) {
+class SciSparkContext(override val conf : SparkConf) extends SparkContext(conf) with Serializable {
   this.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+
+  def this(url : String, name : String){
+    this(new SparkConf().setMaster(url).setAppName(name))
+  }
   /**
    * Constructs an sRDD from a file of openDap URL's pointing to NetCDF datasets.
    *
@@ -46,7 +50,7 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
    * @param minPartitions the minimum number of partitions
    * @return
    */
-    def OpenDapURLFile(path: String,
+    @transient def OpenDapURLFile(path: String,
                        varName : String,
                        minPartitions: Int = defaultMinPartitions) : sRDD[sciTensor] = {
 
@@ -54,7 +58,7 @@ class SciSparkContext(master : String, appName : String) extends SparkContext(ma
       new sRDD[sciTensor](this, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
     }
 
-    def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {
+    @transient def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {
       val datasetPaths = List(path)
       new sRDD[sciTensor](this, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
     }
