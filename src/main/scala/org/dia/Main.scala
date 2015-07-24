@@ -44,9 +44,9 @@ object Main {
 
     val variable = "TotCldLiqH2O_A"
 
-    val nd4jRDD = sc.OpenDapURLFile("TestLinks2", variable)
+    val sRDD = sc.OpenDapURLFile("TestLinks2", variable)
 
-    val preCollected  = nd4jRDD.map(p => p(variable).reduceResolution(5))
+    val preCollected  = sRDD.map(p => p(variable).reduceResolution(5))
 
     val filtered = preCollected.map(p => p(variable) <= 241.0)
 
