@@ -53,19 +53,6 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
     val results = sc.runJob(this, (iter: Iterator[T]) => iter.toArray)
     Array.concat(results: _*)
   }
-//   TODO this needs to handled
-//  var sRddDeps: Seq[Dependency[_]] = null
-
-//  def this(@transient _sc: SparkContext, @transient deps: Seq[Dependency[_]]) = {
-//    this(_sc, null, "", null, null)
-////    sRddDeps = deps
-//  }
-//
-//  /** Construct an RDD with just a one-to-one dependency on one parent */
-//  def this(@transient oneParent: RDD[_]) = {
-//    this(oneParent.context , List(new OneToOneDependency(oneParent)))
-//  }
-
 
   /**
    * :: DeveloperApi ::
@@ -73,7 +60,6 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    // call the loader/constructor
     getIterator(split.asInstanceOf[sRDDPartition[T]])
   }
 
@@ -81,7 +67,6 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
     val iterator = new Iterator[T] {
       var counter = 0
 
-      //
       override def hasNext: Boolean = {
         counter < theSplit.uriList.length
       }
@@ -108,7 +93,6 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
    */
   override def getPartitions: Array[Partition] = {
     var pos = 0
-    // will create a list of lists of empty sTensors
     val listOfLists = partitionFunc(datasets)
     val array = new Array[Partition](listOfLists.size)
 
@@ -119,13 +103,6 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
     array
   }
 
-//  /**
-//   * Return a new RDD by applying a function to all elements of this RDD.
-//   */
-//  def map[U: ClassTag](f: T => U): sRDD[U] = {
-//    val cleanF = sc.clean(f)
-//    new sRDDPartition[U, T](this, (context, pid, iter) => iter.map(cleanF))
-//  }
   /**
    * Return a new RDD by applying a function to all elements of this RDD.
    */

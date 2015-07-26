@@ -64,25 +64,25 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
     new Nd4jTensor(reducedMatrix)
   }
 
-  override implicit def data : Array[Double] = tensor.data.asDouble()
+  def data : Array[Double] = tensor.data.asDouble()
 
   //implicit def convert(array : INDArray) : Nd4jTensor = new Nd4jTensor(array)
 
-  override implicit def +(array : Nd4jTensor) : Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
+  def +(array : Nd4jTensor) : Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
 
-  override implicit def -(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor - array.tensor)
+  def -(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor - array.tensor)
 
-  override implicit def \(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor \ array.tensor)
+  def \(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor \ array.tensor)
 
-  override implicit def /(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor / array.tensor)
+  def /(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor / array.tensor)
 
-  override implicit def *(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor * array.tensor)
+  def *(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor * array.tensor)
 
   /**
    * Masking operations
    */
 
-  override implicit def <=(num : Double) : Nd4jTensor ={
+  def <=(num : Double) : Nd4jTensor ={
     val tensorCopy = tensor
     BooleanIndexing.applyWhere(tensorCopy, new LessThanOrEqual(num), new Identity, new Zero)
     new Nd4jTensor(tensorCopy)
@@ -91,7 +91,7 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
   /**
    * Linear Algebra Operations
    */
-  override implicit def **(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor ** array.tensor)
+  def **(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor ** array.tensor)
 
   override def toString : String = tensor.toString
 

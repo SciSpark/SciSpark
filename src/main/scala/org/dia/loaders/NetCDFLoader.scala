@@ -23,8 +23,6 @@ import ucar.nc2.dataset.NetcdfDataset
 
 import scala.collection.mutable
 
-/**
- */
 object NetCDFLoader {
   // Class logger
   val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)

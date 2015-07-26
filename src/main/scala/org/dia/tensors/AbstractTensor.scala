@@ -21,48 +21,48 @@ import org.slf4j.Logger
    *
    * @return c-ordered linear array of data elements
    */
- implicit def data : Array[Double]
+ def data : Array[Double]
 
   /**
    * Elementwise Operations
    */
 
-  implicit def + (array : T) : T
-  implicit def - (array : T) : T
+  def + (array : T) : T
+  def - (array : T) : T
 
-  implicit def *(array : T) : T
+  def *(array : T) : T
 
-  implicit def /(array : T) : T
+  def /(array : T) : T
 
-  implicit def \ (array : T) : T
+  def \ (array : T) : T
 
   /**
    * Linear Algebra Operations
    */
 
-  implicit def **(array : T) : T
+  def **(array : T) : T
 
 
   /**
    * Masking operations
    */
 
-  implicit def <=(num : Double) : T
+  def <=(num : Double) : T
   /**
    * In place operations
    */
 
-//  implicit def +=(array : T) : T
+//  def +=(array : T) : T
 //
-//  implicit def -=(array : T) : T
+//  def -=(array : T) : T
 //
-//  implicit def *=(array : T) : T
+//  def *=(array : T) : T
 //
-//  implicit def **=(array : T) : T
+//  def **=(array : T) : T
 //
-//  implicit def /=(array : T) : T
+//  def /=(array : T) : T
 //
-//  implicit def \=(array : T) : T
+//  def \=(array : T) : T
 
   def toString : String
 

@@ -67,30 +67,30 @@ class BreezeTensor(val tensor : DenseMatrix[Double]) extends AbstractTensor {
     new BreezeTensor(reducedMatrix)
   }
 
-  implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
+  private implicit def convert(array : DenseMatrix[Double]) = new BreezeTensor(array)
 
-  override implicit def data : Array[Double] = tensor.t.toArray
+  def data : Array[Double] = tensor.t.toArray
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
 
-  override implicit def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
+  def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
 
-  override implicit def -(array: BreezeTensor): BreezeTensor = tensor - array.tensor
+  def -(array: BreezeTensor): BreezeTensor = tensor - array.tensor
 
-  override implicit def \(array: BreezeTensor): BreezeTensor = tensor \ array.tensor
+  def \(array: BreezeTensor): BreezeTensor = tensor \ array.tensor
 
-  override implicit def /(array: BreezeTensor): BreezeTensor = tensor / array.tensor
+  def /(array: BreezeTensor): BreezeTensor = tensor / array.tensor
 
-  override implicit def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
+  def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
 
-  override implicit def <=(num : Double) : BreezeTensor = tensor.map(v => if( v <= num) v else 0.0)
+  def <=(num : Double) : BreezeTensor = tensor.map(v => if( v <= num) v else 0.0)
 
   /**
    * Linear Algebra Operations
    */
-  override implicit def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
+  def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
 
   override def toString : String = tensor.toString
 
