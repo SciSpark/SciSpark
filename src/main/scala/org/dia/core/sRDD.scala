@@ -18,33 +18,38 @@ package org.dia.core
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.dia.tensors.TensorFactory
+import org.dia.tensors.{AbstractTensor, TensorFactory}
 
+import scala.collection.mutable
+
+//import scala.collection.immutable.HashMap
+//import scala.collection.parallel.mutable
 import scala.reflect.ClassTag
 
 /**
  * Scientific RDD classr
  */
-class sRDD[T: ClassTag](@transient var sc : SparkContext, @transient var deps : Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
-  var datasets : List[String] = null
-  var varName : String = null
-  var loadFunc : (String, String) => (Array[Double], Array[Int]) = null
-  var partitionFunc : List[String] =>List[List[String]] = null
+class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
+  var datasets: List[String] = null
+  var varName: Seq[String] = Nil
+  var loadFunc: (String, String) => (Array[Double], Array[Int]) = null
+  var partitionFunc: List[String] => List[List[String]] = null
 
-def this (@ transient sc: SparkContext, data: List[String], name: String, loader: (String, String) => (Array[Double], Array[Int]), partitionerer: List[String] => List[List[String]]) {
-  this(sc, Nil)
-  datasets = data
-  varName = name
-  loadFunc = loader
-  partitionFunc = partitionerer
-}
-
-  def this(@transient oneParent : sRDD[_]) = {
-    this(oneParent.context , List(new OneToOneDependency(oneParent)))
+  def this(@transient sc: SparkContext, data: List[String], name: List[String], loader: (String, String) => (Array[Double], Array[Int]), partitioner: List[String] => List[List[String]]) {
+    this(sc, Nil)
+    datasets = data
+    varName = name
+    loadFunc = loader
+    partitionFunc = partitioner
   }
 
-  override def context : SparkContext = sc
+
+  def this(@transient oneParent: sRDD[_]) = {
+    this(oneParent.context, List(new OneToOneDependency(oneParent)))
+  }
+
+  override def context: SparkContext = sc
 
   /**
    * Return an array that contains all of the elements in this RDD.
@@ -72,13 +77,17 @@ def this (@ transient sc: SparkContext, data: List[String], name: String, loader
       }
 
       override def next(): T = {
-
         val urlValue = theSplit.uriList(counter)
-        val loader = () => {loadFunc(urlValue, varName)}
-        val tensor = TensorFactory.getTensors(arrLib, loader)
-
+        val tensorMap = varName.map(avar => {
+          val loader = () => {
+            loadFunc(urlValue, avar)
+          }
+          (avar, TensorFactory.getTensors(arrLib, loader))
+        }).toMap
+        val hash = new mutable.HashMap[String, AbstractTensor]
+        tensorMap.map(p => hash += p)
         counter += 1
-        val sciArray = new sciTensor(varName, tensor)
+        val sciArray = new sciTensor(hash)
         sciArray.asInstanceOf[T]
       }
     }

@@ -1,15 +1,15 @@
 package org.dia.core
 
-import org.apache.spark.{Dependency, Partition, TaskContext}
+import org.apache.spark.{Partition, TaskContext}
 
 import scala.reflect.ClassTag
 
 /**
- */
-class sMapPartitionsRDD [U: ClassTag, T: ClassTag](
-                                                    prev: sRDD[T],
-                                                    f: (TaskContext, Int, Iterator[T]) => Iterator[U],
-                                                    preservesPartitioning: Boolean = false)
+  */
+class sMapPartitionsRDD[U: ClassTag, T: ClassTag](
+                                                   prev: sRDD[T],
+                                                   f: (TaskContext, Int, Iterator[T]) => Iterator[U],
+                                                   preservesPartitioning: Boolean = false)
   extends sRDD[U](prev) {
 
   //TODO avoiding partitioner for now

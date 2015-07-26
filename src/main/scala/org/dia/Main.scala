@@ -17,15 +17,13 @@
  */
 package org.dia
 
-import breeze.linalg.DenseMatrix
 import org.dia.Constants._
-import org.dia.tensors.BreezeTensor
-import org.dia.core.{sciTensor, SciSparkContext}
+import org.dia.core.{SciSparkContext, sciTensor}
 
 import scala.language.implicitConversions
 
 /**
- */
+  */
 object Main {
 
   /**
@@ -44,9 +42,9 @@ object Main {
 
     val variable = "TotCldLiqH2O_A"
 
-    val sRDD = sc.OpenDapURLFile("TestLinks2", variable)
+    val sRDD = sc.OpenDapURLFile("TestLinks2")
 
-    val preCollected  = sRDD.map(p => p(variable).reduceResolution(5))
+    val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 
     val filtered = preCollected.map(p => p(variable) <= 241.0)
 

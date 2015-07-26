@@ -40,16 +40,16 @@ class Main$BreezePerformanceTest extends FunSuite {
   val NANO_SECS = 1000000000.0
 
   test("ocwMetricsBreezeTest") {
-//    val knmi_dataset = Main.getBreezeNetCDFNDVars(FILE_URL + FILE_1, "tasmax")
-//    val wrf_dataset = Main.getBreezeNetCDFNDVars(FILE_URL + FILE_2, "tasmax")
-//    val result = new Array[DenseMatrix[Double]](knmi_dataset.length)
-//    println("Total Running time:\n")
-//    val totalBefore = System.nanoTime()
-//    for (i <- 0 to knmi_dataset.length - 1) {
-//      result(i) = knmi_dataset(i) - wrf_dataset(i)
-//    }
-//    val totalAfter = System.nanoTime()
-//    println((totalAfter - totalBefore)/NANO_SECS)
+    //    val knmi_dataset = Main.getBreezeNetCDFNDVars(FILE_URL + FILE_1, "tasmax")
+    //    val wrf_dataset = Main.getBreezeNetCDFNDVars(FILE_URL + FILE_2, "tasmax")
+    //    val result = new Array[DenseMatrix[Double]](knmi_dataset.length)
+    //    println("Total Running time:\n")
+    //    val totalBefore = System.nanoTime()
+    //    for (i <- 0 to knmi_dataset.length - 1) {
+    //      result(i) = knmi_dataset(i) - wrf_dataset(i)
+    //    }
+    //    val totalAfter = System.nanoTime()
+    //    println((totalAfter - totalBefore)/NANO_SECS)
     assert(true)
   }
 

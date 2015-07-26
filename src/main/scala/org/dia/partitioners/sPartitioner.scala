@@ -31,8 +31,8 @@ object sPartitioner {
   /**
    * Sort of an identity mapping
    */
-  def mapOneUrlToOneTensor(urls : List[String]) : List[List[String]] = {
-    urls.map( elem => List(elem))
+  def mapOneUrlToOneTensor(urls: List[String]): List[List[String]] = {
+    urls.map(elem => List(elem))
   }
 
   /**
@@ -41,8 +41,8 @@ object sPartitioner {
    * @return
    */
   def mapSubFoldersToFolders(paths: List[String]): List[List[String]] = {
-    var fileList : List[List[String]] = List()
-    for ( path <- paths) {
+    var fileList: List[List[String]] = List()
+    for (path <- paths) {
       val files = recursiveListFiles(new File(path))
       fileList = fileList ++ files.map(e => e._2.toList).toList
     }

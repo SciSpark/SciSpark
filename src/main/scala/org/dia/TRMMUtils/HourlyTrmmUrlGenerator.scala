@@ -18,10 +18,10 @@
 package org.dia.TRMMUtils
 
 import org.dia.Constants
-import Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
+import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
 import org.joda.time.DateTime
 
-import scala.collection.mutable.{HashMap, ListBuffer}
+import scala.collection.mutable.ListBuffer
 
 /**
  * Container of HourlyTrmmUrlGenerator data
@@ -35,7 +35,7 @@ object HourlyTrmmUrlGenerator {
    * @return HashMap grouping readings per day
    */
   def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
-//    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
+    //    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
     var yearReadings = new ListBuffer[String]()
     //val maxDays = if (iniYear%4 == 0) 366 else 355
     val maxDays = 2
@@ -43,18 +43,18 @@ object HourlyTrmmUrlGenerator {
     if (finalYear == 0) {
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-//        dailyReadings.put(realDate,generateDayReadings(realDate))
+        //        dailyReadings.put(realDate,generateDayReadings(realDate))
         yearReadings.appendAll(generateDayReadings(realDate))
-//        println(yearReadings)
+        //        println(yearReadings)
       }
     } else {
       // a range of years
       for (iYear <- iniYear to finalYear by 1) {
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
-//          dailyReadings.put(realDate,generateDayReadings(realDate))
+          //          dailyReadings.put(realDate,generateDayReadings(realDate))
           yearReadings.appendAll(generateDayReadings(realDate))
-//          println(yearReadings)
+          //          println(yearReadings)
         }
       }
     }

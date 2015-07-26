@@ -17,29 +17,29 @@
  */
 package org.dia.tensors
 
-import org.nd4j.api.Implicits
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.indexing.BooleanIndexing
 import org.nd4j.linalg.indexing.conditions.LessThanOrEqual
-import org.nd4j.linalg.indexing.functions.{Zero, Identity}
+import org.nd4j.linalg.indexing.functions.{Identity, Zero}
+
 import scala.language.implicitConversions
 
 /**
  * The Nd4j Functional operations
  */
 
-class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
+class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override type T = Nd4jTensor
-  val name : String = "nd4j"
+  val name: String = "nd4j"
   val shape = tensor.shape
 
-  def this(shapePair : (Array[Double], Array[Int])) {
+  def this(shapePair: (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
   }
 
-  def this(loadFunc : () => (Array[Double], Array[Int])) {
+  def this(loadFunc: () => (Array[Double], Array[Int])) {
     this(loadFunc())
   }
 
@@ -51,9 +51,9 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
 
     val reducedMatrix = Nd4j.create(numRows / blockSize, numCols / blockSize)
 
-    for(row <- 0 to (reducedMatrix.rows - 1)){
-      for(col <- 0 to (reducedMatrix.columns - 1)){
-        val rowRange = (row*blockSize) -> (((row + 1) * blockSize))
+    for (row <- 0 to (reducedMatrix.rows - 1)) {
+      for (col <- 0 to (reducedMatrix.columns - 1)) {
+        val rowRange = (row * blockSize) -> (((row + 1) * blockSize))
         val columnRange = (col * blockSize) -> (((col + 1) * blockSize))
         val block = tensor(rowRange, columnRange)
         val numNonZero = block.data.asDouble.filter(p => p != 0).size
@@ -64,11 +64,9 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
     new Nd4jTensor(reducedMatrix)
   }
 
-  def data : Array[Double] = tensor.data.asDouble()
+  def +(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
 
   //implicit def convert(array : INDArray) : Nd4jTensor = new Nd4jTensor(array)
-
-  def +(array : Nd4jTensor) : Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
 
   def -(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor - array.tensor)
 
@@ -82,7 +80,7 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
    * Masking operations
    */
 
-  def <=(num : Double) : Nd4jTensor ={
+  def <=(num: Double): Nd4jTensor = {
     val tensorCopy = tensor
     BooleanIndexing.applyWhere(tensorCopy, new LessThanOrEqual(num), new Identity, new Zero)
     new Nd4jTensor(tensorCopy)
@@ -93,17 +91,19 @@ class Nd4jTensor(val tensor : INDArray) extends AbstractTensor{
    */
   def **(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor ** array.tensor)
 
-  override def toString : String = tensor.toString
+  override def toString: String = tensor.toString
 
-  implicit def apply : Nd4jTensor = this
+  implicit def apply: Nd4jTensor = this
 
-  implicit def apply(ranges : (Int, Int)*) : Nd4jTensor = {
+  implicit def apply(ranges: (Int, Int)*): Nd4jTensor = {
     val rangeMap = ranges.map(p => TupleRange(p))
-    val IndArray = tensor(rangeMap:_*)
+    val IndArray = tensor(rangeMap: _*)
     new Nd4jTensor(IndArray)
   }
 
-  override def equals(array : Nd4jTensor) : Boolean = tensor == array.tensor
+  override def equals(array: Nd4jTensor): Boolean = tensor == array.tensor
 
-  override def getUnderlying() : (Array[Double], Array[Int]) = (data, shape)
+  override def getUnderlying(): (Array[Double], Array[Int]) = (data, shape)
+
+  def data: Array[Double] = tensor.data.asDouble()
 }

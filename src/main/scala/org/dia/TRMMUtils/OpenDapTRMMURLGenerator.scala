@@ -44,7 +44,7 @@ object OpenDapTRMMURLGenerator {
    * Runs the OpenDapTRMMURL link generator
    * @param checkLink if the link needs to bec checked ?Deprecated?
    */
-  def run(checkLink : Boolean, fName : String) : Unit = {
+  def run(checkLink: Boolean, fName: String): Unit = {
     // initializing variables
     checkUrl = checkLink
     fileName = fName
@@ -67,53 +67,53 @@ object OpenDapTRMMURLGenerator {
     }
   }
 
-    /**
-     * Gets the links per year
-     * @param year the year offset 1997 e.g. For Starting at 2000 -> year = 3
-     * @return
-     */
-    def generateLinksPerYear(year: Int) : util.ArrayList[String] = {
+  /**
+   * Gets the links per year
+   * @param year the year offset 1997 e.g. For Starting at 2000 -> year = 3
+   * @return
+   */
+  def generateLinksPerYear(year: Int): util.ArrayList[String] = {
 
-      val checkedYear = iniYear + year
-      val urls = new util.ArrayList[String]()
-      val days = if(checkedYear % 4 == 0) 366 else 365
-      var readTime = new DateTime(checkedYear, 1, 2, 0, 0)
-      //for each year try to generate each day
-      for (day <- 1 to days) {
-        val paddedDay = (day.toString.reverse + "00").substring(0, 3).reverse
-        val paddedMonth = (readTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
-        val paddedReadDay = (readTime.getDayOfMonth.toString.reverse + "0").substring(0, 2).reverse
-        readTime = readTime.plusDays(1)
+    val checkedYear = iniYear + year
+    val urls = new util.ArrayList[String]()
+    val days = if (checkedYear % 4 == 0) 366 else 365
+    var readTime = new DateTime(checkedYear, 1, 2, 0, 0)
+    //for each year try to generate each day
+    for (day <- 1 to days) {
+      val paddedDay = (day.toString.reverse + "00").substring(0, 3).reverse
+      val paddedMonth = (readTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
+      val paddedReadDay = (readTime.getDayOfMonth.toString.reverse + "0").substring(0, 2).reverse
+      readTime = readTime.plusDays(1)
 
-        val sb = new StringBuilder()
-        sb.append(checkedYear).append("/")
-        sb.append(paddedDay).append("/")
-        sb.append("3B42_daily.").append(readTime.getYear).append(".")
-        sb.append(paddedMonth).append(".")
-        sb.append(paddedReadDay).append(".7.bin")
-        // check url and stop if it doesn't exist
-        val tmpUrl = URL + sb.toString
-        if (checkUrl) {
-          if (getResponseCode(tmpUrl)) {
-            urls.add(tmpUrl)
-            //println(tmpUrl)
-          }
+      val sb = new StringBuilder()
+      sb.append(checkedYear).append("/")
+      sb.append(paddedDay).append("/")
+      sb.append("3B42_daily.").append(readTime.getYear).append(".")
+      sb.append(paddedMonth).append(".")
+      sb.append(paddedReadDay).append(".7.bin")
+      // check url and stop if it doesn't exist
+      val tmpUrl = URL + sb.toString
+      if (checkUrl) {
+        if (getResponseCode(tmpUrl)) {
+          urls.add(tmpUrl)
+          //println(tmpUrl)
         }
       }
-      urls
     }
+    urls
+  }
 
-    /**
-     * Checks if the url actually exists
-     * @param urlString the url
-     * @return
-     */
-    def getResponseCode(urlString : String):Boolean = {
-      val u = new URL(urlString)
-      val huc = u.openConnection().asInstanceOf[HttpURLConnection]
-      huc.setConnectTimeout(100000)
-      huc.setRequestMethod("HEAD")
-      huc.getResponseCode == HttpURLConnection.HTTP_OK
-    }
+  /**
+   * Checks if the url actually exists
+   * @param urlString the url
+   * @return
+   */
+  def getResponseCode(urlString: String): Boolean = {
+    val u = new URL(urlString)
+    val huc = u.openConnection().asInstanceOf[HttpURLConnection]
+    huc.setConnectTimeout(100000)
+    huc.setRequestMethod("HEAD")
+    huc.getResponseCode == HttpURLConnection.HTTP_OK
+  }
 
 }

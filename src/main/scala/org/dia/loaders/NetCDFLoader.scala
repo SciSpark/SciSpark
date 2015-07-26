@@ -25,7 +25,7 @@ import scala.collection.mutable
 
 object NetCDFLoader {
   // Class logger
-  val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
    * Gets an NDimensional Array of ND4j from a TRMM tensors
@@ -49,7 +49,7 @@ object NetCDFLoader {
    * @param variable the NetCDF variable to search for
    * @return
    */
-  def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) =  {
+  def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     if (netcdfFile != null) {
@@ -60,12 +60,22 @@ object NetCDFLoader {
         return (coordinateArray, shape)
       }
       LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-      return (Array.empty, Array(0,0))
+      return (Array(-9999), Array(1, 1))
     }
     LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-    return (Array.empty, Array(0,0))
+    return (Array(-9999), Array(1, 1))
   }
 
+  def loadNetCDFVariables(url: String): List[String] = {
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    val variables = netcdfFile.getVariables
+    var list: List[String] = List()
+    for (i <- 0 to variables.size - 1) {
+      val k = variables.get(i).getName
+      list ++= List(k)
+    }
+    list
+  }
 
   /**
    * Creates a 2D array from a list of dimensions using a variable

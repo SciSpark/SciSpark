@@ -20,10 +20,10 @@ package org.dia.core
 import org.apache.spark.Partition
 
 /**
- */
-class sRDDPartition[T] ( val index: Int,
-                         val uriList: List[String]
-                         ) extends Partition {
+  */
+class sRDDPartition[T](val index: Int,
+                       val uriList: List[String]
+                        ) extends Partition {
 
 
   /**

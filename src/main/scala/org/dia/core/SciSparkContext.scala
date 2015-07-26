@@ -18,13 +18,14 @@
 
 package org.dia.core
 
-import org.apache.spark.{SparkConf, SparkContext, SparkException}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
-import org.dia.partitioners.sPartitioner
-import sPartitioner._
 import org.dia.loaders.NetCDFLoader._
+import org.dia.partitioners.sPartitioner
+import org.dia.partitioners.sPartitioner._
 
 import scala.io.Source
+
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext
@@ -33,20 +34,21 @@ import scala.io.Source
  *
  * TODO :: Should we extend SparkContext or modify a copy of SparkContext
  */
-class SciSparkContext(val conf : SparkConf) {
+class SciSparkContext(val conf: SparkConf) {
 
   val sparkContext = new SparkContext(conf)
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
-  def this(url : String, name : String){
+  def this(url: String, name: String) {
     this(new SparkConf().setMaster(url).setAppName(name))
   }
 
-  def setLocalProperty(key : String, value : String): Unit = {
+  def setLocalProperty(key: String, value: String): Unit = {
     sparkContext.setLocalProperty(key, value)
   }
 
-  def getConf : SparkConf = sparkContext.getConf
+  def getConf: SparkConf = sparkContext.getConf
+
   /**
    * Constructs an sRDD from a file of openDap URL's pointing to NetCDF datasets.
    *
@@ -54,21 +56,26 @@ class SciSparkContext(val conf : SparkConf) {
    * TODO :: Properly integrate minimum partitioning
    *
    * @param path Path to a file containing a list of OpenDap URLs
-   * @param varName the variable name to search for
+   * @param varName the variable name to search for, by default None is specified in which case all variables are loaded
    * @param minPartitions the minimum number of partitions
    * @return
    */
-    @transient def OpenDapURLFile(path: String,
-                       varName : String,
-                       minPartitions: Int = sparkContext.defaultMinPartitions) : sRDD[sciTensor] = {
+  @transient def OpenDapURLFile(path: String,
+                                varName: List[String] = Nil,
+                                minPartitions: Int = sparkContext.defaultMinPartitions
+                                 ): sRDD[sciTensor] = {
 
-      val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-      new sRDD[sciTensor](sparkContext, datasetUrls, varName, loadNetCDFNDVars, mapOneUrlToOneTensor)
+    val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
+    var variables: List[String] = null
+    if (varName == Nil) {
+      variables = loadNetCDFVariables(datasetUrls(0))
     }
+    new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
+  }
 
-    @transient def OpenPath(path: String, varName : String) : sRDD[sciTensor] = {
-      val datasetPaths = List(path)
-      new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
-    }
+  @transient def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
+    val datasetPaths = List(path)
+    new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+  }
 
 }

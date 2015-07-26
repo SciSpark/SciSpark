@@ -21,7 +21,6 @@ import org.dia.loaders.{NetCDFLoader, NetCDFUtils}
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.api.Implicits._
 
 /**
  * Tests for the Breeze functions

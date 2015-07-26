@@ -30,7 +30,7 @@ import org.dia.partitioners.sPartitioner._
 class LoadersTest extends org.scalatest.FunSuite {
 
   test("RecursiveFileListing") {
-    val path ="src/main/scala/"
+    val path = "src/main/scala/"
     val files = PathUtils.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(files.size))
     files.map(vals => {
@@ -50,7 +50,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
-    val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "precipitation", loadNetCDFNDVars, mapSubFoldersToFolders)
+    val sBreezeRdd = new sRDD[sciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVars, mapSubFoldersToFolders)
     sBreezeRdd.collect
     assert(true)
   }
@@ -59,8 +59,20 @@ class LoadersTest extends org.scalatest.FunSuite {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     var path = "/Users/marroqui/Documents/projects/scipark/data/TRMM_3Hourly_3B42_1998/"
-    val pathRDD : sRDD[sciTensor] = sc.OpenPath(path, "precipitation")
+    val pathRDD: sRDD[sciTensor] = sc.OpenPath(path, List("precipitation"))
     println(pathRDD.collect()(0).variables("precipitation").data.size)
+    assert(true)
+  }
+
+  test("LoadMultiVariable") {
+    val sc = SparkTestConstants.sc
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    var path = "TestLinks2"
+    val pathRDD: sRDD[sciTensor] = sc.OpenDapURLFile(path)
+    val t = pathRDD.collect.toList
+    println("Number loaded " + t.length)
+    println(t.toString)
+    println("DONEDONEDONE")
     assert(true)
   }
 }

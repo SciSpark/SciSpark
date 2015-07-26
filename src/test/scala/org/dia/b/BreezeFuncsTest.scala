@@ -17,7 +17,6 @@
  */
 package org.dia.b
 
-import breeze.linalg.DenseMatrix
 import org.dia.loaders.NetCDFUtils
 
 /**
@@ -43,18 +42,18 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingDailyTRMMDimensions") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
-//    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
-//
-//    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == resDenseMatrix.rows)
-//    assert(ExpectedClass.cols == resDenseMatrix.cols)
+    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
+    //
+    //    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
+    //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
+    //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
+    //    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //
+    //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
+    //
+    //    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
+    //    assert(ExpectedClass.rows == resDenseMatrix.rows)
+    //    assert(ExpectedClass.cols == resDenseMatrix.cols)
     assert(true)
   }
 
@@ -64,18 +63,18 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingHourlyTRMMDimensions") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
-//
-//    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == resDenseMatrix.rows)
-//    assert(ExpectedClass.cols == resDenseMatrix.cols)
+    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
+    //
+    //    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
+    //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //
+    //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //
+    //    assert(resDenseMatrix.getClass.equals(ExpectedClass.getClass))
+    //    assert(ExpectedClass.rows == resDenseMatrix.rows)
+    //    assert(ExpectedClass.cols == resDenseMatrix.cols)
     assert(true)
   }
 
@@ -90,30 +89,30 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
     println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
-//    val fdArray = BreezeTensor.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
-//    assert(fdArray.getClass.equals(ExpectedType.getClass))
+    //    val fdArray = BreezeTensor.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
+    //    assert(fdArray.getClass.equals(ExpectedType.getClass))
   }
 
   /**
    * Tests the ReduceResolution function.
    * Assert Criteria : Proper reduction of dimensions by the factor BLOCK_SIZE
    */
- test("ReduceResolutionTest") {
-//    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
-//
-//    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
-//
-//    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
-//
-//    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
-//    val reducedMatrix = BreezeTensor.reduceResolution(resDenseMatrix, BLOCK_SIZE)
-//
-//
-//    assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))
-//    assert(ExpectedClass.rows == reducedMatrix.rows)
-//    assert(ExpectedClass.cols == reducedMatrix.cols)
+  test("ReduceResolutionTest") {
+    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
+    //
+    //    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
+    //
+    //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //
+    //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
+    //    val reducedMatrix = BreezeTensor.reduceResolution(resDenseMatrix, BLOCK_SIZE)
+    //
+    //
+    //    assert(reducedMatrix.getClass.equals(ExpectedClass.getClass))
+    //    assert(ExpectedClass.rows == reducedMatrix.rows)
+    //    assert(ExpectedClass.cols == reducedMatrix.cols)
   }
 
 

@@ -32,21 +32,21 @@ import scala.language.implicitConversions
 object NetCDFUtils {
 
   // Class logger
-  val LOG : Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
    * Loads a NetCDF file from a url
    * TODO :: Check if it loads the entire file with openDataset
    */
-  def loadNetCDFDataSet(url : String) : NetcdfDataset = {
+  def loadNetCDFDataSet(url: String): NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
     try {
       var netcdfFile = NetcdfDataset.openDataset(url)
       netcdfFile
     } catch {
-      case e : java.io.IOException => LOG.error("Couldn't open dataset %s".format(url))
+      case e: java.io.IOException => LOG.error("Couldn't open dataset %s".format(url))
         null
-      case ex : Exception => LOG.error("Something went wrong while reading %s".format(url))
+      case ex: Exception => LOG.error("Something went wrong while reading %s".format(url))
         null
     }
   }
@@ -116,7 +116,7 @@ object NetCDFUtils {
    * @param rowDim the specific dimension to get the size of
    * @return
    */
-  def getDimensionSize(netcdfFile : NetcdfDataset, rowDim : String): Int = {
+  def getDimensionSize(netcdfFile: NetcdfDataset, rowDim: String): Int = {
     var dimSize = -1
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
@@ -142,12 +142,12 @@ object NetCDFUtils {
     //TODO verify if the variable name actually exists
     // if the netcdf doesn't exists
     if (netcdfFile == null)
-      return  new mutable.HashMap[Int, Int]()
+      return new mutable.HashMap[Int, Int]()
 
     // if the variable doesn't exist
     var netcdfVariable = netcdfFile.findVariable(variable)
     if (netcdfVariable == null)
-      return  new mutable.HashMap[Int, Int]()
+      return new mutable.HashMap[Int, Int]()
 
     var dimensions = netcdfVariable.getDimensions
     val it = dimensions.iterator
@@ -157,9 +157,9 @@ object NetCDFUtils {
     while (it.hasNext) {
       val d = it.next()
       //TODO verify how the names map to indexes
-      if(Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)){
+      if (Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)) {
         dSizes.put(2, d.getLength)
-      } else if( dia.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)){
+      } else if (dia.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)) {
         dSizes.put(1, d.getLength)
       } else {
         dSizes.put(iterate, d.getLength)

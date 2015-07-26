@@ -17,15 +17,13 @@
  */
 package org.dia.core
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.dia.Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
-import org.dia.partitioners.sPartitioner
-import org.dia.tensors.AbstractTensor
-import sPartitioner._
-import org.dia.partitioners.sTrmmPartitioner._
 import org.dia.loaders.NetCDFLoader._
+import org.dia.partitioners.sPartitioner
+import org.dia.partitioners.sPartitioner._
+import org.dia.partitioners.sTrmmPartitioner._
 import org.scalatest.FunSuite
 
 import scala.io.Source
@@ -33,7 +31,7 @@ import scala.io.Source
 /**
  * Tests for creating different Rdd types.
  */
-class sRDDTest extends FunSuite  {
+class sRDDTest extends FunSuite {
 
   test("ArrayLibsSanityTest") {
     val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
@@ -41,32 +39,32 @@ class sRDDTest extends FunSuite  {
 
     // Breeze library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sBreezeRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-    val sBreezeRdd2 = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_B", loadNetCDFNDVars, mapOneUrlToOneTensor)
+    val sBreezeRdd = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_A"), loadNetCDFNDVars, mapOneUrlToOneTensor)
+    val sBreezeRdd2 = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_B"), loadNetCDFNDVars, mapOneUrlToOneTensor)
     sBreezeRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
     var start = System.nanoTime()
     val breezeTensors = sBreezeRdd.collect()
     var end = System.nanoTime()
-    var breezeTime = (end - start)/1000000000.0
+    var breezeTime = (end - start) / 1000000000.0
 
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val sNd4jRdd = new sRDD[sciTensor] (sc, dataUrls, "TotCldLiqH2O_A", loadNetCDFNDVars, mapOneUrlToOneTensor)
-//    sNd4jRdd.map( e => e("var1"))
+    val sNd4jRdd = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_A"), loadNetCDFNDVars, mapOneUrlToOneTensor)
+    //    sNd4jRdd.map( e => e("var1"))
 
     sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
     start = System.nanoTime()
     val nd4jTensors = sNd4jRdd.collect()
     end = System.nanoTime()
-    var nd4jTime = (end - start)/1000000000.0
+    var nd4jTime = (end - start) / 1000000000.0
 
     // element comparison
     var flg = true
     var cnt = 0
     nd4jTensors(0).variables("TotCldLiqH2O_A").data.map(e => {
-      if(e != breezeTensors(0).variables("TotCldLiqH2O_A").data(cnt))
+      if (e != breezeTensors(0).variables("TotCldLiqH2O_A").data(cnt))
         flg = false
-      cnt+=1
+      cnt += 1
     })
 
     // printing out messages
@@ -82,7 +80,7 @@ class sRDDTest extends FunSuite  {
 
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
+    val sNd4jRdd = new sRDD[sciTensor](sc, urls, List("precipitation"), loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
     nd4jTensor.variables("TotCldLiqH2O_A").data.map(e => println(e))
     assert(true)
@@ -95,7 +93,7 @@ class sRDDTest extends FunSuite  {
 
     // Nd4j library
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sNd4jRdd = new sRDD[sciTensor] (sc, urls, "precipitation", loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
+    val sNd4jRdd = new sRDD[sciTensor](sc, urls, List("precipitation"), loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
     println(nd4jTensor.variables("TotCldLiqH2O_A").data)
   }
@@ -104,11 +102,11 @@ class sRDDTest extends FunSuite  {
     val sc: SciSparkContext = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = "TotCldLiqH2O_A"
-    val nd4jRDD: sRDD[sciTensor] = sc.OpenDapURLFile("TestLinks", "TotCldLiqH2O_A")
+    val nd4jRDD: sRDD[sciTensor] = sc.OpenDapURLFile("TestLinks", List("TotCldLiqH2O_A"))
     val mappedRdd = nd4jRDD.map(p => p)
     mappedRdd.collect()
 
-//    val smoothRDD: RDD[AbstractTensor] = nd4jRDD.map(p => p.variables(variable).reduceResolution(5))
+    //    val smoothRDD: RDD[AbstractTensor] = nd4jRDD.map(p => p.variables(variable).reduceResolution(5))
 
     //    val collect : Array[sciTensor] = smoothRDD.map(p => p <= 241.0).collect
 
@@ -118,26 +116,26 @@ class sRDDTest extends FunSuite  {
   }
 
   test("BreezeRdd.basic") {
-//    val sc = SparkTestConstants.sc
-//    val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-//    val datasetMapping = datasetUrls.foreach(element => (0, element)).asInstanceOf[Map[AnyVal, Any]]
-//    val srdd = new sciBreezeRDD[DenseMatrix[Double]] (sc, datasetMapping, "TotCldLiqH2O_A")
+    //    val sc = SparkTestConstants.sc
+    //    val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
+    //    val datasetMapping = datasetUrls.foreach(element => (0, element)).asInstanceOf[Map[AnyVal, Any]]
+    //    val srdd = new sciBreezeRDD[DenseMatrix[Double]] (sc, datasetMapping, "TotCldLiqH2O_A")
 
-//    val collected = srdd.collect
-//    collected.map(p => println(p))
-//    sc.stop()
-    assert (true)
+    //    val collected = srdd.collect
+    //    collected.map(p => println(p))
+    //    sc.stop()
+    assert(true)
   }
 
   test("Nd4jRdd.basic") {
-//    val sc = SparkTestConstants.sc
-//    val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-//    val datasetMapping = datasetUrls.foreach(element => (0, element)).asInstanceOf[Map[AnyVal, Any]]
-//    val srdd = new sciNd4jRDD[INDArray](sc, datasetMapping, "TotCldLiqH2O_A")
+    //    val sc = SparkTestConstants.sc
+    //    val datasetUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
+    //    val datasetMapping = datasetUrls.foreach(element => (0, element)).asInstanceOf[Map[AnyVal, Any]]
+    //    val srdd = new sciNd4jRDD[INDArray](sc, datasetMapping, "TotCldLiqH2O_A")
 
-//    val collected = srdd.collect
-//    collected.map(p => println(p))
-//    sc.stop()
+    //    val collected = srdd.collect
+    //    collected.map(p => println(p))
+    //    sc.stop()
     assert(true)
   }
 

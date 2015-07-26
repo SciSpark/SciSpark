@@ -25,12 +25,12 @@ import scala.language.implicitConversions
  * Functions needed to map keys to values
  */
 object sTrmmPartitioner {
-  
+
   /**
    * Groups strings by the string passed along
    */
-  def mapOneUrlToManyTensorTRMM(urls : List[String], groupedBy : String) : List[List[String]] = {
-    var mappedUrls : List[List[String]] = Nil
+  def mapOneUrlToManyTensorTRMM(urls: List[String], groupedBy: String): List[List[String]] = {
+    var mappedUrls: List[List[String]] = Nil
     var pos = 0
     groupedBy match {
 
@@ -38,25 +38,25 @@ object sTrmmPartitioner {
       case Constants.GROUP_BY_YEAR => pos = 4;
     }
     val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
-    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    groups.map(entry => mappedUrls = mappedUrls ::: List(entry._2))
     mappedUrls
   }
 
-  def mapOneYearToManyTensorTRMM(urls : List[String]) : List[List[String]] = {
-    var mappedUrls : List[List[String]] = Nil
+  def mapOneYearToManyTensorTRMM(urls: List[String]): List[List[String]] = {
+    var mappedUrls: List[List[String]] = Nil
     //We know how the url is constructed so this shouldn't be a problem
     var pos = 4
     val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
-    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    groups.map(entry => mappedUrls = mappedUrls ::: List(entry._2))
     mappedUrls
   }
 
-  def mapOneDayToManyTensorTRMM(urls : List[String]) : List[List[String]] = {
-    var mappedUrls : List[List[String]] = Nil
+  def mapOneDayToManyTensorTRMM(urls: List[String]): List[List[String]] = {
+    var mappedUrls: List[List[String]] = Nil
     //We know how the url is constructed so this shouldn't be a problem
     var pos = 8
     val groups = urls.groupBy(_.replace(Constants.TRMM_HOURLY_URL, "").substring(0, pos))
-    groups.map( entry =>   mappedUrls = mappedUrls ::: List(entry._2))
+    groups.map(entry => mappedUrls = mappedUrls ::: List(entry._2))
     mappedUrls
   }
 }

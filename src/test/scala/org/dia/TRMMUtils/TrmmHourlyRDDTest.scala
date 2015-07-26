@@ -17,9 +17,6 @@
  */
 package org.dia.TRMMUtils
 
-import breeze.linalg.DenseMatrix
-import org.dia.Constants
-import org.dia.core.SparkTestConstants
 import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer

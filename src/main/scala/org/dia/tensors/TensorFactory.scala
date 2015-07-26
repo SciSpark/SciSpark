@@ -17,7 +17,9 @@
 package org.dia.tensors
 
 import org.dia.Constants
-import Constants.{BREEZE_LIB, ND4J_LIB}
+import org.dia.Constants.{BREEZE_LIB, ND4J_LIB}
+
+import scala.collection.mutable
 
 /**
  * Tensor factory
@@ -29,10 +31,11 @@ object TensorFactory {
    * @param loadFunc
    * @return
    */
-  def getTensors[T <: AbstractTensor](arrayLib:String, loadFunc: () => (Array[Double], Array[Int])) : AbstractTensor = {
+  def getTensors[T <: AbstractTensor](arrayLib: String, loadFunc: () => (Array[Double], Array[Int])): AbstractTensor = {
     arrayLib match {
-      case BREEZE_LIB  => return new BreezeTensor(loadFunc)
-      case ND4J_LIB  => return new Nd4jTensor(loadFunc)
+      case BREEZE_LIB => return new BreezeTensor(loadFunc)
+      case ND4J_LIB => return new Nd4jTensor(loadFunc)
     }
   }
+
 }
