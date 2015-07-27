@@ -67,8 +67,9 @@ class LoadersTest extends org.scalatest.FunSuite {
   test("LoadMultiVariable") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    var path = "TestLinks2"
-    val pathRDD: sRDD[sciTensor] = sc.OpenDapURLFile(path)
+    val path = "TestLinks2"
+    //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
+    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)
     val t = pathRDD.collect.toList
     println("Number loaded " + t.length)
     println(t.toString)

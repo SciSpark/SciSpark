@@ -56,7 +56,8 @@ object NetCDFLoader {
       val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
       if (coordinateArray.length > 0) {
         val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
-        val shape = dims.toArray.sortBy(_._1).map(_._2)
+        var shape = dims.toArray.sortBy(_._1).map(_._2)
+        if (shape.length < 2) shape = Array(1, 1)
         return (coordinateArray, shape)
       }
       LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))

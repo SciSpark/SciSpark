@@ -87,6 +87,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
         val hash = new mutable.HashMap[String, AbstractTensor]
         tensorMap.map(p => hash += p)
         counter += 1
+
         val sciArray = new sciTensor(hash)
         sciArray.asInstanceOf[T]
       }

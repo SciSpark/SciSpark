@@ -36,12 +36,12 @@ class MCCAlgorithmTest extends FunSuite {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = "TotCldLiqH2O_A"
-    val nd4jRDD = sc.OpenDapURLFile("TestLinks2", List(variable))
+    val nd4jRDD = sc.NetcdfFile("TestLinks2", List(variable))
     val preCollected = nd4jRDD.map(p => p(variable).reduceResolution(5))
     val collected: Array[sciTensor] = preCollected.collect
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val breezeRDD = sc.OpenDapURLFile("TestLinks2", List(variable))
+    val breezeRDD = sc.NetcdfFile("TestLinks2", List(variable))
     val breezeCollect = breezeRDD.map(p => p(variable).reduceResolution(5)).collect
 
     breezeCollect.toList.toString
@@ -67,15 +67,16 @@ class MCCAlgorithmTest extends FunSuite {
   test("resolutionandFilterTest") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
     val variable = "TotCldLiqH2O_A"
-    val nd4jRDD = sc.OpenDapURLFile("TestLinks2", List(variable))
+    val nd4jRDD = sc.NetcdfFile("TestLinks2")
     val preCollected = nd4jRDD.map(p => p(variable).reduceResolution(5))
     val nd4jfiltered = preCollected.map(p => p(variable) <= 241.0)
     val nd4jSliced = nd4jfiltered.map(p => p(variable)(4 -> 9, 2 -> 5))
     val collected: Array[sciTensor] = nd4jSliced.collect
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val breezeRDD = sc.OpenDapURLFile("TestLinks2", List(variable))
+    val breezeRDD = sc.NetcdfFile("TestLinks2")
     val breezesmooth = breezeRDD.map(p => p(variable).reduceResolution(5))
     val breezeFiltered = breezesmooth.map(p => p(variable) <= 241.0)
     val breezeSliced = breezeFiltered.map(p => p(variable)(4 -> 9, 2 -> 5))

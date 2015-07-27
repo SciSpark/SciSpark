@@ -60,13 +60,13 @@ class SciSparkContext(val conf: SparkConf) {
    * @param minPartitions the minimum number of partitions
    * @return
    */
-  @transient def OpenDapURLFile(path: String,
+  @transient def NetcdfFile(path: String,
                                 varName: List[String] = Nil,
                                 minPartitions: Int = sparkContext.defaultMinPartitions
                                  ): sRDD[sciTensor] = {
 
     val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-    var variables: List[String] = null
+    var variables: List[String] = varName
     if (varName == Nil) {
       variables = loadNetCDFVariables(datasetUrls(0))
     }

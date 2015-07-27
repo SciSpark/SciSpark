@@ -32,7 +32,6 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def this(shapePair: (Array[Double], Array[Int])) {
     this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1, 0, shapePair._2(1), true))
-    //this(new DenseMatrix[Double](shapePair._2(0), shapePair._2(1), shapePair._1))
   }
 
   def this(loadFunc: () => (Array[Double], Array[Int])) {
@@ -88,7 +87,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    */
   def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
 
-  override def toString: String = tensor.toString
+  override def toString: String = if (tensor != null) tensor.toString else null
 
   implicit def apply: BreezeTensor = this
 

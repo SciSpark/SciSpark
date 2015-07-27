@@ -11,13 +11,11 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
   val metaData: mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
   val head = variables.toArray
-  var varInUse: String = ""
+  var varInUse = variables.toArray.apply(0)._1
 
 
   def this(variableName: String, array: AbstractTensor) {
-    this(new mutable.HashMap[String, AbstractTensor])
-    variables + ((variableName, array))
-    varInUse = variableName
+    this(new mutable.HashMap[String, AbstractTensor] += ((variableName, array)))
   }
 
   def this(variableName: String, array: AbstractTensor, metaDataVar: (String, String)*) {

@@ -42,7 +42,7 @@ object Main {
 
     val variable = "TotCldLiqH2O_A"
 
-    val sRDD = sc.OpenDapURLFile("TestLinks2")
+    val sRDD = sc.NetcdfFile("TestLinks2")
 
     val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 
