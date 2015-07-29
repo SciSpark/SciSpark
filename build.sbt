@@ -58,8 +58,6 @@ assemblyMergeStrategy in assembly := {
   case x if x.contains("org.apache") => MergeStrategy.first
   case x if x.contains("org.slf4j") => MergeStrategy.first
   case PathList("com", "esotericsoftware", xs@_ *) => MergeStrategy.last // For Log$Logger.class
-  case x =>
-    val oldStrategy = (mergeStrategy in assembly).value
-    oldStrategy(x)
+  case x => MergeStrategy.first
 }
 
