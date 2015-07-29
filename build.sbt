@@ -53,6 +53,7 @@ assemblyMergeStrategy in assembly := {
   case x if x.contains("slf4j-api") => MergeStrategy.last
   case x if x.contains("org/cyberneko/html") => MergeStrategy.first
   case x if x.contains("SingleThreadModel.class") => MergeStrategy.first
+  case x if x.contains("javax.servlet") => MergeStrategy.first
   case PathList("com", "esotericsoftware", xs@_ *) => MergeStrategy.last // For Log$Logger.class
   case x =>
     val oldStrategy = (mergeStrategy in assembly).value
