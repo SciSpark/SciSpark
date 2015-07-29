@@ -36,13 +36,16 @@ object Main {
 
 
   def main(args: Array[String]): Unit = {
-    val sc = new SciSparkContext("local[4]", "test")
+    var master = "";
+    var testFile = if (args.isEmpty) "TestLinks" else args(1)
+    if(args.isEmpty) master = "local[4]" else master = args(0)
+    val sc = new SciSparkContext(master, "test")
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
     val variable = "TotCldLiqH2O_A"
 
-    val sRDD = sc.NetcdfFile("TestLinks2")
+    val sRDD = sc.NetcdfFile(testFile)
 
     val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 

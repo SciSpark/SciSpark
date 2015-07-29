@@ -1,3 +1,9 @@
+import AssemblyKeys._
+
+assemblySettings
+
+jarName in assembly := "SciSparkTestExperiments.jar"
+
 name := "SciSparkTestExperiments"
 
 version := "1.0"
@@ -20,6 +26,8 @@ val buildSettings = Defaults.coreDefaultSettings ++ Seq {
  */
 parallelExecution in Test := false
 
+test in assembly := {}
+
 /**
  * There are conflicting slf4j versions between spark and nd4j. Due to the
  * recency of Nd4j and it's development speed it is using the latest slf4j version.
@@ -28,7 +36,7 @@ classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
-  "org.apache.spark" % "spark-core_2.10" % "1.4.0" exclude("org.slf4j", "slf4j-api"),
+  "org.apache.spark" % "spark-core_2.10" % "1.4.1" exclude("org.slf4j", "slf4j-api"),
   //Math Libraries
   "org.jblas" % "jblas" % "1.2.3",
   // other dependencies here
@@ -42,3 +50,15 @@ libraryDependencies ++= Seq(
   "joda-time" % "joda-time" % "2.8.1",
   "edu.ucar" % "netcdf" % "4.2.20"
 )
+
+mergeStrategy in assembly := {
+  case x if x.startsWith("META-INF") => MergeStrategy.discard // Bumf
+  case x if x.endsWith(".html") => MergeStrategy.discard // More bumf
+  case x if x.contains("slf4j-api") => MergeStrategy.last
+  case x if x.contains("org/cyberneko/html") => MergeStrategy.first
+  case PathList("com", "esotericsoftware", xs@_ *) => MergeStrategy.last // For Log$Logger.class
+  case x =>
+    val oldStrategy = (mergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
