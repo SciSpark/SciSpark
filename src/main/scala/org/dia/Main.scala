@@ -39,11 +39,12 @@ object Main {
     var master = "";
     var testFile = if (args.isEmpty) "TestLinks" else args(1)
     if(args.isEmpty) master = "local[4]" else master = args(0)
+
     val sc = new SciSparkContext(master, "test")
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
-    val variable = "TotCldLiqH2O_A"
+    val variable = if(args.isEmpty) "TotCldLiqH2O_A" else args(2)
 
     val sRDD = sc.NetcdfFile(testFile, List(variable))
 
@@ -55,7 +56,7 @@ object Main {
 
     val collected: Array[sciTensor] = Sliced.collect
 
-    println(collected.toList)
+    collected.toLi
   }
 }
 
