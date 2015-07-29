@@ -56,7 +56,7 @@ object Main {
 
     val collected: Array[sciTensor] = Sliced.collect
 
-    collected.toLi
+    println(collected.toList)
   }
 }
 
