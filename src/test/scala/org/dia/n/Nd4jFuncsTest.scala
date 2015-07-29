@@ -25,7 +25,7 @@ import org.nd4j.linalg.factory.Nd4j
 /**
  * Tests for the Breeze functions
  */
-class Nd4JLibTest extends org.scalatest.FunSuite {
+class Nd4jFuncsTest extends org.scalatest.FunSuite {
   // urls
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
   val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
