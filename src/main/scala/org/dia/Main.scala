@@ -45,7 +45,7 @@ object Main {
 
     val variable = "TotCldLiqH2O_A"
 
-    val sRDD = sc.NetcdfFile(testFile)
+    val sRDD = sc.NetcdfFile(testFile, List(variable))
 
     val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 

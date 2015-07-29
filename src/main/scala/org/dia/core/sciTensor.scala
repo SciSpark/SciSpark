@@ -1,6 +1,8 @@
 package org.dia.core
 
 
+import java.io.Serializable
+
 import org.dia.tensors.AbstractTensor
 
 import scala.collection.mutable
