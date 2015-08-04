@@ -68,7 +68,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
-  private implicit def convert(array: DenseMatrix[Double]) = new BreezeTensor(array)
+  private implicit def convert(array: DenseMatrix[Double]): BreezeTensor = new BreezeTensor(array)
 
   def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
 
@@ -87,18 +87,28 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    */
   def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
 
-  override def toString: String = if (tensor != null) tensor.toString else null
-
-  implicit def apply: BreezeTensor = this
-
-  implicit def apply(ranges: (Int, Int)*): BreezeTensor = tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
-
-  override def equals(array: BreezeTensor): Boolean = tensor == array.tensor
-
-  override def getUnderlying(): (Array[Double], Array[Int]) = (data, shape)
-
   def data: Array[Double] = tensor.t.toArray
 
+  /**
+   * SlicableArray operations
+   */
 
+  def cols: Int = tensor.cols
+
+  def rows: Int = tensor.rows
+
+  def apply: BreezeTensor = this
+
+  def apply(ranges: (Int, Int)*): BreezeTensor = tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
+
+  def apply(indexes: Int*): Double = tensor(indexes(0), indexes(1))
+
+  /**
+   * Utility Operations
+   */
+
+  override def toString: String = if (tensor != null) tensor.toString else null
+
+  override def equals(array: BreezeTensor): Boolean = tensor == array.tensor
 }
 

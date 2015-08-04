@@ -11,7 +11,7 @@ import scala.collection.immutable.HashMap
 
 class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
-  val metaData: mutable.HashMap[String, String] = (new mutable.HashMap[String, String])
+  val metaData: mutable.HashMap[String, String] = new mutable.HashMap[String, String]
   val head = variables.toArray
   var varInUse = variables.toArray.apply(0)._1
 
@@ -25,10 +25,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     metaDataVar.map(p => metaData += p)
   }
 
-  //  def this(variables : List[(String, AbstractTensor)]) {
-  //
-  //  }
-  implicit def convert(tensor: AbstractTensor) = new sciTensor(varInUse, tensor)
+  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor)
 
 
   def apply(ranges: (Int, Int)*): sciTensor = {
@@ -45,7 +42,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def reduceResolution(blockInt: Int): sciTensor = variables(varInUse).reduceResolution(blockInt)
 
   override def toString: String = {
-    "Variable in use = " + varInUse + "\n" + variables.map(_._1).toString
+    "Variable in use = " + varInUse + "\n" + variables.keys.toString
   }
 }
 

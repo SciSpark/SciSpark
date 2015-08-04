@@ -100,10 +100,11 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
    */
   def runAssertions(realTensor: Nd4jTensor, ExpectedClass: INDArray): Unit = {
     // checking correct size
-    assert(realTensor.getUnderlying()._1.size == realTensor.getUnderlying()._2(0) * realTensor.getUnderlying()._2(1))
+    val k = realTensor.shape
+    assert(realTensor.data.size == realTensor.shape(0) * realTensor.shape(1))
     // check for correct valuye\ type
-    assert(realTensor.tensor.columns() == EXPECTED_COLS)
-    assert(realTensor.tensor.rows() == EXPECTED_ROWS)
+    assert(realTensor.tensor.columns == EXPECTED_COLS)
+    assert(realTensor.tensor.rows == EXPECTED_ROWS)
     assert(realTensor.tensor.getClass.equals(ExpectedClass.getClass))
   }
 
