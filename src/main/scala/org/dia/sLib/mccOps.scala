@@ -2,7 +2,7 @@ package org.dia.sLib
 
 import org.dia.tensors.AbstractTensor
 
-object MCC {
+object mccOps {
 
   def reduceResolution(tensor: AbstractTensor, blockSize: Int): AbstractTensor = {
     val largeArray = tensor
