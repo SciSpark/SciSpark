@@ -19,6 +19,10 @@ package org.dia
 
 import org.dia.Constants._
 import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.sLib.mccOps
+import org.dia.tensors.Nd4jTensor
+import org.nd4j.api.Implicits._
+import org.nd4j.linalg.factory.Nd4j
 
 import scala.language.implicitConversions
 
@@ -57,6 +61,11 @@ object Main {
     val collected: Array[sciTensor] = Sliced.collect
 
     println(collected.toList)
+
+
+
+
+
   }
 }
 
