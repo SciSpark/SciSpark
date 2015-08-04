@@ -3,11 +3,10 @@ package org.dia.core
 
 import java.io.Serializable
 
+import org.dia.sLib.MCC
 import org.dia.tensors.AbstractTensor
-
 import scala.collection.mutable
-import scala.collection.immutable.HashMap
-
+import org.dia.sLib
 
 class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
@@ -39,7 +38,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
   def <=(num: Double): sciTensor = variables(varInUse) <= num
 
-  def reduceResolution(blockInt: Int): sciTensor = variables(varInUse).reduceResolution(blockInt)
+  def reduceResolution(blockInt: Int): sciTensor = MCC.reduceResolution(variables(varInUse), blockInt)
 
   override def toString: String = {
     "Variable in use = " + varInUse + "\n" + variables.keys.toString

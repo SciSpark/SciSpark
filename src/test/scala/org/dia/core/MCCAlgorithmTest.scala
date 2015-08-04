@@ -21,12 +21,9 @@ import breeze.linalg.DenseMatrix
 import org.dia.Constants._
 import org.dia.tensors.{BreezeTensor, Nd4jTensor}
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.indexing.BooleanIndexing
-import org.nd4j.linalg.indexing.conditions.LessThanOrEqual
-import org.nd4j.linalg.indexing.functions.{Identity, Zero}
 import org.scalatest.FunSuite
 
-//import org.nd4j.api.Implicits._
+import org.nd4j.api.Implicits._
 /**
  * Mesoscale convective complex (MCC) test
  */
@@ -126,8 +123,8 @@ class MCCAlgorithmTest extends FunSuite {
 
   test("filter") {
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = BooleanIndexing.applyWhere(dense, new LessThanOrEqual(240.0), new Identity, new Zero)
-    println(dense)
+    val t = dense.map(p => if (p < 241.0) p else 0.0)
+    println(t)
   }
 
   test("slicing") {

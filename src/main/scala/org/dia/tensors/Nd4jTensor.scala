@@ -61,6 +61,10 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     new Nd4jTensor(reducedMatrix)
   }
 
+  def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
+
+  def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
+
   def +(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
 
   def -(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor - array.tensor)
@@ -75,7 +79,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * Masking operations
    */
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.filter(_ < num))
+  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
   /**
    * Linear Algebra Operations
@@ -105,6 +109,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Utility Functions
    */
+  def cumsum: Double = tensor.sumNumber.asInstanceOf[Double]
   override def toString: String = tensor.toString
 
   def equals(array: Nd4jTensor): Boolean = tensor == array.tensor

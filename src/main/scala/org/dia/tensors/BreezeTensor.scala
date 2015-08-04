@@ -18,7 +18,7 @@
 package org.dia.tensors
 
 import breeze.linalg.{DenseMatrix, sum}
-
+import breeze.stats
 import scala.language.implicitConversions
 
 /**
@@ -65,6 +65,9 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     new BreezeTensor(reducedMatrix)
   }
 
+  def zeros(shape: Int*): BreezeTensor = DenseMatrix.zeros[Double](shape(0), shape(1))
+
+  def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
@@ -106,7 +109,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Utility Operations
    */
-
+  def cumsum: Double = sum(tensor)
   override def toString: String = if (tensor != null) tensor.toString else null
 
   override def equals(array: BreezeTensor): Boolean = tensor == array.tensor
