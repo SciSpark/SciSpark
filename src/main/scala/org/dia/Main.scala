@@ -41,26 +41,41 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     var master = "";
-    var testFile = if (args.isEmpty) "TestLinks" else args(1)
-    if(args.isEmpty) master = "local[4]" else master = args(0)
+    var testFile = if (args.isEmpty) "TestLinks" else args(0)
+    if(args.isEmpty || args.length <= 1) master = "local[4]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
-    val variable = if(args.isEmpty) "TotCldLiqH2O_A" else args(2)
+    val variable = if(args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
 
     val sRDD = sc.NetcdfFile(testFile, List(variable))
 
     val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 
-    val filtered = preCollected.map(p => p(variable) <= 241.0)
+    val filtered = preCollected.map(p => p(variable) <= 0.0009)
 
-    val Sliced = filtered.map(p => p(variable)(4 -> 9, 2 -> 5))
+    val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
 
-    val collected: Array[sciTensor] = Sliced.collect
+    val criteriaRDD = componentFrameRDD.filter(p => {
+      val hash = p.metaData
+      val area = hash("AREA").toDouble
+      val tempDiff = hash("DIFFERENCE").toDouble
+      (area > 40.0) || (tempDiff < 10.0)
+    })
 
-    println(collected.toList)
+
+    //val Sliced = filtered.map(p => p(variable)(4 -> 9, 2 -> 5))
+
+    val collected: Array[sciTensor] = criteriaRDD.collect
+
+    collected.map(p => {
+      println(p.metaData("AREA"))
+      println(p.metaData("DIFFERENCE"))
+      println(p.varInUse)
+      println(p.tensor)
+    })
 
 
 

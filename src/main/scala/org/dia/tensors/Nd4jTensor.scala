@@ -22,6 +22,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
  * The Nd4j Functional operations
@@ -61,8 +62,10 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     new Nd4jTensor(reducedMatrix)
   }
 
+  private implicit def AbstractConvert(array : AbstractTensor) : Nd4jTensor = array.asInstanceOf[Nd4jTensor]
   def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
 
+  def map(f : Double => Double) : Nd4jTensor = new Nd4jTensor(tensor.map(p => f(p)))
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
   def +(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
@@ -73,14 +76,16 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def /(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor / array.tensor)
 
-  def *(array: Nd4jTensor): Nd4jTensor = new Nd4jTensor(tensor * array.tensor)
+  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor * array.tensor)
 
   /**
    * Masking operations
    */
 
   def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
-
+  def :=(num: Double): Nd4jTensor = {
+    new Nd4jTensor(tensor.map(p => if (p == num) p else 0.0))
+  }
   /**
    * Linear Algebra Operations
    */
@@ -113,4 +118,6 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override def toString: String = tensor.toString
 
   def equals(array: Nd4jTensor): Boolean = tensor == array.tensor
+  def max : Double = tensor.maxNumber.asInstanceOf[Double]
+  def min : Double = tensor.minNumber.asInstanceOf[Double]
 }

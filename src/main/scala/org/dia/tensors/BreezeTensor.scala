@@ -20,6 +20,7 @@ package org.dia.tensors
 import breeze.linalg.{DenseMatrix, sum}
 import breeze.stats
 import scala.language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
  * Functions needed to perform operations with Breeze
@@ -67,11 +68,14 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def zeros(shape: Int*): BreezeTensor = DenseMatrix.zeros[Double](shape(0), shape(1))
 
+  def map(f : Double => Double) : BreezeTensor = tensor.map(p => f(p))
   def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
   private implicit def convert(array: DenseMatrix[Double]): BreezeTensor = new BreezeTensor(array)
+
+  private implicit def abstractConvert(brzT : AbstractTensor) : BreezeTensor = brzT.asInstanceOf[BreezeTensor]
 
   def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
 
@@ -81,10 +85,11 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def /(array: BreezeTensor): BreezeTensor = tensor / array.tensor
 
-  def *(array: BreezeTensor): BreezeTensor = tensor :* array.tensor
+  def *(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
 
   def <=(num: Double): BreezeTensor = tensor.map(v => if (v <= num) v else 0.0)
 
+  def :=(num : Double): BreezeTensor = tensor.map(v => if (v == num) v else 0.0)
   /**
    * Linear Algebra Operations
    */
@@ -113,5 +118,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   override def toString: String = if (tensor != null) tensor.toString else null
 
   override def equals(array: BreezeTensor): Boolean = tensor == array.tensor
+  def max : Double = tensor.max
+  def min : Double = tensor.min
 }
 

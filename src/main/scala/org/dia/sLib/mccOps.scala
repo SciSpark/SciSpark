@@ -1,5 +1,6 @@
 package org.dia.sLib
 
+import org.dia.core.sciTensor
 import org.dia.tensors.AbstractTensor
 
 object mccOps {
@@ -27,7 +28,7 @@ object mccOps {
     reducedMatrix
   }
 
-  def labelConnectedComponents(tensor: AbstractTensor): AbstractTensor = {
+  def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
     val fourVector = List((1,0), (-1,0), (0,1), (0,-1))
     val rows = tensor.rows
     val cols = tensor.cols
@@ -63,11 +64,39 @@ object mccOps {
           }
         }
       }
-    labels
+    (labels, label - 1)
   }
 
   def findConnectedComponents(tensor : AbstractTensor) : List[AbstractTensor] = {
-    val labelled = labelConnectedComponents(tensor)
+    val tuple = labelConnectedComponents(tensor)
+    val labelled = tuple._1
+    val maxVal = tuple._2
+    val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
+    maskedLabels.toList
+  }
 
+  def findConnectedComponents(tensor : sciTensor) : List[sciTensor] = {
+    val labelledTensors = findConnectedComponents(tensor.tensor)
+    val absT : AbstractTensor = tensor.tensor
+
+    val seq = (0 to labelledTensors.size - 1).map(p => {
+      val masked : AbstractTensor = labelledTensors(p).map(a => if(a != 0.0) 1.0 else a)
+
+      val metaTensor = tensor.tensor * masked
+      val max = metaTensor.max
+      val min = metaTensor.min
+      val area = areaFilled(labelledTensors(p))
+      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min)))
+      val k = new sciTensor(tensor.varInUse + "Component" + p, labelledTensors(p), metadata)
+      k
+    })
+    seq.toList
+  }
+
+  def areaFilled(tensor : AbstractTensor) : Double = {
+    var count = 0
+    val masked = tensor.map(p => if(p != 0.0) 1.0 else p)
+    val sum = masked.cumsum
+    sum
   }
 }

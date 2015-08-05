@@ -1,7 +1,8 @@
 package org.dia.tensors
 
-import org.dia.tensors.sliceableArray
 import org.slf4j.Logger
+
+
 
 /**
   */
@@ -19,6 +20,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
 
   def zeros(shape: Int*): T
 
+  def map(f : Double => Double) : AbstractTensor
   /**
    * Indexed Operations
    */
@@ -33,7 +35,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
 
   def -(array: T): T
 
-  def *(array: T): T
+  def *(array: AbstractTensor): T
 
   def /(array: T): T
 
@@ -51,7 +53,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
    */
 
   def <=(num: Double): T
-
+  def :=(num : Double): T
 
   /**
    * Utility Methods
@@ -63,4 +65,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
   def equals(array: T): Boolean
 
   def shape: Array[Int]
+
+  def max: Double
+  def min: Double
 }

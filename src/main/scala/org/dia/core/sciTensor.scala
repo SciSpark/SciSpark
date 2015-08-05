@@ -24,7 +24,12 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     metaDataVar.map(p => metaData += p)
   }
 
-  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor)
+  def this(variableName: String, array: AbstractTensor, metaDataVar : mutable.HashMap[String, String]) {
+    this(variableName, array)
+    metaDataVar.map(p => metaData += p)
+  }
+
+  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor, metaData)
 
 
   def apply(ranges: (Int, Int)*): sciTensor = {
@@ -39,6 +44,8 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def <=(num: Double): sciTensor = variables(varInUse) <= num
 
   def reduceResolution(blockInt: Int): sciTensor = mccOps.reduceResolution(variables(varInUse), blockInt)
+
+  def tensor : AbstractTensor = variables(varInUse)
 
   override def toString: String = {
     "Variable in use = " + varInUse + "\n" + variables.keys.toString
