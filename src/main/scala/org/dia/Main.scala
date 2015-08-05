@@ -17,9 +17,14 @@
  */
 package org.dia
 
+import org.apache.spark.rdd.RDD
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.TRMMUtils.Parsers
+import org.dia.core.{sRDD, SciSparkContext, sciTensor}
 import org.dia.sLib.mccOps
+
+import scala.collection.mutable
+import scala.collection.mutable.HashMap
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
@@ -56,31 +61,56 @@ object Main {
 
     val filtered = preCollected.map(p => p(variable) <= 0.0009)
 
-    val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
+    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudElements(p))
 
     val criteriaRDD = componentFrameRDD.filter(p => {
       val hash = p.metaData
       val area = hash("AREA").toDouble
       val tempDiff = hash("DIFFERENCE").toDouble
-      (area > 40.0) || (tempDiff < 10.0)
+      (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
     })
+    criteriaRDD.checkpoint
+    val sortedTimeFrames = criteriaRDD.map(p => Parsers.ParseDateFromString(p.metaData("FRAME"))).sortBy(p => p)
+    val sortedDates = sortedTimeFrames.collect
 
+    val dateMappedRDDs = sortedDates.map(p => (p, criteriaRDD.filter(_.metaData("FRAME") == p)))
+    var preEdgeRDD: RDD[(HashMap[String, String], HashMap[String, String])] = null
+
+    for (index <- 0 to dateMappedRDDs.size - 2) {
+      val currentTimeRDD = dateMappedRDDs(index)._2
+      val nextTimeRDD = dateMappedRDDs(index + 1)._2
+      val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
+      val findEdges = cartesianPair.filter(p => (p._1.tensor * p._2.tensor).isZero == false)
+      val edgePair = findEdges.map(p => (p._1.metaData, p._2.metaData))
+
+      if (preEdgeRDD == null) {
+        preEdgeRDD = edgePair
+      } else {
+        preEdgeRDD = preEdgeRDD ++ edgePair
+      }
+    }
+
+    val vertexSet = getVertexArray(criteriaRDD)
+    val EdgeList = preEdgeRDD.map(p => (vertexSet(p._1), vertexSet(p._2)))
 
     //val Sliced = filtered.map(p => p(variable)(4 -> 9, 2 -> 5))
 
     val collected: Array[sciTensor] = criteriaRDD.collect
 
     collected.map(p => {
-      println(p.metaData("AREA"))
-      println(p.metaData("DIFFERENCE"))
-      println(p.varInUse)
-      println(p.tensor)
+      println(p)
     })
+    vertexSet.map(p => println(p))
+    EdgeList.collect.map(p => println(p))
+  }
 
-
-
-
-
+  def getVertexArray(collection: sRDD[sciTensor]): HashMap[HashMap[String, String], Long] = {
+    val size = collection.count
+    val range = 0L to (size - 1)
+    val id = collection.map(p => p.metaData).collect.toList
+    val hash = new mutable.HashMap[mutable.HashMap[String, String], Long]
+    range.map(p => hash += ((id(p.toInt), p)))
+    hash
   }
 }
 

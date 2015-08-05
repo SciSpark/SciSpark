@@ -117,6 +117,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def cumsum: Double = tensor.sumNumber.asInstanceOf[Double]
   override def toString: String = tensor.toString
 
+  def isZero(): Boolean = tensor.sumNumber.asInstanceOf[Double] == 0.0
   def equals(array: Nd4jTensor): Boolean = tensor == array.tensor
   def max : Double = tensor.maxNumber.asInstanceOf[Double]
   def min : Double = tensor.minNumber.asInstanceOf[Double]

@@ -66,6 +66,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
 
   def shape: Array[Int]
 
+  def isZero: Boolean
   def max: Double
   def min: Double
 }

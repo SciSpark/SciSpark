@@ -89,6 +89,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
         counter += 1
 
         val sciArray = new sciTensor(hash)
+        sciArray.insertDictionary(("SOURCE", urlValue))
         sciArray.asInstanceOf[T]
       }
     }
@@ -120,5 +121,14 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
     new sMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
   }
 
+  override def flatMap[U: ClassTag](f: T => TraversableOnce[U]): sRDD[U] = {
+    new sMapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(f))
+  }
 
+  override def filter(f: T => Boolean): sRDD[T] = {
+    new sMapPartitionsRDD[T, T](
+      this,
+      (context, pid, iter) => iter.filter(f),
+      preservesPartitioning = true)
+  }
 }

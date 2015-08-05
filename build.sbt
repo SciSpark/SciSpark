@@ -44,6 +44,7 @@ libraryDependencies ++= Seq(
   "org.nd4j" % "nd4j-x86" % "0.0.3.5.5.6-SNAPSHOT",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
+  "com.joestelmach" % "natty" % "0.11",
   "edu.ucar" % "netcdf" % "4.2.20"
 )
 

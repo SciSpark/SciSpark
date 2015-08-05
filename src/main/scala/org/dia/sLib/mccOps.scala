@@ -67,7 +67,7 @@ object mccOps {
     (labels, label - 1)
   }
 
-  def findConnectedComponents(tensor : AbstractTensor) : List[AbstractTensor] = {
+  def findCloudElements(tensor: AbstractTensor): List[AbstractTensor] = {
     val tuple = labelConnectedComponents(tensor)
     val labelled = tuple._1
     val maxVal = tuple._2
@@ -75,8 +75,8 @@ object mccOps {
     maskedLabels.toList
   }
 
-  def findConnectedComponents(tensor : sciTensor) : List[sciTensor] = {
-    val labelledTensors = findConnectedComponents(tensor.tensor)
+  def findCloudElements(tensor: sciTensor): List[sciTensor] = {
+    val labelledTensors = findCloudElements(tensor.tensor)
     val absT : AbstractTensor = tensor.tensor
 
     val seq = (0 to labelledTensors.size - 1).map(p => {
@@ -86,8 +86,8 @@ object mccOps {
       val max = metaTensor.max
       val min = metaTensor.min
       val area = areaFilled(labelledTensors(p))
-      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min)))
-      val k = new sciTensor(tensor.varInUse + "Component" + p, labelledTensors(p), metadata)
+      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
+      val k = new sciTensor(tensor.varInUse, masked, metadata)
       k
     })
     seq.toList

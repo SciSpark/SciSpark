@@ -115,6 +115,8 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    * Utility Operations
    */
   def cumsum: Double = sum(tensor)
+
+  def isZero: Boolean = sum(tensor) == 0.0
   override def toString: String = if (tensor != null) tensor.toString else null
 
   override def equals(array: BreezeTensor): Boolean = tensor == array.tensor

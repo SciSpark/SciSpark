@@ -20,10 +20,12 @@ package org.dia.core
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
+import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
-import org.dia.partitioners.sPartitioner
 import org.dia.partitioners.sPartitioner._
 
+import java.util.{Calendar, Date}
+import com.joestelmach.natty.Parser
 import scala.io.Source
 
 /**
@@ -37,6 +39,8 @@ import scala.io.Source
 class SciSparkContext(val conf: SparkConf) {
 
   val sparkContext = new SparkContext(conf)
+  sparkContext.setCheckpointDir("\\home\\rahulpalamuttam\\DUMP")
+
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 
   def this(url: String, name: String) {
@@ -70,12 +74,19 @@ class SciSparkContext(val conf: SparkConf) {
     if (varName == Nil) {
       variables = loadNetCDFVariables(datasetUrls(0))
     }
-    new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
+    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
+    rdd.map(p => {
+      val source = (p.metaData("SOURCE")).replaceAllLiterally(".", "/")
+      val date = Parsers.ParseDateFromString(source)
+      p.insertDictionary(("FRAME", date.toString))
+      p
+    })
   }
 
   @transient def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
     val datasetPaths = List(path)
     new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
   }
+
 
 }

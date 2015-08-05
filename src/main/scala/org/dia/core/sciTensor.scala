@@ -29,6 +29,10 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     metaDataVar.map(p => metaData += p)
   }
 
+  def insertDictionary(metaDataVar: (String, String)*): Unit = {
+    for (variable <- metaDataVar) metaData += variable
+  }
+
   private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor, metaData)
 
 
@@ -47,8 +51,14 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
   def tensor : AbstractTensor = variables(varInUse)
 
+  /**
+   * TODO :: Use Stringbuilder
+   * @return
+   */
   override def toString: String = {
-    "Variable in use = " + varInUse + "\n" + variables.keys.toString
+    var string = "Variable in use = " + varInUse + "\n" + variables.keys.toString + "\n"
+    metaData.map(string += _ + "\n")
+    string
   }
 }
 

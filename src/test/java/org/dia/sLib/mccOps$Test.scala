@@ -37,7 +37,7 @@ class mccOps$Test extends FunSuite {
 
     val ndArray = Nd4j.create(m)
     val t = new Nd4jTensor(ndArray)
-    val frames = mccOps.findConnectedComponents(t)
+    val frames = mccOps.findCloudElements(t)
     frames.map(p => {
       println(p)
       println(mccOps.areaFilled(p))
