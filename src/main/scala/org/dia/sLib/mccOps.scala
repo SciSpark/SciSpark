@@ -85,7 +85,7 @@ object mccOps {
       val metaTensor = tensor.tensor * masked
       val max = metaTensor.max
       val min = metaTensor.min
-      val area = areaFilled(labelledTensors(p))
+      val area = areaFilled(masked)
       val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
       val k = new sciTensor(tensor.varInUse, masked, metadata)
       k
