@@ -40,6 +40,7 @@ import scala.io.Source
  */
 class SciSparkContext(val conf: SparkConf) {
 
+  var extractDate: (String) => (String) = null
   val sparkContext = new SparkContext(conf)
   sparkContext.setCheckpointDir("\\home\\rahulpalamuttam\\DUMP")
 
@@ -49,6 +50,10 @@ class SciSparkContext(val conf: SparkConf) {
     this(new SparkConf().setMaster(url).setAppName(name))
   }
 
+  def this(url: String, name: String, parser: (String) => (String)) {
+    this(new SparkConf().setMaster(url).setAppName(name))
+    extractDate = parser
+  }
   def setLocalProperty(key: String, value: String): Unit = {
     sparkContext.setLocalProperty(key, value)
   }
@@ -78,7 +83,7 @@ class SciSparkContext(val conf: SparkConf) {
     }
     val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
     rdd.map(p => {
-      val source = (p.metaData("SOURCE")).replaceAllLiterally(".", "/")
+      val source = extractDate(p.metaData("SOURCE")).replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)
       val formatted = new SimpleDateFormat("yyyy-MM-dd")
       p.insertDictionary(("FRAME", formatted.format(date)))
