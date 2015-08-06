@@ -47,19 +47,19 @@ object Main {
   val columnDim = 360
   val TextFile = "TestLinks"
 
-  object Parser extends Serializable {
-    val parser: (String) => (String) = (k: String) => k.split("\\\\").last
-  }
+//  object Parser extends Serializable {
+//    val parser: (String) => (String) = (k: String) => k.split("\\\\").last
+//  }
   def main(args: Array[String]): Unit = {
     var master = "";
     var testFile = if (args.isEmpty) "TestLinks" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[50]" else master = args(1)
 
-    val sc = new SciSparkContext(master, "test", Parser.parser)
+    val sc = new SciSparkContext(master, "test")
 
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     //TotCldLiqH2O_A
-    val variable = if (args.isEmpty || args.length <= 2) "data" else args(2)
+    val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
 
     val sRDD = sc.NetcdfFile(testFile, List(variable))
 
@@ -78,7 +78,7 @@ object Main {
 
     criteriaRDD.checkpoint
 
-    val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => Parser.parser(p)).map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
+    val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
 
     val vertexSet = getVertexArray(criteriaRDD)
 
