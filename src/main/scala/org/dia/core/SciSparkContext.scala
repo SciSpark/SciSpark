@@ -18,6 +18,8 @@
 
 package org.dia.core
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
@@ -76,9 +78,10 @@ class SciSparkContext(val conf: SparkConf) {
     }
     val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
     rdd.map(p => {
-      val source = (p.metaData("SOURCE")).replaceAllLiterally(".", "\\")
+      val source = (p.metaData("SOURCE")).replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)
-      p.insertDictionary(("FRAME", date.toString))
+      val formatted = new SimpleDateFormat("yyyy-MM-dd")
+      p.insertDictionary(("FRAME", formatted.format(date)))
       p
     })
   }

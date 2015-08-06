@@ -17,6 +17,8 @@
  */
 package org.dia
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.Accumulator
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
@@ -75,22 +77,28 @@ object Main {
     criteriaRDD.checkpoint
 //    val sortedTimeFrames = sRDD.map(p => Parsers.ParseDateFromString(p.metaData("FRAME"))).sortBy(p => p)
 //    val sortedDates = sortedTimeFrames.collect
-    val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "\\")).map(p => Parsers.ParseDateFromString(p))
+    val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
 
     val vertexSet = getVertexArray(criteriaRDD)
 
-    val dateMappedRDDs = dates.map(p => (p, criteriaRDD.filter(_.metaData("FRAME") == p.toString)))
+    val dateMappedRDDs = dates.map(p => {
+      val compareString = new SimpleDateFormat("yyyy-MM-dd").format(p)
+      (p, criteriaRDD.filter(_.metaData("FRAME") == compareString))
+    })
     var edgeRDD : RDD[(Long, Long)] = null
     //var preEdgeAccumulator: Accumulator[List[(Long, Long)]] = sc.sparkContext.accumulator(List((0L, 0L)), "EdgeAccumulation")(EdgeAccumulator)
-
     for (index <- 0 to dateMappedRDDs.size - 2) {
       println(index)
       val currentTimeRDD = dateMappedRDDs(index)._2
       val nextTimeRDD = dateMappedRDDs(index + 1)._2
+      val currCount = currentTimeRDD.count
+      val nextCount = nextTimeRDD.count
+      println(currCount + " THIS IS THE CURRENT TIME_______ " + dateMappedRDDs(index)._1)
+      println(nextCount + " THIS IS THE NEXT TIME__________ " + dateMappedRDDs(index + 1)._1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
-//      val findEdges = cartesianPair.filter(p => (p._1.tensor * p._2.tensor).isZero == false)
-      val findEdges = cartesianPair
-      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData), vertexSet(p._2.metaData)))
+      val findEdges = cartesianPair.filter(p => (p._1.tensor * p._2.tensor).isZero == false)
+      //val findEdges = cartesianPair
+      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + p._2.metaData("COMPONENT"))))
       //edgePair.collect.toList.map(p => println(p + "\n"))
 
       if(edgeRDD == null) {
@@ -100,6 +108,7 @@ object Main {
       }
     }
 
+    val collectedEdges = edgeRDD.collect
     //val Sliced = filtered.map(p => p(variable)(4 -> 9, 2 -> 5))
 
     //val collected: Array[sciTensor] = criteriaRDD.collect
@@ -108,16 +117,17 @@ object Main {
 //      println(p)
 //    })
     vertexSet.map(p => println(p))
-    edgeRDD.collect.map(p => println(p))
+    collectedEdges.map(p => println(p))
+    println(collectedEdges.size)
     dates.map(p => println(p))
   }
 
-  def getVertexArray(collection: sRDD[sciTensor]): HashMap[HashMap[String, String], Long] = {
-    val id = collection.map(p => p.metaData).collect.toList
+  def getVertexArray(collection: sRDD[sciTensor]): HashMap[String, Long] = {
+    val id = collection.map(p => p.metaData("FRAME") + p.metaData("COMPONENT")).collect.toList
     val size = id.length
-    val range = 0L to (size - 1)
-    val hash = new mutable.HashMap[mutable.HashMap[String, String], Long]
-    range.map(p => hash += ((id(p.toInt), p)))
+    val range = 0 to (size - 1)
+    val hash = new mutable.HashMap[String, Long]
+    range.map(p => hash += ((id(p), p)))
     hash
   }
 }
