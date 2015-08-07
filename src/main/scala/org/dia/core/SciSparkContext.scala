@@ -81,7 +81,7 @@ class SciSparkContext(val conf: SparkConf) {
     if (varName == Nil) {
       variables = loadNetCDFVariables(datasetUrls(0))
     }
-    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadNetCDFNDVars, mapOneUrlToOneTensor)
+    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadRandomArray, mapOneUrlToOneTensor)
     rdd.map(p => {
       val source = p.metaData("SOURCE").replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)
