@@ -17,6 +17,8 @@
  */
 package org.dia.loaders
 
+import java.util.Random
+
 import org.dia.Constants._
 import org.nd4j.linalg.factory.Nd4j
 import org.slf4j.Logger
@@ -96,9 +98,11 @@ object NetCDFLoader {
   }
 
   def loadRandomArray(url : String, varname : String) : (Array[Double], Array[Int]) = {
-    val randomCenter = Math.random * 20.0
-    val randomCenterOther = Math.random * 20
-    val otroRandomCenter = Math.random * 20
+    val generator = new Random()
+    generator.setSeed(url.hashCode)
+    val randomCenter = generator.nextDouble * 20.0
+    val randomCenterOther = generator.nextDouble * 20
+    val otroRandomCenter = generator.nextDouble * 20
     val ndArray = Nd4j.zeros(20, 20)
     for(row <- 0 to ndArray.rows - 1){
       for(col <- 0 to ndArray.columns - 1){

@@ -79,7 +79,7 @@ class mccOps$Test extends FunSuite {
 
   test("MCC") {
     val variable = "randomVar"
-    val rdd = SparkTestConstants.sc.NetcdfFile("TestLinks2", List("randomVar"))
+    val rdd = SparkTestConstants.sc.NetcdfFile("TestLinks", List("randomVar"))
     val filtered = rdd.map(p => p(variable) <= 241)
 
     val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudElements(p))
@@ -92,10 +92,10 @@ class mccOps$Test extends FunSuite {
     })
 
 
-    val dates = Source.fromFile("TestLinks2").mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
+    val dates = Source.fromFile("TestLinks").mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
 
     val vertexSet = getVertexArray(criteriaRDD)
-
+    println(vertexSet)
     val dateMappedRDDs = dates.map(p => {
       val compareString = new SimpleDateFormat("yyyy-MM-dd").format(p)
       (p, criteriaRDD.filter(_.metaData("FRAME") == compareString))
