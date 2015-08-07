@@ -17,10 +17,8 @@
 package org.dia.core
 
 import org.apache.spark._
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{RDDOperationScope, RDD}
 import org.dia.tensors.{AbstractTensor, TensorFactory}
-
-import org.apache.spark.rdd.RDDOperationScope
 import scala.collection.mutable
 
 //import scala.collection.immutable.HashMap
@@ -132,4 +130,5 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
       (context, pid, iter) => iter.filter(f),
       preservesPartitioning = true)
   }
+
 }

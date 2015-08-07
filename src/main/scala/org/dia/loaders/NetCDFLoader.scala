@@ -106,9 +106,9 @@ object NetCDFLoader {
     val ndArray = Nd4j.zeros(20, 20)
     for(row <- 0 to ndArray.rows - 1){
       for(col <- 0 to ndArray.columns - 1){
-        if(Math.pow((row - randomCenter), 2) + Math.pow((col - randomCenter),2) <= 9) ndArray.put(row, col, Math.random  * 340)
-        if(Math.pow((row - randomCenterOther), 2) + Math.pow((col - randomCenterOther),2) <= 9) ndArray.put(row, col, Math.random  * 7000)
-        if(Math.pow((row - otroRandomCenter), 2) + Math.pow((col - otroRandomCenter),2) <= 9) ndArray.put(row, col, Math.random  * 24000)
+        if (Math.pow((row - randomCenter), 2) + Math.pow((col - randomCenter), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
+        if (Math.pow((row - randomCenterOther), 2) + Math.pow((col - randomCenterOther), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
+        if (Math.pow((row - otroRandomCenter), 2) + Math.pow((col - otroRandomCenter), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
       }
     }
     (ndArray.data.asDouble, ndArray.shape)

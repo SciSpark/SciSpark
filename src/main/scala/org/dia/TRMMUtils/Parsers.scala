@@ -2,7 +2,7 @@ package org.dia.TRMMUtils
 
 import java.util.{Calendar, Date}
 import com.joestelmach.natty.Parser
-
+import org.apache.log4j._
 object Parsers {
 
   def ParseDateFromString(Name: String): Date = {

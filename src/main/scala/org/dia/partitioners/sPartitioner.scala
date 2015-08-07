@@ -36,6 +36,12 @@ object sPartitioner {
   }
 
   /**
+   * A grouped mapping
+   */
+  def mapNUrToOneTensor(N: Int)(urls: List[String]): List[List[String]] = {
+    urls.grouped(N).toList
+  }
+  /**
    * Maps subfolders to lists containing their files
    * @param paths
    * @return

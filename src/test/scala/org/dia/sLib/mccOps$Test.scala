@@ -1,16 +1,17 @@
 package org.dia.sLib
 
 import java.text.SimpleDateFormat
+import java.util.logging.Level
 
+import org.apache.log4j.{Priority, LogManager, Logger, Level}
 import org.apache.spark.rdd.RDD
 import org.dia.TRMMUtils.Parsers
-import org.dia.core.{sciTensor, sRDD, SparkTestConstants}
+import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
+import org.dia.sLib.mccOps
 import org.dia.tensors.Nd4jTensor
+import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
-import org.nd4j.api.Implicits._
-
-import java.math
 
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
@@ -78,8 +79,10 @@ class mccOps$Test extends FunSuite {
   }
 
   test("MCC") {
+    println(LogManager.getLogger(Class.forName("com.joestelmach.natty.Parser")).setLevel(org.apache.log4j.Level.OFF))
     val variable = "randomVar"
-    val rdd = SparkTestConstants.sc.NetcdfFile("TestLinks", List("randomVar"))
+    val file = "TRMM_L3_Links.txt"
+    val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"))
     val filtered = rdd.map(p => p(variable) <= 241)
 
     val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudElements(p))
@@ -92,7 +95,7 @@ class mccOps$Test extends FunSuite {
     })
 
 
-    val dates = Source.fromFile("TestLinks").mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
+    val dates = Source.fromFile(file).mkString.split("\n").toList.map(p => p.split("/").last.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
 
     val vertexSet = getVertexArray(criteriaRDD)
     println(vertexSet)
@@ -105,8 +108,6 @@ class mccOps$Test extends FunSuite {
     for (index <- 0 to dateMappedRDDs.size - 2) {
       val currentTimeRDD = dateMappedRDDs(index)._2
       val nextTimeRDD = dateMappedRDDs(index + 1)._2
-      //      val currCount = currentTimeRDD.count
-      //      val nextCount = nextTimeRDD.count
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter(p => (p._1.tensor * p._2.tensor).isZero == false)
       val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + p._2.metaData("COMPONENT"))))
@@ -117,13 +118,14 @@ class mccOps$Test extends FunSuite {
       }
     }
 
+    val collect = rdd.collect
     val collectedEdges = edgeRDD.collect
 
     vertexSet.map(p => println(p))
     collectedEdges.map(p => println(p))
     println(collectedEdges.size)
     dates.map(p => println(p))
-    val collect = rdd.collect
+
 
     collect.toList.map(p => println(p.variables(p.varInUse) + "\n"))
     assert(true)
