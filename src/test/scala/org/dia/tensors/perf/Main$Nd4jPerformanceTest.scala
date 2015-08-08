@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.perf
+package org.dia.tensors.perf
+
 
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
-import org.scalatest.FunSuite
-
+import org.scalatest.{FunSuite, Ignore}
 /**
  * The Nd4j Performance Tests
  * Created by rahulsp on 7/7/15.
  */
+@Ignore
 class Main$Nd4jPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {
@@ -52,10 +53,11 @@ class Main$Nd4jPerformanceTest extends FunSuite {
        * Vector subtraction
        */
       val start = System.nanoTime()
-      val m3 = m1.mmul(m2)
+      val m3 = m1 dot m2
       val stop = System.nanoTime()
       println(stop - start)
     }
     assert(true)
   }
+
 }

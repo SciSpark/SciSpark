@@ -21,7 +21,6 @@ import org.apache.spark.storage.StorageLevel
 import org.dia.Constants._
 import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
 import org.dia.loaders.NetCDFLoader._
-import org.dia.partitioners.sPartitioner
 import org.dia.partitioners.sPartitioner._
 import org.dia.partitioners.sTrmmPartitioner._
 import org.scalatest.FunSuite
@@ -61,7 +60,7 @@ class sRDDTest extends FunSuite {
     // element comparison
     var flg = true
     var cnt = 0
-    nd4jTensors(0).variables("TotCldLiqH2O_A").data.map(e => {
+    nd4jTensors(0).variables("TotCldLiqH2O_A").data.foreach(e => {
       if (e != breezeTensors(0).variables("TotCldLiqH2O_A").data(cnt))
         flg = false
       cnt += 1
@@ -82,7 +81,7 @@ class sRDDTest extends FunSuite {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor](sc, urls, List("precipitation"), loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
-    nd4jTensor.variables("TotCldLiqH2O_A").data.map(e => println(e))
+    nd4jTensor.variables("precipitation").data.foreach(e => println(e))
     assert(true)
   }
 
@@ -95,7 +94,7 @@ class sRDDTest extends FunSuite {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val sNd4jRdd = new sRDD[sciTensor](sc, urls, List("precipitation"), loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
     val nd4jTensor = sNd4jRdd.collect()(0)
-    println(nd4jTensor.variables("TotCldLiqH2O_A").data)
+    println(nd4jTensor.variables("precipitation").data)
   }
 
   test("sampleApiTest") {

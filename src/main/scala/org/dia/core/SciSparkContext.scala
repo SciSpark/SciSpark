@@ -20,14 +20,13 @@ package org.dia.core
 
 import java.text.SimpleDateFormat
 
+import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
 import org.dia.partitioners.sPartitioner._
 
-import java.util.{Calendar, Date}
-import com.joestelmach.natty.Parser
 import scala.io.Source
 
 /**
@@ -40,11 +39,12 @@ import scala.io.Source
  */
 class SciSparkContext(val conf: SparkConf) {
 
-  var extractDate: (String) => (String) = null
   val sparkContext = new SparkContext(conf)
-  sparkContext.setCheckpointDir("\\home\\rahulpalamuttam\\DUMP")
-
+  var extractDate: (String) => (String) = null
+  sparkContext.setCheckpointDir("/tmp/scispark_dump")
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+
+  LogManager.getLogger(Class.forName("com.joestelmach.natty.Parser")).setLevel(org.apache.log4j.Level.OFF)
 
   def this(url: String, name: String) {
     this(new SparkConf().setMaster(url).setAppName(name))
@@ -73,15 +73,16 @@ class SciSparkContext(val conf: SparkConf) {
    */
   @transient def NetcdfFile(path: String,
                                 varName: List[String] = Nil,
-                                minPartitions: Int = sparkContext.defaultMinPartitions
+                            minPartitions: Int = 2
                                  ): sRDD[sciTensor] = {
 
     val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
+    val PartitionSize = (datasetUrls.size.toDouble + minPartitions) / minPartitions.toDouble
     var variables: List[String] = varName
     if (varName == Nil) {
-      variables = loadNetCDFVariables(datasetUrls(0))
+      variables = loadNetCDFVariables(datasetUrls.head)
     }
-    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadRandomArray, mapNUrToOneTensor(600))
+    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
     rdd.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)

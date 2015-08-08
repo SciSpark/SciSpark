@@ -19,20 +19,14 @@ package org.dia
 
 import java.text.SimpleDateFormat
 
-import org.apache.spark.Accumulator
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
-import org.dia.core.{EdgeAccumulator, sRDD, SciSparkContext, sciTensor}
+import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.dia.sLib.mccOps
 
 import scala.collection.mutable
-import scala.collection.mutable.HashMap
 import scala.io.Source
-import org.dia.tensors.Nd4jTensor
-import org.nd4j.api.Implicits._
-import org.nd4j.linalg.factory.Nd4j
-
 import scala.language.implicitConversions
 
 /**
@@ -51,8 +45,8 @@ object Main {
 //    val parser: (String) => (String) = (k: String) => k.split("\\\\").last
 //  }
   def main(args: Array[String]): Unit = {
-    var master = "";
-    var testFile = if (args.isEmpty) "TestLinks" else args(0)
+  var master = ""
+  val testFile = if (args.isEmpty) "TestLinks" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[50]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
@@ -67,7 +61,7 @@ object Main {
 
     val filtered = preCollected.map(p => p(variable) <= 4.0)
 
-    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudElements(p))
+  val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
 
     val criteriaRDD = componentFrameRDD.filter(p => {
       val hash = p.metaData
@@ -76,7 +70,7 @@ object Main {
       (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
     })
 
-    criteriaRDD.checkpoint
+  criteriaRDD.checkpoint()
 
     val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p))
 
@@ -94,7 +88,7 @@ object Main {
       //      val currCount = currentTimeRDD.count
       //      val nextCount = nextTimeRDD.count
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
-      val findEdges = cartesianPair.filter(p => (p._1.tensor * p._2.tensor).isZero == false)
+      val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + p._2.metaData("COMPONENT"))))
       if(edgeRDD == null) {
         edgeRDD = edgePair
@@ -103,16 +97,16 @@ object Main {
       }
     }
 
-    val collectedEdges = edgeRDD.collect
+  val collectedEdges = edgeRDD.collect()
 
-    vertexSet.map(p => println(p))
-    collectedEdges.map(p => println(p))
-    println(collectedEdges.size)
-    dates.map(p => println(p))
+  vertexSet.foreach(p => println(p))
+  collectedEdges.foreach(p => println(p))
+  println(collectedEdges.length)
+  dates.foreach(p => println(p))
   }
 
-  def getVertexArray(collection: sRDD[sciTensor]): HashMap[String, Long] = {
-    val id = collection.map(p => p.metaData("FRAME") + p.metaData("COMPONENT")).collect.toList
+  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
+    val id = collection.map(p => p.metaData("FRAME") + p.metaData("COMPONENT")).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
     val hash = new mutable.HashMap[String, Long]

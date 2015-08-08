@@ -11,13 +11,6 @@ trait AbstractTensor extends Serializable with sliceableArray {
   val name: String
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  /**
-   * Reduces the resolution of a DenseMatrix
-   * @param blockSize the size of n x n size of blocks.
-   * @return
-   */
-  def reduceResolution(blockSize: Int): T
-
   def zeros(shape: Int*): T
 
   def map(f : Double => Double) : AbstractTensor
@@ -62,7 +55,17 @@ trait AbstractTensor extends Serializable with sliceableArray {
   def cumsum: Double
   def toString: String
 
-  def equals(array: T): Boolean
+  override def equals(any: Any): Boolean = {
+    val array = any.asInstanceOf[AbstractTensor]
+    if (array.rows != this.rows) return false
+    if (array.cols != this.cols) return false
+    for (row <- 0 to array.rows - 1) {
+      for (col <- 0 to array.cols - 1) {
+        if (array(row, col) != this(row, col)) return false
+      }
+    }
+    true
+  }
 
   def shape: Array[Int]
 

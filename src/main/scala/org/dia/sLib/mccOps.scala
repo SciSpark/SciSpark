@@ -17,15 +17,41 @@ object mccOps {
 
     for (row <- 0 to (reducedMatrix.rows - 1)) {
       for (col <- 0 to (reducedMatrix.cols - 1)) {
-        val rowRange = (row * blockSize) -> (((row + 1) * blockSize))
-        val columnRange = (col * blockSize) -> (((col + 1) * blockSize))
+        val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
+        val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
         val block = tensor(rowRange, columnRange)
-        val numNonZero = block.data.filter(p => p != 0).size
-        val avg = if (numNonZero > 0) (block.cumsum / numNonZero) else 0.0
+        val numNonZero = block.data.count(p => p != 0)
+        val avg = if (numNonZero > 0) block.cumsum / numNonZero else 0.0
         reducedMatrix.put(avg, row, col)
       }
     }
     reducedMatrix
+  }
+
+  def findConnectedComponents(tensor: sciTensor): List[sciTensor] = {
+    val labelledTensors = findConnectedComponents(tensor.tensor)
+    val absT: AbstractTensor = tensor.tensor
+
+    val seq = labelledTensors.indices.map(p => {
+      val masked: AbstractTensor = labelledTensors(p).map(a => if (a != 0.0) 1.0 else a)
+
+      val metaTensor = tensor.tensor * masked
+      val max = metaTensor.max
+      val min = metaTensor.min
+      val area = areaFilled(masked)
+      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
+      val k = new sciTensor(tensor.varInUse, masked, metadata)
+      k
+    })
+    seq.toList
+  }
+
+  def findConnectedComponents(tensor: AbstractTensor): List[AbstractTensor] = {
+    val tuple = labelConnectedComponents(tensor)
+    val labelled = tuple._1
+    val maxVal = tuple._2
+    val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
+    maskedLabels.toList
   }
 
   def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
@@ -38,8 +64,8 @@ object mccOps {
     /**
      * If the coordinates are within bounds,
      * the input is not 0, and it hasn't been labelled yet
-     * @param row
-     * @param col
+     * @param row the row to check
+     * @param col the column to check
      * @return
      */
     def isLabeled(row : Int, col : Int) : Boolean = {
@@ -65,32 +91,6 @@ object mccOps {
         }
       }
     (labels, label - 1)
-  }
-
-  def findCloudElements(tensor: AbstractTensor): List[AbstractTensor] = {
-    val tuple = labelConnectedComponents(tensor)
-    val labelled = tuple._1
-    val maxVal = tuple._2
-    val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
-    maskedLabels.toList
-  }
-
-  def findCloudElements(tensor: sciTensor): List[sciTensor] = {
-    val labelledTensors = findCloudElements(tensor.tensor)
-    val absT : AbstractTensor = tensor.tensor
-
-    val seq = (0 to labelledTensors.size - 1).map(p => {
-      val masked : AbstractTensor = labelledTensors(p).map(a => if(a != 0.0) 1.0 else a)
-
-      val metaTensor = tensor.tensor * masked
-      val max = metaTensor.max
-      val min = metaTensor.min
-      val area = areaFilled(masked)
-      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
-      val k = new sciTensor(tensor.varInUse, masked, metadata)
-      k
-    })
-    seq.toList
   }
 
   def areaFilled(tensor : AbstractTensor) : Double = {
