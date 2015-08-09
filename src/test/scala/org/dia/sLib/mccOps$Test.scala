@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 
 import org.apache.log4j.LogManager
 import org.apache.spark.rdd.RDD
+import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
 import org.dia.tensors.Nd4jTensor
@@ -68,10 +69,11 @@ class mccOps$Test extends FunSuite {
     assert(frames == ccframes)
   }
 
-  ignore("MCC") {
+  test("MCC") {
     LogManager.getLogger(Class.forName("com.joestelmach.natty.Parser")).setLevel(org.apache.log4j.Level.OFF)
     val variable = "randomVar"
-    val file = "TestLinks"
+    val file = "TestLinks2"
+    SparkTestConstants.sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"), 1)
     val filtered = rdd.map(p => p(variable) <= 241)
 
@@ -84,7 +86,7 @@ class mccOps$Test extends FunSuite {
       (area >= 9.0) || (area < 4.0) && (tempDiff > 10.0)
     })
 
-
+    criteriaRDD.checkpoint
     val dates = Source.fromFile(file).mkString.split("\n").toList.map(p => p.split("/").last.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p)).sorted
 
     val vertexSet = getVertexArray(criteriaRDD)
@@ -117,8 +119,6 @@ class mccOps$Test extends FunSuite {
     collectedEdges.foreach(p => println(p))
     dates.foreach(p => println(p))
 
-
-    //collect.toList.map(p => println(p.variables(p.varInUse) + "\n"))
     assert(true)
   }
 
