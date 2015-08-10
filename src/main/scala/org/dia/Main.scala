@@ -98,31 +98,31 @@ object Main {
     }
 
   val collectedEdges = edgeRDD.collect()
-  println(edgeRDD.toDebugString)
+  //println(edgeRDD.toDebugString)
   vertexSet.foreach(p => println(p))
   collectedEdges.foreach(p => println(p))
   println(collectedEdges.length)
-  dates.foreach(p => println(p))
+  //dates.foreach(p => println(p))
 
-  val graph = new MultiGraph("Tutorial 1")
-  // Populate the graph.
-
-  val indexedDates = dates.map(p => new SimpleDateFormat("yyyy-MM-dd").format(p))
-  println(indexedDates)
-  vertexSet.foreach(vertex => {
-    println(vertex, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse))
-    graph.addNode(vertex._2.toString)
-    graph.getNode(vertex._2.toString).asInstanceOf[Node].setAttribute("xy", vertex._2.toInt: Integer, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse): Integer)
-    Unit
-  })
-
-  collectedEdges.foreach(p => {
-    graph.addEdge(p._1 + " " + p._2, p._1.toString, p._2.toString, true)
-    Unit
-  })
-
-
-  val viewer = graph.display(false)
+//  val graph = new MultiGraph("Tutorial 1")
+//  // Populate the graph.
+//
+//  val indexedDates = dates.map(p => new SimpleDateFormat("yyyy-MM-dd").format(p))
+//  println(indexedDates)
+//  vertexSet.foreach(vertex => {
+//    println(vertex, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse))
+//    graph.addNode(vertex._2.toString)
+//    graph.getNode(vertex._2.toString).asInstanceOf[Node].setAttribute("xy", vertex._2.toInt: Integer, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse): Integer)
+//    Unit
+//  })
+//
+//  collectedEdges.foreach(p => {
+//    graph.addEdge(p._1 + " " + p._2, p._1.toString, p._2.toString, true)
+//    Unit
+//  })
+//
+//
+//  val viewer = graph.display(false)
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
