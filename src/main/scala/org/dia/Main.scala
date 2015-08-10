@@ -72,7 +72,7 @@ object Main {
       (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
     })
 
-  criteriaRDD.checkpoint()
+//  criteriaRDD.checkpoint()
 
   val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.split("/").last.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p)).sorted
 
@@ -98,7 +98,7 @@ object Main {
     }
 
   val collectedEdges = edgeRDD.collect()
-
+  println(edgeRDD.toDebugString)
   vertexSet.foreach(p => println(p))
   collectedEdges.foreach(p => println(p))
   println(collectedEdges.length)
