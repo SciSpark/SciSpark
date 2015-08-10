@@ -43,29 +43,28 @@ object Main {
   val columnDim = 360
   val TextFile = "TestLinks"
 
-//  object Parser extends Serializable {
-//    val parser: (String) => (String) = (k: String) => k.split("\\\\").last
-//  }
+
   def main(args: Array[String]): Unit = {
-  var master = ""
-  val testFile = if (args.isEmpty) "TestLinks2" else args(0)
-  if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
+    var master = ""
+    val testFile = if (args.isEmpty) "TestLinks2" else args(0)
+    if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
+    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
-  sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    //TotCldLiqH2O_A
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
+    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
 
-  val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
-  val sRDD = RDDmetatuple._1
-  val dateMap = RDDmetatuple._2
+    val sRDD = RDDmetatuple._1
+    val dateMap = RDDmetatuple._2
 
-  //val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
+    println(dateMap)
 
-  val filtered = sRDD.map(p => p(variable) <= 241.0)
+    //val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 
-  val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
+    val filtered = sRDD.map(p => p(variable) <= 241.0)
+
+    val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
 
     val criteriaRDD = componentFrameRDD.filter(p => {
       val hash = p.metaData
@@ -74,52 +73,31 @@ object Main {
       (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
     })
 
-//  criteriaRDD.checkpoint()
-
     val vertexSet = getVertexArray(criteriaRDD)
+    println(vertexSet)
     val dateMappedRDDs = dateMap.map(p => criteriaRDD.filter(_.metaData("FRAME") == p._1.toString)).toList
 
-    var edgeRDD : RDD[(Long, Long)] = null
-    //var preEdgeAccumulator: Accumulator[List[(Long, Long)]] = sc.sparkContext.accumulator(List((0L, 0L)), "EdgeAccumulation")(EdgeAccumulator)
+    var edgeRDD: RDD[(Long, Long)] = null
     for (index <- 0 to dateMappedRDDs.size - 2) {
       val currentTimeRDD = dateMappedRDDs(index)
       val nextTimeRDD = dateMappedRDDs(index + 1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + " " + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + " " +  p._2.metaData("COMPONENT"))))
-      if(edgeRDD == null) {
+      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + " " + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + " " + p._2.metaData("COMPONENT"))))
+      if (edgeRDD == null) {
         edgeRDD = edgePair
       } else {
         edgeRDD = edgeRDD ++ edgePair
       }
     }
 
-  val collectedEdges = edgeRDD.collect()
-  //println(edgeRDD.toDebugString)
-  vertexSet.foreach(p => println(p))
-  collectedEdges.foreach(p => println(p))
-  println(collectedEdges.length)
-  //dates.foreach(p => println(p))
+    val collectedEdges = edgeRDD.collect()
+    //println(edgeRDD.toDebugString)
+    vertexSet.foreach(p => println(p))
+    collectedEdges.foreach(p => println(p))
+    println(collectedEdges.length)
 
-//  val graph = new MultiGraph("Tutorial 1")
-//  // Populate the graph.
-//
-//  val indexedDates = dates.map(p => new SimpleDateFormat("yyyy-MM-dd").format(p))
-//  println(indexedDates)
-//  vertexSet.foreach(vertex => {
-//    println(vertex, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse))
-//    graph.addNode(vertex._2.toString)
-//    graph.getNode(vertex._2.toString).asInstanceOf[Node].setAttribute("xy", vertex._2.toInt: Integer, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse): Integer)
-//    Unit
-//  })
-//
-//  collectedEdges.foreach(p => {
-//    graph.addEdge(p._1 + " " + p._2, p._1.toString, p._2.toString, true)
-//    Unit
-//  })
-//
-//
-//  val viewer = graph.display(false)
+
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
