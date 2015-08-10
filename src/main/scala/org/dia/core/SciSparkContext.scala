@@ -19,6 +19,7 @@
 package org.dia.core
 
 import java.text.SimpleDateFormat
+import java.util.Date
 
 import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
@@ -27,6 +28,7 @@ import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
 import org.dia.partitioners.sPartitioner._
 
+import scala.collection.mutable
 import scala.io.Source
 
 /**
@@ -74,22 +76,37 @@ class SciSparkContext(val conf: SparkConf) {
   @transient def NetcdfFile(path: String,
                                 varName: List[String] = Nil,
                             minPartitions: Int = 2
-                                 ): sRDD[sciTensor] = {
+                                 ): (sRDD[sciTensor], mutable.HashMap[Int, Date]) = {
 
-    val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = (datasetUrls.size.toDouble + minPartitions) / minPartitions.toDouble
-    var variables: List[String] = varName
-    if (varName == Nil) {
-      variables = loadNetCDFVariables(datasetUrls.head)
+    val indexedDateTable = new mutable.HashMap[Int, Date]()
+    val DateIndexTable = new mutable.HashMap[Date, Int]()
+    val orderedDateList = Source.fromFile(path).mkString.split("\n").toList.map(p => {
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      Parsers.ParseDateFromString(source)
+    }).sorted
+    for(i <- orderedDateList.indices) {
+      indexedDateTable += ((i, orderedDateList(i)))
+      DateIndexTable += ((orderedDateList(i), i))
     }
-    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
-    rdd.map(p => {
+
+    val PartitionSize = (varName.size.toDouble + minPartitions) / minPartitions.toDouble
+    var variables: List[String] = varName
+
+    if (varName == Nil) {
+      variables = loadNetCDFVariables(varName.head)
+    }
+
+    val rdd = new sRDD[sciTensor](sparkContext, varName, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
+
+    val labeled = rdd.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)
-      val formatted = new SimpleDateFormat("yyyy-MM-dd")
-      p.insertDictionary(("FRAME", formatted.format(date)))
+      val FrameID = DateIndexTable.get(date)
+      p.insertDictionary(("FRAME", FrameID.toString))
       p
     })
+
+    (labeled, indexedDateTable)
   }
 
   @transient def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {

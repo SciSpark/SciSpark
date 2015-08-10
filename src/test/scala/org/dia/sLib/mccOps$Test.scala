@@ -74,7 +74,7 @@ class mccOps$Test extends FunSuite {
     val variable = "randomVar"
     val file = "TestLinks2"
     SparkTestConstants.sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"), 1)
+    val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"), 1)._1
     val filtered = rdd.map(p => p(variable) <= 241)
 
     val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))

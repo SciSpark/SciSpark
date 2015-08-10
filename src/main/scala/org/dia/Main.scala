@@ -57,7 +57,9 @@ object Main {
     //TotCldLiqH2O_A
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
 
-  val sRDD = sc.NetcdfFile(testFile, List(variable), 1)
+  val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
+  val sRDD = RDDmetatuple._1
+  val dateMap = RDDmetatuple._2
 
   //val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
 
@@ -74,22 +76,17 @@ object Main {
 
 //  criteriaRDD.checkpoint()
 
-  val dates = Source.fromFile(args(0)).mkString.split("\n").toList.map(p => p.split("/").last.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p)).sorted
-
     val vertexSet = getVertexArray(criteriaRDD)
+    val dateMappedRDDs = dateMap.map(p => criteriaRDD.filter(_.metaData("FRAME") == p._1.toString)).toList
 
-    val dateMappedRDDs = dates.map(p => {
-      val compareString = new SimpleDateFormat("yyyy-MM-dd").format(p)
-      (p, criteriaRDD.filter(_.metaData("FRAME") == compareString))
-    })
     var edgeRDD : RDD[(Long, Long)] = null
     //var preEdgeAccumulator: Accumulator[List[(Long, Long)]] = sc.sparkContext.accumulator(List((0L, 0L)), "EdgeAccumulation")(EdgeAccumulator)
     for (index <- 0 to dateMappedRDDs.size - 2) {
-      val currentTimeRDD = dateMappedRDDs(index)._2
-      val nextTimeRDD = dateMappedRDDs(index + 1)._2
+      val currentTimeRDD = dateMappedRDDs(index)
+      val nextTimeRDD = dateMappedRDDs(index + 1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + p._2.metaData("COMPONENT"))))
+      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + " " + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + " " +  p._2.metaData("COMPONENT"))))
       if(edgeRDD == null) {
         edgeRDD = edgePair
       } else {
@@ -126,7 +123,7 @@ object Main {
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
-    val id = collection.map(p => p.metaData("FRAME") + p.metaData("COMPONENT")).collect().toList
+    val id = collection.map(p => p.metaData("FRAME") + " " + p.metaData("COMPONENT")).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
     val hash = new mutable.HashMap[String, Long]
