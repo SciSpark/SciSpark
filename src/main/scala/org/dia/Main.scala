@@ -24,7 +24,8 @@ import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.dia.sLib.mccOps
-import org.graphstream.graph.implementations.SingleGraph
+import org.graphstream.graph.Node
+import org.graphstream.graph.implementations.MultiGraph
 
 import scala.collection.mutable
 import scala.io.Source
@@ -103,9 +104,15 @@ object Main {
   println(collectedEdges.length)
   dates.foreach(p => println(p))
 
-  val graph = new SingleGraph("Tutorial 1")
-  vertexSet.foreach(p => {
-    graph.addNode(p._2.toString)
+  val graph = new MultiGraph("Tutorial 1")
+  // Populate the graph.
+
+  val indexedDates = dates.map(p => new SimpleDateFormat("yyyy-MM-dd").format(p))
+  println(indexedDates)
+  vertexSet.foreach(vertex => {
+    println(vertex, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse))
+    graph.addNode(vertex._2.toString)
+    graph.getNode(vertex._2.toString).asInstanceOf[Node].setAttribute("xy", vertex._2.toInt: Integer, indexedDates.indexOf(vertex._1.reverse.substring(1).reverse): Integer)
     Unit
   })
 
@@ -113,7 +120,9 @@ object Main {
     graph.addEdge(p._1 + " " + p._2, p._1.toString, p._2.toString, true)
     Unit
   })
-  graph.display()
+
+
+  val viewer = graph.display(false)
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
