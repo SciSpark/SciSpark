@@ -18,7 +18,7 @@
 package org.dia.core
 
 import breeze.linalg.DenseMatrix
-import org.dia.sLib.mccOps
+import org.dia.algorithms.mcc.mccOps
 import org.dia.tensors.{BreezeTensor, Nd4jTensor}
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j

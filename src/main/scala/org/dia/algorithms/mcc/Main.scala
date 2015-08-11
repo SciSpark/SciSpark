@@ -15,20 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia
-
-import java.text.SimpleDateFormat
+package org.dia.algorithms.mcc
 
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
-import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.mccOps
-import org.graphstream.graph.Node
-import org.graphstream.graph.implementations.MultiGraph
 
 import scala.collection.mutable
-import scala.io.Source
 import scala.language.implicitConversions
 
 /**
@@ -46,14 +39,15 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     var master = ""
-    val testFile = if (args.isEmpty) "TestLinks2" else args(0)
+    val testFile = if (args.isEmpty) "TestLinks" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
-    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
+//    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
+    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), 1)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
@@ -75,12 +69,14 @@ object Main {
 
     val vertexSet = getVertexArray(criteriaRDD)
     println(vertexSet)
-    val dateMappedRDDs = dateMap.map(p => criteriaRDD.filter(_.metaData("FRAME") == p._1.toString)).toList
+    val dateMappedRDDs = dateMap.map(p => (p._1, criteriaRDD.filter(_.metaData("FRAME") == p._1.toString))).toList.sortBy(p => p._1)
+    val hash = new mutable.HashMap() ++ dateMappedRDDs
+
 
     var edgeRDD: RDD[(Long, Long)] = null
     for (index <- 0 to dateMappedRDDs.size - 2) {
-      val currentTimeRDD = dateMappedRDDs(index)
-      val nextTimeRDD = dateMappedRDDs(index + 1)
+      val currentTimeRDD = hash(index)
+      val nextTimeRDD = hash(index + 1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       val edgePair = findEdges.map(p => ((vertexSet(p._1.metaData("FRAME") , p._1.metaData("COMPONENT"))), (vertexSet(p._2.metaData("FRAME") , p._2.metaData("COMPONENT")))))
@@ -93,9 +89,10 @@ object Main {
 
     val collectedEdges = edgeRDD.collect()
     //println(edgeRDD.toDebugString)
-    vertexSet.foreach(p => println(p))
-    collectedEdges.foreach(p => println(p))
-    println(collectedEdges.length)
+//    vertexSet.foreach(p => println(p))
+    println("Vertices->" + vertexSet.size)
+    println("Edges->" + collectedEdges.length)
+        collectedEdges.foreach(p => println(p))
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {

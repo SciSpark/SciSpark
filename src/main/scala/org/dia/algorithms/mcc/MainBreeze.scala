@@ -15,21 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia
+package org.dia.algorithms.mcc
 
-import java.io._
-import java.text.SimpleDateFormat
-import java.util.{Calendar, Random}
+import java.util.Random
 
 import org.dia.Constants._
-import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sciTensor}
-import org.dia.sLib.mccOps
+import org.dia.sLib.FileUtils
 import org.dia.tensors.AbstractTensor
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
+import scala.collection.mutable
+import scala.collection.mutable.Set
 import scala.language.implicitConversions
 
 /**
@@ -43,27 +42,6 @@ object MainBreeze {
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-
-
-  /**
-   * Used for reading/writing to database, files, etc.
-   * Code From the book "Beginning Scala"
-   * http://www.amazon.com/Beginning-Scala-David-Pollak/dp/1430219890
-   */
-  def using[A <: {def close(): Unit}, B](param: A)(f: A => B): B =
-    try { f(param) } finally { param.close() }
-
-  def writeToFile(fileName:String, data:String) =
-    using (new FileWriter(fileName)) {
-      fileWriter => fileWriter.write(data)
-    }
-
-  def appendToFile(fileName:String, textData:String) =
-    using (new FileWriter(fileName, true)){
-      fileWriter => using (new PrintWriter(fileWriter)) {
-        printWriter => printWriter.println(textData)
-      }
-    }
 
   def checkCriteria(origData: Array[Double], compData: Array[Double], compNum: Int): Boolean = {
     var result = false
@@ -85,14 +63,6 @@ object MainBreeze {
       nval
     })
 
-    //    println("===============================" + compNum + "==" + area)
-    //    println(DenseMatrix.create(20, 20, maskedTen))
-    //    println("|||||||||||||||||||||||||||||||dMax:" + dMax + "||||dMin:" + dMin)
-    //    println(DenseMatrix.create(20, 20, origMasked))
-    //    println("|||||||||||||||||||||||||||||||")
-    //    println(DenseMatrix.create(20, 20, origData))
-    //    println("===============================")
-
     if ((area >= 40.0) || (area < 40.0) && ((dMax - dMin) > 10.0))
       result = true
     result
@@ -111,6 +81,7 @@ object MainBreeze {
     ((maskedData1 * maskedData2).isZero == false)
   }
 
+  var crit = 0
   def checkComponentsOverlap(sciTensor1: sciTensor, sciTensor2: sciTensor): List[(String, String)] = {
     val currentTimeRDD = mccOps.findCloudElementsX(sciTensor1)
     val nextTimeRDD = mccOps.findCloudElementsX(sciTensor2)
@@ -133,6 +104,40 @@ object MainBreeze {
     edgePair
   }
 
+  var nodes = scala.collection.mutable.Set[String]()
+  var totEdges = 0
+
+  def generateJson(edgesList: List[(String, String)], dates: mutable.HashMap[Int, String]) : (Set[JObject], Set[JObject]) = {
+    val generator = new Random()
+    var jsonNodes = Set[JObject]()
+    var jsonEdges = Set[JObject]()
+
+    (0 to edgesList.size - 1).map(cnt => {
+      var x = 0.0
+      var y = 0.0
+      if (generator.nextBoolean()) {
+        x = generator.nextDouble % 1
+        y = Math.sqrt(1-x*x)
+      } else {
+        y = generator.nextDouble % 1
+        x = Math.sqrt(1-y*y)
+      }
+      if (!nodes.contains(edgesList(cnt)._1)) {
+        nodes += edgesList(cnt)._1
+        val color = "rgb(255," +generator.nextInt(256).toString+ ",102)"
+        jsonNodes += ("id" -> edgesList(cnt)._1) ~ ("label" -> dates.get(edgesList(cnt)._1.split(":").apply(0).toInt)) ~ ("size" -> 100) ~ ("x" -> x * 100.0) ~ ("y" -> y * 100.0) ~ ("color" -> color)
+      }
+      if (!nodes.contains(edgesList(cnt)._2)) {
+        nodes += edgesList(cnt)._2
+        val color = "rgb(255," +generator.nextInt(256).toString+ ",102)"
+        jsonNodes += ("id" -> edgesList(cnt)._2) ~ ("label" -> dates.get(edgesList(cnt)._1.split(":").apply(0).toInt)) ~ ("size" -> 100) ~ ("x" -> x * -100.0) ~ ("y" -> y * -100.0) ~ ("color" -> color)
+      }
+      jsonEdges += ("id" -> totEdges) ~ ("source" -> edgesList(cnt)._1) ~ ("target" -> edgesList(cnt)._2)
+      totEdges += 1
+    })
+    (jsonNodes, jsonEdges)
+  }
+
   def main(args: Array[String]): Unit = {
     var master = "";
     var testFile = if (args.isEmpty) "TestLinks" else args(0)
@@ -144,75 +149,52 @@ object MainBreeze {
     //TotCldLiqH2O_A
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
 
-    val sRDD = sc.NetcdfFile(testFile, List(variable))
+    var netcdfFile = sc.randomMatrices(testFile, List(variable))
+    val sRDD = netcdfFile._1
+    val dates = netcdfFile._2
 
     //    val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
     val preCollected = sRDD
-    val filtered = preCollected.map(p => p(variable) <= 10000.0)
+    val filtered = preCollected.map(p => p(variable) <= 241.0)
 
     //    val filCollected = filtered.collect()
     val filCartesian = filtered.cartesian(filtered)
       .filter(pair => {
-      val d1 = Parsers.ParseDateFromString(pair._1.metaData("FRAME"))
-      val d2 = Parsers.ParseDateFromString(pair._2.metaData("FRAME"))
-      val sdf = new SimpleDateFormat("yyyy-MM-dd");
-      val c = Calendar.getInstance();
-      c.setTime(d1)
-      c.add(Calendar.DATE, 1)
-      val c2 = Calendar.getInstance()
-      c2.setTime(d2)
-      //      println("==================== " + sdf.format(c.getTime) + " " + sdf.format(c2.getTime))
-      //      println(sdf.format(c.getTime).equals(sdf.format(c2.getTime)))
-      //      println("====================")
-      (!sdf.format(d1).equals(sdf.format(d2)) && !sdf.format(c.getTime).equals(sdf.format(c2.getTime)))
-    }
+      val d1 = Integer.parseInt(pair._1.metaData("FRAME"))
+      val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
+        ((d1+1) == d2)
+      }
       )
+
     //
     val edgesRdd = filCartesian.map(pair => {
       checkComponentsOverlap(pair._1, pair._2)
     })
+
     println("====================")
-    println(edgesRdd.toDebugString)
+    println(edgesRdd.collect().length)
     println("====================")
+
     val colEdges = edgesRdd.collect()
-    var jsonNodes = scala.collection.mutable.Set[JObject]()
-    var nodes = scala.collection.mutable.Set[String]()
-    var edges = scala.collection.mutable.Set[JObject]()
-    val generator = new Random()
-    var totEdges = 0
+    colEdges.map(e => println(e))
+
+    var jsonNodes = Set[JObject]()
+    var jsonEdges = Set[JObject]()
+
 
     colEdges.map(edgesList => {
       if (edgesList.size > 0) {
-        (0 to edgesList.size - 1).map(cnt => {
-          var x = 0.0
-          var y = 0.0
-          if (generator.nextBoolean()) {
-            x = generator.nextDouble % 1
-            y = Math.sqrt(1-x*x)
-          } else {
-            y = generator.nextDouble % 1
-            x = Math.sqrt(1-y*y)
-          }
-          if (!nodes.contains(edgesList(cnt)._1)) {
-            nodes += edgesList(cnt)._1
-            val color = "rgb(255," +generator.nextInt(256).toString+ ",102)"
-            jsonNodes += ("id" -> edgesList(cnt)._1) ~ ("label" -> edgesList(cnt)._1) ~ ("size" -> 100) ~ ("x" -> x * 100.0) ~ ("y" -> y * 100.0) ~ ("color" -> color)
-          }
-          if (!nodes.contains(edgesList(cnt)._2)) {
-            nodes += edgesList(cnt)._2
-            val color = "rgb(255," +generator.nextInt(256).toString+ ",102)"
-            jsonNodes += ("id" -> edgesList(cnt)._2) ~ ("label" -> edgesList(cnt)._2) ~ ("size" -> 100) ~ ("x" -> x * -100.0) ~ ("y" -> y * -100.0) ~ ("color" -> color)
-          }
-          edges += ("id" -> totEdges) ~ ("source" -> edgesList(cnt)._1) ~ ("target" -> edgesList(cnt)._2)
-          totEdges += 1
-        })
+        val res = generateJson(edgesList, dates)
+        jsonNodes ++= res._1
+        jsonEdges ++= res._2
       }
     })
-    val json = ("nodes" -> jsonNodes) ~ ("edges" -> edges)
-
-
-    val data = Array("Five","strings","in","a","file!")
-    writeToFile("/Users/marroqui/Downloads/sigma.js-master/examples/data/graph.json", pretty(render(json)))
+    println("*****************")
+    println(nodes.size)
+    println(totEdges)
+    println("*****************")
+    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
+    FileUtils.writeToFile("/Users/marroqui/Downloads/sigma.js-master/examples/data/graph.json", pretty(render(json)))
   }
 }
 

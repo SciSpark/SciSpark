@@ -2,8 +2,7 @@ package org.dia.core
 
 
 import java.io.Serializable
-
-import org.dia.sLib.mccOps
+import org.dia.algorithms.mcc.mccOps
 import org.dia.tensors.AbstractTensor
 import scala.collection.mutable
 import org.dia.sLib
