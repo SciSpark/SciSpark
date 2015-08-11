@@ -42,7 +42,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
 
-  def map(f : Double => Double) : Nd4jTensor = new Nd4jTensor(tensor)//.map(p => f(p)))
+  def map(f : Double => Double) : Nd4jTensor = new Nd4jTensor(tensor.map(p => f(p)))
 
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
@@ -60,10 +60,10 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * Masking operations
    */
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor)//.map(p => if (p < num) p else 0.0))
+  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
   def :=(num: Double): Nd4jTensor = {
-    new Nd4jTensor(tensor)//.map(p => if (p == num) p else 0.0))
+    new Nd4jTensor(tensor.map(p => if (p == num) p else 0.0))
   }
 
   /**
