@@ -69,7 +69,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = "TestLinks2"
     //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
-    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)
+    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)._1
     val t = pathRDD.collect.toList
     println("Number loaded " + t.length)
     println(t.toString)

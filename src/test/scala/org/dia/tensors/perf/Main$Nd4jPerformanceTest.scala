@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.perf
+package org.dia.tensors.perf
+
 
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
-
 /**
  * The Nd4j Performance Tests
  * Created by rahulsp on 7/7/15.
  */
+
 class Main$Nd4jPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {
@@ -38,7 +39,15 @@ class Main$Nd4jPerformanceTest extends FunSuite {
       val start = System.nanoTime()
       val m3 = m1 - m2
       val stop = System.nanoTime()
-      println(stop - start)
+      println("Using blas wrapper calls : " + (stop - start))
+      val start2 = System.nanoTime()
+      for (row <- 0 to m1.rows - 1) {
+        for (col <- 0 to m1.columns - 1) {
+          m3.put(row, col, m1(row, col) - m2(row, col))
+        }
+      }
+      val stop2 = System.nanoTime()
+      println("Using a looped subtractin : " + (stop2 - start2))
     }
     assert(true)
   }
@@ -52,10 +61,11 @@ class Main$Nd4jPerformanceTest extends FunSuite {
        * Vector subtraction
        */
       val start = System.nanoTime()
-      val m3 = m1.mmul(m2)
+      val m3 = m1 dot m2
       val stop = System.nanoTime()
       println(stop - start)
     }
     assert(true)
   }
+
 }

@@ -19,15 +19,16 @@
 package org.dia.core
 
 import java.text.SimpleDateFormat
+import java.util.Date
 
+import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
 import org.dia.partitioners.sPartitioner._
 
-import java.util.{Calendar, Date}
-import com.joestelmach.natty.Parser
+import scala.collection.mutable
 import scala.io.Source
 
 /**
@@ -40,11 +41,12 @@ import scala.io.Source
  */
 class SciSparkContext(val conf: SparkConf) {
 
-  var extractDate: (String) => (String) = null
   val sparkContext = new SparkContext(conf)
-  sparkContext.setCheckpointDir("/tmp/DUMP")
-
+  var extractDate: (String) => (String) = null
+  sparkContext.setCheckpointDir("/tmp/scispark_dump")
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+
+  LogManager.getLogger(Class.forName("com.joestelmach.natty.Parser")).setLevel(org.apache.log4j.Level.OFF)
 
   def this(url: String, name: String) {
     this(new SparkConf().setMaster(url).setAppName(name))
@@ -73,22 +75,42 @@ class SciSparkContext(val conf: SparkConf) {
    */
   @transient def NetcdfFile(path: String,
                                 varName: List[String] = Nil,
-                                minPartitions: Int = sparkContext.defaultMinPartitions
-                                 ): sRDD[sciTensor] = {
+                            minPartitions: Int = 2
+                                 ): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
 
-    val datasetUrls = Source.fromFile(path).mkString.split("\n").toList
-    var variables: List[String] = varName
-    if (varName == Nil) {
-      variables = loadNetCDFVariables(datasetUrls(0))
-    }
-    val rdd = new sRDD[sciTensor](sparkContext, datasetUrls, variables, loadRandomArray, mapNUrToOneTensor(600))
-    rdd.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
+    val indexedDateTable = new mutable.HashMap[Int, String]()
+    val DateIndexTable = new mutable.HashMap[String, Int]()
+    val URLs = Source.fromFile(path).mkString.split("\n").toList
+
+    val orderedDateList = URLs.map(p => {
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
       val date = Parsers.ParseDateFromString(source)
-      val formatted = new SimpleDateFormat("yyyy-MM-dd")
-      p.insertDictionary(("FRAME", formatted.format(date)))
+      new SimpleDateFormat("YYYY-MM-DD").format(date)
+    }).sorted
+
+    for(i <- orderedDateList.indices) {
+      indexedDateTable += ((i, orderedDateList(i)))
+      DateIndexTable += ((orderedDateList(i), i))
+    }
+
+    val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
+    var variables: List[String] = varName
+
+    if (varName == Nil) {
+      variables = loadNetCDFVariables(varName.head)
+    }
+
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
+    rdd.collect.map(println(_))
+    val labeled = rdd.map(p => {
+      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
+      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      val FrameID = DateIndexTable(date)
+      p.insertDictionary(("FRAME", FrameID.toString))
       p
     })
+
+    (labeled, indexedDateTable)
   }
 
   @transient def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {

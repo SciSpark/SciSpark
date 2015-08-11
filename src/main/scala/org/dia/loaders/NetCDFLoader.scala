@@ -19,12 +19,8 @@ package org.dia.loaders
 
 import java.util.Random
 
-import org.dia.Constants._
 import org.nd4j.linalg.factory.Nd4j
 import org.slf4j.Logger
-import ucar.nc2.dataset.NetcdfDataset
-
-import scala.collection.mutable
 
 object NetCDFLoader {
   // Class logger
@@ -38,16 +34,12 @@ object NetCDFLoader {
    */
   def loadNetCDFTRMMVars(url: String, variable: String): (Array[Double], Array[Int]) = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val rowDim = NetCDFUtils.getDimensionSize(netcdfFile, X_AXIS_NAMES(0))
-    val columnDim = NetCDFUtils.getDimensionSize(netcdfFile, Y_AXIS_NAMES(0))
-
-    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-
-    (coordinateArray, Array(rowDim, columnDim))
+    val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
+    coordinateArray
   }
 
   /**
-   * Gets an NDimensional array of INDArray from a NetCDF url
+   * Gets an NDimensional array of from a NetCDF url
    * @param url where the netcdf file is located
    * @param variable the NetCDF variable to search for
    * @return
@@ -56,18 +48,18 @@ object NetCDFLoader {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
 
     if (netcdfFile != null) {
-      val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-      if (coordinateArray.length > 0) {
+      val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
+      if (coordinateArray._1.length > 0) {
         val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
         var shape = dims.toArray.sortBy(_._1).map(_._2)
         if (shape.length < 2) shape = Array(1, 1)
-        return (coordinateArray, shape)
+        return coordinateArray
       }
       LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
       return (Array(-9999), Array(1, 1))
     }
     LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-    return (Array(-9999), Array(1, 1))
+    (Array(-9999), Array(1, 1))
   }
 
   def loadNetCDFVariables(url: String): List[String] = {
@@ -81,21 +73,6 @@ object NetCDFLoader {
     list
   }
 
-  /**
-   * Creates a 2D array from a list of dimensions using a variable
-   * @param dimensionSizes hashmap of (dimension, size) pairs
-   * @param netcdfFile the NetcdfDataset to read
-   * @param variable the variable array to extract
-   * @return DenseMatrix
-   */
-  def create2dArray(dimensionSizes: mutable.HashMap[Int, Int], netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
-
-    val x = dimensionSizes.get(1).get
-    val y = dimensionSizes.get(2).get
-
-    val coordinateArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, variable)
-    (coordinateArray, Array(x, y))
-  }
 
   def loadRandomArray(url : String, varname : String) : (Array[Double], Array[Int]) = {
     val generator = new Random()
@@ -106,9 +83,9 @@ object NetCDFLoader {
     val ndArray = Nd4j.zeros(20, 20)
     for(row <- 0 to ndArray.rows - 1){
       for(col <- 0 to ndArray.columns - 1){
-        if (Math.pow((row - randomCenter), 2) + Math.pow((col - randomCenter), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
-        if (Math.pow((row - randomCenterOther), 2) + Math.pow((col - randomCenterOther), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
-        if (Math.pow((row - otroRandomCenter), 2) + Math.pow((col - otroRandomCenter), 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
+        if (Math.pow(row - randomCenter, 2) + Math.pow(col - randomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
+        if (Math.pow(row - randomCenterOther, 2) + Math.pow(col - randomCenterOther, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
+        if (Math.pow(row - otroRandomCenter, 2) + Math.pow(col - otroRandomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
       }
     }
     (ndArray.data.asDouble, ndArray.shape)

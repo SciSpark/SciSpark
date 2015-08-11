@@ -52,38 +52,38 @@ object NetCDFUtils {
   }
 
   /**
-   * Gets a 1D Java array of Doubles from a netCDFDataset using a variable
+   * Gets a tuple of 1D Java array of Doubles and Array of Ints for shape
+   * from a netCDFDataset using a variable
    * @param netcdfFile the NetcdfDataSet to read from
    * @param variable the variable array to extract
    * @return
    */
-  def convertMa2ArrayTo1DJavaArray(netcdfFile: NetcdfDataset, variable: String): Array[Double] = {
-    val SearchVariable: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
-    var coordinateArray: Array[Double] = Array.empty
-
-    if (SearchVariable == null) {
+  def netcdfArrayandShape(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
+    val SearchVariableArray: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
+    if (SearchVariableArray == null) {
       LOG.error("Variable '%s' not found. Can't create array. Returning empty array.".format(variable))
-      return coordinateArray
+      return (Array(0.0), Array(1, 1))
     }
+    val nativeArray = convertMa2Arrayto1DJavaArray(SearchVariableArray)
+    val shape = SearchVariableArray.getShape
+    (nativeArray, shape)
+  }
 
-    val oneDarray = SearchVariable.copyTo1DJavaArray()
-    // convert to doubles
+  def convertMa2Arrayto1DJavaArray(ma2Array: ma2.Array): Array[Double] = {
+    var array: Array[Double] = Array(-123456789)
+    val javaArray = ma2Array.copyTo1DJavaArray()
     try {
-      if (!SearchVariable.copyTo1DJavaArray().isInstanceOf[Array[Double]]) {
-        coordinateArray = oneDarray.asInstanceOf[Array[Float]]
-          .map(p => p.toDouble)
+      if (!javaArray.isInstanceOf[Array[Double]]) {
+        array = javaArray.asInstanceOf[Array[Float]].map(p => p.toDouble)
       }
-      //TODO pluggable cleaning values procedures?
-      coordinateArray = coordinateArray.map(p => {
+      array = array.map(p => {
         if (p == -9999.0) 0.0 else p
       })
     } catch {
-      // Something could go wrong while casting elements
       case ex: Exception =>
-        println("Error while converting a netcdf.ucar.ma2 to a 1D array")
-
+        println("Error while converting a netcdf.ucar.ma2 to a 1D array. Most likely occurred with casting")
     }
-    coordinateArray
+    array
   }
 
   /**
@@ -166,9 +166,9 @@ object NetCDFUtils {
         iterate += 1
       }
     }
-    if (dSizes.get(2).equals(None))
+    if (dSizes.get(2).isEmpty)
       LOG.warn("No X-axis dimension found.")
-    if (dSizes.get(1).equals(None))
+    if (dSizes.get(1).isEmpty)
       LOG.warn("No Y-axis dimension found.")
     LOG.debug("Dimensions found: %s".format(dSizes.toStream))
     dSizes
