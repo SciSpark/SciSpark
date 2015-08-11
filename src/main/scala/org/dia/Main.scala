@@ -83,7 +83,7 @@ object Main {
       val nextTimeRDD = dateMappedRDDs(index + 1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + " " + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + " " + p._2.metaData("COMPONENT"))))
+      val edgePair = findEdges.map(p => ((vertexSet(p._1.metaData("FRAME") , p._1.metaData("COMPONENT"))), (vertexSet(p._2.metaData("FRAME") , p._2.metaData("COMPONENT")))))
       if (edgeRDD == null) {
         edgeRDD = edgePair
       } else {
@@ -96,15 +96,13 @@ object Main {
     vertexSet.foreach(p => println(p))
     collectedEdges.foreach(p => println(p))
     println(collectedEdges.length)
-
-
   }
 
-  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
-    val id = collection.map(p => p.metaData("FRAME") + " " + p.metaData("COMPONENT")).collect().toList
+  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {
+    val id = collection.map(p => (p.metaData("FRAME") , p.metaData("COMPONENT"))).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[String, Long]
+    val hash = new mutable.HashMap[(String, String), Long]
     range.map(p => hash += ((id(p), p)))
     hash
   }
