@@ -171,12 +171,11 @@ object MainBreeze {
       checkComponentsOverlap(pair._1, pair._2)
     })
 
-    println("====================")
-    println(edgesRdd.collect().length)
-    println("====================")
+//    println("====================")
+//    println(edgesRdd.toDebugString)
+//    println("====================")
 
     val colEdges = edgesRdd.collect()
-    colEdges.map(e => println(e))
 
     var jsonNodes = Set[JObject]()
     var jsonEdges = Set[JObject]()
