@@ -15,18 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia
+
+import java.text.SimpleDateFormat
 
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
+import org.dia.TRMMUtils.Parsers
+import org.dia.algorithms.mcc.mccOps
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
+import org.graphstream.graph.Node
+import org.graphstream.graph.implementations.MultiGraph
 
 import scala.collection.mutable
+import scala.io.Source
 import scala.language.implicitConversions
 
 /**
   */
-object Main {
+object Mainp {
 
   /**
    * NetCDF variables to use
@@ -36,50 +43,62 @@ object Main {
   val columnDim = 360
   val TextFile = "TestLinks"
 
-  def checkCriteria(p : sciTensor) : Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
 
   def main(args: Array[String]): Unit = {
     var master = ""
-    val testFile = if (args.isEmpty) "TestLinks" else args(0)
+    val testFile = if (args.isEmpty) "TestLinks2" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
-//    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
-    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), 1)
+    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
 
     println(dateMap)
 
+    //val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
+
     val filtered = sRDD.map(p => p(variable) <= 241.0)
 
-    val filteredCartesian = filtered.cartesian(filtered).filter(p => Integer.parseInt(p._1.metaData("FRAME")) == (Integer.parseInt(p._2.metaData("FRAME")) + 1))
+    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudComponents(p))
 
-    val componentFrameRDD = filteredCartesian.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria(_))
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria(_))
-      val componentPairs = for(x <- components1; y <- components2) yield(x,y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      overlapped.map(p => ((p._1.metaData("FRAME"),p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"),p._2.metaData("COMPONENT"))))
+    val criteriaRDD = componentFrameRDD.filter(p => {
+      val hash = p.metaData
+      val area = hash("AREA").toDouble
+      val tempDiff = hash("DIFFERENCE").toDouble
+      (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
     })
 
-    val collectedEdges = componentFrameRDD.collect()
-    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
-    println(vertex.toList.sortBy(p => p._1))
-    println(vertex.size)
-    println(filtered.count)
-    println(collectedEdges.toList)
-    println(collectedEdges.size)
+    val vertexSet = getVertexArray(criteriaRDD)
+    println(vertexSet)
+    val dateMappedRDDs = dateMap.map(p => (p._1, criteriaRDD.filter(_.metaData("FRAME") == p._1.toString))).toList.sortBy(p => p._1)
+    println(dateMappedRDDs)
+    val hash = new mutable.HashMap() ++ dateMappedRDDs
 
+    var edgeRDD: RDD[(Long, Long)] = null
+    for (index <- 0 to dateMappedRDDs.size - 2) {
+      val currentTimeRDD = hash(index)
+      val nextTimeRDD = hash(index + 1)
+      val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
+      val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
+      val edgePair = findEdges.map(p => ((vertexSet(p._1.metaData("FRAME") , p._1.metaData("COMPONENT"))), (vertexSet(p._2.metaData("FRAME") , p._2.metaData("COMPONENT")))))
+      if (edgeRDD == null) {
+        edgeRDD = edgePair
+      } else {
+        edgeRDD = edgeRDD ++ edgePair
+      }
+    }
+
+    val collectedEdges = edgeRDD.collect()
+    //println(edgeRDD.toDebugString)
+    vertexSet.foreach(p => println(p))
+    collectedEdges.foreach(p => println(p))
+    println(collectedEdges.length)
+    println(vertexSet.toList.size)
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {

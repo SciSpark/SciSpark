@@ -5,7 +5,7 @@ import org.dia.tensors.AbstractTensor
 
 object mccOps {
 
-  val BACKGROUND=0.0
+  val BACKGROUND = 0.0
 
   def reduceResolution(tensor: AbstractTensor, blockSize: Int): AbstractTensor = {
     val largeArray = tensor
@@ -28,17 +28,16 @@ object mccOps {
     reducedMatrix
   }
 
-  def findConnectedComponents(tensor: sciTensor): List[sciTensor] = {
+  def findCloudComponents(tensor: sciTensor): List[sciTensor] = {
     val labelledTensors = findConnectedComponents(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
 
     val seq = labelledTensors.indices.map(p => {
       val masked: AbstractTensor = labelledTensors(p).map(a => if (a != 0.0) 1.0 else a)
-
-      val metaTensor = tensor.tensor * masked
-      val max = metaTensor.max
-      val min = metaTensor.min
-      val area = areaFilled(masked)
+      val areaTuple = areaFilled(masked * absT)
+      val area = areaTuple._1
+      val max = areaTuple._2
+      val min = areaTuple._3
       val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
       val k = new sciTensor(tensor.varInUse, masked, metadata)
       k
@@ -55,10 +54,10 @@ object mccOps {
   }
 
   def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
-    val fourVector = List((1,0), (-1,0), (0,1), (0,-1))
+    val fourVector = List((1, 0), (-1, 0), (0, 1), (0, -1))
     val rows = tensor.rows
     val cols = tensor.cols
-    val labels = tensor.zeros(tensor.shape :_*)
+    val labels = tensor.zeros(tensor.shape: _*)
     var label = 1
 
     /**
@@ -68,30 +67,31 @@ object mccOps {
      * @param col the column to check
      * @return
      */
-    def isLabeled(row : Int, col : Int) : Boolean = {
-      if(row < 0 || col < 0 || row >= rows || col >= cols) return true
+    def isLabeled(row: Int, col: Int): Boolean = {
+      if (row < 0 || col < 0 || row >= rows || col >= cols) return true
       tensor(row, col) == BACKGROUND || labels(row, col) != BACKGROUND
     }
 
-    def dfs(row : Int, col : Int, currentLabel : Int) : Unit = {
-      if(isLabeled(row, col)) return
+    def dfs(row: Int, col: Int, currentLabel: Int): Unit = {
+      if (isLabeled(row, col)) return
       labels.put(currentLabel, row, col)
 
       val neighbors = fourVector.map(p => (p._1 + row, p._2 + col))
-      for(neighbor <- neighbors) dfs(neighbor._1, neighbor._2, currentLabel)
+      for (neighbor <- neighbors) dfs(neighbor._1, neighbor._2, currentLabel)
     }
 
     //First Pass
-    for(row <- 0 to (rows - 1)) {
-      for(col <- 0 to (cols - 1)) {
-          if(!isLabeled(row, col)) {
-            dfs(row, col, label)
-            label += 1
-          }
+    for (row <- 0 to (rows - 1)) {
+      for (col <- 0 to (cols - 1)) {
+        if (!isLabeled(row, col)) {
+          dfs(row, col, label)
+          label += 1
         }
       }
+    }
     (labels, label - 1)
   }
+
 
   def findCloudElements(tensor: AbstractTensor): List[AbstractTensor] = {
     val tuple = labelConnectedComponents(tensor)
@@ -131,10 +131,21 @@ object mccOps {
     new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
   }
 
-  def areaFilled(tensor : AbstractTensor) : Double = {
-    var count = 0
-    val masked = tensor.map(p => if(p != 0.0) 1.0 else p)
-    val sum = masked.cumsum
-    sum
-  }
+    def areaFilled(tensor: AbstractTensor): (Double, Double, Double) = {
+      var count = 0.0
+      var min = Double.MaxValue
+      var max = Double.MinValue
+      val masked = tensor.map(p => {
+        if (p != 0) {
+          if (p < min) min = p
+          if (p > max) max = p
+          count += 1.0
+          1.0
+        } else {
+          p
+        }
+      })
+      (count, max, min)
+    }
+
 }
