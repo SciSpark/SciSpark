@@ -101,7 +101,6 @@ class SciSparkContext(val conf: SparkConf) {
     }
 
     val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
-    rdd.collect.map(println(_))
     val labeled = rdd.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))

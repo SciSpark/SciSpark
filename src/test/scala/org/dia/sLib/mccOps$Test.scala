@@ -77,7 +77,7 @@ class mccOps$Test extends FunSuite {
     val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"), 1)._1
     val filtered = rdd.map(p => p(variable) <= 241)
 
-    val componentFrameRDD = filtered.flatMap(p => mccOps.findConnectedComponents(p))
+    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudComponents(p))
 
     val criteriaRDD = componentFrameRDD.filter(p => {
       val hash = p.metaData
@@ -96,7 +96,7 @@ class mccOps$Test extends FunSuite {
       (p, criteriaRDD.filter(_.metaData("FRAME") == compareString))
     })
     var edgeRDD : RDD[(Long, Long)] = null
-    //var preEdgeAccumulator: Accumulator[List[(Long, Long)]] = sc.sparkContext.accumulator(List((0L, 0L)), "EdgeAccumulation")(EdgeAccumulator)
+
     for (index <- 0 to dateMappedRDDs.size - 2) {
       println(index)
       val currentTimeRDD = dateMappedRDDs(index)._2

@@ -85,13 +85,6 @@ object MainBreeze {
       nval
     })
 
-    //    println("===============================" + compNum + "==" + area)
-    //    println(DenseMatrix.create(20, 20, maskedTen))
-    //    println("|||||||||||||||||||||||||||||||dMax:" + dMax + "||||dMin:" + dMin)
-    //    println(DenseMatrix.create(20, 20, origMasked))
-    //    println("|||||||||||||||||||||||||||||||")
-    //    println(DenseMatrix.create(20, 20, origData))
-    //    println("===============================")
 
     if ((area >= 40.0) || (area < 40.0) && ((dMax - dMin) > 10.0))
       result = true
@@ -144,7 +137,7 @@ object MainBreeze {
     //TotCldLiqH2O_A
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
 
-    val sRDD = sc.NetcdfFile(testFile, List(variable))
+    val sRDD = sc.NetcdfFile(testFile, List(variable))._1
 
     //    val preCollected = sRDD.map(p => p(variable).reduceResolution(5))
     val preCollected = sRDD
