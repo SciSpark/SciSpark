@@ -24,7 +24,7 @@ import org.joda.time.DateTime
 import scala.collection.mutable.ListBuffer
 
 /**
- * Container of HourlyTrmmUrlGenerator data
+ * Container of HourlyTrmmUrlGenerator compData
  */
 object HourlyTrmmUrlGenerator {
 

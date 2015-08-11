@@ -65,7 +65,7 @@ def parse_time_units(time_format):
     The only units that are supported are: seconds, minutes, hours, days,
         months, or years.
 
-    :param time_format: The time data units string from the tensors
+    :param time_format: The time compData units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -90,7 +90,7 @@ def parse_time_units(time_format):
 def parse_time_base(time_format):
     ''' Parse time base object from the time units string.
 
-    :param time_format: The time data units string from the tensors
+    :param time_format: The time compData units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -140,9 +140,9 @@ def parse_time_base(time_format):
     return stripped_time
 
 def parse_base_time_string(time_format):
-    ''' Retrieve base time string from time data units information.
+    ''' Retrieve base time string from time compData units information.
 
-    :param time_format: The time data units string from the tensors
+    :param time_format: The time compData units string from the tensors
         being processed. The string should be of the format
         '<units> since <base time date>'
     :type time_format: :mod:`string`
@@ -174,7 +174,7 @@ def normalize_lat_lon_values(lats, lons, values):
     :type lats: :class:`numpy.ndarray`
     :param lons: A 1D numpy array of sorted lon values.
     :type lons: :class:`numpy.ndarray`
-    :param values: A 3D array of data values.
+    :param values: A 3D array of compData values.
 
     :returns: A :func:`tuple` of the form (adjust_lats, adjusted_lons, adjusted_values)
 
@@ -204,7 +204,7 @@ def normalize_lat_lon_values(lats, lons, values):
         # if necessary
         lons_shifted = lons.max() > 180
         lats_out, lons_out, data_out = lats[:], lons[:], values[:]
-        # Now correct data if latlon grid needs to be shifted
+        # Now correct compData if latlon grid needs to be shifted
         if lats_reversed:
             lats_out = lats_out[::-1]
             data_out = data_out[..., ::-1, :]
@@ -226,7 +226,7 @@ def reshape_monthly_to_annually(dataset):
 
     Reshape a monthly binned tensors's 3D value array with shape
     (num_months, num_lats, num_lons) to a 4D array with shape
-    (num_years, 12, num_lats, num_lons). This causes the data to be binned
+    (num_years, 12, num_lats, num_lons). This causes the compData to be binned
     annually while retaining its original shape.
 
     It is assumed that the number of months in the tensors is evenly
@@ -251,7 +251,7 @@ def reshape_monthly_to_annually(dataset):
     lat_lon_shape = data_shape[1:]
     # Make new shape (num_year, 12, num_lats, num_lons)
     new_shape = tuple(year_month_shape + lat_lon_shape)
-    # Reshape data with new shape
+    # Reshape compData with new shape
     values.shape = new_shape
 
     return values
@@ -303,7 +303,7 @@ def calc_climatology_season(month_start, month_end, dataset):
 
     if month_start > month_end:
         # Offset the original array so that the the first month
-        # becomes month_start, note that this cuts off the first year of data
+        # becomes month_start, note that this cuts off the first year of compData
         offset = slice(month_start - 1, month_start - 13)
         reshape_data = reshape_monthly_to_annually(dataset[offset])
         month_index = slice(0, 13 - month_start + month_end)

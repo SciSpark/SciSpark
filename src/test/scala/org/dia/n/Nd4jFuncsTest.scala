@@ -34,7 +34,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
   // variables
   val KMNI_BNDS_DIMENSION = "bnds"
   val KNMI_TASMAX_VAR = "tasmax"
-  val DAILY_TRMM_DATA_VAR = "data"
+  val DAILY_TRMM_DATA_VAR = "compData"
   val HOURLY_TRMM_DATA_VAR = "precipitation"
   val TOTAL_LIQH20 = "TotCldLiqH2O_A"
   // expected column and row numbers
@@ -42,7 +42,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
   val EXPECTED_ROWS = 1440
 
   /**
-   * Testing creation of 2D Array (INDArray) from daily collected TRMM data
+   * Testing creation of 2D Array (INDArray) from daily collected TRMM compData
    */
   test("ReadingDailyTRMMDimensions") {
     // creating expected
@@ -50,34 +50,34 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
-    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    println("[%s] Dimensions for daily TRMM  compData set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     //creating result
     val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(dailyTrmmUrl, DAILY_TRMM_DATA_VAR))
     runAssertions(realTensor, ExpectedClass)
   }
 
   /**
-   * Testing creation of 2D Array (Nd4j) from hourly collected TRMM data
+   * Testing creation of 2D Array (Nd4j) from hourly collected TRMM compData
    */
   test("ReadingHourlyTRMMDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
     val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray, Array(EXPECTED_ROWS, EXPECTED_COLS))
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    println("[%s] Dimensions for hourly TRMM compData set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     // creating result
     val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR))
     runAssertions(realTensor, ExpectedClass)
   }
 
   /**
-   * test for creating a N-Dimension array from KNMI data
+   * test for creating a N-Dimension array from KNMI compData
    */
   test("ReadingKNMIDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
     val ExpectedType = Nd4j.zeros(194, 201, 240, 1)
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
-    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+    println("[%s] Dimensions for KNMI compData set %s".format("ReadingKMIDimensions", dSizes.toString()))
     // creating result
     val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR))
     assert(realTensor.tensor.getClass.equals(ExpectedType.getClass))
@@ -85,7 +85,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
   }
 
   /**
-   * test for creating a N-Dimension array from AIRS data
+   * test for creating a N-Dimension array from AIRS compData
    */
   test("ReadingAIRSDimensions") {
     val realTensor = new Nd4jTensor(NetCDFLoader.loadNetCDFNDVars(airslvl3, TOTAL_LIQH20))
@@ -94,7 +94,7 @@ class Nd4jFuncsTest extends org.scalatest.FunSuite {
   }
 
   /**
-   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
+   * Assert Criteria : Dimensions of TRMM compData matches shape of 2D Array
    * @param realTensor
    * @param ExpectedClass
    */

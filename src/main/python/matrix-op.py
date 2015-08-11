@@ -7,9 +7,9 @@ LON_NAMES = ['y', 'rlon', 'rlons', 'lon', 'lons', 'longitude', 'longitudes']
 TIME_NAMES = ['time', 'times', 'date', 'dates', 'julian']
 
 
-KNMI_PATH="/Users/marroqui/IdeaProjects/SciSparkTestExperiments/src/resources/data/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
+KNMI_PATH="/Users/marroqui/IdeaProjects/SciSparkTestExperiments/src/resources/compData/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
 # KNMI_PATH="http://acdisc.sci.gsfc.nasa.gov/opendap/ncml/Aqua_AIRS_Level3/AIRH3STD.005/2003/AIRS.2003.01.01.L3.RetStd_H001.v5.0.14.0.G07285113200.hdf.ncml"
-WRF_PATH="/Users/marroqui/IdeaProjects/SciSparkTestExperiments/src/resources/data/AFRICA_UC-WRF311_CTL_ERAINT_MM_50km-rg_1989-2008_tasmax.nc"
+WRF_PATH="/Users/marroqui/IdeaProjects/SciSparkTestExperiments/src/resources/compData/AFRICA_UC-WRF311_CTL_ERAINT_MM_50km-rg_1989-2008_tasmax.nc"
 
 """ Step 1: Load Local NetCDF Files into OCW Dataset Objects """
 print("Loading %s into an OCW Dataset Object" % (KNMI_PATH,))

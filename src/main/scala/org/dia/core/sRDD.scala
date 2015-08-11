@@ -17,8 +17,9 @@
 package org.dia.core
 
 import org.apache.spark._
-import org.apache.spark.rdd.{RDDOperationScope, RDD}
+import org.apache.spark.rdd.RDD
 import org.dia.tensors.{AbstractTensor, TensorFactory}
+
 import scala.collection.mutable
 
 //import scala.collection.immutable.HashMap

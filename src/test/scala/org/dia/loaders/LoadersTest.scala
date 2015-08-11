@@ -45,7 +45,7 @@ class LoadersTest extends org.scalatest.FunSuite {
   }
 
   test("LoadPathGrouping") {
-    val dataUrls = List("/Users/marroqui/Documents/projects/scipark/data/TRMM_3Hourly_3B42_1998/")
+    val dataUrls = List("/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/")
     val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
@@ -58,7 +58,7 @@ class LoadersTest extends org.scalatest.FunSuite {
   test("OpenLocalPath") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    var path = "/Users/marroqui/Documents/projects/scipark/data/TRMM_3Hourly_3B42_1998/"
+    var path = "/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/"
     val pathRDD: sRDD[sciTensor] = sc.OpenPath(path, List("precipitation"))
     println(pathRDD.collect()(0).variables("precipitation").data.size)
     assert(true)

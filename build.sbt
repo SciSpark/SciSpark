@@ -37,6 +37,7 @@ libraryDependencies ++= Seq(
   "org.jblas" % "jblas" % "1.2.3",
   // other dependencies here
   "org.scalanlp" %% "breeze" % "0.11.2",
+  "org.json4s" %% "json4s-native" % "3.2.11",
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend

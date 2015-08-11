@@ -17,9 +17,12 @@
  */
 package org.dia.TRMMUtils
 
+import java.text.SimpleDateFormat
+
 import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 /**
  * Testing TrmmHourly
@@ -42,4 +45,15 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
+    test("URL.date.parser.test") {
+        val urls = "TestLinks"
+        val datasetUrls = Source.fromFile(urls).mkString.split("\n").toList
+       val formatter = new SimpleDateFormat("yyyy-MM-dd")
+       datasetUrls.map(p => {
+            val dated = Parsers.ParseDateFromString(p)
+            println(p)
+            println(formatter.format(p))
+          })
+        assert(true)
+      }
 }

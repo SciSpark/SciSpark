@@ -42,7 +42,7 @@ class SciSparkContext(val conf: SparkConf) {
 
   var extractDate: (String) => (String) = null
   val sparkContext = new SparkContext(conf)
-  sparkContext.setCheckpointDir("\\home\\rahulpalamuttam\\DUMP")
+  sparkContext.setCheckpointDir("/tmp/DUMP")
 
   sparkContext.setLocalProperty(ARRAY_LIB, ND4J_LIB)
 

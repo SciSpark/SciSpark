@@ -21,9 +21,9 @@ package org.dia
  * Constants
  */
 object Constants extends Serializable {
-  // mapping between data set and variables
+  // mapping between compData set and variables
   // TODO find a better way to retrieve the variables per dataSet
-  val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "data", "ncml" -> "TotCldLiqH2O_A")
+  val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "compData", "ncml" -> "TotCldLiqH2O_A")
   // potential names for the different axis of the grid that is present in netcdf files
   val X_AXIS_NAMES = Array("x", "rlat", "rlats", "lat", "lats", "rows", "nlat", "latitude", "latitudes")
   val Y_AXIS_NAMES = Array("y", "rlon", "rlons", "lon", "lons", "cols", "nlon", "longitude", "longitudes")

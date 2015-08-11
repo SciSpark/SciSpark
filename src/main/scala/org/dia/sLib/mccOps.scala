@@ -1,5 +1,6 @@
 package org.dia.sLib
 
+import breeze.linalg.DenseMatrix
 import org.dia.core.sciTensor
 import org.dia.tensors.AbstractTensor
 
@@ -92,6 +93,41 @@ object mccOps {
     })
     seq.toList
   }
+
+  /////=================/////=================/////=================/////=================
+  /////=================/////=================/////=================/////=================
+  def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
+    val tuple = labelConnectedComponents(tensor)
+//    val labelled = tuple._1
+//    val maxVal = tuple._2
+//    val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
+//    maskedLabels.toList
+    tuple
+  }
+
+  def findCloudElementsX(tensor: sciTensor): sciTensor = {
+    // list of connected components separated in maskes matrices
+    val labelledTensor = findCloudElementsX(tensor.tensor)
+    val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
+    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
+
+    // adding metadata
+//    val seq = (0 to labelledTensors.size - 1).map(p => {
+//      val masked : AbstractTensor = labelledTensors(p).map(a => if(a != 0.0) 1.0 else a)
+
+//      val metaTensor = tensor.tensor * masked
+//      val max = metaTensor.max
+//      val min = metaTensor.min
+//      val area = areaFilled(masked)
+//      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
+//      val k = new sciTensor(tensor.varInUse, masked, metadata)
+//      k
+//    })
+//    seq.toList
+  }
+
+  /////=================/////=================/////=================/////=================
+  /////=================/////=================/////=================/////=================
 
   def areaFilled(tensor : AbstractTensor) : Double = {
     var count = 0

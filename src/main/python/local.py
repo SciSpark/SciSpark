@@ -34,7 +34,7 @@ TIME_NAMES = ['time', 'times', 'date', 'dates', 'julian']
 def _get_netcdf_variable_name(valid_var_names, netcdf, netcdf_var):
     ''' Determine if one of a set of variable names are in a NetCDF Dataset.
 
-    Looks for an occurrence of a valid_var_name in the NetCDF variable data.
+    Looks for an occurrence of a valid_var_name in the NetCDF variable compData.
     This is useful for automatically determining the names of the lat, lon,
     and time variable names inside of a tensors object.
 
@@ -122,7 +122,7 @@ def load_WRF_2d_files(file_path,
     :type variable_name: :mod:`string`
     :param name: (Optional) A name for the loaded tensors.
     :type name: :mod:`string`
-    :returns: An OCW Dataset object with the requested variable's data from
+    :returns: An OCW Dataset object with the requested variable's compData from
         the NetCDF file.
     :rtype: :class:`tensors.Dataset`
     :raises ValueError:
@@ -171,10 +171,10 @@ def load_file(file_path,
     :param variable_unit: (Optional) The variable unit to load from the NetCDF file.
     :type variable_unit: :mod:`string`
 
-    :param elevation_index: (Optional) The elevation index for which data should
-        be returned. Climate data is often times 4 dimensional data. Some
+    :param elevation_index: (Optional) The elevation index for which compData should
+        be returned. Climate compData is often times 4 dimensional compData. Some
         datasets will have readins at different height/elevation levels. OCW
-        expects 3D data so a single layer needs to be stripped out when loading.
+        expects 3D compData so a single layer needs to be stripped out when loading.
         By default, the first elevation layer is used. If desired you may
         specify the elevation value to use.
     :type elevation_index: :class:`int`
@@ -194,7 +194,7 @@ def load_file(file_path,
         tensors.
     :type time_name: :mod:`string`
 
-    :returns: An OCW Dataset object with the requested variable's data from
+    :returns: An OCW Dataset object with the requested variable's compData from
         the NetCDF file.
     :rtype: :class:`tensors.Dataset`
 

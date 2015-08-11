@@ -117,14 +117,14 @@ class MCCAlgorithmTest extends FunSuite {
     println(b.data.toList)
     println(n.data.toList)
 
-    //    println(breeze.data.toList)
-    //    println(nd4j.data.toList)
+    //    println(breeze.compData.toList)
+    //    println(nd4j.compData.toList)
   }
 
   test("filter") {
-    val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = dense.map(p => if (p < 241.0) p else 0.0)
-    println(t)
+//    val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
+//    val t = dense.map(p => if (p < 241.0) p else 0.0)
+//    println(t)
   }
 
   test("slicing") {

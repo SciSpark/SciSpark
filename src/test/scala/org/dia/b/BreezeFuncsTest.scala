@@ -30,7 +30,7 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
 
   val KMNI_BNDS_DIMENSION = "bnds"
   val KNMI_TASMAX_VAR = "tasmax"
-  val DAILY_TRMM_DATA_VAR = "data"
+  val DAILY_TRMM_DATA_VAR = "compData"
   val HOURLY_TRMM_DATA_VAR = "precipitation"
 
   val EXPECTED_COLS = 1440
@@ -38,8 +38,8 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
   val BLOCK_SIZE = 5
 
   /**
-   * Testing creation of 2D Array (DenseMatrix) from daily collected TRMM data
-   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
+   * Testing creation of 2D Array (DenseMatrix) from daily collected TRMM compData
+   * Assert Criteria : Dimensions of TRMM compData matches shape of 2D Array
    */
   test("ReadingDailyTRMMDimensions") {
     //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
@@ -47,7 +47,7 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
     //    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, DAILY_TRMM_DATA_VAR)
     //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
     //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, DAILY_TRMM_DATA_VAR)
-    //    println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //    println("[%s] Dimensions for daily TRMM  compData set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     //
     //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, DAILY_TRMM_DATA_VAR)
     //
@@ -59,8 +59,8 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
 
 
   /**
-   * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM data
-   * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
+   * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM compData
+   * Assert Criteria : Dimensions of TRMM compData matches shape of 2D Array
    */
   test("ReadingHourlyTRMMDimensions") {
     //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
@@ -68,7 +68,7 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
     //    val coordArray = NetCDFUtils.convertMa2ArrayTo1DJavaArray(netcdfFile, HOURLY_TRMM_DATA_VAR)
     //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS, EXPECTED_COLS, coordArray)
     //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-    //    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //    println("[%s] Dimensions for hourly TRMM compData set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     //
     //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
     //
@@ -80,14 +80,14 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
 
 
   /**
-   * test for creating a N-Dimension array from KNMI data
+   * test for creating a N-Dimension array from KNMI compData
    */
   test("ReadingKNMIDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
 
     val ExpectedType = Array.ofDim[Float](240, 1, 201, 194)
     val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, KNMI_TASMAX_VAR)
-    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
+    println("[%s] Dimensions for KNMI compData set %s".format("ReadingKMIDimensions", dSizes.toString()))
 
     //    val fdArray = BreezeTensor.create4dArray(dSizes, netcdfFile, KNMI_TASMAX_VAR)
     //    assert(fdArray.getClass.equals(ExpectedType.getClass))
@@ -104,7 +104,7 @@ class BreezeTensorTest extends org.scalatest.FunSuite {
     //    val ExpectedClass = new DenseMatrix[Double](EXPECTED_ROWS / BLOCK_SIZE, EXPECTED_COLS / BLOCK_SIZE)
     //
     //    val dSizes = NetCDFUtils.getDimensionSizes(netcdfFile, HOURLY_TRMM_DATA_VAR)
-    //    println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
+    //    println("[%s] Dimensions for hourly TRMM compData set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     //
     //    val resDenseMatrix = BreezeTensor.create2dArray(dSizes, netcdfFile, HOURLY_TRMM_DATA_VAR)
     //    val reducedMatrix = BreezeTensor.reduceResolution(resDenseMatrix, BLOCK_SIZE)

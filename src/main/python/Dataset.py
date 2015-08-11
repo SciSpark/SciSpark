@@ -17,7 +17,7 @@
 
 '''
 Classes:
-    Dataset - Container for a tensors's attributes and data.
+    Dataset - Container for a tensors's attributes and compData.
     Bounds - Container for holding spatial and temporal bounds information
                 for operations on a Dataset.
 '''
@@ -33,7 +33,7 @@ import utils as utils
 logger = logging.getLogger(__name__)
 
 class Dataset:
-    '''Container for a tensors's attributes and data.'''
+    '''Container for a tensors's attributes and compData.'''
 
     def __init__(self, lats, lons, times, values, variable=None, units=None,
                  origin=None, name=""):
@@ -111,7 +111,7 @@ class Dataset:
     def spatial_resolution(self):
         '''Calculate the latitudinal and longitudinal spatial resolution.
 
-        .. warning:: This only works with properly gridded data.
+        .. warning:: This only works with properly gridded compData.
 
         :returns: The Dataset's latitudinal and longitudinal spatial resolution
             as a tuple of the form (lat_resolution, lon_resolution).
