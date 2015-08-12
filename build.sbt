@@ -7,7 +7,7 @@ version := "1.0"
 //scalaVersion := "2.11.6"
 scalaVersion := "2.10.5"
 
-mainClass in Compile := Some("org.dia.Main")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainBreeze")
 
 resolvers ++= Seq(
   Resolver.mavenLocal
