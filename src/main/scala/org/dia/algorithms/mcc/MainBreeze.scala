@@ -41,7 +41,6 @@ object MainBreeze {
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  var crit = 0
   var nodes = scala.collection.mutable.Set[String]()
   var totEdges = 0
 
@@ -91,8 +90,8 @@ object MainBreeze {
     println(nodes.size)
     println(totEdges)
     println("*****************")
-    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
-    FileUtils.writeToFile("/Users/marroqui/Downloads/sigma.js-master/examples/data/graph.json", pretty(render(json)))
+//    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
+//    FileUtils.writeToFile("./resources/graph.json", pretty(render(json)))
   }
 
   def checkComponentsOverlap(sciTensor1: sciTensor, sciTensor2: sciTensor): List[(String, String)] = {
