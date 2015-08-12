@@ -54,9 +54,9 @@ object MainBreeze {
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     //TotCldLiqH2O_A
-    val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
-
-    val netcdfFile = sc.randomMatrices(testFile, List(variable))
+    val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
+    val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
+    val netcdfFile = sc.randomMatrices(testFile, List(variable), partitionNum)
     val sRDD = netcdfFile._1
     val dates = netcdfFile._2
 
