@@ -26,6 +26,7 @@ import org.dia.tensors.AbstractTensor
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
+import org.slf4j.Logger
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -43,13 +44,16 @@ object MainBreeze {
   val TextFile = "TestLinks"
   var nodes = scala.collection.mutable.Set[String]()
   var totEdges = 0
+  // Class logger
+  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     var master = ""
-    val testFile = if (args.isEmpty) "TestLinks" else args(0)
+    val testFile = if (args.isEmpty) TextFile else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[50]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
+    LOG.info("SciSparkContext created")
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     //TotCldLiqH2O_A
@@ -61,6 +65,7 @@ object MainBreeze {
 
     val preCollected = sRDD
     val filtered = preCollected.map(p => p(variable) <= 241.0)
+    LOG.info("Matrices have been filtered")
 
     val filCartesian = filtered.cartesian(filtered)
       .filter(pair => {
@@ -68,10 +73,12 @@ object MainBreeze {
       val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
       (d1 + 1) == d2
     })
+    LOG.info("Cartesian product have been done.")
 
     val edgesRdd = filCartesian.map(pair => {
       checkComponentsOverlap(pair._1, pair._2)
     })
+    LOG.info("Checked edges and overlap.")
 
     val colEdges = edgesRdd.collect()
 
