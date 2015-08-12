@@ -17,7 +17,6 @@
  */
 package org.dia.TRMMUtils
 
-import org.dia.Constants
 import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
 import org.joda.time.DateTime
 
