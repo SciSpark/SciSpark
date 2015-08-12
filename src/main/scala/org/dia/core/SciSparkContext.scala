@@ -19,14 +19,12 @@
 package org.dia.core
 
 import java.text.SimpleDateFormat
-import java.util.Date
 
 import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
-import org.dia.loaders.{NetCDFLoader, RandomMatrixLoader}
 import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
 
@@ -103,8 +101,7 @@ class SciSparkContext(val conf: SparkConf) {
     }
 
     val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, mapNUrToOneTensor(PartitionSize.toInt))
-    rdd.collect.map(println(_))
-    val labeled = rdd.map(p => {
+    val labeled = rdd.foreach(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
       val FrameID = DateIndexTable(date)
@@ -135,7 +132,7 @@ class SciSparkContext(val conf: SparkConf) {
       DateIndexTable += ((orderedDateList(i), i))
     }
 
-    val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
+    val PartitionSize = if (URLs.size > minPartitions) (URLs.size.toDouble + minPartitions) / minPartitions.toDouble else 1
     var variables: List[String] = varName
 
     if (varName == Nil) {
