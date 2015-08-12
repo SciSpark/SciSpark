@@ -41,4 +41,21 @@ object RandomMatrixLoader {
       }
       (ndArray.data.asDouble, ndArray.shape)
     }
+
+  def loadRandomArray(sizeTuple: (Int, Int))(url: String, varname: String): (Array[Double], Array[Int]) = {
+    val generator = new Random()
+    generator.setSeed(url.hashCode)
+    val randomCenter = generator.nextDouble * sizeTuple._1
+    val randomCenterOther = generator.nextDouble * sizeTuple._1
+    val otroRandomCenter = generator.nextDouble * sizeTuple._1
+    val ndArray = Nd4j.zeros(sizeTuple._1, sizeTuple._1)
+    for (row <- 0 to ndArray.rows - 1) {
+      for (col <- 0 to ndArray.columns - 1) {
+        if (Math.pow(row - randomCenter, 2) + Math.pow(col - randomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
+        if (Math.pow(row - randomCenterOther, 2) + Math.pow(col - randomCenterOther, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
+        if (Math.pow(row - otroRandomCenter, 2) + Math.pow(col - otroRandomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
+      }
+    }
+    (ndArray.data.asDouble, ndArray.shape)
+  }
 }

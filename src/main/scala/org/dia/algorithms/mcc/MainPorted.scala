@@ -47,7 +47,8 @@ object MainPorted {
 
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
-    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum)
+    val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
+    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2

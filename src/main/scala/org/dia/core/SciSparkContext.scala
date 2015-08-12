@@ -114,7 +114,8 @@ class SciSparkContext(val conf: SparkConf) {
 
   @transient def randomMatrices(path: String,
                             varName: List[String] = Nil,
-                            minPartitions: Int = 2
+                                minPartitions: Int = 2,
+                                matrixSize: (Int, Int) = (20, 20)
                              ): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
 
     val indexedDateTable = new mutable.HashMap[Int, String]()
@@ -139,7 +140,7 @@ class SciSparkContext(val conf: SparkConf) {
       variables = loadNetCDFVariables(varName.head)
     }
 
-    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray, mapNUrToOneTensor(PartitionSize.toInt))
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), mapNUrToOneTensor(PartitionSize.toInt))
     val labeled = rdd.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
