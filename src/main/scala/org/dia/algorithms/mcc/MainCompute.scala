@@ -21,11 +21,9 @@ import java.util.Random
 
 import org.dia.Constants._
 import org.dia.core.{SciSparkContext, sciTensor}
-import org.dia.sLib.FileUtils
 import org.dia.tensors.AbstractTensor
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
-import org.json4s.jackson.JsonMethods._
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -33,7 +31,7 @@ import scala.language.implicitConversions
 
 /**
   */
-object MainBreeze {
+object MainCompute {
 
   /**
    * NetCDF variables to use
@@ -42,10 +40,10 @@ object MainBreeze {
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  var nodes = scala.collection.mutable.Set[String]()
-  var totEdges = 0
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  var nodes = scala.collection.mutable.Set[String]()
+  var totEdges = 0
 
   def main(args: Array[String]): Unit = {
     var master = ""

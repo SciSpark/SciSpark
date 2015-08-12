@@ -101,7 +101,7 @@ class SciSparkContext(val conf: SparkConf) {
     }
 
     val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, mapNUrToOneTensor(PartitionSize.toInt))
-    val labeled = rdd.foreach(p => {
+    val labeled = rdd.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
       val FrameID = DateIndexTable(date)

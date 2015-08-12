@@ -30,7 +30,7 @@ import org.scalatest.{FunSuite, Ignore}
  * Created by rahulsp on 6/22/15.
  */
 @Ignore
-class Main$BreezePerformanceTest extends FunSuite {
+class MainMemory$BreezePerformanceTest extends FunSuite {
 
   // Files URL
   val FILE_URL = "http://zipper.jpl.nasa.gov/dist/"

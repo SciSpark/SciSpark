@@ -26,7 +26,7 @@ import org.scalatest.FunSuite
  * Created by rahulsp on 7/7/15.
  */
 
-class Main$Nd4jPerformanceTest extends FunSuite {
+class MainMemory$Nd4JPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {
     println("ND4J.element.wise.test")
