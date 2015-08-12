@@ -26,6 +26,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.NetCDFLoader._
+import org.dia.loaders.{NetCDFLoader, RandomMatrixLoader}
+import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
 
 import scala.collection.mutable
@@ -77,6 +79,46 @@ class SciSparkContext(val conf: SparkConf) {
                                 varName: List[String] = Nil,
                             minPartitions: Int = 2
                                  ): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
+
+    val indexedDateTable = new mutable.HashMap[Int, String]()
+    val DateIndexTable = new mutable.HashMap[String, Int]()
+    val URLs = Source.fromFile(path).mkString.split("\n").toList
+
+    val orderedDateList = URLs.map(p => {
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      val date = Parsers.ParseDateFromString(source)
+      new SimpleDateFormat("YYYY-MM-DD").format(date)
+    }).sorted
+
+    for(i <- orderedDateList.indices) {
+      indexedDateTable += ((i, orderedDateList(i)))
+      DateIndexTable += ((orderedDateList(i), i))
+    }
+
+    val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
+    var variables: List[String] = varName
+
+    if (varName == Nil) {
+      variables = loadNetCDFVariables(varName.head)
+    }
+
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, mapNUrToOneTensor(PartitionSize.toInt))
+    rdd.collect.map(println(_))
+    val labeled = rdd.map(p => {
+      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
+      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      val FrameID = DateIndexTable(date)
+      p.insertDictionary(("FRAME", FrameID.toString))
+      p
+    })
+
+    (labeled, indexedDateTable)
+  }
+
+  @transient def randomMatrices(path: String,
+                            varName: List[String] = Nil,
+                            minPartitions: Int = 2
+                             ): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
 
     val indexedDateTable = new mutable.HashMap[Int, String]()
     val DateIndexTable = new mutable.HashMap[String, Int]()

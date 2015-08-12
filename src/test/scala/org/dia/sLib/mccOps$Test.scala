@@ -6,6 +6,7 @@ import org.apache.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
+import org.dia.algorithms.mcc.mccOps
 import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.factory.Nd4j

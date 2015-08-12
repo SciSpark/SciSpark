@@ -19,7 +19,6 @@ package org.dia.algorithms.mcc
 
 import org.dia.Constants._
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.mccOps
 
 import scala.collection.mutable
 import scala.language.implicitConversions
@@ -38,14 +37,15 @@ object Main {
 
   def main(args: Array[String]): Unit = {
     var master = ""
-    val testFile = if (args.isEmpty) "TestLinks2" else args(0)
+    val testFile = if (args.isEmpty) "TestLinks" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val variable = if (args.isEmpty || args.length <= 2) "TotCldLiqH2O_A" else args(2)
-    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
+//    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), 1)
+    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), 1)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2

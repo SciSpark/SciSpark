@@ -1,6 +1,5 @@
-package org.dia.sLib
+package org.dia.algorithms.mcc
 
-import breeze.linalg.DenseMatrix
 import org.dia.core.sciTensor
 import org.dia.tensors.AbstractTensor
 
@@ -92,7 +91,33 @@ object mccOps {
     }
     (labels, label - 1)
   }
-  
+
+
+  def findCloudElements(tensor: AbstractTensor): List[AbstractTensor] = {
+    val tuple = labelConnectedComponents(tensor)
+    val labelled = tuple._1
+    val maxVal = tuple._2
+    val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
+    maskedLabels.toList
+  }
+
+  def findCloudElements(tensor: sciTensor): List[sciTensor] = {
+    val labelledTensors = findCloudElements(tensor.tensor)
+    val absT : AbstractTensor = tensor.tensor
+
+    val seq = (0 to labelledTensors.size - 1).map(p => {
+      val masked : AbstractTensor = labelledTensors(p).map(a => if(a != 0.0) 1.0 else a)
+
+      val metaTensor = tensor.tensor * masked
+      val max = metaTensor.max
+      val min = metaTensor.min
+      val area = areaFilled(masked)
+      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
+      val k = new sciTensor(tensor.varInUse, masked, metadata)
+      k
+    })
+    seq.toList
+  }
 
   def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
     val tuple = labelConnectedComponents(tensor)
