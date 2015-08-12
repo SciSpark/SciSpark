@@ -20,7 +20,6 @@ package org.dia.algorithms.mcc
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.mccOps
 
 import scala.collection.mutable
 import scala.language.implicitConversions
