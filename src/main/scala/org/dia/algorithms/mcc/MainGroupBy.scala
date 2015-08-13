@@ -44,7 +44,7 @@ object MainGroupBy {
 
     val tmpdirectory = if (args.isEmpty || args.length <= 5) "/tmp" else args(5)
     val sc = new SciSparkContext(master, "test")
-    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
+    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     sc.setLocalProperty("s", tmpdirectory)
 
     println(sc.getConf.toDebugString)
