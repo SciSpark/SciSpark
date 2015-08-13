@@ -26,7 +26,7 @@ import scala.language.implicitConversions
 
 /**
   */
-object MainNonCartesian {
+object MainGroupBy {
 
   /**
    * NetCDF variables to use
@@ -106,6 +106,7 @@ object MainNonCartesian {
     println(collectedEdges.toList.sorted)
     println(vertex.size)
     println(collectedEdges.length)
+    println(complete.toDebugString)
 
   }
 
