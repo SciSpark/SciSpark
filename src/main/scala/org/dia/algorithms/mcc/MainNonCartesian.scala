@@ -26,7 +26,7 @@ import scala.language.implicitConversions
 
 /**
   */
-object MainMemory {
+object MainNonCartesian {
 
   /**
    * NetCDF variables to use
@@ -56,11 +56,26 @@ object MainMemory {
 
     val filtered = sRDD.map(p => p(variable) <= 241.0)
     LOG.info("Matrices have been filtered")
+    val oddConsecutives = filtered.map(p => {
+      var frameNum = p.metaData("FRAME").toInt
+      if (frameNum % 2 == 1) frameNum += 1
+      p.insertDictionary(("PAIR", frameNum.toString))
+      p
+    }).groupBy(p => p.metaData("PAIR")).filter(p => p._2.size > 1).map(p => p._2.toList.sortBy(_.metaData("PAIR").toInt)).map(p => (p(0), p(1)))
 
-    val filteredCartesian = filtered.cartesian(filtered).
-      filter(p => p._1.metaData("FRAME").toInt == p._2.metaData("FRAME").toInt - 1)
+    val evenConsecutives = filtered.map(p => {
+      var frameNum = p.metaData("FRAME").toInt
+      if (frameNum % 2 == 0) frameNum += 1
+      p.insertDictionary(("PAIR", frameNum.toString))
+      p
+    }).groupBy(p => p.metaData("PAIR")).filter(p => p._2.size > 1).map(p => p._2.toList.sortBy(_.metaData("PAIR").toInt)).map(p => (p(0), p(1)))
 
-    val componentFrameRDD = filteredCartesian.flatMap(p => {
+    val complete = evenConsecutives ++ oddConsecutives
+    //complete.collect.toList.sortBy(p => p._1.metaData("PAIR").toInt).map(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
+    //val cartesian = filtered.cartesian(filtered)
+    //val filteredCartesian = cartesian.filter(case(a : sciTensor, b : sciTensor) => (a.metaData("FRAME").toInt == b.metaData("FRAME").toInt + 1))
+
+    val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
       val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
@@ -74,9 +89,10 @@ object MainMemory {
     println(collectedEdges.toList.sorted)
     println(vertex.size)
     println(collectedEdges.length)
+
   }
 
-  def checkCriteria(p : sciTensor) : Boolean = {
+  def checkCriteria(p: sciTensor): Boolean = {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
@@ -84,7 +100,7 @@ object MainMemory {
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {
-    val id = collection.map(p => (p.metaData("FRAME") , p.metaData("COMPONENT"))).collect().toList
+    val id = collection.map(p => (p.metaData("FRAME"), p.metaData("COMPONENT"))).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
     val hash = new mutable.HashMap[(String, String), Long]

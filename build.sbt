@@ -7,7 +7,7 @@ version := "1.0"
 //scalaVersion := "2.11.6"
 scalaVersion := "2.10.5"
 
-mainClass in Compile := Some("org.dia.algorithms.mcc.MainMemory")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainNonCartesian")
 
 resolvers ++= Seq(
   Resolver.mavenLocal
