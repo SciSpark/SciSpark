@@ -52,28 +52,44 @@ object MainNonCartesian {
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
-
-
     val filtered = sRDD.map(p => p(variable) <= 241.0)
     LOG.info("Matrices have been filtered")
-    val oddConsecutives = filtered.map(p => {
-      var frameNum = p.metaData("FRAME").toInt
-      if (frameNum % 2 == 1) frameNum += 1
-      p.insertDictionary(("PAIR", frameNum.toString))
-      p
-    }).groupBy(p => p.metaData("PAIR")).filter(p => p._2.size > 1).map(p => p._2.toList.sortBy(_.metaData("PAIR").toInt)).map(p => (p(0), p(1)))
 
-    val evenConsecutives = filtered.map(p => {
-      var frameNum = p.metaData("FRAME").toInt
-      if (frameNum % 2 == 0) frameNum += 1
-      p.insertDictionary(("PAIR", frameNum.toString))
-      p
-    }).groupBy(p => p.metaData("PAIR")).filter(p => p._2.size > 1).map(p => p._2.toList.sortBy(_.metaData("PAIR").toInt)).map(p => (p(0), p(1)))
+    /**
+     * Transform the input into
+     * consecutive pairings with odd leading indexes
+     */
+    val oddConsecutives = filtered.groupBy(p => {
+      val frameNum = p.metaData("FRAME").toInt
+      frameNum + (if (frameNum % 2 == 1) 1 else 0)
+    }).map(p => p._2.toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("FRAME").toInt))
+      .map(p => (p(0), p(1)))
 
-    val complete = evenConsecutives ++ oddConsecutives
-    //complete.collect.toList.sortBy(p => p._1.metaData("PAIR").toInt).map(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
-    //val cartesian = filtered.cartesian(filtered)
-    //val filteredCartesian = cartesian.filter(case(a : sciTensor, b : sciTensor) => (a.metaData("FRAME").toInt == b.metaData("FRAME").toInt + 1))
+    /**
+     * Transform the input into
+     * consecutive pairings with even leading indexes
+     */
+    val evenConsecutives = filtered.groupBy(p => {
+      val frameNum = p.metaData("FRAME").toInt
+      frameNum + (if (frameNum % 2 == 0) 1 else 0)
+    }).map(p => p._2.toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("FRAME").toInt))
+      .map(p => (p(0), p(1)))
+
+    val complete = oddConsecutives ++ evenConsecutives
+
+    /**
+     * Debug Statements
+     */
+    //    oddConsecutives.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
+    //      .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
+    //
+    //    evenConsecutives.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
+    //      .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
+
 
     val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
@@ -85,6 +101,7 @@ object MainNonCartesian {
 
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+
     println(vertex.toList.sortBy(p => p._1))
     println(collectedEdges.toList.sorted)
     println(vertex.size)

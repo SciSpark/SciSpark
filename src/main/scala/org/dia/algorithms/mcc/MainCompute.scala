@@ -72,7 +72,10 @@ object MainCompute {
       val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
       (d1 + 1) == d2
     })
-    LOG.info("Cartesian product have been done.")
+    LOG.info("C" +
+      "" +
+      "" +
+      "artesian product have been done.")
 
     val edgesRdd = filCartesian.map(pair => {
       checkComponentsOverlap(pair._1, pair._2)
