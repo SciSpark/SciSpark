@@ -56,31 +56,13 @@ object MainGroupBy {
 
     LOG.info("Matrices have been filtered")
 
-    /**
-     * Transform the input into
-     * consecutive pairings with odd leading indexes
-     */
-    val oddConsecutives = filtered.groupBy(p => {
-      val frameNum = p.metaData("FRAME").toInt
-      frameNum + (if (frameNum % 2 == 1) 1 else 0)
-    }).map(p => p._2.toList)
+    val complete = filtered.flatMap(p => {
+      List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
+    }).groupBy(_._1)
+      .map(p => p._2.map(e => e._2).toList)
       .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
-
-    /**
-     * Transform the input into
-     * consecutive pairings with even leading indexes
-     */
-    val evenConsecutives = filtered.groupBy(p => {
-      val frameNum = p.metaData("FRAME").toInt
-      frameNum + (if (frameNum % 2 == 0) 1 else 0)
-    }).map(p => p._2.toList)
-      .filter(p => p.size > 1)
-      .map(p => p.sortBy(_.metaData("FRAME").toInt))
-      .map(p => (p(0), p(1)))
-
-    val complete = oddConsecutives ++ evenConsecutives
 
     /**
      * Debug Statements
@@ -88,9 +70,9 @@ object MainGroupBy {
     //    oddConsecutives.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
     //      .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
     //
-    //    evenConsecutives.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
-    //      .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
 
+    //        complete.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
+    //          .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
 
     val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
