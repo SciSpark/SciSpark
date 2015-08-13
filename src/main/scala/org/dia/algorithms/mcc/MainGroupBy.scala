@@ -45,7 +45,7 @@ object MainGroupBy {
     val tmpdirectory = if (args.isEmpty || args.length <= 5) "/tmp" else args(5)
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    sc.setLocalProperty("spark.worker.dir", tmpdirectory)
+    sc.setLocalProperty("s", tmpdirectory)
 
     println(sc.getConf.toDebugString)
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
@@ -55,7 +55,8 @@ object MainGroupBy {
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
-    val filtered = sRDD.map(p => p(variable) <= 241.0)
+    val resoluted = sRDD.map(p => p.reduceResolution(12))
+    val filtered = resoluted.map(p => p(variable) <= 241.0)
 
     LOG.info("Matrices have been filtered")
 
