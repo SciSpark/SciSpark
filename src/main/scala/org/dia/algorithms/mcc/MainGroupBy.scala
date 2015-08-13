@@ -46,13 +46,14 @@ object MainGroupBy {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
-    val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
-    val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
+    val dimension = if (args.isEmpty || args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
+    val variable = if (args.isEmpty || args.length <= 4) "TotCldLiqH2O_A" else args(4)
     val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
     val filtered = sRDD.map(p => p(variable) <= 241.0)
+
     LOG.info("Matrices have been filtered")
 
     /**
