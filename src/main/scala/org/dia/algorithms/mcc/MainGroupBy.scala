@@ -45,7 +45,7 @@ object MainGroupBy {
     val tmpdirectory = if (args.isEmpty || args.length <= 5) "/tmp" else args(5)
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    sc.setLocalProperty("spark.local.dir", tmpdirectory)
+    sc.setLocalProperty("spark.worker.dir", tmpdirectory)
 
     println(sc.getConf.toDebugString)
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
