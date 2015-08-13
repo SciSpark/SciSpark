@@ -46,6 +46,8 @@ object MainGroupBy {
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     sc.setLocalProperty("spark.local.dir", tmpdirectory)
+
+    println(sc.getConf.toDebugString)
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.isEmpty || args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.isEmpty || args.length <= 4) "TotCldLiqH2O_A" else args(4)
