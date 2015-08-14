@@ -1,19 +1,12 @@
 package org.dia.sLib
 
-import java.text.SimpleDateFormat
-
-import org.apache.log4j.LogManager
-import org.apache.spark.rdd.RDD
-import org.dia.Constants._
-import org.dia.TRMMUtils.Parsers
 import org.dia.algorithms.mcc.mccOps
-import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
+import org.dia.core.{sRDD, sciTensor}
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
 
 import scala.collection.mutable
-import scala.io.Source
 
 
 class mccOps$Test extends FunSuite {
@@ -68,59 +61,6 @@ class mccOps$Test extends FunSuite {
     val frames = mccOps.findConnectedComponents(t)
     val ccframes = mccOps.findConnectedComponents(cct)
     assert(frames == ccframes)
-  }
-
-  test("MCC") {
-    LogManager.getLogger(Class.forName("com.joestelmach.natty.Parser")).setLevel(org.apache.log4j.Level.OFF)
-    val variable = "randomVar"
-    val file = "TestLinks2"
-    SparkTestConstants.sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val rdd = SparkTestConstants.sc.NetcdfFile(file, List("randomVar"), 1)._1
-    val filtered = rdd.map(p => p(variable) <= 241)
-
-    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudComponents(p))
-
-    val criteriaRDD = componentFrameRDD.filter(p => {
-      val hash = p.metaData
-      val area = hash("AREA").toDouble
-      val tempDiff = hash("DIFFERENCE").toDouble
-      (area >= 9.0) || (area < 4.0) && (tempDiff > 10.0)
-    })
-
-    criteriaRDD.checkpoint
-    val dates = Source.fromFile(file).mkString.split("\n").toList.map(p => p.split("/").last.replaceAllLiterally(".", "/")).map(p => Parsers.ParseDateFromString(p)).sorted
-
-    val vertexSet = getVertexArray(criteriaRDD)
-
-    val dateMappedRDDs = dates.map(p => {
-      val compareString = new SimpleDateFormat("yyyy-MM-dd").format(p)
-      (p, criteriaRDD.filter(_.metaData("FRAME") == compareString))
-    })
-    var edgeRDD : RDD[(Long, Long)] = null
-
-    for (index <- 0 to dateMappedRDDs.size - 2) {
-      println(index)
-      val currentTimeRDD = dateMappedRDDs(index)._2
-      val nextTimeRDD = dateMappedRDDs(index + 1)._2
-      val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
-      val findEdges = cartesianPair.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      val edgePair = findEdges.map(p => (vertexSet(p._1.metaData("FRAME") + p._1.metaData("COMPONENT")), vertexSet(p._2.metaData("FRAME") + p._2.metaData("COMPONENT"))))
-      if(edgeRDD == null) {
-        edgeRDD = edgePair
-      } else {
-        edgeRDD = edgeRDD ++ edgePair
-      }
-    }
-
-    val collectedEdges = edgeRDD.collect()
-
-    println("The vertex set : ")
-    vertexSet.toList.sortBy(p => p._2).foreach(p => println(p))
-    println("There are " + collectedEdges.length + " edges in the edge set : ")
-    collectedEdges.foreach(p => println(p))
-    dates.foreach(p => println(p))
-
-    assert(true)
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {

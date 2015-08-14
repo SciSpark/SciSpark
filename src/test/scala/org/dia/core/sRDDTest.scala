@@ -101,7 +101,7 @@ class sRDDTest extends FunSuite {
     val sc: SciSparkContext = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = "TotCldLiqH2O_A"
-    val nd4jRDD: sRDD[sciTensor] = sc.NetcdfFile("TestLinks", List("TotCldLiqH2O_A"))._1
+    val nd4jRDD: sRDD[sciTensor] = sc.NetcdfFile("TestLinks", List("TotCldLiqH2O_A"))
     val mappedRdd = nd4jRDD.map(p => p)
     mappedRdd.collect()
 

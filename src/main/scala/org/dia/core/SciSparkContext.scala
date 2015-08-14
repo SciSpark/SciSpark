@@ -18,18 +18,14 @@
 
 package org.dia.core
 
-import java.text.SimpleDateFormat
-
 import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
-import org.dia.TRMMUtils.Parsers
 import org.dia.loaders.MergUtils
 import org.dia.loaders.NetCDFLoader._
 import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
 
-import scala.collection.mutable
 import scala.io.Source
 
 /**
@@ -69,41 +65,14 @@ class SciSparkContext(val conf: SparkConf) {
    */
   def NetcdfFile(path: String,
                  varName: List[String] = Nil,
-                 minPartitions: Int = 2): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
+                 minPartitions: Int = 2): sRDD[sciTensor] = {
 
-    val indexedDateTable = new mutable.HashMap[Int, String]()
-    val DateIndexTable = new mutable.HashMap[String, Int]()
     val URLs = Source.fromFile(path).mkString.split("\n").toList
-
-    val orderedDateList = URLs.map(p => {
-      val source = p.split("/").last.replaceAllLiterally(".", "/")
-      val date = Parsers.ParseDateFromString(source)
-      new SimpleDateFormat("YYYY-MM-DD").format(date)
-      source(1).toInt
-    }).sorted
-
-    for(i <- orderedDateList.indices) {
-      indexedDateTable += ((i, orderedDateList(i).toString))
-      DateIndexTable += ((orderedDateList(i).toString, i))
-    }
-
-    val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
-    var variables: List[String] = varName
-
-    if (varName == Nil) {
-      variables = loadNetCDFVariables(varName.head)
-    }
+    val PartitionSize = if (URLs.size > minPartitions) (URLs.size.toDouble + minPartitions) / minPartitions.toDouble else 1
+    val variables: List[String] = if (varName == Nil) loadNetCDFVariables(varName.head) else varName
 
     val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, mapNUrToOneTensor(PartitionSize.toInt))
-    val labeled = rdd.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
-      val FrameID = DateIndexTable(date)
-      p.insertDictionary(("FRAME", FrameID.toString))
-      p
-    })
-
-    (labeled, indexedDateTable)
+    rdd
   }
 
   def randomMatrices(path: String,
@@ -122,10 +91,10 @@ class SciSparkContext(val conf: SparkConf) {
   def mergeFile(path: String,
                 varName: List[String] = List("TMP"),
                 minPartitions: Int = 2,
-                shape : Array[Int] = Array(9896, 3298)): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
+                shape : Array[Int] = Array(9896, 3298)): sRDD[sciTensor] = {
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
-    var rdd = new SRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoINDArray, mapNUrToOneTensor(PartitionSize))
+    var rdd = new sRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoINDArray, mapNUrToOneTensor(PartitionSize))
   }
 
   def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
