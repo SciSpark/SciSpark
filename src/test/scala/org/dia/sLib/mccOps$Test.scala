@@ -33,7 +33,7 @@ class mccOps$Test extends FunSuite {
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
     val labelled = mccOps.labelConnectedComponents(t)
-
+    println(labelled)
     assert(labelled._1.equals(cct))
   }
 

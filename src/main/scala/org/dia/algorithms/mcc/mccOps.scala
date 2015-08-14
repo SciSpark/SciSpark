@@ -149,8 +149,8 @@ object mccOps {
       for (col <- 0 to (cols - 1)) {
         if (!isLabeled(row, col)) {
           stack.push((row, col))
-          label += 1
           dfs(label)
+          label += 1
         }
       }
     }

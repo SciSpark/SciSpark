@@ -104,5 +104,4 @@ class SciSparkContext(val conf: SparkConf) {
     new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
   }
 
-
 }
