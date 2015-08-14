@@ -83,7 +83,7 @@ object MainGroupBy {
     val sRDD = sc.randomMatrices(inputFile, List(variable), partCount)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
       val FrameID = DateIndexTable(date)
       p.insertDictionary(("FRAME", FrameID.toString))
       p
