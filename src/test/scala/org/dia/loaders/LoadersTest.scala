@@ -33,9 +33,9 @@ class LoadersTest extends org.scalatest.FunSuite {
     val path = "src/main/scala/"
     val files = PathUtils.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(files.size))
-    files.map(vals => {
+    files.foreach(vals => {
       if (vals._2.length > 0) {
-        vals._2.map(e => println(e));
+        vals._2.foreach(e => println(e))
         println()
       } else {
         println("Empty")
@@ -51,16 +51,16 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val sBreezeRdd = new sRDD[sciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVars, mapSubFoldersToFolders)
-    sBreezeRdd.collect
+    sBreezeRdd.collect()
     assert(true)
   }
 
   test("OpenLocalPath") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    var path = "/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/"
+    val path = "/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/"
     val pathRDD: sRDD[sciTensor] = sc.OpenPath(path, List("precipitation"))
-    println(pathRDD.collect()(0).variables("precipitation").data.size)
+    println(pathRDD.collect()(0).variables("precipitation").data.length)
     assert(true)
   }
 
@@ -69,8 +69,8 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = "TestLinks2"
     //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
-    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)._1
-    val t = pathRDD.collect.toList
+    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)
+    val t = pathRDD.collect().toList
     println("Number loaded " + t.length)
     println(t.toString)
     println("DONEDONEDONE")
