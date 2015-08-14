@@ -57,14 +57,11 @@ object MainMerg {
     val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
 
     val orderedDateList = URLs.map(p => {
-      val source = p.split("/").last.replaceAllLiterally(".", "/")
-      Parsers.ParseDateFromString(source)
+      p.split("/").last.split("_")(1)//replaceAllLiterally(".", "/")
     }).sorted
 
     for (i <- orderedDateList.indices) {
-      val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
-      val dateString = dateFormat.format(orderedDateList(i))
-      DateIndexTable += ((dateString, i))
+      DateIndexTable += ((orderedDateList(i), i))
     }
 
     /**
@@ -82,9 +79,8 @@ object MainMerg {
      */
     val sRDD = sc.mergeFile(inputFile, List(variable), partCount)
     val labeled = sRDD.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
-      val FrameID = DateIndexTable(date)
+      val source = p.metaData("SOURCE").split("/").last.split("_")(1)
+      val FrameID = DateIndexTable(source)
       p.insertDictionary(("FRAME", FrameID.toString))
       p
     })
