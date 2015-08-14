@@ -84,8 +84,11 @@ class SciSparkContext(val conf: SparkConf) {
     val URLs = Source.fromFile(path).mkString.split("\n").toList
 
     val orderedDateList = URLs.map(p => {
-      val source = p.split("/").last.replaceAllLiterally(".", "/")
-      val date = Parsers.ParseDateFromString(source)
+      //      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      //      val date = Parsers.ParseDateFromString(source)
+      //      new SimpleDateFormat("YYYY-MM-DD").format(date)
+      val source = p.split("_")
+      val date = Parsers.ParseDateFromString(source(1))
       new SimpleDateFormat("YYYY-MM-DD").format(date)
     }).sorted
 
