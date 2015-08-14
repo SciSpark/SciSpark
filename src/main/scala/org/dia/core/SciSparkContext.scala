@@ -24,6 +24,7 @@ import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
+import org.dia.loaders.MergUtils
 import org.dia.loaders.NetCDFLoader._
 import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
@@ -111,11 +112,20 @@ class SciSparkContext(val conf: SparkConf) {
                      matrixSize: (Int, Int) = (20, 20)): sRDD[sciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URLs.size > minPartitions) (URLs.size.toDouble + minPartitions) / minPartitions.toDouble else 1
+    val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = if (varName == Nil) loadNetCDFVariables(varName.head) else varName
 
-    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), mapNUrToOneTensor(PartitionSize.toInt))
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), mapNUrToOneTensor(PartitionSize))
     rdd
+  }
+
+  def mergeFile(path: String,
+                varName: List[String] = List("TMP"),
+                minPartitions: Int = 2,
+                shape : Array[Int] = Array(9896, 3298)): (sRDD[sciTensor], mutable.HashMap[Int, String]) = {
+    val URLs = Source.fromFile(path).mkString.split("\n").toList
+    val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
+    var rdd = new SRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoINDArray, mapNUrToOneTensor(PartitionSize))
   }
 
   def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
