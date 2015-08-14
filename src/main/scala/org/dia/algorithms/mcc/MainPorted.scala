@@ -17,11 +17,15 @@
  */
 package org.dia.algorithms.mcc
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
+import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 
 import scala.collection.mutable
+import scala.io.Source
 import scala.language.implicitConversions
 
 /**
@@ -50,8 +54,23 @@ object MainPorted {
     val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
     val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
 
-    val sRDD = RDDmetatuple._1
-    val dateMap = RDDmetatuple._2
+    val indexedDateTable = new mutable.HashMap[Int, String]()
+    val DateIndexTable = new mutable.HashMap[String, Int]()
+    val URLs = Source.fromFile(testFile).mkString.split("\n").toList
+
+    val orderedDateList = URLs.map(p => {
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      val date = Parsers.ParseDateFromString(source)
+      new SimpleDateFormat("YYYY-MM-DD").format(date)
+    }).sorted
+
+    for (i <- orderedDateList.indices) {
+      indexedDateTable += ((i, orderedDateList(i)))
+      DateIndexTable += ((orderedDateList(i), i))
+    }
+
+    val sRDD = RDDmetatuple
+    val dateMap = indexedDateTable
 
     println(dateMap)
 

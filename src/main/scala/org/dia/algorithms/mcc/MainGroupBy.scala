@@ -17,49 +17,82 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.Constants._
+import java.text.SimpleDateFormat
+
+import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
+import scala.io.Source
 import scala.language.implicitConversions
 
-/**
-  */
-object MainGroupBy {
 
-  /**
-   * NetCDF variables to use
-   * TODO:: Make the netcdf variables global - however this may need broadcasting
-   */
-  val rowDim = 180
-  val columnDim = 360
-  val TextFile = "TestLinks"
+object MainGroupBy {
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
-    var master = ""
-    val testFile = if (args.isEmpty) "TestLinks" else args(0)
-    if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
+    /**
+     * Input arguements to the program :
+     * args(0) - the path to the source file
+     * args(1) - the spark master url. Example : spark://HOST_NAME:7077
+     * args(2) - the number of desired partitions. Default : 2
+     * args(3) - square matrix dimension. Default : 20
+     * args(4) - variable name
+     *
+     */
+    val inputFile = if (args.isEmpty) "TestLinks" else args(0)
+    val masterURL = if (args.length <= 1) "local[12]" else args(1)
+    val partCount = if (args.length <= 2) 2 else args(2).toInt
+    val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
+    val variable = if (args.length <= 4) "TotCldLiqH2O_A" else args(4)
 
-    val tmpdirectory = if (args.isEmpty || args.length <= 5) "/tmp" else args(5)
-    val sc = new SciSparkContext(master, "test")
-    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    sc.setLocalProperty("s", tmpdirectory)
+    /**
+     * Parse the date from each URL.
+     * Compute the maps from Date to element index.
+     * The DateIndexTable holds the mappings.
+     *
+     */
+    val DateIndexTable = new mutable.HashMap[String, Int]()
+    val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
 
-    println(sc.getConf.toDebugString)
-    val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
-    val dimension = if (args.isEmpty || args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
-    val variable = if (args.isEmpty || args.length <= 4) "TotCldLiqH2O_A" else args(4)
-    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), partitionNum)
+    val orderedDateList = URLs.map(p => {
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      Parsers.ParseDateFromString(source)
+    }).sorted
 
-    val sRDD = RDDmetatuple._1
-    val dateMap = RDDmetatuple._2
-    val resoluted = sRDD.map(p => p.reduceResolution(12))
-    val filtered = resoluted.map(p => p(variable) <= 241.0)
+    for (i <- orderedDateList.indices) {
+      val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
+      val dateString = dateFormat.format(orderedDateList(i))
+      DateIndexTable += ((dateString, i))
+    }
 
-    LOG.info("Matrices have been filtered")
+    /**
+     * Initialize the spark context to point to the master URL
+     *
+     */
+    val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
+    /**
+     * Ingest the input file and construct the sRDD.
+     * For MCC the sources are used to map date-indexes.
+     * The metadata variable "FRAME" corresponds to an index.
+     * The indices themselves are numbered with respect to
+     * date-sorted order.
+     */
+    val sRDD = sc.randomMatrices(inputFile, List(variable), partCount)
+    val labeled = sRDD.map(p => {
+      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
+      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      val FrameID = DateIndexTable(date)
+      p.insertDictionary(("FRAME", FrameID.toString))
+      p
+    })
+
+    /**
+     * The MCC algorithim : Mining for graph vertices and edges
+     */
+    val filtered = labeled.map(p => p(variable) <= 241.0)
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
@@ -67,16 +100,6 @@ object MainGroupBy {
       .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
-
-    /**
-     * Debug Statements
-     */
-    //    oddConsecutives.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
-    //      .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
-    //
-
-    //        complete.collect().toList.sortBy(p => p._1.metaData("FRAME").toInt)
-    //          .foreach(p => println(p._1.metaData("FRAME") + " , " + p._2.metaData("FRAME")))
 
     val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)

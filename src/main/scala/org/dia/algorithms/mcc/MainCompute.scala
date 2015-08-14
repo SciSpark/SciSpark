@@ -59,8 +59,7 @@ object MainCompute {
     val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
     val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
     val netcdfFile = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
-    val sRDD = netcdfFile._1
-    val dates = netcdfFile._2
+    val sRDD = netcdfFile
 
     val preCollected = sRDD
     val filtered = preCollected.map(p => p(variable) <= 241.0)
@@ -88,13 +87,13 @@ object MainCompute {
     var jsonEdges = mutable.Set[JObject]()
 
 
-    colEdges.map(edgesList => {
-      if (edgesList.nonEmpty) {
-        val res = generateJson(edgesList, dates)
-        jsonNodes ++= res._1
-        jsonEdges ++= res._2
-      }
-    })
+    //    colEdges.map(edgesList => {
+    //      if (edgesList.nonEmpty) {
+    //        val res = generateJson(edgesList, dates)
+    //        jsonNodes ++= res._1
+    //        jsonEdges ++= res._2
+    //      }
+    //    })
     println("*****************")
     println(nodes.size)
     println(totEdges)
