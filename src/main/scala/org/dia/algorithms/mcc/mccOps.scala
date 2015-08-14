@@ -116,7 +116,7 @@ object mccOps {
     val cols = tensor.cols
     val labels = tensor.zeros(tensor.shape: _*)
     var label = 1
-    val stack = new mutable.Stack[(Int, Int)]()
+    var stack = new mutable.Stack[(Int, Int)]()
     /**
      * If the coordinates are within bounds,
      * the input is not 0, and it hasn't been labelled yet
