@@ -5,7 +5,7 @@ import scala.io.Source
 
 object MergUtils {
 
-  def ReadMergtoINDArray(file: String, shape: Array[Int], offset: Double): (Array[Double], Array[Int]) = {
+  def ReadMergtoNDArray(file: String, shape: Array[Int], offset: Double): (Array[Double], Array[Int]) = {
     val java1dArray = ReadMergtoJavaArray(file)
     (java1dArray, shape)
   }
