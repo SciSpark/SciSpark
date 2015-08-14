@@ -154,6 +154,7 @@ object mccOps {
         }
       }
     }
+    stack = null
     (labels, label - 1)
   }
 

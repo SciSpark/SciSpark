@@ -92,6 +92,7 @@ object MainGroupBy {
     /**
      * The MCC algorithim : Mining for graph vertices and edges
      */
+    val reshaped = labeled.map(p => p(variable).reduceResolution(50))
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
