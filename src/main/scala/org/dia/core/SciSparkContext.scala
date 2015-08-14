@@ -88,13 +88,12 @@ class SciSparkContext(val conf: SparkConf) {
       //      val date = Parsers.ParseDateFromString(source)
       //      new SimpleDateFormat("YYYY-MM-DD").format(date)
       val source = p.split("_")
-      val date = Parsers.ParseDateFromString(source(1))
-      new SimpleDateFormat("YYYY-MM-DD").format(date)
+      source(1).toInt
     }).sorted
 
     for(i <- orderedDateList.indices) {
-      indexedDateTable += ((i, orderedDateList(i)))
-      DateIndexTable += ((orderedDateList(i), i))
+      indexedDateTable += ((i, orderedDateList(i).toString))
+      DateIndexTable += ((orderedDateList(i).toString, i))
     }
 
     val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
