@@ -91,10 +91,12 @@ class SciSparkContext(val conf: SparkConf) {
   def mergeFile(path: String,
                 varName: List[String] = List("TMP"),
                 minPartitions: Int = 2,
-                shape : Array[Int] = Array(9896, 3298)): sRDD[sciTensor] = {
+                shape : Array[Int] = Array(9896, 3298),
+                 offset : Double = 75): sRDD[sciTensor] = {
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
-    var rdd = new sRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoINDArray, mapNUrToOneTensor(PartitionSize))
+    var rdd = new sRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoNDArray(shape, offset), mapNUrToOneTensor(PartitionSize))
+    rdd
   }
 
   def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
