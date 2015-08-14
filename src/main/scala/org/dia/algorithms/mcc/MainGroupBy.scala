@@ -44,14 +44,14 @@ object MainGroupBy {
 
     val tmpdirectory = if (args.isEmpty || args.length <= 5) "/tmp" else args(5)
     val sc = new SciSparkContext(master, "test")
-    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
+    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     sc.setLocalProperty("s", tmpdirectory)
 
     println(sc.getConf.toDebugString)
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.isEmpty || args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.isEmpty || args.length <= 4) "TotCldLiqH2O_A" else args(4)
-    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
+    val RDDmetatuple = sc.NetcdfFile(testFile, List(variable), partitionNum)
 
     val sRDD = RDDmetatuple._1
     val dateMap = RDDmetatuple._2
@@ -94,7 +94,6 @@ object MainGroupBy {
     println(vertex.size)
     println(collectedEdges.length)
     println(complete.toDebugString)
-
   }
 
   def checkCriteria(p: sciTensor): Boolean = {
