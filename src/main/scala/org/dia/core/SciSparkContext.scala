@@ -24,6 +24,7 @@ import org.apache.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.TRMMUtils.Parsers
+import org.dia.loaders.MergUtils
 import org.dia.loaders.NetCDFLoader._
 import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
@@ -83,14 +84,16 @@ class SciSparkContext(val conf: SparkConf) {
     val URLs = Source.fromFile(path).mkString.split("\n").toList
 
     val orderedDateList = URLs.map(p => {
-      val source = p.split("/").last.replaceAllLiterally(".", "/")
-      val date = Parsers.ParseDateFromString(source)
-      new SimpleDateFormat("YYYY-MM-DD").format(date)
+      //      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      //      val date = Parsers.ParseDateFromString(source)
+      //      new SimpleDateFormat("YYYY-MM-DD").format(date)
+      val source = p.split("_")
+      source(1).toInt
     }).sorted
 
     for(i <- orderedDateList.indices) {
-      indexedDateTable += ((i, orderedDateList(i)))
-      DateIndexTable += ((orderedDateList(i), i))
+      indexedDateTable += ((i, orderedDateList(i).toString))
+      DateIndexTable += ((orderedDateList(i).toString, i))
     }
 
     val PartitionSize = (URLs.size.toDouble + minPartitions) / minPartitions.toDouble
@@ -100,10 +103,15 @@ class SciSparkContext(val conf: SparkConf) {
       variables = loadNetCDFVariables(varName.head)
     }
 
-    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, mapNUrToOneTensor(PartitionSize.toInt))
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, variables, MergUtils.ReadMergtoPair(Array(9896, 3298))(75.0), mapNUrToOneTensor(PartitionSize.toInt))
     val labeled = rdd.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      //      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
+      //      val date = new SimpleDateFormat("YYYY-MM-DD").format(Parsers.ParseDateFromString(source))
+      //      val FrameID = DateIndexTable(date)
+      //      p.insertDictionary(("FRAME", FrameID.toString))
+      //      p
+      val source = p.metaData("SOURCE").split("_")
+      val date = source(1)
       val FrameID = DateIndexTable(date)
       p.insertDictionary(("FRAME", FrameID.toString))
       p
