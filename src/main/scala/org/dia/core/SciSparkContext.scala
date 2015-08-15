@@ -19,15 +19,16 @@
 package org.dia.core
 
 import org.apache.log4j.LogManager
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.loaders.MergUtils
 import org.dia.loaders.NetCDFLoader._
 import org.dia.loaders.RandomMatrixLoader._
 import org.dia.partitioners.sPartitioner._
+import org.dia.tensors.BreezeTensor
 
 import scala.io.Source
-
 /**
  * SciSpark contexts extends the existing SparkContext function.
  * However there are many private functions within SparkContext
@@ -95,7 +96,24 @@ class SciSparkContext(val conf: SparkConf) {
                  offset : Double = 75): sRDD[sciTensor] = {
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
-    var rdd = new sRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoNDArray(shape, offset), mapNUrToOneTensor(PartitionSize))
+    val rdd = new sRDD[sciTensor](sparkContext, URLs, varName, MergUtils.ReadMergtoNDArray(shape, offset), mapNUrToOneTensor(PartitionSize))
+    rdd
+  }
+
+  def mergTachyonFile(path: String,
+                      varName: List[String] = List("TMP"),
+                      minPartitions: Int = 2,
+                      shape: Array[Int] = Array(9896, 3298),
+                      offset: Double = 75): RDD[sciTensor] = {
+    val textFiles = sparkContext.binaryFiles(path, minPartitions)
+    val rdd = textFiles.map(p => {
+      val byteArray = p._2.toArray
+      val doubleArray = MergUtils.ReadMergByteArray(byteArray, offset, shape)
+      val absT = new BreezeTensor(doubleArray, shape)
+      val sciT = new sciTensor("TMP", absT)
+      sciT.insertDictionary(("SOURCE", p._1))
+      sciT
+    })
     rdd
   }
 

@@ -24,4 +24,11 @@ object MergUtils {
     SourceArray
   }
 
+  def ReadMergByteArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
+    val numElems = shape.reduce(_ * _)
+    val array = byteArray.slice(0, numElems)
+    val SourceArray = byteArray.map(floatByte => floatByte.asInstanceOf[Float].toDouble + offset)
+    SourceArray
+  }
+
 }
