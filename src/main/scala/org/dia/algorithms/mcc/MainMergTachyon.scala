@@ -17,7 +17,7 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.core.{SciSparkContext, sRDD, sciTensor}
+import org.dia.core.{SciSparkContext, sciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -85,6 +85,13 @@ object MainMergTachyon {
 
     /**
      * The MCC algorithim : Mining for graph vertices and edges
+     *
+     * For each array A_f with a Frame number f
+     * output the following tuples (A_f, n), (A_f, n+1)
+     * where n = f.
+     *
+     * Let x be the associated index (element 2 in the tuple) and groupBy x.
+     * We now have all tuples of the form (A_f, A_f+1)
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val reducedRes = filtered.map(p => p.reduceResolution(50))
@@ -96,6 +103,13 @@ object MainMergTachyon {
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
+    /**
+     * Core MCC
+     * For each consecutive frame pair, find it's components.
+     * For each component pairing, find if the elementwise
+     * component pairing results in a zero matrix.
+     * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
+     */
     val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
       val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
@@ -104,6 +118,11 @@ object MainMergTachyon {
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
     })
 
+    /**
+     * Collect the edges.
+     * From the edge pairs collect all used vertices.
+     * Repeated vertices are eliminated due to the set conversion.
+     */
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
@@ -119,15 +138,6 @@ object MainMergTachyon {
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
     (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
-
-  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {
-    val id = collection.map(p => (p.metaData("FRAME"), p.metaData("COMPONENT"))).collect().toList
-    val size = id.length
-    val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[(String, String), Long]
-    range.map(p => hash += ((id(p), p)))
-    hash
   }
 }
 
