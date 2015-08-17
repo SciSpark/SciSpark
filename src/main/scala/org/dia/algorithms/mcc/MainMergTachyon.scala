@@ -95,7 +95,7 @@ object MainMergTachyon {
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val reducedRes = filtered.map(p => p.reduceResolution(100))
-    val complete = filtered.flatMap(p => {
+    val complete = reducedRes.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)

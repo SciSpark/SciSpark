@@ -94,7 +94,7 @@ object MainGroupBy {
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val reshaped = filtered.map(p => p(variable).reduceResolution(50))
-    val complete = filtered.flatMap(p => {
+    val complete = reshaped.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
