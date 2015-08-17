@@ -43,7 +43,7 @@ object MainMergTachyon {
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TMP" else args(4)
-
+    val hdfspath = if (args.length <= 5) "hdfs://" else args(5)
     /**
      * Parse the date from each URL.
      * Compute the maps from Date to element index.
@@ -75,7 +75,7 @@ object MainMergTachyon {
      * date-sorted order.
      *
      */
-    val sRDD = sc.mergTachyonFile(inputFile, List(variable), partCount)
+    val sRDD = sc.mergTachyonFile(hdfspath, List(variable), partCount)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = DateIndexTable(source)
