@@ -75,7 +75,7 @@ object MainMergTachyon {
      * date-sorted order.
      *
      */
-    val sRDD = sc.mergTachyonFile("tachyon://localhost:19998/MERGLIMITED/", List("TMP"), 24)
+    val sRDD = sc.mergTachyonFile(inputFile, List(variable), partCount)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = DateIndexTable(source)
