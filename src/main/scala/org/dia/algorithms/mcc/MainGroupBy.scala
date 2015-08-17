@@ -21,6 +21,10 @@ import java.text.SimpleDateFormat
 
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
+import org.dia.sLib.{FileUtils, JsonUtils}
+import org.json4s.JsonAST.JObject
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -51,10 +55,9 @@ object MainGroupBy {
      * Parse the date from each URL.
      * Compute the maps from Date to element index.
      * The DateIndexTable holds the mappings.
-     *
      */
-    val DateIndexTable = new mutable.HashMap[String, Int]()
     val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
+    val DateIndexTable = new mutable.HashMap[String, Int]()
 
     val orderedDateList = URLs.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
@@ -118,6 +121,27 @@ object MainGroupBy {
     println(vertex.size)
     println(collectedEdges.length)
     println(complete.toDebugString)
+
+
+
+
+    var jsonNodes = mutable.Set[JObject]()
+    var jsonEdges = mutable.Set[JObject]()
+
+
+    //    colEdges.map(edgesList => {
+    //      if (edgesList.nonEmpty) {
+    //        val res = generateJson(edgesList, dates)
+    //        jsonNodes ++= res._1
+    //        jsonEdges ++= res._2
+    //      }
+    //    })
+    val vs = vertex.flatMap(p => List(p._1, p._2))
+    val eds = collectedEdges.flatMap(p => List(p._1, p._2)).toList
+
+    val res = JsonUtils.generateJson(eds, DateIndexTable, vs)
+    val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
+    FileUtils.writeToFile("../resources/graph.json", pretty(render(json)))
   }
 
   def checkCriteria(p: sciTensor): Boolean = {
