@@ -94,7 +94,7 @@ object MainMergTachyon {
      * We now have all tuples of the form (A_f, A_f+1)
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val reducedRes = filtered.map(p => p.reduceResolution(50))
+    val reducedRes = filtered.map(p => p.reduceResolution(100))
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
