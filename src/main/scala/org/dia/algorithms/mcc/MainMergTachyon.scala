@@ -111,8 +111,13 @@ object MainMergTachyon {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
+      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + compUnfiltered1.size)
+
+      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + compUnfiltered2.size)
+      val components1 = compUnfiltered1.filter(checkCriteria)
+      val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
