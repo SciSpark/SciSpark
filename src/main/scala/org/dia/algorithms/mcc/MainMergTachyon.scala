@@ -43,7 +43,7 @@ object MainMergTachyon {
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TMP" else args(4)
-
+    val hdfspath = if (args.length <= 5) "hdfs://" else args(5)
     /**
      * Parse the date from each URL.
      * Compute the maps from Date to element index.
@@ -75,8 +75,9 @@ object MainMergTachyon {
      * date-sorted order.
      *
      */
-    val sRDD = sc.mergTachyonFile("tachyon://localhost:19998/MERGLIMITED/", List("TMP"), 24)
+    val sRDD = sc.mergTachyonFile(hdfspath, List(variable), partCount)
     val labeled = sRDD.map(p => {
+      println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = DateIndexTable(source)
       p.insertDictionary(("FRAME", FrameID.toString))
@@ -94,7 +95,7 @@ object MainMergTachyon {
      * We now have all tuples of the form (A_f, A_f+1)
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val reducedRes = filtered.map(p => p.reduceResolution(50))
+    //val reducedRes = filtered.map(p => p.reduceResolution(100))
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
@@ -111,8 +112,12 @@ object MainMergTachyon {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
+      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
+      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
+      val components1 = compUnfiltered1.filter(checkCriteria)
+      val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))

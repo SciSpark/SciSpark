@@ -95,9 +95,9 @@ object MainGroupBy {
     /**
      * The MCC algorithim : Mining for graph vertices and edges
      */
-    val reshaped = labeled.map(p => p(variable).reduceResolution(50))
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val complete = filtered.flatMap(p => {
+    val reshaped = filtered.map(p => p(variable).reduceResolution(50))
+    val complete = reshaped.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
@@ -106,8 +106,13 @@ object MainGroupBy {
       .map(p => (p(0), p(1)))
 
     val componentFrameRDD = complete.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
+      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + compUnfiltered1.size)
+
+      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
+      val components1 = compUnfiltered1.filter(checkCriteria)
+      val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
