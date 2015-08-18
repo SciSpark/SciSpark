@@ -98,6 +98,7 @@ object MainMergTachyon {
     val reducedRes = filtered.map(p => p.reduceRectangleResolution(25, 8))
     val complete = reducedRes.flatMap(p => {
       println(p)
+
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .filter(p => p._2.size > 1)
@@ -116,15 +117,28 @@ object MainMergTachyon {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + " rows and columns " + p._1.tensor.rows + " " + p._1.tensor.cols + " " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
-      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
-      val components1 = compUnfiltered1.filter(checkCriteria)
-      val components2 = compUnfiltered2.filter(checkCriteria)
-      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
+      val components1 = mccOps.labelConnectedComponents(p._1.tensor)
+      val components2 = mccOps.labelConnectedComponents(p._2.tensor)
+      val product = components1._1 * components2._1
+      var ArrList = mutable.MutableList[(Double, Double)]()
+      for (row <- 0 to product.rows - 1) {
+        for (col <- 0 to product.cols - 1) {
+          if (product(row, col) != 0.0) {
+            val value1 = components1._1(row, col)
+            val value2 = components2._1(row, col)
+            ArrList += ((value1, value1))
+          }
+        }
+      }
+      //      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + " rows and columns " + p._1.tensor.rows + " " + p._1.tensor.cols + " " + p._1.metaData("FRAME") + " " + components1._2)
+      //      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " " + p._2.metaData("FRAME") + " " + components2._2)
+      //      val components1 = compUnfiltered1.filter(checkCriteria)
+      //      val components2 = compUnfiltered2.filter(checkCriteria)
+      //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
+      //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
+      ArrList.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
     })
 
     /**
