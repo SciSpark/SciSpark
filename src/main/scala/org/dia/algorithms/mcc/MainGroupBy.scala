@@ -21,9 +21,6 @@ import java.text.SimpleDateFormat
 
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.{FileUtils, JsonUtils}
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -129,11 +126,11 @@ object MainGroupBy {
     println(collectedEdges.length)
     println(complete.toDebugString)
 
-    if(!jsonOut.isEmpty) {
-      val res = JsonUtils.generateJson(collectedEdges, DateIndexTable, vertex)
-      val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
-      FileUtils.writeToFile(jsonOut, pretty(render(json)))
-    }
+    //    if(!jsonOut.isEmpty) {
+    //      val res = JsonUtils.generateJson(collectedEdges, DateIndexTable, vertex)
+    //      val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
+    //      FileUtils.writeToFile(jsonOut, pretty(render(json)))
+    //    }
   }
 
   def checkCriteria(p: sciTensor): Boolean = {
