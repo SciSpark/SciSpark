@@ -80,7 +80,7 @@ object MainGroupBy {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      */
-    val sRDD = sc.randomMatrices(inputFile, List(variable), partCount)
+    val sRDD = sc.randomMatrices(inputFile, List(variable), partCount, dimension)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
