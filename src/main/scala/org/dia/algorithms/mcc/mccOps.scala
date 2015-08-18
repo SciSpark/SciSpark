@@ -1,9 +1,9 @@
 package org.dia.algorithms.mcc
 
+import java.util
+
 import org.dia.core.sciTensor
 import org.dia.tensors.AbstractTensor
-
-import scala.collection.mutable
 
 object mccOps {
 
@@ -76,6 +76,23 @@ object mccOps {
     maskedLabels.toList
   }
 
+  def areaFilled(tensor: AbstractTensor): (Double, Double, Double) = {
+    var count = 0.0
+    var min = Double.MaxValue
+    var max = Double.MinValue
+    val masked = tensor.map(p => {
+      if (p != 0) {
+        if (p < min) min = p
+        if (p > max) max = p
+        count += 1.0
+        1.0
+      } else {
+        p
+      }
+    })
+    (count, max, min)
+  }
+
   def findCloudElements(tensor: sciTensor): List[sciTensor] = {
     val labelledTensors = findCloudElements(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
@@ -100,23 +117,6 @@ object mccOps {
     val maxVal = tuple._2
     val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
     maskedLabels.toList
-  }
-
-  def areaFilled(tensor: AbstractTensor): (Double, Double, Double) = {
-    var count = 0.0
-    var min = Double.MaxValue
-    var max = Double.MinValue
-    val masked = tensor.map(p => {
-      if (p != 0) {
-        if (p < min) min = p
-        if (p > max) max = p
-        count += 1.0
-        1.0
-      } else {
-        p
-      }
-    })
-    (count, max, min)
   }
 
   def findCloudElementsX(tensor: sciTensor): sciTensor = {
@@ -144,7 +144,7 @@ object mccOps {
     val cols = tensor.cols
     val labels = tensor.zeros(tensor.shape: _*)
     var label = 1
-    var stack = new mutable.ArrayStack[Int]()
+    val stack = new util.ArrayDeque[Int](tensor.rows + tensor.cols * 10)
     /**
      * If the coordinates are within bounds,
      * the input is not 0, and it hasn't been labelled yet.
@@ -187,7 +187,6 @@ object mccOps {
         }
       }
     }
-    stack = null
     (labels, label - 1)
   }
 
