@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.dia.sLib.{FileUtils, JsonUtils}
-import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
@@ -86,7 +85,7 @@ object MainGroupBy {
      */
     val sRDD = sc.randomMatrices(inputFile, List(variable), partCount, dimension)
     val labeled = sRDD.map(p => {
-      println(p.tensor)
+      //println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
       val FrameID = DateIndexTable(date)
