@@ -11,7 +11,6 @@ import scala.collection.mutable
 class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
   val metaData: mutable.HashMap[String, String] = new mutable.HashMap[String, String]
-  val head = variables.toArray
   var varInUse = variables.toArray.apply(0)._1
 
 
