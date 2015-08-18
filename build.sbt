@@ -7,7 +7,7 @@ version := "1.0"
 //scalaVersion := "2.11.6"
 scalaVersion := "2.10.5"
 
-mainClass in Compile := Some("org.dia.algorithms.mcc.MainMerg")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainMergTachyon")
 
 resolvers ++= Seq(
   Resolver.mavenLocal
@@ -46,7 +46,6 @@ libraryDependencies ++= Seq(
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
   "com.joestelmach" % "natty" % "0.11",
-  "org.graphstream" % "gs-core" % "1.0",
   "edu.ucar" % "netcdf" % "4.2.20"
 )
 
