@@ -50,6 +50,7 @@ object MainGroupBy {
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TotCldLiqH2O_A" else args(4)
+    val jsonOut = if (args.length <= 5) "" else args(5)
 
     /**
      * Parse the date from each URL.
@@ -127,26 +128,11 @@ object MainGroupBy {
     println(collectedEdges.length)
     println(complete.toDebugString)
 
-
-
-
-    var jsonNodes = mutable.Set[JObject]()
-    var jsonEdges = mutable.Set[JObject]()
-
-
-    //    colEdges.map(edgesList => {
-    //      if (edgesList.nonEmpty) {
-    //        val res = generateJson(edgesList, dates)
-    //        jsonNodes ++= res._1
-    //        jsonEdges ++= res._2
-    //      }
-    //    })
-    val vs = vertex.flatMap(p => List(p._1, p._2))
-    val eds = collectedEdges.flatMap(p => List(p._1, p._2)).toList
-
-    val res = JsonUtils.generateJson(eds, DateIndexTable, vs)
-    val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
-    FileUtils.writeToFile("../resources/graph.json", pretty(render(json)))
+    if(!jsonOut.isEmpty) {
+      val res = JsonUtils.generateJson(collectedEdges, DateIndexTable, vertex)
+      val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
+      FileUtils.writeToFile(jsonOut, pretty(render(json)))
+    }
   }
 
   def checkCriteria(p: sciTensor): Boolean = {
