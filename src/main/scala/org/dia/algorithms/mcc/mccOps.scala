@@ -40,8 +40,8 @@ object mccOps {
 
     for (row <- 0 to (reducedMatrix.rows - 1)) {
       for (col <- 0 to (reducedMatrix.cols - 1)) {
-        val rowRange = (row * rowblockSize) -> ((row + 1) * columnblockSize)
-        val columnRange = (col * rowblockSize) -> ((col + 1) * columnblockSize)
+        val rowRange = (row * rowblockSize) -> ((row + 1) * rowblockSize)
+        val columnRange = (col * columnblockSize) -> ((col + 1) * columnblockSize)
         val block = tensor(rowRange, columnRange)
         val numNonZero = block.data.count(p => p != 0)
         val avg = if (numNonZero > 0) block.cumsum / numNonZero else 0.0
@@ -76,23 +76,6 @@ object mccOps {
     maskedLabels.toList
   }
 
-  def areaFilled(tensor: AbstractTensor): (Double, Double, Double) = {
-    var count = 0.0
-    var min = Double.MaxValue
-    var max = Double.MinValue
-    val masked = tensor.map(p => {
-      if (p != 0) {
-        if (p < min) min = p
-        if (p > max) max = p
-        count += 1.0
-        1.0
-      } else {
-        p
-      }
-    })
-    (count, max, min)
-  }
-
   def findCloudElements(tensor: sciTensor): List[sciTensor] = {
     val labelledTensors = findCloudElements(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
@@ -111,24 +94,29 @@ object mccOps {
     seq.toList
   }
 
+  def areaFilled(tensor: AbstractTensor): (Double, Double, Double) = {
+    var count = 0.0
+    var min = Double.MaxValue
+    var max = Double.MinValue
+    val masked = tensor.map(p => {
+      if (p != 0) {
+        if (p < min) min = p
+        if (p > max) max = p
+        count += 1.0
+        1.0
+      } else {
+        p
+      }
+    })
+    (count, max, min)
+  }
+
   def findCloudElements(tensor: AbstractTensor): List[AbstractTensor] = {
     val tuple = labelConnectedComponents(tensor)
     val labelled = tuple._1
     val maxVal = tuple._2
     val maskedLabels = (1 to maxVal).toArray.map(labelled := _.toDouble)
     maskedLabels.toList
-  }
-
-  def findCloudElementsX(tensor: sciTensor): sciTensor = {
-    // list of connected components separated in maskes matrices
-    val labelledTensor = findCloudElementsX(tensor.tensor)
-    val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
-    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
-  }
-
-  def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
-    val tuple = labelConnectedComponents(tensor)
-    tuple
   }
 
   /**
@@ -188,6 +176,18 @@ object mccOps {
       }
     }
     (labels, label - 1)
+  }
+
+  def findCloudElementsX(tensor: sciTensor): sciTensor = {
+    // list of connected components separated in maskes matrices
+    val labelledTensor = findCloudElementsX(tensor.tensor)
+    val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
+    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
+  }
+
+  def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
+    val tuple = labelConnectedComponents(tensor)
+    tuple
   }
 
 }
