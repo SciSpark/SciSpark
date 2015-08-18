@@ -21,8 +21,11 @@ import java.text.SimpleDateFormat
 
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.JsonUtils
+import org.dia.sLib.{FileUtils, JsonUtils}
 import org.slf4j.Logger
+
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
 
 import scala.collection.mutable
 import scala.io.Source
