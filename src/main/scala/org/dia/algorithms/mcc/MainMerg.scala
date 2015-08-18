@@ -18,6 +18,7 @@
 package org.dia.algorithms.mcc
 
 import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.tensors.BreezeTensor
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -42,7 +43,7 @@ object MainMerg {
     val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
-    val variable = if (args.length <= 4) "TotCldLiqH2O_A" else args(4)
+    val variable = if (args.length <= 4) "ch4" else args(4)
 
     /**
      * Parse the date from each URL.
@@ -74,7 +75,7 @@ object MainMerg {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      */
-    val sRDD = sc.mergeFile(inputFile, List(variable), partCount)
+    val sRDD = sc.NetcdfFile(inputFile, List(variable), partCount)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = DateIndexTable(source)
@@ -94,6 +95,8 @@ object MainMerg {
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val complete = filtered.flatMap(p => {
+      println(p.tensor)
+      println(p.tensor.asInstanceOf[BreezeTensor].tensor.toArray.map(v => if (v <= 241) 1.0 else 0.0).reduce(_ + _))
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
@@ -110,8 +113,13 @@ object MainMerg {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
+      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
+
+      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
+      val components1 = compUnfiltered1.filter(checkCriteria)
+      val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))

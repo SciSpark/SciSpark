@@ -65,7 +65,7 @@ object NetCDFUtils {
       return (Array(0.0), Array(1, 1))
     }
     val nativeArray = convertMa2Arrayto1DJavaArray(SearchVariableArray)
-    val shape = SearchVariableArray.getShape
+    val shape = SearchVariableArray.getShape.toList.filter(p => p != 1).toArray
     (nativeArray, shape)
   }
 
@@ -88,6 +88,9 @@ object NetCDFUtils {
 
   /**
    * Gets a M2 array from a netCDF file using a variable
+   *
+   * TODO :: Ask why OCW hard codes the lattitude and longitude names
+   *
    * @param netcdfFile the NetcdfDataSet to read from
    * @param variable the variable array to extract
    * @return
@@ -98,6 +101,7 @@ object NetCDFUtils {
       if (netcdfFile == null)
         throw new IllegalStateException("NetCDFDataset was not loaded")
       val netcdfVal = netcdfFile.findVariable(variable)
+      println(netcdfVal)
       if (netcdfVal == null)
         throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
       SearchVariable = netcdfVal.read()

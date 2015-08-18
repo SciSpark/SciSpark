@@ -30,6 +30,27 @@ object mccOps {
     reducedMatrix
   }
 
+  def reduceRectangleResolution(tensor: AbstractTensor, rowblockSize: Int, columnblockSize: Int): AbstractTensor = {
+    val largeArray = tensor
+    val numRows = largeArray.rows
+    val numCols = largeArray.cols
+    val reducedSize = numRows * numCols / (rowblockSize * columnblockSize)
+
+    val reducedMatrix = tensor.zeros(numRows / rowblockSize, numCols / columnblockSize)
+
+    for (row <- 0 to (reducedMatrix.rows - 1)) {
+      for (col <- 0 to (reducedMatrix.cols - 1)) {
+        val rowRange = (row * rowblockSize) -> ((row + 1) * columnblockSize)
+        val columnRange = (col * rowblockSize) -> ((col + 1) * columnblockSize)
+        val block = tensor(rowRange, columnRange)
+        val numNonZero = block.data.count(p => p != 0)
+        val avg = if (numNonZero > 0) block.cumsum / numNonZero else 0.0
+        reducedMatrix.put(avg, row, col)
+      }
+    }
+    reducedMatrix
+  }
+
   def findCloudComponents(tensor: sciTensor): List[sciTensor] = {
     val labelledTensors = findConnectedComponents(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
@@ -110,16 +131,25 @@ object mccOps {
     tuple
   }
 
+  /**
+   * Note that for garbage collection purposes we use one ArrayStack.
+   * We push in row/col tuples two ints at a time, and pop
+   * two ints at a time.
+   * @param tensor
+   * @return
+   */
   def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
     val fourVector = List((1, 0), (-1, 0), (0, 1), (0, -1))
     val rows = tensor.rows
     val cols = tensor.cols
     val labels = tensor.zeros(tensor.shape: _*)
     var label = 1
-    var stack = new mutable.Stack[(Int, Int)]()
+    var stack = new mutable.ArrayStack[Int]()
     /**
      * If the coordinates are within bounds,
-     * the input is not 0, and it hasn't been labelled yet
+     * the input is not 0, and it hasn't been labelled yet.
+     * Note that when popping, we pop col, then row.
+     * When pushing we push row then col.
      * @param row the row to check
      * @param col the column to check
      * @return
@@ -129,17 +159,19 @@ object mccOps {
       tensor(row, col) == BACKGROUND || labels(row, col) != BACKGROUND
     }
 
-
-
     def dfs(currentLabel: Int): Unit = {
       while (!stack.isEmpty) {
-        val tuple = stack.pop
-        val row = tuple._1
-        val col = tuple._2
+        val col = stack.pop
+        val row = stack.pop
         labels.put(currentLabel, row, col)
         val neighbors = fourVector.map(p => (p._1 + row, p._2 + col))
         for (neighbor <- neighbors) {
-          if (!isLabeled(neighbor._1, neighbor._2)) stack.push((neighbor._1, neighbor._2))
+          if (!isLabeled(neighbor._1, neighbor._2)) {
+            val row = neighbor._1
+            val col = neighbor._2
+            stack.push(row)
+            stack.push(col)
+          }
         }
       }
     }
@@ -148,7 +180,8 @@ object mccOps {
     for (row <- 0 to (rows - 1)) {
       for (col <- 0 to (cols - 1)) {
         if (!isLabeled(row, col)) {
-          stack.push((row, col))
+          stack.push(row)
+          stack.push(col)
           dfs(label)
           label += 1
         }
