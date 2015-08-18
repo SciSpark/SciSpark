@@ -64,6 +64,7 @@ object NetCDFLoader {
     val variables = netcdfFile.getVariables
     var list: List[String] = List()
     for (i <- 0 to variables.size - 1) {
+      println(variables.get(i))
       val k = variables.get(i).getName
       list ++= List(k)
     }

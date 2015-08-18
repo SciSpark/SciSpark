@@ -2,10 +2,11 @@ package org.dia.core
 
 
 import java.io.Serializable
+
 import org.dia.algorithms.mcc.mccOps
 import org.dia.tensors.AbstractTensor
+
 import scala.collection.mutable
-import org.dia.sLib
 
 class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
@@ -23,17 +24,9 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     metaDataVar.map(p => metaData += p)
   }
 
-  def this(variableName: String, array: AbstractTensor, metaDataVar : mutable.HashMap[String, String]) {
-    this(variableName, array)
-    metaDataVar.map(p => metaData += p)
-  }
-
   def insertDictionary(metaDataVar: (String, String)*): Unit = {
     for (variable <- metaDataVar) metaData += variable
   }
-
-  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor, metaData)
-
 
   def apply(ranges: (Int, Int)*): sciTensor = {
     variables(varInUse)(ranges: _*)
@@ -48,6 +41,8 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
   def reduceResolution(blockInt: Int): sciTensor = mccOps.reduceResolution(variables(varInUse), blockInt)
 
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int): sciTensor = mccOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize)
+
   def tensor : AbstractTensor = variables(varInUse)
 
   /**
@@ -58,6 +53,13 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     var string = "Variable in use = " + varInUse + "\n" + variables.keys.toString + "\n"
     metaData.map(string += _ + "\n")
     string
+  }
+
+  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor, metaData)
+
+  def this(variableName: String, array: AbstractTensor, metaDataVar: mutable.HashMap[String, String]) {
+    this(variableName, array)
+    metaDataVar.map(p => metaData += p)
   }
 }
 

@@ -96,8 +96,8 @@ object MainGroupBy {
      * The MCC algorithim : Mining for graph vertices and edges
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val reshaped = filtered.map(p => p(variable).reduceResolution(50))
-    val complete = reshaped.flatMap(p => {
+    //val reshaped = filtered.map(p => p(variable).reduceResolution(50))
+    val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
@@ -107,7 +107,7 @@ object MainGroupBy {
 
     val componentFrameRDD = complete.flatMap(p => {
       val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + compUnfiltered1.size)
+      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
 
       val compUnfiltered2 = mccOps.findCloudComponents(p._2)
       println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
