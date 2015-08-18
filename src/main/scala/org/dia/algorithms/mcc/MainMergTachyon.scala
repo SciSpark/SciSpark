@@ -95,7 +95,7 @@ object MainMergTachyon {
      * We now have all tuples of the form (A_f, A_f+1)
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    //val reducedRes = filtered.map(p => p.reduceResolution(100))
+    val reducedRes = filtered.map(p => p.reduceRectangleResolution(25, 8))
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
@@ -116,9 +116,9 @@ object MainMergTachyon {
      */
     val componentFrameRDD = complete.flatMap(p => {
       val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
+      println("THE SIZE OF COMPONENT 1 : " + " rows and columns " + p._1.tensor.rows + " " + p._1.tensor.cols + " " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
       val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
+      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
       val components1 = compUnfiltered1.filter(checkCriteria)
       val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
