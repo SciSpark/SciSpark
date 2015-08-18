@@ -82,6 +82,7 @@ object MainGroupBy {
      */
     val sRDD = sc.randomMatrices(inputFile, List(variable), partCount, dimension)
     val labeled = sRDD.map(p => {
+      println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
       val FrameID = DateIndexTable(date)
@@ -103,6 +104,7 @@ object MainGroupBy {
       .map(p => (p(0), p(1)))
 
     val componentFrameRDD = complete.flatMap(p => {
+
       val compUnfiltered1 = mccOps.findCloudComponents(p._1)
       println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
 
