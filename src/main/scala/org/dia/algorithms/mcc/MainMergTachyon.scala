@@ -98,8 +98,6 @@ object MainMergTachyon {
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val reducedRes = filtered.map(p => p.reduceRectangleResolution(25, 8))
     val complete = reducedRes.flatMap(p => {
-      println(p)
-
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .filter(p => p._2.size > 1)
@@ -139,7 +137,7 @@ object MainMergTachyon {
       //      val components2 = compUnfiltered2.filter(checkCriteria)
       //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      ArrList.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
+      ArrList.toSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
     })
 
     /**
