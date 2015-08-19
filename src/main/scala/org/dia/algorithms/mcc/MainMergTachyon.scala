@@ -137,7 +137,8 @@ object MainMergTachyon {
       //      val components2 = compUnfiltered2.filter(checkCriteria)
       //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      ArrList.toSet.map(x => ((p._1.metaData("FRAME").toInt, x._1.toInt), (p._2.metaData("FRAME").toInt, x._2.toInt)))
+      val t = ArrList.toSet
+      t.map(x => ((p._1.metaData("FRAME").toInt, x._1.toInt), (p._2.metaData("FRAME").toInt, x._2.toInt)))
     })
 
     /**
