@@ -185,7 +185,8 @@ object MainGroupBy {
       //      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
 //      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " FRAMEID " + p._2.metaData("FRAME") + " " + components2._2)
 //      println(" FRAMEID " + p._2.metaData("FRAME") + " MAX " + hashComps)
-val overlap = ArrList.toSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
+val EdgeSet = ArrList.toSet
+      val overlap = EdgeSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
 
       val filtered = overlap.filter(entry => {
         val frameId1 = entry._1._1
