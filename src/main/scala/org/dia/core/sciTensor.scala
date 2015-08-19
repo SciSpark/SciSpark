@@ -38,9 +38,9 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
   def <=(num: Double): sciTensor = variables(varInUse) <= num
 
-  def reduceResolution(blockInt: Int): sciTensor = mccOps.reduceResolution(variables(varInUse), blockInt)
+  def reduceResolution(blockInt: Int, invalid: Int): sciTensor = mccOps.reduceResolution(variables(varInUse), blockInt, invalid)
 
-  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int): sciTensor = mccOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize)
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): sciTensor = mccOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
 
   def tensor : AbstractTensor = variables(varInUse)
 
@@ -50,7 +50,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    */
   override def toString: String = {
     var string = "Variable in use = " + varInUse + "\n" + variables.keys.toString + "\n"
-    metaData.map(string += _ + "\n")
+    metaData.foreach(string += _ + "\n")
     string
   }
 

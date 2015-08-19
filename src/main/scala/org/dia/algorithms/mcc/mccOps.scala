@@ -9,7 +9,7 @@ object mccOps {
 
   val BACKGROUND = 0.0
 
-  def reduceResolution(tensor: AbstractTensor, blockSize: Int): AbstractTensor = {
+  def reduceResolution(tensor: AbstractTensor, blockSize: Int, invalid: Int): AbstractTensor = {
     val largeArray = tensor
     val numRows = largeArray.rows
     val numCols = largeArray.cols
@@ -22,18 +22,15 @@ object mccOps {
         val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
         val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
         val block = tensor(rowRange, columnRange)
-        val numNonZero = block.data.length
-        val avg = block.cumsum / numNonZero
+        val numNonInvalid = block.data.count(p => p != invalid)
+        val avg = if (numNonInvalid > 0) block.cumsum / numNonInvalid else 0.0
         reducedMatrix.put(avg, row, col)
       }
     }
     reducedMatrix
   }
 
-  def reduceCufoffResolution(tensor: AbstractTensor, rows: Int, cols: Int): AbstractTensor = {
-    tensor((0,rows),(0,cols))
-  }
-  def reduceRectangleResolution(tensor: AbstractTensor, rowblockSize: Int, columnblockSize: Int): AbstractTensor = {
+  def reduceRectangleResolution(tensor: AbstractTensor, rowblockSize: Int, columnblockSize: Int, invalid: Int): AbstractTensor = {
     val largeArray = tensor
     val numRows = largeArray.rows
     val numCols = largeArray.cols
@@ -46,8 +43,8 @@ object mccOps {
         val rowRange = (row * rowblockSize) -> ((row + 1) * rowblockSize)
         val columnRange = (col * columnblockSize) -> ((col + 1) * columnblockSize)
         val block = tensor(rowRange, columnRange)
-        val numNonZero = block.data.length
-        val avg = block.cumsum / numNonZero
+        val numNonZero = block.data.count(p => p != invalid)
+        val avg = if (numNonZero > 0) block.cumsum / numNonZero else 0.0
         reducedMatrix.put(avg, row, col)
       }
     }
@@ -83,7 +80,7 @@ object mccOps {
     val labelledTensors = findCloudElements(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
 
-    val seq = (0 to labelledTensors.size - 1).map(p => {
+    val seq = labelledTensors.indices.map(p => {
       val masked: AbstractTensor = labelledTensors(p).map(a => if (a != 0.0) 1.0 else a)
 
       val metaTensor = tensor.tensor * masked

@@ -52,8 +52,8 @@ class mccOps$Test extends FunSuite {
     val ndArray = new DenseMatrix(5, 4, k, 0, 4, true)
     val t: AbstractTensor = new BreezeTensor(ndArray)
     println()
-    println(mccOps.reduceCufoffResolution(t, 5, 1))
-    val reduced = mccOps.reduceRectangleResolution(t, 3, 3)
+    println(mccOps.reduceResolution(t, 5, 1))
+    val reduced = mccOps.reduceRectangleResolution(t, 3, 3, 99999999)
     println(reduced)
   }
 

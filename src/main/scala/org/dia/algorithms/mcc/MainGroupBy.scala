@@ -17,15 +17,12 @@
  */
 package org.dia.algorithms.mcc
 
+import java.io.{File, PrintWriter}
 import java.text.SimpleDateFormat
 
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.{FileUtils, JsonUtils}
 import org.slf4j.Logger
-
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
 
 import scala.collection.mutable
 import scala.io.Source
@@ -48,7 +45,7 @@ object MainGroupBy {
     val inputFile = if (args.isEmpty) "TestLinks" else args(0)
     val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
-    val dimension = if (args.length <= 3) (10, 10) else (args(3).toInt, args(3).toInt)
+    val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TotCldLiqH2O_A" else args(4)
     val jsonOut = if (args.length <= 5) "" else args(5)
 
@@ -111,6 +108,13 @@ object MainGroupBy {
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
+    /**
+     * Core MCC
+     * For each consecutive frame pair, find it's components.
+     * For each component pairing, find if the elementwise
+     * component pairing results in a zero matrix.
+     * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
+     */
     val componentFrameRDD = complete.flatMap(p => {
       val components1 = mccOps.labelConnectedComponents(p._1.tensor)
       val components2 = mccOps.labelConnectedComponents(p._2.tensor)
@@ -198,8 +202,23 @@ object MainGroupBy {
       filtered
     })
 
+    /**
+     * Collect the edges.
+     * From the edge pairs collect all used vertices.
+     * Repeated vertices are eliminated due to the set conversion.
+     */
     val collectedEdges = componentFrameRDD.collect()
+    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+
+    val k = new PrintWriter(new File("Hello.txt"))
+    k.write(vertex.toList.sortBy(p => p._1) + "\n")
+    k.write(collectedEdges.toList.sorted + "\n")
+    k.close
+    println("NUM VERTEX : " + vertex.size + "\n")
+    println("NUM EDGES : " + collectedEdges.length + "\n")
+    println(complete.toDebugString + "\n")
   }
+
 
   def checkCriteria(p: sciTensor): Boolean = {
     val hash = p.metaData

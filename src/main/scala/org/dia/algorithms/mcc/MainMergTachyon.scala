@@ -95,11 +95,9 @@ object MainMergTachyon {
      * Let x be the associated index (element 2 in the tuple) and groupBy x.
      * We now have all tuples of the form (A_f, A_f+1)
      */
+    //val reducedRes = labeled.map(p => p.reduceRectangleResolution(25, 8, 330))
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val reducedRes = filtered.map(p => p.reduceRectangleResolution(25, 8))
-    val complete = reducedRes.flatMap(p => {
-      println(p)
-
+    val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .filter(p => p._2.size > 1)
@@ -139,7 +137,8 @@ object MainMergTachyon {
       //      val components2 = compUnfiltered2.filter(checkCriteria)
       //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      ArrList.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
+      val t = ArrList.toSet
+      t.map(x => ((p._1.metaData("FRAME").toInt, x._1.toInt), (p._2.metaData("FRAME").toInt, x._2.toInt)))
     })
 
     /**
@@ -153,8 +152,9 @@ object MainMergTachyon {
     val k = new PrintWriter(new File("Hello.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
-    k.write(vertex.size + "\n")
-    println(collectedEdges.length + "\n")
+    k.close
+    println("NUM VERTEX : " + vertex.size + "\n")
+    println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")
   }
 
