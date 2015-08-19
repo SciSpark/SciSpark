@@ -17,13 +17,14 @@
  */
 package org.dia.algorithms.mcc
 
+import java.io.{File, PrintWriter}
+
 import org.dia.core.{SciSparkContext, sciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
-
 
 object MainMergTachyon {
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -149,11 +150,12 @@ object MainMergTachyon {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    println(vertex.toList.sortBy(p => p._1))
-    println(collectedEdges.toList.sorted)
-    println(vertex.size)
-    println(collectedEdges.length)
-    println(complete.toDebugString)
+    val k = new PrintWriter(new File("Hello.txt"))
+    k.write(vertex.toList.sortBy(p => p._1) + "\n")
+    k.write(collectedEdges.toList.sorted + "\n")
+    k.write(vertex.size + "\n")
+    println(collectedEdges.length + "\n")
+    println(complete.toDebugString + "\n")
   }
 
   def checkCriteria(p: sciTensor): Boolean = {
