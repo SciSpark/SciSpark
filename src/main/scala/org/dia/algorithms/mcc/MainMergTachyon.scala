@@ -95,8 +95,8 @@ object MainMergTachyon {
      * Let x be the associated index (element 2 in the tuple) and groupBy x.
      * We now have all tuples of the form (A_f, A_f+1)
      */
-    val reducedRes = labeled.map(p => p.reduceRectangleResolution(25, 8, 330))
-    val filtered = reducedRes.map(p => p(variable) <= 241.0)
+    //val reducedRes = labeled.map(p => p.reduceRectangleResolution(25, 8, 330))
+    val filtered = labeled.map(p => p(variable) <= 241.0)
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
