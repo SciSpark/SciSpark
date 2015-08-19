@@ -152,8 +152,9 @@ object MainMergTachyon {
     val k = new PrintWriter(new File("Hello.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
-    k.write(vertex.size + "\n")
-    println(collectedEdges.length + "\n")
+    k.close
+    println("NUM VERTEX : " + vertex.size + "\n")
+    println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")
   }
 
