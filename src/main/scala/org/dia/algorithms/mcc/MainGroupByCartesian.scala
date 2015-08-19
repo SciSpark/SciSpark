@@ -109,10 +109,10 @@ object MainGroupByCartesian {
     val componentFrameRDD = complete.flatMap(p => {
 
       val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
+//      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
 
       val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
+//      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
       val components1 = compUnfiltered1.filter(checkCriteria)
       val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
@@ -140,7 +140,7 @@ object MainGroupByCartesian {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
+    (((area >= 40.0) || (area < 40.0)) && (tempDiff > 10.0))
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {
