@@ -17,15 +17,12 @@
  */
 package org.dia.algorithms.mcc
 
+import java.io.{File, PrintWriter}
 import java.text.SimpleDateFormat
 
 import org.dia.TRMMUtils.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.{FileUtils, JsonUtils}
 import org.slf4j.Logger
-
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
 
 import scala.collection.mutable
 import scala.io.Source
@@ -107,35 +104,56 @@ object MainGroupBy {
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
+    /**
+     * Core MCC
+     * For each consecutive frame pair, find it's components.
+     * For each component pairing, find if the elementwise
+     * component pairing results in a zero matrix.
+     * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
+     */
     val componentFrameRDD = complete.flatMap(p => {
-
-      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
-
-      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
-      val components1 = compUnfiltered1.filter(checkCriteria)
-      val components2 = compUnfiltered2.filter(checkCriteria)
-      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
+      val components1 = mccOps.labelConnectedComponents(p._1.tensor)
+      val components2 = mccOps.labelConnectedComponents(p._2.tensor)
+      val product = components1._1 * components2._1
+      var ArrList = mutable.MutableList[(Double, Double)]()
+      for (row <- 0 to product.rows - 1) {
+        for (col <- 0 to product.cols - 1) {
+          if (product(row, col) != 0.0) {
+            val value1 = components1._1(row, col)
+            val value2 = components2._1(row, col)
+            ArrList += ((value1, value1))
+          }
+        }
+      }
+      //      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      println("THE SIZE OF COMPONENT 1 : " + " rows and columns " + p._1.tensor.rows + " " + p._1.tensor.cols + " " + p._1.metaData("FRAME") + " " + components1._2)
+      //      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " " + p._2.metaData("FRAME") + " " + components2._2)
+      //      val components1 = compUnfiltered1.filter(checkCriteria)
+      //      val components2 = compUnfiltered2.filter(checkCriteria)
+      //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
+      //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
+      val t = ArrList.toSet
+      t.map(x => ((p._1.metaData("FRAME").toInt, x._1.toInt), (p._2.metaData("FRAME").toInt, x._2.toInt)))
     })
 
+    /**
+     * Collect the edges.
+     * From the edge pairs collect all used vertices.
+     * Repeated vertices are eliminated due to the set conversion.
+     */
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    println(vertex.toList.sortBy(p => p._1))
-    println(collectedEdges.toList.sorted)
-    println(vertex.size)
-    println(collectedEdges.length)
-    println(complete.toDebugString)
-
-        if(!jsonOut.isEmpty) {
-          val res = JsonUtils.generateJson(collectedEdges, DateIndexTable, vertex)
-          val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
-          FileUtils.writeToFile(jsonOut, pretty(render(json)))
-        }
+    val k = new PrintWriter(new File("Hello.txt"))
+    k.write(vertex.toList.sortBy(p => p._1) + "\n")
+    k.write(collectedEdges.toList.sorted + "\n")
+    k.close
+    println("NUM VERTEX : " + vertex.size + "\n")
+    println("NUM EDGES : " + collectedEdges.length + "\n")
+    println(complete.toDebugString + "\n")
   }
+
 
   def checkCriteria(p: sciTensor): Boolean = {
     val hash = p.metaData
