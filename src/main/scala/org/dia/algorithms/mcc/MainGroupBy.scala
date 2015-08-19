@@ -94,7 +94,7 @@ object MainGroupBy {
     /**
      * The MCC algorithim : Mining for graph vertices and edges
      */
-    val filtered = labeled.map(p => p(variable) <= 2000.0)
+    val filtered = labeled.map(p => p(variable) <= 241.0)
 
     //val reshaped = filtered.map(p => p(variable).reduceResolution(50))
 
@@ -137,7 +137,7 @@ object MainGroupBy {
             var area1 = 0.0
             var max1 = Double.MinValue
             var min1 = Double.MaxValue
-            var compMetrics = hashComps.get((p._1.metaData("FRAME")+":"+components1._1(row,col)))
+            var compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
             if (compMetrics != null && compMetrics != None) {
               area1 = compMetrics.get._1
               max1 = compMetrics.get._2
@@ -160,7 +160,7 @@ object MainGroupBy {
             var max2 = Double.MinValue
             var min2 = Double.MaxValue
             area2 += 1
-            var compMetrics = hashComps.get((p._1.metaData("FRAME")+":"+components2._1(row,col)))
+            var compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components2._1(row, col))
             if (compMetrics != null && compMetrics != None) {
               area2 = compMetrics.get._1
               max2 = compMetrics.get._2
@@ -197,7 +197,7 @@ object MainGroupBy {
         val compId2 = entry._2._2
         val compVals2 = hashComps(frameId2 + ":" + compId2)
         val fil2 = (compVals2._1 >= 40.0) || (compVals2._1 < 40.0) && ((compVals2._2 -compVals2._3 ) > 10.0)
-        (fil1 & fil2)
+        fil1 && fil2
       })
       filtered
     })
@@ -213,7 +213,7 @@ object MainGroupBy {
     val k = new PrintWriter(new File("Hello.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
-    k.close
+    k.close()
     println("NUM VERTEX : " + vertex.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")
