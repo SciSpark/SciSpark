@@ -83,9 +83,13 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def apply: BreezeTensor = this
 
-  def apply(ranges: (Int, Int)*): BreezeTensor = tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
+  def apply(ranges: (Int, Int)*): BreezeTensor = {
+    tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
+  }
 
-  def apply(indexes: Int*): Double = tensor(indexes(0), indexes(1))
+  def apply(indexes: Int*): Double = {
+    tensor(indexes(0), indexes(1))
+  }
 
   /**
    * Utility Operations

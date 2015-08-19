@@ -30,6 +30,9 @@ object mccOps {
     reducedMatrix
   }
 
+  def reduceCufoffResolution(tensor: AbstractTensor, rows: Int, cols: Int): AbstractTensor = {
+    tensor((0,rows),(0,cols))
+  }
   def reduceRectangleResolution(tensor: AbstractTensor, rowblockSize: Int, columnblockSize: Int): AbstractTensor = {
     val largeArray = tensor
     val numRows = largeArray.rows
