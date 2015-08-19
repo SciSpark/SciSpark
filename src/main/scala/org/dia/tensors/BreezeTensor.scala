@@ -60,7 +60,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def /(array: BreezeTensor): BreezeTensor = tensor /= array.tensor
 
-  def *(array: AbstractTensor): BreezeTensor = tensor :*= array.tensor
+  def *(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
 
   def <=(num: Double): BreezeTensor = tensor.map(v => if (v <= num) v else 0.0)
 
