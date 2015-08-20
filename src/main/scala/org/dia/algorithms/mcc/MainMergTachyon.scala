@@ -119,26 +119,84 @@ object MainMergTachyon {
       val components1 = mccOps.labelConnectedComponents(p._1.tensor)
       val components2 = mccOps.labelConnectedComponents(p._2.tensor)
       val product = components1._1 * components2._1
+
       var ArrList = mutable.MutableList[(Double, Double)]()
+      var hashComps = new mutable.HashMap[String, (Double, Double, Double)]
+
+      var area = 0
       for (row <- 0 to product.rows - 1) {
         for (col <- 0 to product.cols - 1) {
           if (product(row, col) != 0.0) {
+            // save components ids
             val value1 = components1._1(row, col)
             val value2 = components2._1(row, col)
-            ArrList += ((value1, value1))
+            ArrList += ((value1, value2))
+
           }
+          if (components1._1(row, col) != 0.0) {
+            var area1 = 0.0
+            var max1 = Double.MinValue
+            var min1 = Double.MaxValue
+            var compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
+            if (compMetrics != null && compMetrics != None) {
+              area1 = compMetrics.get._1
+              max1 = compMetrics.get._2
+              min1 = compMetrics.get._3
+              if (p._1.tensor(row, col) < min1)
+                min1 = p._1.tensor(row, col)
+              if (p._1.tensor(row, col) > max1)
+                max1 = p._1.tensor(row, col)
+
+            } else {
+              min1 = p._1.tensor(row, col)
+              max1 = p._1.tensor(row, col)
+            }
+            area1 += 1
+            hashComps += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
+          }
+
+          if (components2._1(row, col) != 0.0) {
+            var area2 = 0.0
+            var max2 = Double.MinValue
+            var min2 = Double.MaxValue
+            area2 += 1
+            var compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
+            if (compMetrics != null && compMetrics != None) {
+              area2 = compMetrics.get._1
+              max2 = compMetrics.get._2
+              min2 = compMetrics.get._3
+              if (p._2.tensor(row, col) < min2)
+                min2 = p._2.tensor(row, col)
+
+              if (p._2.tensor(row, col) > max2)
+                max2 = p._2.tensor(row, col)
+
+            } else {
+              min2 = p._2.tensor(row, col)
+              max2 = p._2.tensor(row, col)
+            }
+            area2 += 1
+            hashComps += ((p._2.metaData("FRAME") + ":" + components2._1(row, col), (area2, max2, min2)))
+          }
+
         }
       }
-      //      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      println("THE SIZE OF COMPONENT 1 : " + " rows and columns " + p._1.tensor.rows + " " + p._1.tensor.cols + " " + p._1.metaData("FRAME") + " " + components1._2)
-      //      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-      println("THE SIZE OF COMPONENT 2 : " + " rows and columns " + p._2.tensor.rows + " " + p._2.tensor.cols + " " + p._2.metaData("FRAME") + " " + components2._2)
-      //      val components1 = compUnfiltered1.filter(checkCriteria)
-      //      val components2 = compUnfiltered2.filter(checkCriteria)
-      //      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      //      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      val t = ArrList.toSet
-      t.map(x => ((p._1.metaData("FRAME").toInt, x._1.toInt), (p._2.metaData("FRAME").toInt, x._2.toInt)))
+      val EdgeSet = ArrList.toSet
+      val overlap = EdgeSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
+
+      val filtered = overlap.filter(entry => {
+        val frameId1 = entry._1._1
+        val compId1 = entry._1._2
+        val compVals1 = hashComps(frameId1 + ":" + compId1)
+        val fil1 = (((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0))
+
+        val frameId2 = entry._2._1
+        val compId2 = entry._2._2
+        val compVals2 = hashComps(frameId2 + ":" + compId2)
+        val fil2 = (((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0))
+        fil1 && fil2
+      })
+      filtered
     })
 
     /**
