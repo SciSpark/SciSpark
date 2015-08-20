@@ -123,8 +123,8 @@ object MainGroupByCartesian {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    println(vertex.toList.sortBy(p => p._1))
-    println(collectedEdges.toList.sorted)
+//    println(vertex.toList.sortBy(p => p._1))
+//    println(collectedEdges.toList.sorted)
     println(vertex.size)
     println(collectedEdges.length)
     println(complete.toDebugString)

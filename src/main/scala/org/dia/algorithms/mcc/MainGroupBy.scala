@@ -43,7 +43,7 @@ object MainGroupBy {
      *
      */
     val inputFile = if (args.isEmpty) "TestLinks" else args(0)
-    val masterURL = if (args.length <= 1) "local[1]" else args(1)
+    val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TotCldLiqH2O_A" else args(4)
@@ -103,7 +103,7 @@ object MainGroupBy {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
+      .filter(p => p.size > 1 && p(0).metaData("FRAME") != p(1).metaData("FRAME"))
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
