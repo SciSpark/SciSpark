@@ -21,7 +21,7 @@ import java.io.File
 
 import org.dia.Constants._
 import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
-import org.dia.loaders.NetCDFLoader._
+import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.sPartitioner._
 
 /**
@@ -31,7 +31,7 @@ class LoadersTest extends org.scalatest.FunSuite {
 
   test("RecursiveFileListing") {
     val path = "src/main/scala/"
-    val files = PathUtils.recursiveListFiles(new File(path))
+    val files = PathReader.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(files.size))
     files.foreach(vals => {
       if (vals._2.length > 0) {
@@ -72,7 +72,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)
     val t = pathRDD.collect().toList
     println("Number loaded " + t.length)
-    println(t.toString)
+    println(t.toString())
     println("DONEDONEDONE")
     assert(true)
   }

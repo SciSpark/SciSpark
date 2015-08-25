@@ -15,11 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia
 
 import java.util.{Calendar, Date}
 
 import com.joestelmach.natty.Parser
+
 object Parsers {
 
   def ParseDateFromString(Name: String): Date = {

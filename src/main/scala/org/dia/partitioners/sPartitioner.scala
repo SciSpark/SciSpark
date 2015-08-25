@@ -19,32 +19,31 @@ package org.dia.partitioners
 
 import java.io.File
 
-import org.dia.loaders.PathUtils.recursiveListFiles
+import org.dia.loaders.PathReader.recursiveListFiles
 
 import scala.language.implicitConversions
 
 /**
- * Functions needed to map keys to values
+ * Functions needed to partitions sets of input paths.
  */
 object sPartitioner {
 
   /**
    * Sort of an identity mapping
    */
-  def mapOneUrlToOneTensor(urls: List[String]): List[List[String]] = {
+  def MapOneUrl(urls: List[String]): List[List[String]] = {
     urls.map(elem => List(elem))
   }
 
   /**
    * A grouped mapping
    */
-  def mapNUrToOneTensor(N: Int)(urls: List[String]): List[List[String]] = {
+  def MapNUrl(N: Int)(urls: List[String]): List[List[String]] = {
     urls.grouped(N).toList
   }
+
   /**
    * Maps subfolders to lists containing their files
-   * @param paths
-   * @return
    */
   def mapSubFoldersToFolders(paths: List[String]): List[List[String]] = {
     var fileList: List[List[String]] = List()

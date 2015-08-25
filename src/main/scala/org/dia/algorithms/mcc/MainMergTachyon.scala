@@ -45,6 +45,7 @@ object MainMergTachyon {
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TMP" else args(4)
     val hdfspath = if (args.length <= 5) "hdfs://" else args(5)
+
     /**
      * Parse the date from each URL.
      * Compute the maps from Date to element index.
@@ -76,7 +77,7 @@ object MainMergTachyon {
      * date-sorted order.
      *
      */
-    val sRDD = sc.mergTachyonFile(hdfspath, List(variable), partCount)
+    val sRDD = sc.mergDFSFile(hdfspath, List(variable), minPartitions = partCount)
     val labeled = sRDD.map(p => {
       println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
@@ -137,8 +138,8 @@ object MainMergTachyon {
             var area1 = 0.0
             var max1 = Double.MinValue
             var min1 = Double.MaxValue
-            var compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
-            if (compMetrics != null && compMetrics != None) {
+            val compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
+            if (compMetrics != null && compMetrics.isDefined) {
               area1 = compMetrics.get._1
               max1 = compMetrics.get._2
               min1 = compMetrics.get._3
@@ -160,8 +161,8 @@ object MainMergTachyon {
             var max2 = Double.MinValue
             var min2 = Double.MaxValue
             area2 += 1
-            var compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
-            if (compMetrics != null && compMetrics != None) {
+            val compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
+            if (compMetrics != null && compMetrics.isDefined) {
               area2 = compMetrics.get._1
               max2 = compMetrics.get._2
               min2 = compMetrics.get._3
@@ -188,12 +189,12 @@ object MainMergTachyon {
         val frameId1 = entry._1._1
         val compId1 = entry._1._2
         val compVals1 = hashComps(frameId1 + ":" + compId1)
-        val fil1 = (((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0))
+        val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
 
         val frameId2 = entry._2._1
         val compId2 = entry._2._2
         val compVals2 = hashComps(frameId2 + ":" + compId2)
-        val fil2 = (((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0))
+        val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
         fil1 && fil2
       })
       filtered
@@ -210,7 +211,7 @@ object MainMergTachyon {
     val k = new PrintWriter(new File("Hello.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
-    k.close
+    k.close()
     println("NUM VERTEX : " + vertex.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")

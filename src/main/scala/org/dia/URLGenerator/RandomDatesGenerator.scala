@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.URLGenerator
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -37,14 +37,14 @@ object RandomDatesGenerator {
     if (args.length >= 2)
       fileName = args(1)
 
-    var c: Calendar = Calendar.getInstance()
-    var sdf: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    c.setTime(sdf.parse("0000-01-01"));
+    val c: Calendar = Calendar.getInstance()
+    val sdf: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    c.setTime(sdf.parse("0000-01-01"))
 
     println("Generating dates . . .")
     (1 to numDates).foreach(e => {
       c.add(Calendar.DATE, 1)
-      sb.append(sdf.format(c.getTime())).append("\n")
+      sb.append(sdf.format(c.getTime)).append("\n")
     })
     println("Writing file . . . ")
     FileUtils.appendToFile(fileName, sb.toString())

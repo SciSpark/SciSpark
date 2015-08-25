@@ -24,7 +24,7 @@ import org.slf4j.Logger
 /**
  * Contains all functions needed to handle netCDF files
  */
-object PathUtils {
+object PathReader {
 
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -34,7 +34,7 @@ object PathUtils {
       LOG.error("%s not found!".format(f.getAbsolutePath))
       throw new IllegalArgumentException("%s not found!".format(f.getAbsolutePath))
     }
-    val dirFiles: Map[String, Array[String]] = Map((f.getName, f.listFiles.filter(p => (!(p.isDirectory) & !(p.isHidden))).map(f => f.getAbsolutePath)))
+    val dirFiles: Map[String, Array[String]] = Map((f.getName, f.listFiles.filter(p => !p.isDirectory & !p.isHidden).map(f => f.getAbsolutePath)))
     val these = f.listFiles
     dirFiles ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }

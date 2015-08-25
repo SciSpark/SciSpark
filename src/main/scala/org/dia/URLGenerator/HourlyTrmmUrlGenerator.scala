@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.URLGenerator
 
 import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
 import org.joda.time.DateTime
@@ -23,37 +23,30 @@ import org.joda.time.DateTime
 import scala.collection.mutable.ListBuffer
 
 /**
- * Container of HourlyTrmmUrlGenerator compData
+ * Generates hourly TRMM URL's.
+ * The function is used more as staging function to generate TRMM URL's.
+ * It doesn't necessarily have to be part of the application pipeline.
  */
 object HourlyTrmmUrlGenerator {
 
   /**
    * Generates the readings between two years
-   * @param iniYear
-   * @param finalYear
-   * @return HashMap grouping readings per day
    */
   def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
-    //    val dailyReadings = new HashMap[DateTime, ListBuffer[String]]()
-    var yearReadings = new ListBuffer[String]()
-    //val maxDays = if (iniYear%4 == 0) 366 else 355
+    val yearReadings = new ListBuffer[String]()
     val maxDays = 2
     // only a single year
     if (finalYear == 0) {
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
-        //        dailyReadings.put(realDate,generateDayReadings(realDate))
         yearReadings.appendAll(generateDayReadings(realDate))
-        //        println(yearReadings)
       }
     } else {
       // a range of years
       for (iYear <- iniYear to finalYear by 1) {
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
-          //          dailyReadings.put(realDate,generateDayReadings(realDate))
           yearReadings.appendAll(generateDayReadings(realDate))
-          //          println(yearReadings)
         }
       }
     }
@@ -62,8 +55,6 @@ object HourlyTrmmUrlGenerator {
 
   /**
    * Generating readings for a specific day from a date
-   * @param realDate
-   * @return
    */
   def generateDayReadings(realDate: DateTime) = {
     val sb = new StringBuilder

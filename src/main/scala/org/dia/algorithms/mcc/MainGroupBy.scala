@@ -20,7 +20,7 @@ package org.dia.algorithms.mcc
 import java.io.{File, PrintWriter}
 import java.text.SimpleDateFormat
 
-import org.dia.TRMMUtils.Parsers
+import org.dia.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.slf4j.Logger
 
@@ -81,7 +81,7 @@ object MainGroupBy {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      */
-    val sRDD = sc.randomMatrices(inputFile, List(variable), partCount, dimension)
+    val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
     val labeled = sRDD.map(p => {
       //println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
@@ -136,8 +136,8 @@ object MainGroupBy {
             var area1 = 0.0
             var max1 = Double.MinValue
             var min1 = Double.MaxValue
-            var compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
-            if (compMetrics != null && compMetrics != None) {
+            val compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
+            if (compMetrics != null && compMetrics.isDefined) {
               area1 = compMetrics.get._1
               max1 = compMetrics.get._2
               min1 = compMetrics.get._3
@@ -159,8 +159,8 @@ object MainGroupBy {
             var max2 = Double.MinValue
             var min2 = Double.MaxValue
             area2 += 1
-            var compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
-            if (compMetrics != null && compMetrics != None) {
+            val compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
+            if (compMetrics != null && compMetrics.isDefined) {
               area2 = compMetrics.get._1
               max2 = compMetrics.get._2
               min2 = compMetrics.get._3
@@ -187,12 +187,12 @@ object MainGroupBy {
         val frameId1 = entry._1._1
         val compId1 = entry._1._2
         val compVals1 = hashComps(frameId1 + ":" + compId1)
-        val fil1 = (((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0))
+        val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
 
         val frameId2 = entry._2._1
         val compId2 = entry._2._2
         val compVals2 = hashComps(frameId2 + ":" + compId2)
-        val fil2 = (((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0))
+        val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
         fil1 && fil2
       })
       filtered

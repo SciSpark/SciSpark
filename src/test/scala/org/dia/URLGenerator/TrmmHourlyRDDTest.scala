@@ -15,11 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.URLGenerator
 
 import java.text.SimpleDateFormat
 
+import org.dia.Parsers
 import org.joda.time.DateTime
+import org.scalatest.Ignore
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
@@ -28,6 +30,7 @@ import scala.io.Source
  * Testing TrmmHourly
  */
 
+@Ignore
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
   val HOURLY_TRMM_DATA_VAR = "precipitation"
@@ -45,15 +48,13 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
-    test("URL.date.parser.test") {
-        val urls = "TestLinks"
-        val datasetUrls = Source.fromFile(urls).mkString.split("\n").toList
-       val formatter = new SimpleDateFormat("yyyy-MM-dd")
-       datasetUrls.map(p => {
-            val dated = Parsers.ParseDateFromString(p)
-            println(p)
-            println(formatter.format(p))
-          })
-        assert(true)
-      }
+  test("URL.date.parser.test") {
+    val urls = "TestLinks"
+    val datasetUrls = Source.fromFile(urls).mkString.split("\n").toList
+    val formatter = new SimpleDateFormat("yyyy-MM-dd")
+    datasetUrls.foreach(p => {
+      val dated = Parsers.ParseDateFromString(p)
+    })
+    assert(true)
+  }
 }

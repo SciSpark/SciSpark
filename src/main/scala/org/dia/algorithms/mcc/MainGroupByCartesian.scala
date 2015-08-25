@@ -19,7 +19,7 @@ package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
 
-import org.dia.TRMMUtils.Parsers
+import org.dia.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 import org.dia.sLib.{FileUtils, JsonUtils}
 import org.json4s.JsonDSL._
@@ -83,7 +83,7 @@ object MainGroupByCartesian {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      */
-    val sRDD = sc.randomMatrices(inputFile, List(variable), partCount, dimension)
+    val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
     val labeled = sRDD.map(p => {
       //println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
@@ -140,7 +140,7 @@ object MainGroupByCartesian {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
-    (((area >= 40.0) || (area < 40.0)) && (tempDiff > 10.0))
+    ((area >= 40.0) || (area < 40.0)) && (tempDiff > 10.0)
   }
 
   def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {

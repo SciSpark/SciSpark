@@ -20,6 +20,8 @@ package org.dia.core
 import org.apache.spark.Partition
 
 /**
+ * The sRDD partition used by sRDD. Each sRDDPartition
+ * contains a subset of the entire URI list.
   */
 class sRDDPartition[T](val index: Int,
                        val uriList: List[String]
@@ -30,10 +32,10 @@ class sRDDPartition[T](val index: Int,
    * To string method
    * @return String
    */
-  override def toString() = {
+  override def toString = {
     val sb = new StringBuilder
     sb.append("{idx:").append(index).append(",")
     sb.append("urls:").append(uriList).append("}")
-    sb.toString
+    sb.toString()
   }
 }

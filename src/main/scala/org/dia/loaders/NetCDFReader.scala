@@ -19,21 +19,10 @@ package org.dia.loaders
 
 import org.slf4j.Logger
 
-object NetCDFLoader {
+object NetCDFReader {
+
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-
-  /**
-   * Gets an NDimensional Array of ND4j from a TRMM tensors
-   * @param url where the netcdf file is located
-   * @param variable the NetCDF variable to search for
-   * @return
-   */
-  def loadNetCDFTRMMVars(url: String, variable: String): (Array[Double], Array[Int]) = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
-    coordinateArray
-  }
 
   /**
    * Gets an NDimensional array of from a NetCDF url
@@ -43,20 +32,20 @@ object NetCDFLoader {
    */
   def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+    if (netcdfFile == null) {
+      LOG.warn("Dataset %s not found!".format(url))
+      return (Array(-9999), Array(1, 1))
+    }
 
-    if (netcdfFile != null) {
-      val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
-      if (coordinateArray._1.length > 0) {
-        val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
-        var shape = dims.toArray.sortBy(_._1).map(_._2)
-        if (shape.length < 2) shape = Array(1, 1)
-        return coordinateArray
-      }
+    val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
+    val variableArray = coordinateArray._1
+
+    if (variableArray.length < 1) {
       LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
       return (Array(-9999), Array(1, 1))
     }
-    LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-    (Array(-9999), Array(1, 1))
+
+    coordinateArray
   }
 
   def loadNetCDFVariables(url: String): List[String] = {

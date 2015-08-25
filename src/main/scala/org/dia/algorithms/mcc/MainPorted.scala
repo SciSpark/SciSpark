@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat
 
 import org.apache.spark.rdd.RDD
 import org.dia.Constants._
-import org.dia.TRMMUtils.Parsers
+import org.dia.Parsers
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
 
 import scala.collection.mutable
@@ -52,7 +52,7 @@ object MainPorted {
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
     val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
-    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), partitionNum, dimension)
+    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), dimension, partitionNum)
 
     val indexedDateTable = new mutable.HashMap[Int, String]()
     val DateIndexTable = new mutable.HashMap[String, Int]()

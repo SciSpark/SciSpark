@@ -23,7 +23,7 @@ import org.nd4j.linalg.factory.Nd4j
 
 /**
  */
-object RandomMatrixLoader {
+object RandomMatrixReader {
 
     def loadRandomArray(url : String, varname : String) : (Array[Double], Array[Int]) = {
       val generator = new Random()

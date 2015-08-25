@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.URLGenerator
 
 import java.io.{File, PrintWriter}
 import java.net.{HttpURLConnection, URL}
@@ -26,7 +26,7 @@ import org.joda.time.DateTime
 import scala.collection.JavaConversions._
 
 /**
- * Generates a list of links for the TRMM tensors
+ * Generates a list of links for the TRMM URLs
  */
 object OpenDapTRMMURLGenerator {
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"

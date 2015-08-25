@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.URLGenerator
 
 import java.nio.file.{Files, Paths}
 
@@ -28,7 +28,8 @@ import org.scalatest.{FunSuite, Ignore}
 class OpenDapTRMMURLGenerator_Test extends FunSuite {
 
   test("testLinkGeneration") {
-    OpenDapTRMMURLGenerator.run(false, "testLinkfile.txt")
+    val checkLink = false
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfile.txt")
     assert(Files.exists(Paths.get("testLinkfile.txt")))
   }
 

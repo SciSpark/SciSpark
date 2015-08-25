@@ -17,60 +17,17 @@
  */
 package org.dia.core
 
-import org.apache.spark.storage.StorageLevel
 import org.dia.Constants._
-import org.dia.TRMMUtils.HourlyTrmmUrlGenerator
-import org.dia.loaders.NetCDFLoader._
-import org.dia.partitioners.sPartitioner._
+import org.dia.URLGenerator.HourlyTrmmUrlGenerator
+import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.sTrmmPartitioner._
 import org.scalatest.FunSuite
-
-import scala.io.Source
 
 /**
  * Tests for creating different Rdd types.
  */
 class sRDDTest extends FunSuite {
 
-  test("ArrayLibsSanityTest") {
-    val dataUrls = Source.fromFile("TestLinks").mkString.split("\n").toList
-    val sc = SparkTestConstants.sc.sparkContext
-
-    // Breeze library
-    sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sBreezeRdd = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_A"), loadNetCDFNDVars, mapOneUrlToOneTensor)
-    val sBreezeRdd2 = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_B"), loadNetCDFNDVars, mapOneUrlToOneTensor)
-    sBreezeRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    var start = System.nanoTime()
-    val breezeTensors = sBreezeRdd.collect()
-    var end = System.nanoTime()
-    var breezeTime = (end - start) / 1000000000.0
-
-    // Nd4j library
-    sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val sNd4jRdd = new sRDD[sciTensor](sc, dataUrls, List("TotCldLiqH2O_A"), loadNetCDFNDVars, mapOneUrlToOneTensor)
-    //    sNd4jRdd.map( e => e("var1"))
-
-    sNd4jRdd.persist(StorageLevel.MEMORY_AND_DISK_SER)
-    start = System.nanoTime()
-    val nd4jTensors = sNd4jRdd.collect()
-    end = System.nanoTime()
-    var nd4jTime = (end - start) / 1000000000.0
-
-    // element comparison
-    var flg = true
-    var cnt = 0
-    nd4jTensors(0).variables("TotCldLiqH2O_A").data.foreach(e => {
-      if (e != breezeTensors(0).variables("TotCldLiqH2O_A").data(cnt))
-        flg = false
-      cnt += 1
-    })
-
-    // printing out messages
-    println("BREEZE : %.6f".format(breezeTime))
-    println("ND4J : %.6f".format(nd4jTime))
-    println("EQUAL ELEMENTS? %b".format(flg))
-  }
 
   test("GroupingByYearPartitioning") {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList

@@ -27,7 +27,18 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
- * Scientific RDD classr
+ * Scientific RDD. There are few differences between an sRDD and a normal RDD.
+ * In the future we will extend repartitioning by time and by space.
+ *
+ * Currently the sRDD differs from a normal RDD in the following ways.
+ * 1) Supports custom matrix loader functions with the following signature :
+ * (String, String) => (Array[Double], Array[Int]) which is the 1-D array and dimensional shape
+ * 2) Supports custom partitioning functions with the following signature :
+ * List[String] => List[List[String]]
+ *
+ * Note that passing closures has it's drawbacks if the scope of a closure environment is not properly checked.
+ * The internal API of the sRDD (spefically the constructors) may change in the future.
+ *
  */
 class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
@@ -36,7 +47,12 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   var loadFunc: (String, String) => (Array[Double], Array[Int]) = null
   var partitionFunc: List[String] => List[List[String]] = null
 
-  def this(@transient sc: SparkContext, data: List[String], name: List[String], loader: (String, String) => (Array[Double], Array[Int]), partitioner: List[String] => List[List[String]]) {
+  def this(@transient sc: SparkContext,
+           data: List[String],
+           name: List[String],
+           loader: (String, String) => (Array[Double], Array[Int]),
+           partitioner: List[String] => List[List[String]]) {
+
     this(sc, Nil)
     datasets = data
     varName = name
@@ -50,7 +66,6 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   }
 
   override def context: SparkContext = sc
-
 
   /**
    * Return an array that contains all of the elements in this RDD.
@@ -69,6 +84,11 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
     getIterator(split.asInstanceOf[sRDDPartition[T]])
   }
 
+  /**
+   * Given an sRDDPartition, the iterator traverses the list of URL's
+   * assigned to the partition. Calls to next() will call the loader function
+   * and construct a sciTensor for each URL in the list.
+   */
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
     val iterator = new Iterator[T] {
       var counter = 0
