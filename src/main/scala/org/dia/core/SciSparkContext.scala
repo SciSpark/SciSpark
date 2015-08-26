@@ -138,7 +138,7 @@ class SciSparkContext(val conf: SparkConf) {
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
-      val doubleArray = ReadMergByteArray(byteArray, offset, shape)
+      val doubleArray = ReadMergBytetoJavaArray(byteArray, offset, shape)
       val absT = new BreezeTensor(doubleArray, shape)
       val sciT = new sciTensor("TMP", absT)
       sciT.insertDictionary(("SOURCE", p._1))

@@ -20,8 +20,8 @@ package org.dia.algorithms.mcc
 import java.text.SimpleDateFormat
 
 import org.dia.Parsers
+import org.dia.Utils.{FileUtils, JsonUtils}
 import org.dia.core.{SciSparkContext, sRDD, sciTensor}
-import org.dia.sLib.{FileUtils, JsonUtils}
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
@@ -109,10 +109,7 @@ object MainGroupByCartesian {
     val componentFrameRDD = complete.flatMap(p => {
 
       val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-//      println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
-
       val compUnfiltered2 = mccOps.findCloudComponents(p._2)
-//      println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
       val components1 = compUnfiltered1.filter(checkCriteria)
       val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
@@ -123,8 +120,6 @@ object MainGroupByCartesian {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-//    println(vertex.toList.sortBy(p => p._1))
-//    println(collectedEdges.toList.sorted)
     println(vertex.size)
     println(collectedEdges.length)
     println(complete.toDebugString)

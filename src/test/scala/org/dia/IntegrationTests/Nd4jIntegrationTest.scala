@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.TRMMUtils
+package org.dia.IntegrationTests
 
-import org.dia.loaders.{NetCDFReader, NetCDFUtils}
+import org.dia.Utils.NetCDFUtils
+import org.dia.loaders.NetCDFReader
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.factory.Nd4j
 

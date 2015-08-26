@@ -20,7 +20,7 @@ package org.dia.URLGenerator
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.dia.sLib.FileUtils
+import org.dia.Utils.FileUtils
 
 /**
  * Creates a file of random number of lines.

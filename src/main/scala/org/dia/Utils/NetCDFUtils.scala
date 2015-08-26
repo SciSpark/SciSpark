@@ -15,15 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.loaders
+package org.dia.Utils
 
-import org.dia
-import org.dia.Constants
 import org.slf4j.Logger
 import ucar.ma2
 import ucar.nc2.dataset.NetcdfDataset
 
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
@@ -36,26 +33,6 @@ object NetCDFUtils {
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  /**
-   * Gets an NDimensional array of from a NetCDF url
-   */
-  def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-
-    if (netcdfFile != null) {
-      val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
-      if (coordinateArray._1.length > 0) {
-        val dims = NetCDFUtils.getDimensionSizes(netcdfFile, variable)
-        var shape = dims.toArray.sortBy(_._1).map(_._2)
-        if (shape.length < 2) shape = Array(1, 1)
-        return coordinateArray
-      }
-      LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-      return (Array(-9999), Array(1, 1))
-    }
-    LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
-    (Array(-9999), Array(1, 1))
-  }
 
   /**
    * Gets a tuple of 1D Java array of Doubles and Array of Ints for shape
@@ -77,7 +54,10 @@ object NetCDFUtils {
 
   /**
    * Converts the native ma2.Array from the NetCDF library to a one dimensional
-   * Java Array of Doubles.
+   * Java Array of Doubles. Two copies of the array are made, since NetCDF
+   * does not have any api to tell what type the arrays are. Once the initial
+   * array of the loading is completed a type check is used to appropriatley
+   * convert the values into doubles. This involves a second copy
    */
   def convertMa2Arrayto1DJavaArray(ma2Array: ma2.Array): Array[Double] = {
     var array: Array[Double] = Array(-123456789)
@@ -113,12 +93,9 @@ object NetCDFUtils {
   def getNetCDFVariableArray(netcdfFile: NetcdfDataset, variable: String): ma2.Array = {
     var SearchVariable: ma2.Array = null
     try {
-      if (netcdfFile == null)
-        throw new IllegalStateException("NetCDFDataset was not loaded")
+      if (netcdfFile == null) throw new IllegalStateException("NetCDFDataset was not loaded")
       val netcdfVal = netcdfFile.findVariable(variable)
-      println(netcdfVal)
-      if (netcdfVal == null)
-        throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
+      if (netcdfVal == null) throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
       SearchVariable = netcdfVal.read()
     } catch {
       case ex: Exception =>
@@ -129,53 +106,9 @@ object NetCDFUtils {
     SearchVariable
   }
 
-  /**
-   * Gets the dimension sizes from a list of Dimension
-   * Dimension[2] -> rows, latitude
-   * Dimension[1] -> cols, longitude
-   * Other dimensions start at index 3
-   * @param netcdfFile the NetcdfDataSet to read from
-   * @param variable the variable array to extract
-   * @return
-   */
-  def getDimensionSizes(netcdfFile: NetcdfDataset, variable: String): mutable.HashMap[Int, Int] = {
-    //TODO verify if the variable name actually exists
-    // if the netcdf doesn't exists
-    if (netcdfFile == null)
-      return new mutable.HashMap[Int, Int]()
-
-    // if the variable doesn't exist
-    val netcdfVariable = netcdfFile.findVariable(variable)
-    if (netcdfVariable == null)
-      return new mutable.HashMap[Int, Int]()
-
-    val dimensions = netcdfVariable.getDimensions
-    val it = dimensions.iterator
-    val dSizes = new mutable.HashMap[Int, Int]()
-    var iterate = 3
-
-    while (it.hasNext) {
-      val d = it.next()
-      //TODO verify how the names map to indexes
-      if (Constants.X_AXIS_NAMES.contains(d.getName.toLowerCase)) {
-        dSizes.put(2, d.getLength)
-      } else if (dia.Constants.Y_AXIS_NAMES.contains(d.getName.toLowerCase)) {
-        dSizes.put(1, d.getLength)
-      } else {
-        dSizes.put(iterate, d.getLength)
-        iterate += 1
-      }
-    }
-    if (dSizes.get(2).isEmpty)
-      LOG.warn("No X-axis dimension found.")
-    if (dSizes.get(1).isEmpty)
-      LOG.warn("No Y-axis dimension found.")
-    LOG.debug("Dimensions found: %s".format(dSizes.toStream))
-    dSizes
-  }
 
   /**
-   * Loads a NetCDF file from a url
+   * Loads a NetCDF Dataset from a url
    */
   def loadNetCDFDataSet(url: String): NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
@@ -189,27 +122,9 @@ object NetCDFUtils {
     }
   }
 
-  /**
-   * Returns the list of variables in a NetCDF file that is the given
-   * URI points to.
-   */
-  def loadNetCDFVariables(url: String): List[String] = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val variables = netcdfFile.getVariables
-    var list: List[String] = List()
-    for (i <- 0 to variables.size - 1) {
-      println(variables.get(i))
-      val k = variables.get(i).getName
-      list ++= List(k)
-    }
-    list
-  }
 
   /**
-   * Gets the row dimension of a specific file
-   * @param netcdfFile the NetcdfDataSet to read from
-   * @param rowDim the specific dimension to get the size of
-   * @return
+   * Gets the dimension value of a specific files dimension name
    */
   def getDimensionSize(netcdfFile: NetcdfDataset, rowDim: String): Int = {
     var dimSize = -1
@@ -223,4 +138,6 @@ object NetCDFUtils {
       throw new IllegalStateException("Dimension does not exist!!!")
     dimSize
   }
+
+
 }

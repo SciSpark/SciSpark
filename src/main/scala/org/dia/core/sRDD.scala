@@ -60,6 +60,14 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
     partitionFunc = partitioner
   }
 
+  //  def this(@transient sc: SciSparkContext,
+  //           data: List[String],
+  //           name: List[String],
+  //           loader: (String, String) => (Array[Double], Array[Int]),
+  //           partitioner: List[String] => List[List[String]]) {
+  //
+  //    this(sc.sparkContext, data, name, loader, partitioner)
+  //  }
 
   def this(@transient oneParent: sRDD[_]) = {
     this(oneParent.context, List(new OneToOneDependency(oneParent)))

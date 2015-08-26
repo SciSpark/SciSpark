@@ -22,6 +22,7 @@ object mccOps {
         val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
         val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
         val block = tensor(rowRange, columnRange)
+
         val numNonInvalid = block.data.count(p => p != invalid)
         val avg = if (numNonInvalid > 0) block.cumsum / numNonInvalid else 0.0
         reducedMatrix.put(avg, row, col)
@@ -119,11 +120,22 @@ object mccOps {
     maskedLabels.toList
   }
 
+  def findCloudElementsX(tensor: sciTensor): sciTensor = {
+    // list of connected components separated in maskes matrices
+    val labelledTensor = findCloudElementsX(tensor.tensor)
+    val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
+    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
+  }
+
+  def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
+    val tuple = labelConnectedComponents(tensor)
+    tuple
+  }
+
   /**
    * Note that for garbage collection purposes we use one ArrayStack.
    * We push in row/col tuples two ints at a time, and pop
    * two ints at a time.
-   * @param tensor
    * @return
    */
   def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
@@ -176,18 +188,6 @@ object mccOps {
       }
     }
     (labels, label - 1)
-  }
-
-  def findCloudElementsX(tensor: sciTensor): sciTensor = {
-    // list of connected components separated in maskes matrices
-    val labelledTensor = findCloudElementsX(tensor.tensor)
-    val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
-    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
-  }
-
-  def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {
-    val tuple = labelConnectedComponents(tensor)
-    tuple
   }
 
 }

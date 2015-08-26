@@ -1,13 +1,10 @@
-package org.dia.sLib
+package org.dia.MCC
 
 import breeze.linalg.DenseMatrix
 import org.dia.algorithms.mcc.mccOps
-import org.dia.core.{sRDD, sciTensor}
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
-
-import scala.collection.mutable
 
 
 class mccOps$Test extends FunSuite {
@@ -81,15 +78,6 @@ class mccOps$Test extends FunSuite {
     val frames = mccOps.findConnectedComponents(t)
     val ccframes = mccOps.findConnectedComponents(cct)
     assert(frames == ccframes)
-  }
-
-  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[String, Long] = {
-    val id = collection.map(p => p.metaData("FRAME") + p.metaData("COMPONENT")).collect().toList
-    val size = id.length
-    val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[String, Long]
-    range.map(p => hash += ((id(p), p)))
-    hash
   }
 
 }

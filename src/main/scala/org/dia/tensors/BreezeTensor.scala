@@ -46,8 +46,10 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     this(loadFunc())
   }
 
-
-  def zeros(shape: Int*): BreezeTensor = DenseMatrix.zeros[Double](shape(0), shape(1))
+  def zeros(shape: Int*): BreezeTensor = {
+    val array = (0d to (shape(0) * shape(1)) by 1d).map(p => 0.0).toArray
+    new DenseMatrix[Double](shape(0), shape(1), array, 0, shape(1), true)
+  }
 
   def map(f : Double => Double) : BreezeTensor = tensor.map(p => f(p))
   def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)

@@ -89,12 +89,15 @@ object MainMergTachyon {
     /**
      * The MCC algorithim : Mining for graph vertices and edges
      *
-     * For each array A_f with a Frame number f
-     * output the following tuples (A_f, n), (A_f, n+1)
-     * where n = f.
+     * For each array N* where a N is the frame number and N* is the array
+     * output the following pairs (N*, N), (N*, N + 1).
      *
-     * Let x be the associated index (element 2 in the tuple) and groupBy x.
-     * We now have all tuples of the form (A_f, A_f+1)
+     * After flatmapping the pairs and applying additional pre-processing
+     * we have pairs of (X, Y) where X is a matrix and Y is a label.
+     *
+     * After grouping by Y and reordering pairs we pairs of the following
+     * (N*, (N+1)*) which achieves the consecutive pairwise grouping
+     * of frames.
      */
     //val reducedRes = labeled.map(p => p.reduceRectangleResolution(25, 8, 330))
     val filtered = labeled.map(p => p(variable) <= 241.0)
@@ -117,43 +120,78 @@ object MainMergTachyon {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
+      /**
+       * First label the connected components in each pair.
+       * The following example illustrates labelling.
+       * [0,1,2,0]       [0,1,1,0]
+       * [1,2,0,0]   ->  [1,1,0,0]
+       * [0,0,0,1]       [0,0,0,2]
+       *
+       * Note that a tuple of (Matrix, MaxLabel) is returned
+       * to denote the labelled elements and the highest label.
+       * This way only one traverse is necessary instead of a 2nd traverse
+       * to find the highest labelled.
+       */
       val components1 = mccOps.labelConnectedComponents(p._1.tensor)
       val components2 = mccOps.labelConnectedComponents(p._2.tensor)
+
+      /**
+       * The labelled components are elementwise multiplied
+       * to find overlapping regions. Non-overlapping regions
+       * result in a 0.
+       *
+       * [0,1,1,0]       [0,1,1,0]     [0,1,1,0]
+       * [1,1,0,0]   X   [2,0,0,0]  =  [2,0,0,0]
+       * [0,0,0,2]       [0,0,0,3]     [0,0,0,6]
+       *
+       */
       val product = components1._1 * components2._1
 
-      var ArrList = mutable.MutableList[(Double, Double)]()
-      var hashComps = new mutable.HashMap[String, (Double, Double, Double)]
+      /**
+       * The OverlappedPairsList keeps track of all points that
+       * overlap between the labelled arrays. Note that the OverlappedPairsList
+       * will have several duplicate pairs if their are large regions of overlap.
+       *
+       * This is achieved by iterating through the product array and noting
+       * all points that are not 0.
+       */
+      var OverlappedPairsList = mutable.MutableList[(Double, Double)]()
 
-      var area = 0
+      /**
+       * The AreaMinMaxTable keeps track of the Area, Minimum value, and Maximum value
+       * of all labelled regions in both components. For this reason the hash key has the following form :
+       * 'F : C' where F = Frame Number and C = Component Number
+       */
+      var AreaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
+
       for (row <- 0 to product.rows - 1) {
         for (col <- 0 to product.cols - 1) {
+          // Find non-zero points in product array
           if (product(row, col) != 0.0) {
             // save components ids
             val value1 = components1._1(row, col)
             val value2 = components2._1(row, col)
-            ArrList += ((value1, value2))
-
+            OverlappedPairsList += ((value1, value2))
           }
+
+          //update the area and min and max for each component
           if (components1._1(row, col) != 0.0) {
             var area1 = 0.0
             var max1 = Double.MinValue
             var min1 = Double.MaxValue
-            val compMetrics = hashComps.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
+            val compMetrics = AreaMinMaxTable.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
             if (compMetrics != null && compMetrics.isDefined) {
               area1 = compMetrics.get._1
               max1 = compMetrics.get._2
               min1 = compMetrics.get._3
-              if (p._1.tensor(row, col) < min1)
-                min1 = p._1.tensor(row, col)
-              if (p._1.tensor(row, col) > max1)
-                max1 = p._1.tensor(row, col)
-
+              if (p._1.tensor(row, col) < min1) min1 = p._1.tensor(row, col)
+              if (p._1.tensor(row, col) > max1) max1 = p._1.tensor(row, col)
             } else {
               min1 = p._1.tensor(row, col)
               max1 = p._1.tensor(row, col)
             }
             area1 += 1
-            hashComps += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
+            AreaMinMaxTable += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
           }
 
           if (components2._1(row, col) != 0.0) {
@@ -161,39 +199,43 @@ object MainMergTachyon {
             var max2 = Double.MinValue
             var min2 = Double.MaxValue
             area2 += 1
-            val compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
+            val compMetrics = AreaMinMaxTable.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
             if (compMetrics != null && compMetrics.isDefined) {
               area2 = compMetrics.get._1
               max2 = compMetrics.get._2
               min2 = compMetrics.get._3
-              if (p._2.tensor(row, col) < min2)
-                min2 = p._2.tensor(row, col)
-
-              if (p._2.tensor(row, col) > max2)
-                max2 = p._2.tensor(row, col)
+              if (p._2.tensor(row, col) < min2) min2 = p._2.tensor(row, col)
+              if (p._2.tensor(row, col) > max2) max2 = p._2.tensor(row, col)
 
             } else {
               min2 = p._2.tensor(row, col)
               max2 = p._2.tensor(row, col)
             }
             area2 += 1
-            hashComps += ((p._2.metaData("FRAME") + ":" + components2._1(row, col), (area2, max2, min2)))
+            AreaMinMaxTable += ((p._2.metaData("FRAME") + ":" + components2._1(row, col), (area2, max2, min2)))
           }
 
         }
       }
-      val EdgeSet = ArrList.toSet
+
+      /**
+       * Once the overlapped pairs have been computed eliminate all duplicates
+       * by converting the collection to a set. The component edges are then
+       * mapped to the respective frames, so the global space of edges (outside of this task)
+       * consists of unique tuples.
+       */
+      val EdgeSet = OverlappedPairsList.toSet
       val overlap = EdgeSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
 
       val filtered = overlap.filter(entry => {
         val frameId1 = entry._1._1
         val compId1 = entry._1._2
-        val compVals1 = hashComps(frameId1 + ":" + compId1)
+        val compVals1 = AreaMinMaxTable(frameId1 + ":" + compId1)
         val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
 
         val frameId2 = entry._2._1
         val compId2 = entry._2._2
-        val compVals2 = hashComps(frameId2 + ":" + compId2)
+        val compVals2 = AreaMinMaxTable(frameId2 + ":" + compId2)
         val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
         fil1 && fil2
       })

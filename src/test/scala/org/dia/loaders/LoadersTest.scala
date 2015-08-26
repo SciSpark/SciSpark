@@ -20,7 +20,8 @@ package org.dia.loaders
 import java.io.File
 
 import org.dia.Constants._
-import org.dia.core.{SparkTestConstants, sRDD, sciTensor}
+import org.dia.SparkTestConstants
+import org.dia.core.{sRDD, sciTensor}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.sPartitioner._
 

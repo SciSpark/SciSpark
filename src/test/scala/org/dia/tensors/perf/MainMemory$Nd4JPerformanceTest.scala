@@ -20,12 +20,12 @@ package org.dia.tensors.perf
 
 import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 /**
  * The Nd4j Performance Tests
  * Created by rahulsp on 7/7/15.
  */
-
+@Ignore
 class MainMemory$Nd4JPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {

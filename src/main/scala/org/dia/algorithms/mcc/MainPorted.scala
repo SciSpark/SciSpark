@@ -43,7 +43,7 @@ object MainPorted {
 
   def main(args: Array[String]): Unit = {
     var master = ""
-    val testFile = if (args.isEmpty) "TestLinks2" else args(0)
+    val testFile = if (args.isEmpty) "TestLinks" else args(0)
     if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")

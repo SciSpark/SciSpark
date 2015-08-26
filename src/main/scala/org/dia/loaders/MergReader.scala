@@ -7,6 +7,15 @@ import scala.io.Source
  * Utility functions to read binary data from MERG files.
  * Note that MERG files by default store floating point numbers
  * in unsigned bytes.
+ *
+ * Note that 3 copies of the array are created in memory with these calls,
+ * primarily due to the conversion from byte arrays to Double arrays.
+ * 1) The file or byte array
+ * 2) The slice of the array needed, since MERG files 30 minute intervals in hourly files.
+ * 3) The mapped conversion to Doubles
+ *
+ * 2n + 8n = 10n where n corresponds to the number of bytes.
+ * The last 8n is due to the double conversion.
  */
 object MergReader {
 
@@ -29,7 +38,7 @@ object MergReader {
     SourceArray
   }
 
-  def ReadMergByteArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
+  def ReadMergBytetoJavaArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
     val numElems = shape.product
     val array = byteArray.slice(0, numElems)
     val SourceArray = byteArray.map(floatByte => (floatByte & 0xff).asInstanceOf[Float].toDouble + offset)
