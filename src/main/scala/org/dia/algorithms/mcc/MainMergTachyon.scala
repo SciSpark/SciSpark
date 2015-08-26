@@ -86,7 +86,6 @@ object MainMergTachyon {
     }
 
     val labeled = sRDD.map(p => {
-      println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = DateIndexTable(source)
       p.insertDictionary(("FRAME", FrameID.toString))
