@@ -18,7 +18,9 @@
 package org.dia.algorithms.mcc
 
 import java.io.{File, PrintWriter}
+import java.text.SimpleDateFormat
 
+import org.dia.Parsers
 import org.dia.core.{SciSparkContext, sciTensor}
 import org.slf4j.Logger
 
@@ -26,7 +28,7 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
 
-object MainMergTachyon {
+object MainMergRandom {
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
@@ -56,11 +58,14 @@ object MainMergTachyon {
     val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
 
     val orderedDateList = URLs.map(p => {
-      p.split("/").last.split("_")(1) //replaceAllLiterally(".", "/")
+      val source = p.split("/").last.replaceAllLiterally(".", "/")
+      Parsers.ParseDateFromString(source)
     }).sorted
 
     for (i <- orderedDateList.indices) {
-      DateIndexTable += ((orderedDateList(i), i))
+      val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
+      val dateString = dateFormat.format(orderedDateList(i))
+      DateIndexTable += ((dateString, i))
     }
 
     /**
@@ -79,11 +84,7 @@ object MainMergTachyon {
      * Note if no hdfs path is given, then randomly generated matrices are used
      *
      */
-    val sRDD = if (hdfspath != null) {
-      sc.mergDFSFile(hdfspath, List(variable), partCount)
-    } else {
-      sc.randomMatrices(inputFile, List(variable), dimension, partCount)
-    }
+    val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
 
     val labeled = sRDD.map(p => {
       println(p.tensor)
