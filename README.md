@@ -45,7 +45,7 @@ println(sumAllRDD)
  
  The map-reduce implementation of GTG is found in the following files : 
  
- [MainMergHDFS](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergTachyon.scala) : Reads all MERG files from a directory in HDFS
+ [MainMergHDFS](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergHDFS.scala) : Reads all MERG files from a directory in HDFS
  
  [MainMergRandom](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergRandom.scala)  : Generates random arrays without any source. The randomness is seeded by the hash value of your input paths, so the same input will yield the same output.
 ##Project Status
@@ -57,7 +57,7 @@ with a focus on prototyping and designing GTG as a map-reduce algorithm.
 ##Want to Use or Contribute to this Project?
 Contact us at ....
 
-##Technology Stack
+##Technology
 This project utilizes the following open-source technologies [Apache Spark][Spark] and ....
 
 ###Apache Spark
