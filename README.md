@@ -22,6 +22,10 @@ Steps:
 2. Open a terminal, and enter: `sbt clean assembly`
 3. You should see a [success] message at the bottom if the package built correctly.
 
+Test your installation:
+
+```sbt "run src/test/resources/TestLinks"```
+
 #Getting Started
 We extend the following functionality for users trying to use scientific datasets
 like [NetCDF](http://www.unidata.ucar.edu/software/netcdf/) on Apache Spark.
