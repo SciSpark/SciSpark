@@ -8,6 +8,7 @@ version := "1.0"
 
 //scalaVersion := "2.11.6"
 scalaVersion := "2.10.5"
+//scalaVersion := "2.11.1"
 
 mainClass in Compile := Some("org.dia.algorithms.mcc.MainMergRandom")
 
@@ -44,7 +45,7 @@ libraryDependencies ++= Seq(
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  "org.nd4j" % "nd4s_2.11" % "0.4-rc0",
+  "org.nd4j" % "nd4s_2.10" % "0.4-rc0",
   "org.nd4j" % "nd4j-x86" % "0.4-rc0",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
