@@ -16,9 +16,9 @@ Requirements (in-order):
 * Maven 2.0x+
 * SBT: v0.13.5+
 
-Steps:
+Steps
 1. Ensure ND4J and ND4S are installed in you local Maven repository
-2. 
+2. Open a terminal, and enter: `sbt clean assembly`
 
 #Getting Started
 We extend the following functionality for users trying to use scientific datasets
