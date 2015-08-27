@@ -1,3 +1,5 @@
+import sbt.Resolver
+
 assemblyJarName in assembly := "SciSparkTestExperiments.jar"
 
 name := "SciSparkTestExperiments"
@@ -10,7 +12,8 @@ scalaVersion := "2.10.5"
 mainClass in Compile := Some("org.dia.algorithms.mcc.MainMergRandom")
 
 resolvers ++= Seq(
-  Resolver.mavenLocal
+  Resolver.mavenLocal,
+  Resolver.file("Local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
 )
 
 val buildSettings = Defaults.coreDefaultSettings ++ Seq {
@@ -41,7 +44,7 @@ libraryDependencies ++= Seq(
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  "org.deeplearning4s" % "nd4s_2.10" % "0.1-SNAPSHOT",
+  "org.nd4j" % "nd4s_2.11" % "0.4-rc0",
   "org.nd4j" % "nd4j-x86" % "0.4-rc0",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",

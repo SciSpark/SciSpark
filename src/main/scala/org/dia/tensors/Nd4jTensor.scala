@@ -40,27 +40,27 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     this(loadFunc())
   }
 
-  def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
+  def zeros(shape: Int*): Nd4jTensor = null //new Nd4jTensor(Nd4j.create(shape: _*))
 
-  def map(f : Double => Double) : Nd4jTensor = new Nd4jTensor(tensor)//.map(p => f(p)))
+  def map(f: Double => Double): Nd4jTensor = null //new Nd4jTensor(tensor)//.map(p => f(p)))
 
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
-  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
+  def +(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.add(array.tensor))
 
-  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
+  def -(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.sub(array.tensor))
 
-  def \(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+  def \(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.div(array.tensor))
 
-  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+  def /(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.div(array.tensor))
 
-  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
+  def *(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.mul(array.tensor))
 
   /**
    * Masking operations
    */
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
+  def <=(num: Double): Nd4jTensor = null //new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
   def :=(num: Double): Nd4jTensor = {
     new Nd4jTensor(tensor)//.map(p => if (p == num) p else 0.0))
@@ -69,7 +69,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Linear Algebra Operations
    */
-  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.dot(array.tensor))
+  def **(array: AbstractTensor): Nd4jTensor = null //new Nd4jTensor(tensor.dot(array.tensor))
 
   /**
    * SliceableArray operations
