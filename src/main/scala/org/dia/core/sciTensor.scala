@@ -60,10 +60,25 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this
   }
 
+  def +(stensor: sciTensor): sciTensor = this.tensor + stensor.tensor
+
   /**
    * returns the variable array that is currently being used
    */
   def tensor: AbstractTensor = variables(varInUse)
+
+  def -(stensor: sciTensor): sciTensor = this.tensor - stensor.tensor
+
+  def \(stensor: sciTensor): sciTensor = this.tensor \ stensor.tensor
+
+  def /(stensor: sciTensor): sciTensor = this.tensor / stensor.tensor
+
+  def *(stensor: sciTensor): sciTensor = this.tensor * stensor.tensor
+
+  /**
+   * Linear Algebra Operations
+   */
+  def **(stensor: sciTensor): sciTensor = this.tensor ** stensor.tensor
 
   /**
    * Masks the current variable array by preserving values
@@ -75,7 +90,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * Returns a block averaged matrix where the blocks are squares with
    * dimensions blockInt.
    */
-  def reduceResolution(blockInt: Int, invalid: Int): sciTensor = {
+  def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): sciTensor = {
     mccOps.reduceResolution(variables(varInUse), blockInt, invalid)
   }
 

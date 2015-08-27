@@ -24,21 +24,21 @@ trait AbstractTensor extends Serializable with sliceableArray {
    * Elementwise Operations
    */
 
-  def +(array: T): T
+  def +(array: AbstractTensor): T
 
-  def -(array: T): T
+  def -(array: AbstractTensor): T
 
   def *(array: AbstractTensor): T
 
-  def /(array: T): T
+  def /(array: AbstractTensor): T
 
-  def \(array: T): T
+  def \(array: AbstractTensor): T
 
   /**
    * Linear Algebra Operations
    */
 
-  def **(array: T): T
+  def **(array: AbstractTensor): T
 
 
   /**

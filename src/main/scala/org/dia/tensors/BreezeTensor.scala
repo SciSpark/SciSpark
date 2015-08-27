@@ -54,13 +54,13 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def map(f : Double => Double) : BreezeTensor = tensor.map(p => f(p))
   def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
 
-  def +(array: BreezeTensor): BreezeTensor = tensor + array.tensor
+  def +(array: AbstractTensor): BreezeTensor = tensor + array.tensor
 
-  def -(array: BreezeTensor): BreezeTensor = tensor - array.tensor
+  def -(array: AbstractTensor): BreezeTensor = tensor - array.tensor
 
-  def \(array: BreezeTensor): BreezeTensor = tensor \ array.tensor
+  def \(array: AbstractTensor): BreezeTensor = tensor \ array.tensor
 
-  def /(array: BreezeTensor): BreezeTensor = tensor / array.tensor
+  def /(array: AbstractTensor): BreezeTensor = tensor / array.tensor
 
   def *(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
 
@@ -71,7 +71,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Linear Algebra Operations
    */
-  def **(array: BreezeTensor): BreezeTensor = tensor * array.tensor
+  def **(array: AbstractTensor): BreezeTensor = tensor * array.tensor
 
   def data: Array[Double] = tensor.t.toArray
 
