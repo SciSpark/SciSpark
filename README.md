@@ -5,7 +5,20 @@ SciSpark
 
 #Introduction
 
-[SciSpark](http://esto.nasa.gov/forum/estf2015/presentations/Mattmann_S1P8_ESTF2015.pdf) is a scalable scientific processing platform that makes interactive computation and exploration possible. This prototype project outlines the architect of the scientific RDD (sRDD), and a library of linear algebra and geospatial operations. Its initial focus is expressing Kim Whitehall's Grab em' Tag em' Graph em' algorithm as a map-reduce algorithm. 
+[SciSpark](http://esto.nasa.gov/forum/estf2015/presentations/Mattmann_S1P8_ESTF2015.pdf) is a scalable scientific processing platform that makes interactive computation and exploration possible. This prototype project outlines the architect of the scientific RDD (sRDD), and a library of linear algebra and geospatial operations. Its initial focus is expressing [Grab em' Tag em' Graph em' algorithm](https://github.com/kwhitehall/grab-tag-graph) as a map-reduce algorithm. 
+
+#Installation
+
+Requirements (in-order):
+* ND4J: https://github.com/deeplearning4j/nd4j
+* ND4S: https://github.com/deeplearning4j/nd4s
+* Scala: v2.10.5+
+* Maven 2.0x+
+* SBT: v0.13.5+
+
+Steps:
+1. Ensure ND4J and ND4S are installed in you local Maven repository
+2. 
 
 #Getting Started
 We extend the following functionality for users trying to use scientific datasets
