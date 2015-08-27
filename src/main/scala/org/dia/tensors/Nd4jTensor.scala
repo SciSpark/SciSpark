@@ -46,15 +46,15 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
-  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor + array.tensor)
+  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
 
-  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor - array.tensor)
+  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
 
-  def \(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor \ array.tensor)
+  def \(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
 
-  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor / array.tensor)
+  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
 
-  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor * array.tensor)
+  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
 
   /**
    * Masking operations
@@ -69,7 +69,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Linear Algebra Operations
    */
-  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor ** array.tensor)
+  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.dot(array.tensor))
 
   /**
    * SliceableArray operations
