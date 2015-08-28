@@ -26,6 +26,10 @@ Test your installation:
 
 ```sbt "run src/test/resources/TestLinks"```
 
+Possible pitfalls:
+
+ND4S + Scala compilation issues: If problems occur, consider changing the scala version in the build.sbt file of the nd4s to scala version 2.10. Update the libraries dependenices in build.sbt in scispark accordingly. 
+
 #Getting Started
 We extend the following functionality for users trying to use scientific datasets
 like [NetCDF](http://www.unidata.ucar.edu/software/netcdf/) on Apache Spark.
