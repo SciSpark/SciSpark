@@ -5,7 +5,7 @@ SciSpark
 
 #Introduction
 
-[SciSpark](http://esto.nasa.gov/forum/estf2015/presentations/Mattmann_S1P8_ESTF2015.pdf) is a scalable scientific processing platform that makes interactive computation and exploration possible. This prototype project outlines the architect of the scientific RDD (sRDD), and a library of linear algebra and geospatial operations. Its initial focus is expressing [Grab em' Tag em' Graph em' algorithm](https://github.com/kwhitehall/grab-tag-graph) as a map-reduce algorithm. 
+[SciSpark](http://esto.nasa.gov/forum/estf2015/presentations/Mattmann_S1P8_ESTF2015.pdf) is a scalable scientific processing platform that makes interactive computation and exploration possible. This prototype project outlines the architecture of the scientific RDD (sRDD), and a library of linear algebra and geospatial operations. Its initial focus is expressing [Grab em' Tag em' Graph em' algorithm](https://github.com/kwhitehall/grab-tag-graph) as a map-reduce algorithm. 
 
 #Installation
 
