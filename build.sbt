@@ -45,7 +45,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-SNAP4",
   "org.apache.spark" % "spark-core_2.10" % "1.4.1" exclude("org.slf4j", "slf4j-api"),
   //Math Libraries
-  "org.jblas" % "jblas" % "1.2.3",
+  //"org.jblas" % "jblas" % "1.2.3",
   // other dependencies here
   "org.scalanlp" %% "breeze" % "0.11.2",
   "org.json4s" %% "json4s-native" % "3.2.11",

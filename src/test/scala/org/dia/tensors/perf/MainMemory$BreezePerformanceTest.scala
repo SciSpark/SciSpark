@@ -38,11 +38,14 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
   val FILE_2 = "AFRICA_UC-WRF311_CTL_ERAINT_MM_50km-rg_1989-2008_tasmax.nc"
   val NANO_SECS = 1000000000.0
 
-  ignore("Breeze.element.wise.test") {
+  test("Breeze.element.wise.test") {
     println("Breeze.element.wise.test")
-    (1 to 100).foreach { i =>
+    (1 to 20).foreach { i =>
+      //var sum = 0L
+      //(1 to 3).foreach{p =>
       val m1 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
       val m2 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
+
       /**
        * Vector subtraction
        */
@@ -50,13 +53,19 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
       val m3 = m1 - m2
       val stop = System.nanoTime()
       println(stop - start)
+      //sum += stop - start
+      //}
+      //println("Final " + (sum / 3))
     }
+
     assert(true)
   }
 
   test("Breeze.vector.wise.test") {
     println("Breeze.vector.wise.test")
-    (1 to 100).foreach { i =>
+    (1 to 20).foreach { i =>
+      //var sum = 0L
+      //(1 to 3).foreach { p =>
       val m1 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
       val m2 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
 
@@ -64,6 +73,9 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
       val m3 = m1 * m2
       val stop = System.nanoTime()
       println(stop - start)
+      //sum += stop - start
+      //}
+      //println("Final " + (sum / 3))
     }
     assert(true)
   }
