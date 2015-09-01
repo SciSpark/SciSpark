@@ -43,8 +43,8 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
     (1 to 20).foreach { i =>
       //var sum = 0L
       //(1 to 3).foreach{p =>
-      val m1 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
-      val m2 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
+      val m1 = DenseMatrix.ones[Double](i * 1000, i * 1000)
+      val m2 = DenseMatrix.ones[Double](i * 1000, i * 1000)
 
       /**
        * Vector subtraction
@@ -66,8 +66,8 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
     (1 to 20).foreach { i =>
       //var sum = 0L
       //(1 to 3).foreach { p =>
-      val m1 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
-      val m2 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
+      val m1 = DenseMatrix.ones[Double](i * 1000, i * 1000)
+      val m2 = DenseMatrix.ones[Double](i * 1000, i * 1000)
 
       val start = System.nanoTime()
       val m3 = m1 * m2
