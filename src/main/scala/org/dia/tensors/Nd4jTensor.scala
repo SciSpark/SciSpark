@@ -17,9 +17,9 @@
  */
 package org.dia.tensors
 
-import org.nd4j.api.Implicits._
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4s.Implicits._
 
 import scala.language.implicitConversions
 
@@ -60,7 +60,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * Masking operations
    */
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
+  def <=(num: Double): Nd4jTensor = null //new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
   def :=(num: Double): Nd4jTensor = {
     new Nd4jTensor(tensor)//.map(p => if (p == num) p else 0.0))

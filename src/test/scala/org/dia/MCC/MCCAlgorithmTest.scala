@@ -20,8 +20,8 @@ package org.dia.MCC
 import breeze.linalg.DenseMatrix
 import org.dia.algorithms.mcc.mccOps
 import org.dia.tensors.{BreezeTensor, Nd4jTensor}
-import org.nd4j.api.Implicits._
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4s.Implicits._
 import org.scalatest.FunSuite
 
 /**

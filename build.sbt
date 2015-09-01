@@ -6,9 +6,8 @@ name := "SciSparkTestExperiments"
 
 version := "1.0"
 
-//scalaVersion := "2.11.6"
 scalaVersion := "2.10.5"
-//scalaVersion := "2.11.1"
+
 
 mainClass in Compile := Some("org.dia.algorithms.mcc.MainMergRandom")
 
@@ -16,6 +15,14 @@ resolvers ++= Seq(
   Resolver.mavenLocal,
   Resolver.file("Local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
 )
+
+/**
+ * unmanagedBase and unmanagedJars are to provide a way to include custom jars.
+ * This is specifically helpful for nd4s builds.
+ */
+unmanagedBase := baseDirectory.value / "lib"
+
+unmanagedJars in Compile := (baseDirectory.value ** "*.jar").classpath
 
 val buildSettings = Defaults.coreDefaultSettings ++ Seq {
   javaOptions += "-Xms4000M -Xmx5024M -Xss1M -XX:MaxPermSize=256M"
@@ -45,7 +52,7 @@ libraryDependencies ++= Seq(
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  "org.nd4j" % "nd4s_2.10" % "0.0.3.5.5.6-SNAPSHOT",
+  //"org.nd4s" % "nd4s_2.10" % "0.4-rc0",
   "org.nd4j" % "nd4j-x86" % "0.4-rc0",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",

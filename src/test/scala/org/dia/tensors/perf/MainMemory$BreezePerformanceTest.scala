@@ -19,7 +19,7 @@
 package org.dia.tensors.perf
 
 import breeze.linalg.DenseMatrix
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.FunSuite
 
 /**
  * This is a scala breeze implementation of the
@@ -29,7 +29,6 @@ import org.scalatest.{FunSuite, Ignore}
  * Source : https://github.com/apache/climate/blob/master/ocw/metrics.py
  * Created by rahulsp on 6/22/15.
  */
-@Ignore
 class MainMemory$BreezePerformanceTest extends FunSuite {
 
   // Files URL
@@ -55,7 +54,7 @@ class MainMemory$BreezePerformanceTest extends FunSuite {
     assert(true)
   }
 
-  ignore("Breeze.vector.wise.test") {
+  test("Breeze.vector.wise.test") {
     println("Breeze.vector.wise.test")
     (1 to 100).foreach { i =>
       val m1 = DenseMatrix.zeros[Double](i * 1000, i * 1000)
