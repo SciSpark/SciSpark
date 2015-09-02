@@ -112,7 +112,7 @@ object MainMergRandom {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
+      .filter(p => p.size > 1 && p(0).metaData("FRAME") != p(1).metaData("FRAME"))
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
@@ -172,7 +172,7 @@ object MainMergRandom {
 
       def updateComponent(label: Double, frame: String, value: Double): Unit = {
         if (label != 0.0) {
-          var area = 0.0
+          var area = 1.0
           var max = Double.MinValue
           var min = Double.MaxValue
           val currentProperties = AreaMinMaxTable.get(frame + ":" + label)
