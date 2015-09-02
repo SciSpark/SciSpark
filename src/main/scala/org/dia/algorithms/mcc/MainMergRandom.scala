@@ -111,12 +111,11 @@ object MainMergRandom {
     val complete = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
-      .filter(p => p._2.size > 1)
-      .map(p => {
-      val list = p._2.map(e => e._2).toList
-      val sortedList = list.sortBy(_.metaData("FRAME").toInt)
-      (sortedList(0), sortedList(1))
-    })
+      .map(p => p._2.map(e => e._2).toList)
+      .filter(p => p.size > 1 && p(0).metaData("FRAME") != p(1).metaData("FRAME"))
+      .map(p => p.sortBy(_.metaData("FRAME").toInt))
+      .map(p => (p(0), p(1)))
+
 
 
     /**
