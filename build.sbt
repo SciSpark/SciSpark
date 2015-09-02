@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
   //"org.nd4s" % "nd4s_2.10" % "0.4-rc0",
-  "org.nd4j" % "nd4j-x86" % "0.4-rc0",
+  "org.nd4j" % "nd4j-x86" % "0.4-rc1",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
   "com.joestelmach" % "natty" % "0.11",
