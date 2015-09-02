@@ -158,7 +158,6 @@ object MainGroupBy {
             var area2 = 0.0
             var max2 = Double.MinValue
             var min2 = Double.MaxValue
-            area2 += 1
             val compMetrics = hashComps.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
             if (compMetrics != null && compMetrics.isDefined) {
               area2 = compMetrics.get._1
