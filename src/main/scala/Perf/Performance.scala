@@ -11,7 +11,7 @@ import org.nd4j.linalg.factory.Nd4j
 object Performance {
 
   def main(args: Array[String]): Unit = {
-    val dim = if (!args.isEmpty) args(0).toInt else 4
+    val dim = if (!args.isEmpty) args(0).toInt else 10
     val breezeArray1 = DenseMatrix.eye[Double](10)
     val breezeArray2 = DenseMatrix.eye[Double](10)
     println(breezeArray1 + breezeArray2)

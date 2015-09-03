@@ -170,6 +170,27 @@ object MainMergHDFS {
        */
       var AreaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
+      def updateComponent(label: Double, frame: String, value: Double): Unit = {
+        if (label != 0.0) {
+          var area = 1.0
+          var max = Double.MinValue
+          var min = Double.MaxValue
+          val currentProperties = AreaMinMaxTable.get(frame + ":" + label)
+          if (currentProperties != null && currentProperties.isDefined) {
+            area = currentProperties.get._1
+            max = currentProperties.get._2
+            min = currentProperties.get._3
+            if (value < min) min = value
+            if (value > max) max = value
+          } else {
+            min = value
+            max = value
+          }
+          area += 1
+          AreaMinMaxTable += ((frame + ":" + label, (area, max, min)))
+        }
+      }
+
       for (row <- 0 to product.rows - 1) {
         for (col <- 0 to product.cols - 1) {
           // Find non-zero points in product array
@@ -179,48 +200,8 @@ object MainMergHDFS {
             val value2 = components2._1(row, col)
             OverlappedPairsList += ((value1, value2))
           }
-
-          //update the area and min and max for each component
-          if (components1._1(row, col) != 0.0) {
-            var area1 = 0.0
-            var max1 = Double.MinValue
-            var min1 = Double.MaxValue
-            val compMetrics = AreaMinMaxTable.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
-            if (compMetrics != null && compMetrics.isDefined) {
-              area1 = compMetrics.get._1
-              max1 = compMetrics.get._2
-              min1 = compMetrics.get._3
-              if (p._1.tensor(row, col) < min1) min1 = p._1.tensor(row, col)
-              if (p._1.tensor(row, col) > max1) max1 = p._1.tensor(row, col)
-            } else {
-              min1 = p._1.tensor(row, col)
-              max1 = p._1.tensor(row, col)
-            }
-            area1 += 1
-            AreaMinMaxTable += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
-          }
-
-          if (components2._1(row, col) != 0.0) {
-            var area2 = 0.0
-            var max2 = Double.MinValue
-            var min2 = Double.MaxValue
-            area2 += 1
-            val compMetrics = AreaMinMaxTable.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
-            if (compMetrics != null && compMetrics.isDefined) {
-              area2 = compMetrics.get._1
-              max2 = compMetrics.get._2
-              min2 = compMetrics.get._3
-              if (p._2.tensor(row, col) < min2) min2 = p._2.tensor(row, col)
-              if (p._2.tensor(row, col) > max2) max2 = p._2.tensor(row, col)
-
-            } else {
-              min2 = p._2.tensor(row, col)
-              max2 = p._2.tensor(row, col)
-            }
-            area2 += 1
-            AreaMinMaxTable += ((p._2.metaData("FRAME") + ":" + components2._1(row, col), (area2, max2, min2)))
-          }
-
+          updateComponent(components1._1(row, col), p._1.metaData("FRAME"), p._1.tensor(row, col))
+          updateComponent(components2._1(row, col), p._2.metaData("FRAME"), p._2.tensor(row, col))
         }
       }
 

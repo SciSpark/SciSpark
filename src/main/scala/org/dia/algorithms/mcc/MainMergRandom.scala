@@ -112,7 +112,7 @@ object MainMergRandom {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1 && p(0).metaData("FRAME") != p(1).metaData("FRAME"))
+      .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
@@ -166,7 +166,8 @@ object MainMergRandom {
       /**
        * The AreaMinMaxTable keeps track of the Area, Minimum value, and Maximum value
        * of all labelled regions in both components. For this reason the hash key has the following form :
-       * 'F : C' where F = Frame Number and C = Component Number
+       * 'F : C' where F = Frame Number and C = Component Number.
+       * The AreaMinMaxTable is updated by the updateComponent function, which is called in the for loop.
        */
       var AreaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
@@ -199,49 +200,9 @@ object MainMergRandom {
             val value1 = components1._1(row, col)
             val value2 = components2._1(row, col)
             OverlappedPairsList += ((value1, value2))
-
           }
           updateComponent(components1._1(row, col), p._1.metaData("FRAME"), p._1.tensor(row, col))
           updateComponent(components2._1(row, col), p._2.metaData("FRAME"), p._2.tensor(row, col))
-          //update the area and min and max for each component
-          //          if (components1._1(row, col) != 0.0) {
-          //            var area1 = 0.0
-          //            var max1 = Double.MinValue
-          //            var min1 = Double.MaxValue
-          //            val compMetrics = AreaMinMaxTable.get(p._1.metaData("FRAME") + ":" + components1._1(row, col))
-          //            if (compMetrics != null && compMetrics.isDefined) {
-          //              area1 = compMetrics.get._1
-          //              max1 = compMetrics.get._2
-          //              min1 = compMetrics.get._3
-          //              if (p._1.tensor(row, col) < min1) min1 = p._1.tensor(row, col)
-          //              if (p._1.tensor(row, col) > max1) max1 = p._1.tensor(row, col)
-          //            } else {
-          //              min1 = p._1.tensor(row, col)
-          //              max1 = p._1.tensor(row, col)
-          //            }
-          //            area1 += 1
-          //            AreaMinMaxTable += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
-          //          }
-          //          if (components2._1(row, col) != 0.0) {
-          //            var area2 = 0.0
-          //            var max2 = Double.MinValue
-          //            var min2 = Double.MaxValue
-          //            area2 += 1
-          //            val compMetrics = AreaMinMaxTable.get(p._2.metaData("FRAME") + ":" + components2._1(row, col))
-          //            if (compMetrics != null && compMetrics.isDefined) {
-          //              area2 = compMetrics.get._1
-          //              max2 = compMetrics.get._2
-          //              min2 = compMetrics.get._3
-          //              if (p._2.tensor(row, col) < min2) min2 = p._2.tensor(row, col)
-          //              if (p._2.tensor(row, col) > max2) max2 = p._2.tensor(row, col)
-          //
-          //            } else {
-          //              min2 = p._2.tensor(row, col)
-          //              max2 = p._2.tensor(row, col)
-          //            }
-          //            area2 += 1
-          //            AreaMinMaxTable += ((p._2.metaData("FRAME") + ":" + components2._1(row, col), (area2, max2, min2)))
-          //          }
         }
       }
 
