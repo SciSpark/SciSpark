@@ -19,6 +19,8 @@ package org.dia.loaders
 
 import org.dia.Utils.NetCDFUtils
 import org.slf4j.Logger
+import ucar.nc2.NetcdfFile
+import ucar.nc2.dataset.NetcdfDataset
 
 object NetCDFReader {
 
@@ -60,5 +62,24 @@ object NetCDFReader {
     list
   }
 
+  def loadNetCDFNDVars(dataset : NetcdfDataset, variable : String) : (Array[Double], Array[Int]) = {
+    if (dataset == null) {
+      LOG.warn("Dataset %s not found!".format())
+      return (Array(-9999), Array(1, 1))
+    }
+
+    val coordinateArray = NetCDFUtils.netcdfArrayandShape(dataset, variable)
+    val variableArray = coordinateArray._1
+
+    if (variableArray.length < 1) {
+      LOG.warn("Variable '%s' in dataset not found!".format(variable))
+      return (Array(-9999), Array(1, 1))
+    }
+    coordinateArray
+  }
+
+  def loadNetCDFFile(name : String, file : Array[Byte]) : NetcdfDataset = {
+    new NetcdfDataset(NetcdfFile.openInMemory(name, file))
+  }
 
 }

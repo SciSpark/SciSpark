@@ -1,6 +1,6 @@
 package org.dia.core
 
-import org.dia.SparkTestConstants
+import org.dia.TestEnvironment.SparkTestConstants
 import org.dia.URLGenerator.HourlyTrmmUrlGenerator
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.sTrmmPartitioner._

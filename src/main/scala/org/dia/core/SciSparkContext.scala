@@ -26,9 +26,10 @@ import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.sPartitioner._
-import org.dia.tensors.BreezeTensor
+import org.dia.tensors.{AbstractTensor, BreezeTensor}
 
 import scala.io.Source
+import scala.collection.mutable
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
  * SciSparkContexts provides existing SparkContext function.
@@ -72,7 +73,7 @@ class SciSparkContext(val conf: SparkConf) {
    * If no names are provided then all variable arrays in that file are loaded.
    * The URI could be an OpenDapURL or a filesystem path.
    *
-   * TODO :: Add support for reading HDFS URIs
+   * For reading from HDFS check NetcdfDFSFile
    */
   def NetcdfFile(path: String,
                  varName: List[String] = Nil,
@@ -84,7 +85,32 @@ class SciSparkContext(val conf: SparkConf) {
 
     new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
   }
+  /**
+   * Constructs an RDD given URI pointing to an HDFS directory of Netcdf files and a list of variable names.
+   * Note that since the files are read from HDFS, the binaryFiles function is used which is called
+   * from SparkContext. This is why a normal RDD is returned instead of an sRDD.
+   *
+   * TODO :: Create an sRDD instead of a normal RDD
+   */
+  def NetcdfDFSFile(path: String,
+                    varName: List[String] = Nil,
+                    minPartitions: Int = 2): RDD[sciTensor] = {
 
+    val textFiles = sparkContext.binaryFiles(path, minPartitions)
+    val rdd = textFiles.map(p => {
+      val byteArray = p._2.toArray()
+      val dataset = loadNetCDFFile(p._1, byteArray)
+      val variableHashTable = new mutable.HashMap[String, AbstractTensor]
+
+      varName.foreach(y => {
+        val arrayandShape = loadNetCDFNDVars(dataset, y)
+        val absT = new BreezeTensor(arrayandShape)
+        variableHashTable += ((y, absT))
+      })
+      new sciTensor(variableHashTable)
+    })
+    rdd
+  }
   /**
    * Constructs a random sRDD from a file of URI's, a list of variable names, and matrix dimensions.
    * The seed for matrix values is the path values, so the same input set will yield the the same data.
@@ -120,7 +146,7 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an RDD given a file of URI's pointing to MERG files, a list of variable names,
+   * Constructs an RDD given URI pointing to an HDFS directory of MERG files, a list of variable names,
    * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
    * and the value offset is 75.
    *

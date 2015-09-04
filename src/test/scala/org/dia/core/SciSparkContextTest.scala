@@ -18,7 +18,7 @@
 package org.dia.core
 
 import org.dia.Constants._
-import org.dia.SparkTestConstants
+import org.dia.TestEnvironment.SparkTestConstants
 import org.scalatest.FunSuite
 
 /**
