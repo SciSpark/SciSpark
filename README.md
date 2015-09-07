@@ -7,7 +7,8 @@ SciSpark can now read Netcdf files from HDFS using SciSparkContext.NetcdfDFSFile
 The function binaryFiles opens the entire byte array and we use NetcdfFile.openInMemory() to convert the byte-array into a NetcdfDataset object. 
 
 We want to read Netcdf variables given their offsets, without loading the entire file into memory. 
-If any visitors have insights into achieving this, please see the issue titled "Reading variables given offsets from Netcdf".
+If any visitors have insights into achieving this, please see the issue titled 
+"Reading variables without loading entire Netcdf Fie. ".
 
 #Introduction
 
