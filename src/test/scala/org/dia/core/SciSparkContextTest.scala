@@ -49,5 +49,10 @@ class SciSparkContextTest extends FunSuite {
     assert(true)
   }
 
-
+  test("NetcdfDFSFile.Local") {
+    val variable = "data"
+    val t = sc.NetcdfDFSFile("src/test/resources/Netcdf", List(variable))
+    t.collect.map(p => println(p))
+    assert(true)
+  }
 }
