@@ -8,7 +8,7 @@ The function binaryFiles opens the entire byte array and we use NetcdfFile.openI
 
 We want to read Netcdf variables given their offsets, without loading the entire file into memory. 
 If any visitors have insights into achieving this, please see the issue titled 
-"Reading variables without loading entire Netcdf Fie. ".
+"Reading variables without loading entire Netcdf File".
 
 #Introduction
 
