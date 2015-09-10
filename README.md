@@ -39,7 +39,9 @@ ND4S + Scala compilation issues: If problems occur, consider changing the scala 
 * Note that the current SciSpark build includes an nd4s jar that is part of the classpath. 
 The jar is created by downloading nd4s from github and cbanging the scala version to 2.10. The jar is then copied
 under /lib in the SciSparkTestExperiments directory. 
+
 #Getting Started
+
 We extend the following functionality for users trying to use scientific datasets
 like [NetCDF](http://www.unidata.ucar.edu/software/netcdf/) on Apache Spark.
 A file containing a list of paths to NetCDF files must be created.
