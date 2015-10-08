@@ -40,7 +40,7 @@ object MainMergRandom {
      * args(4) - variable name
      *
      */
-    val inputFile = if (args.isEmpty) "mergePaths" else args(0)
+    val inputFile = if (args.isEmpty) "TRMM_L3_Links.txt" else args(0)
     val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
@@ -168,6 +168,7 @@ object MainMergRandom {
        * of all labelled regions in both components. For this reason the hash key has the following form :
        * 'F : C' where F = Frame Number and C = Component Number.
        * The AreaMinMaxTable is updated by the updateComponent function, which is called in the for loop.
+       * TODO :: Extend it to have a lat lon bounds for component
        */
       var AreaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
@@ -231,6 +232,8 @@ object MainMergRandom {
     })
 
     /**
+     * ((String, Double), (String, Double))
+     * TODO :: ((String, Double), Area, Min, Max), (String, Double) Area, Min, Max))
      * Collect the edges.
      * From the edge pairs collect all used vertices.
      * Repeated vertices are eliminated due to the set conversion.
