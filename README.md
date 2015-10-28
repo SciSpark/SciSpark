@@ -31,7 +31,7 @@ Steps:
 
 Test your installation:
 
-```sbt "run src/test/resources/TestLinks"```
+```sbt "run"```
 
 Possible pitfalls:
 
