@@ -9,7 +9,7 @@ version := "1.0"
 scalaVersion := "2.10.5"
 
 
-mainClass in Compile := Some("org.dia.algorithms.mcc.MainMergNetcdfDFS")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
 
 resolvers ++= Seq(
   Resolver.mavenLocal,
