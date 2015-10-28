@@ -39,12 +39,12 @@ object MainMergHDFS {
      * args(4) - variable name
      *
      */
-    val inputFile = if (args.isEmpty) "mergePaths" else args(0)
+    val inputFile = if (args.isEmpty) "TRMM_L3_Links.txt" else args(0)
     val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TMP" else args(4)
-    val hdfspath = if (args.length <= 5) null else args(5)
+    val hdfspath = if (args.length <= 5) "resources/MERG" else args(5)
 
     /**
      * Parse the date from each URL.
@@ -237,7 +237,7 @@ object MainMergHDFS {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    val k = new PrintWriter(new File("Hello.txt"))
+    val k = new PrintWriter(new File("VertexAndEdgeList.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
     k.close()

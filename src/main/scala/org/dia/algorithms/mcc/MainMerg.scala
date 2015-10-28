@@ -39,7 +39,7 @@ object MainMerg {
      * args(4) - variable name
      *
      */
-    val inputFile = if (args.isEmpty) "mergePaths" else args(0)
+    val inputFile = if (args.isEmpty) "mergePa" else args(0)
     val masterURL = if (args.length <= 1) "local[12]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)

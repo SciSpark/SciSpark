@@ -205,7 +205,7 @@ object MainGroupBy {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    val k = new PrintWriter(new File("Hello.txt"))
+    val k = new PrintWriter(new File("VertexAndEdgeList.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
     k.write(collectedEdges.toList.sorted + "\n")
     k.close()

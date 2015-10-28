@@ -27,45 +27,25 @@ import org.slf4j.Logger
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
-object MainMergRandom {
+
+object MainNetcdfDFSMCC {
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**
      * Input arguements to the program :
-     * args(0) - the path to the source file
      * args(1) - the spark master url. Example : spark://HOST_NAME:7077
      * args(2) - the number of desired partitions. Default : 2
      * args(3) - square matrix dimension. Default : 20
      * args(4) - variable name
      *
      */
-    val inputFile = if (args.isEmpty) "TRMM_L3_Links.txt" else args(0)
-    val masterURL = if (args.length <= 1) "local[12]" else args(1)
+    val masterURL = if (args.length <= 1) "local[2]" else args(1)
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
-    val variable = if (args.length <= 4) "TMP" else args(4)
-    val hdfspath = if (args.length <= 5) null else args(5)
+    val variable = if (args.length <= 4) "ch4" else args(4)
+    val hdfspath = if (args.length <= 5) "resources/MERG" else args(5)
 
-    /**
-     * Parse the date from each URL.
-     * Compute the maps from Date to element index.
-     * The DateIndexTable holds the mappings.
-     *
-     */
-    val DateIndexTable = new mutable.HashMap[String, Int]()
-    val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
-
-    val orderedDateList = URLs.map(p => {
-      val source = p.split("/").last.replaceAllLiterally(".", "/")
-      Parsers.ParseDateFromString(source)
-    }).sorted
-
-    for (i <- orderedDateList.indices) {
-      val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
-      val dateString = dateFormat.format(orderedDateList(i))
-      DateIndexTable += ((dateString, i))
-    }
 
     /**
      * Initialize the spark context to point to the master URL
@@ -83,12 +63,11 @@ object MainMergRandom {
      * Note if no hdfs path is given, then randomly generated matrices are used
      *
      */
-    val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
+    val sRDD = sc.NetcdfDFSFile(hdfspath, List("ch4"), partCount)
 
     val labeled = sRDD.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
-      val FrameID = DateIndexTable(date)
+      val source = p.metaData("SOURCE").split("/").last.split("_")(1)
+      val FrameID = source.toInt
       p.insertDictionary(("FRAME", FrameID.toString))
       p
     })
@@ -220,12 +199,12 @@ object MainMergRandom {
         val frameId1 = entry._1._1
         val compId1 = entry._1._2
         val compVals1 = AreaMinMaxTable(frameId1 + ":" + compId1)
-        val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
+        val fil1 = ((compVals1._1 >= 60.0) || (compVals1._1 < 60.0)) && ((compVals1._2 - compVals1._3) > 10.0)
 
         val frameId2 = entry._2._1
         val compId2 = entry._2._2
         val compVals2 = AreaMinMaxTable(frameId2 + ":" + compId2)
-        val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
+        val fil2 = ((compVals2._1 >= 60.0) || (compVals2._1 < 60.0)) && ((compVals2._2 - compVals2._3) > 10.0)
         fil1 && fil2
       })
       filtered
@@ -241,10 +220,14 @@ object MainMergRandom {
     val collectedEdges = componentFrameRDD.collect()
     val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    val k = new PrintWriter(new File("VertexAndEdgeList.txt"))
+    val k = new PrintWriter(new File("VertexList.txt"))
     k.write(vertex.toList.sortBy(p => p._1) + "\n")
-    k.write(collectedEdges.toList.sorted + "\n")
     k.close()
+
+    val p = new PrintWriter(new File("EdgeList.txt"))
+    p.write(collectedEdges.toList.sorted + "\n")
+    p.close()
+
     println("NUM VERTEX : " + vertex.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")
@@ -254,7 +237,7 @@ object MainMergRandom {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
+    (area >= 60.0) || (area < 60.0) && (tempDiff > 10.0)
   }
 }
 

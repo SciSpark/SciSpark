@@ -30,6 +30,7 @@ import org.dia.tensors.{AbstractTensor, BreezeTensor}
 
 import scala.io.Source
 import scala.collection.mutable
+
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
  * SciSparkContexts provides existing SparkContext function.
@@ -85,6 +86,7 @@ class SciSparkContext(val conf: SparkConf) {
 
     new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
   }
+
   /**
    * Constructs an RDD given URI pointing to an HDFS directory of Netcdf files and a list of variable names.
    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
@@ -107,10 +109,13 @@ class SciSparkContext(val conf: SparkConf) {
         val absT = new BreezeTensor(arrayandShape)
         variableHashTable += ((y, absT))
       })
-      new sciTensor(variableHashTable)
+      val sciT = new sciTensor(variableHashTable)
+      sciT.insertDictionary(("SOURCE", p._1))
+      sciT
     })
     rdd
   }
+
   /**
    * Constructs a random sRDD from a file of URI's, a list of variable names, and matrix dimensions.
    * The seed for matrix values is the path values, so the same input set will yield the the same data.
@@ -138,7 +143,7 @@ class SciSparkContext(val conf: SparkConf) {
                 shape: Array[Int] = Array(9896, 3298),
                 offset: Double = 75,
                 minPartitions: Int = 2): sRDD[sciTensor] = {
-    
+
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
 
@@ -156,9 +161,9 @@ class SciSparkContext(val conf: SparkConf) {
    * TODO :: Create an sRDD instead of a normal RDD
    */
   def mergDFSFile(path: String,
-                      varName: List[String] = List("TMP"),
+                  varName: List[String] = List("TMP"),
                   offset: Double = 75,
-                      shape: Array[Int] = Array(9896, 3298),
+                  shape: Array[Int] = Array(9896, 3298),
                   minPartitions: Int = 2): RDD[sciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
