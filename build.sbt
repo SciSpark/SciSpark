@@ -13,7 +13,8 @@ mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
 
 resolvers ++= Seq(
   Resolver.mavenLocal,
-  Resolver.file("Local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
+  Resolver.file("Local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns),
+  "maven Repository" at "http://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
 )
 
 /**
@@ -57,7 +58,7 @@ libraryDependencies ++= Seq(
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
   "com.joestelmach" % "natty" % "0.11",
-  "edu.ucar" % "netcdf" % "4.2.20"
+  "edu.ucar" % "cdm" % "4.6.0"
 )
 
 assemblyMergeStrategy in assembly := {
@@ -70,6 +71,7 @@ assemblyMergeStrategy in assembly := {
   case x if x.contains("org.eclipse") => MergeStrategy.first
   case x if x.contains("org.apache") => MergeStrategy.first
   case x if x.contains("org.slf4j") => MergeStrategy.first
+  case x if x.endsWith("reference.conf") => MergeStrategy.concat
   case PathList("com", "esotericsoftware", xs@_ *) => MergeStrategy.last // For Log$Logger.class
   case x => MergeStrategy.first
 }
