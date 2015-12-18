@@ -18,7 +18,9 @@
 package org.dia.Utils
 
 import org.slf4j.Logger
+import orq.dia.HDFSRandomAccessFile
 import ucar.ma2
+import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset
 
 import scala.language.implicitConversions
@@ -118,6 +120,25 @@ object NetCDFUtils {
       case e: java.io.IOException => LOG.error("Couldn't open dataset %s".format(url))
         null
       case ex: Exception => LOG.error("Something went wrong while reading %s".format(url))
+        null
+    }
+  }
+
+  /**
+    * Loads a NetCDF Dataset from HDFS
+    * @param dfsUri   HDFS URI(eg. hdfs://master:9000/)
+    * @param location file path on hdfs
+    * @param bufferSize the size of buffer to be used
+    */
+  def loadDFSNetCDFDataSet(dfsUri:String,location:String,bufferSize:Int):NetcdfDataset = {
+    NetcdfDataset.setUseNaNs(false)
+    try{
+      val raf = new HDFSRandomAccessFile(dfsUri,location,bufferSize)
+      new NetcdfDataset(NetcdfFile.open(raf,location,null,null))
+    } catch {
+      case e: java.io.IOException => LOG.error("Couldn't open dataset %s%s".format(dfsUri,location))
+        null
+      case ex: Exception => LOG.error("Something went wrong while reading %s%s".format(dfsUri,location))
         null
     }
   }
