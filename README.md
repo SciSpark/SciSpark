@@ -89,10 +89,10 @@ Currently it is being refactored as the first phase of development has concluded
 with a focus on prototyping and designing GTG as a map-reduce algorithm.
 
 ##Want to Use or Contribute to this Project?
-Contact us at ....
+Contact us at [scispark-team@jpl.nasa.gov](mailto:scispark-team@jpl.nasa.gov).
 
 ##Technology
-This project utilizes the following open-source technologies [Apache Spark][Spark] and ....
+This project utilizes the following open-source technologies [Apache Spark][Spark] and is based on the NASA AIST14 project led by the PI [Chris Mattmann](http://github.com/chrismattmann/). The SciSpark team is at at JPL and actively working on the project.
 
 ###Apache Spark
 
