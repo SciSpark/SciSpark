@@ -95,7 +95,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   /**
    * Given an sRDDPartition, the iterator traverses the list of URL's
    * assigned to the partition. Calls to next() will call the loader function
-   * and construct a sciTensor for each URL in the list.
+   * and construct a SciTensor for each URL in the list.
    */
   def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
     val iterator = new Iterator[T] {
@@ -117,7 +117,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
         tensorMap.map(p => hash += p)
         counter += 1
 
-        val sciArray = new sciTensor(hash)
+        val sciArray = new SciTensor(hash)
         sciArray.insertDictionary(("SOURCE", urlValue))
         sciArray.asInstanceOf[T]
       }

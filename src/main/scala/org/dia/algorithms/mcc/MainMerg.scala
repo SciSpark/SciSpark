@@ -17,7 +17,7 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.core.{SciSparkContext, SciTensor}
 import org.dia.tensors.BreezeTensor
 import org.slf4j.Logger
 
@@ -140,7 +140,7 @@ object MainMerg {
     println(complete.toDebugString)
   }
 
-  def checkCriteria(p: sciTensor): Boolean = {
+  def checkCriteria(p: SciTensor): Boolean = {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble

@@ -8,7 +8,7 @@ version := "1.0"
 
 scalaVersion := "2.10.5"
 
-scalacOptions := Seq("-feature")
+scalacOptions := Seq("-feature", "-deprecation")
 
 mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
 

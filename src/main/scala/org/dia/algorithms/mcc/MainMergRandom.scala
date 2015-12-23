@@ -21,7 +21,7 @@ import java.io.{File, PrintWriter}
 import java.text.SimpleDateFormat
 
 import org.dia.Parsers
-import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.core.{SciSparkContext, SciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -250,7 +250,7 @@ object MainMergRandom {
     println(complete.toDebugString + "\n")
   }
 
-  def checkCriteria(p: sciTensor): Boolean = {
+  def checkCriteria(p: SciTensor): Boolean = {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble

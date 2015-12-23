@@ -17,7 +17,7 @@ class sRDDTest extends FunSuite {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
 
-    val sRdd = new sRDD[sciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
+    val sRdd = new sRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVars, mapOneYearToManyTensorTRMM)
     val Tensor = sRdd.collect()(0)
     assert(true)
   }
@@ -26,7 +26,7 @@ class sRDDTest extends FunSuite {
     val urls = HourlyTrmmUrlGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
 
-    val sRdd = new sRDD[sciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
+    val sRdd = new sRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVars, mapOneDayToManyTensorTRMM)
     val Tensor = sRdd.collect()(0)
     assert(true)
   }

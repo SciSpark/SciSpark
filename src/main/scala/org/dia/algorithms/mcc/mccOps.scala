@@ -2,7 +2,7 @@ package org.dia.algorithms.mcc
 
 import java.util
 
-import org.dia.core.sciTensor
+import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
 
 object mccOps {
@@ -52,7 +52,7 @@ object mccOps {
     reducedMatrix
   }
 
-  def findCloudComponents(tensor: sciTensor): List[sciTensor] = {
+  def findCloudComponents(tensor: SciTensor): List[SciTensor] = {
     val labelledTensors = findConnectedComponents(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
 
@@ -63,7 +63,7 @@ object mccOps {
       val max = areaTuple._2
       val min = areaTuple._3
       val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
-      val k = new sciTensor(tensor.varInUse, masked, metadata)
+      val k = new SciTensor(tensor.varInUse, masked, metadata)
       k
     })
     seq.toList
@@ -152,7 +152,7 @@ object mccOps {
     (count, max, min)
   }
 
-  def findCloudElements(tensor: sciTensor): List[sciTensor] = {
+  def findCloudElements(tensor: SciTensor): List[SciTensor] = {
     val labelledTensors = findCloudElements(tensor.tensor)
     val absT: AbstractTensor = tensor.tensor
 
@@ -164,7 +164,7 @@ object mccOps {
       val min = metaTensor.min
       val area = areaFilled(masked)
       val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
-      val k = new sciTensor(tensor.varInUse, masked, metadata)
+      val k = new SciTensor(tensor.varInUse, masked, metadata)
       k
     })
     seq.toList
@@ -178,11 +178,11 @@ object mccOps {
     maskedLabels.toList
   }
 
-  def findCloudElementsX(tensor: sciTensor): sciTensor = {
+  def findCloudElementsX(tensor: SciTensor): SciTensor = {
     // list of connected components separated in maskes matrices
     val labelledTensor = findCloudElementsX(tensor.tensor)
     val metadata = tensor.metaData += (("NUM_COMPONENTS", "" + labelledTensor._2))
-    new sciTensor(tensor.varInUse, labelledTensor._1, metadata)
+    new SciTensor(tensor.varInUse, labelledTensor._1, metadata)
   }
 
   def findCloudElementsX(tensor: AbstractTensor): (AbstractTensor, Int) = {

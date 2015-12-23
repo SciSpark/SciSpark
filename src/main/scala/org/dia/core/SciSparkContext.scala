@@ -78,13 +78,13 @@ class SciSparkContext(val conf: SparkConf) {
    */
   def NetcdfFile(path: String,
                  varName: List[String] = Nil,
-                 minPartitions: Int = 2): sRDD[sciTensor] = {
+                 minPartitions: Int = 2): sRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new sRDD[sciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
+    new sRDD[SciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
   }
 
   /**
@@ -96,7 +96,7 @@ class SciSparkContext(val conf: SparkConf) {
    */
   def NetcdfDFSFile(path: String,
                     varName: List[String] = Nil,
-                    minPartitions: Int = 2): RDD[sciTensor] = {
+                    minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
@@ -109,7 +109,7 @@ class SciSparkContext(val conf: SparkConf) {
         val absT = new BreezeTensor(arrayandShape)
         variableHashTable += ((y, absT))
       })
-      val sciT = new sciTensor(variableHashTable)
+      val sciT = new SciTensor(variableHashTable)
       sciT.insertDictionary(("SOURCE", p._1))
       sciT
     })
@@ -124,13 +124,13 @@ class SciSparkContext(val conf: SparkConf) {
   def randomMatrices(path: String,
                      varName: List[String] = Nil,
                      matrixSize: (Int, Int),
-                     minPartitions: Int = 2): sRDD[sciTensor] = {
+                     minPartitions: Int = 2): sRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new sRDD[sciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), MapNUrl(PartitionSize))
+    new sRDD[SciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), MapNUrl(PartitionSize))
   }
 
   /**
@@ -142,12 +142,12 @@ class SciSparkContext(val conf: SparkConf) {
                 varName: List[String] = List("TMP"),
                 shape: Array[Int] = Array(9896, 3298),
                 offset: Double = 75,
-                minPartitions: Int = 2): sRDD[sciTensor] = {
+                minPartitions: Int = 2): sRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
 
-    new sRDD[sciTensor](sparkContext, URLs, varName, LoadMERGArray(shape, offset), MapNUrl(PartitionSize))
+    new sRDD[SciTensor](sparkContext, URLs, varName, LoadMERGArray(shape, offset), MapNUrl(PartitionSize))
   }
 
   /**
@@ -164,14 +164,14 @@ class SciSparkContext(val conf: SparkConf) {
                   varName: List[String] = List("TMP"),
                   offset: Double = 75,
                   shape: Array[Int] = Array(9896, 3298),
-                  minPartitions: Int = 2): RDD[sciTensor] = {
+                  minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
       val doubleArray = ReadMergBytetoJavaArray(byteArray, offset, shape)
       val absT = new BreezeTensor(doubleArray, shape)
-      val sciT = new sciTensor("TMP", absT)
+      val sciT = new SciTensor("TMP", absT)
       sciT.insertDictionary(("SOURCE", p._1))
       sciT
     })
@@ -181,9 +181,9 @@ class SciSparkContext(val conf: SparkConf) {
   /**
    * Constructs an sRDD given a nested directories of NetCDF files.
    */
-  def OpenPath(path: String, varName: List[String] = Nil): sRDD[sciTensor] = {
+  def OpenPath(path: String, varName: List[String] = Nil): sRDD[SciTensor] = {
     val datasetPaths = List(path)
-    new sRDD[sciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+    new sRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
   }
 
 }
