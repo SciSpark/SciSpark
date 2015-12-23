@@ -2,18 +2,19 @@ package org.dia.tensors
 
 import org.slf4j.Logger
 
-
-
 /**
-  */
-trait AbstractTensor extends Serializable with sliceableArray {
+ * An abstract tensor.
+ */
+trait AbstractTensor extends Serializable with SliceableArray {
+
   type T <: AbstractTensor
   val name: String
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def zeros(shape: Int*): T
 
-  def map(f : Double => Double) : AbstractTensor
+  def map(f: Double => Double): AbstractTensor
+
   /**
    * Indexed Operations
    */
@@ -21,7 +22,7 @@ trait AbstractTensor extends Serializable with sliceableArray {
   def put(value: Double, shape: Int*): Unit
 
   /**
-   * Elementwise Operations
+   * Element-wise Operations
    */
 
   def +(array: AbstractTensor): T
@@ -40,13 +41,12 @@ trait AbstractTensor extends Serializable with sliceableArray {
 
   def **(array: AbstractTensor): T
 
-
   /**
    * Masking operations
    */
 
   def <=(num: Double): T
-  def :=(num : Double): T
+  def :=(num: Double): T
 
   /**
    * Utility Methods
@@ -72,4 +72,5 @@ trait AbstractTensor extends Serializable with sliceableArray {
   def isZero: Boolean
   def max: Double
   def min: Double
+
 }

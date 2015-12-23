@@ -18,18 +18,18 @@ package org.dia.tensors
 
 import org.dia.Constants
 import org.dia.Constants.{BREEZE_LIB, ND4J_LIB}
-
 import scala.collection.mutable
 
 /**
- * Tensor factory
+ * Factory to create tensors.
  */
 object TensorFactory {
+  
   /**
-   * Gets specific tensor
+   * Creates specific tensor
    * @param arrayLib
    * @param loadFunc
-   * @return
+   * @return Breeze/Nd4j tensor depending on chosen library.
    */
   def getTensors[T <: AbstractTensor](arrayLib: String, loadFunc: () => (Array[Double], Array[Int])): AbstractTensor = {
     arrayLib match {

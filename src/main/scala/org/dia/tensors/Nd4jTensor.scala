@@ -20,13 +20,11 @@ package org.dia.tensors
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
-
 import scala.language.implicitConversions
 
 /**
- * The Nd4j Functional operations
+ * Wrapper around Nd4j INDArray.
  */
-
 class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override type T = Nd4jTensor
   val name: String = "nd4j"
@@ -40,69 +38,79 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     this(loadFunc())
   }
 
-  def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
+  def zeros(shape: Int*) = new Nd4jTensor(Nd4j.create(shape: _*))
 
-  def map(f: Double => Double): Nd4jTensor = new Nd4jTensor(tensor) //.map(p => f(p)))
+  /**
+   * @todo not implemented yet because Nd4j lib does not provide map yet
+   */
+  def map(f: Double => Double) = new Nd4jTensor(tensor) //.map(p => f(p)))
 
-  def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
+  def put(value: Double, shape: Int*) = tensor.putScalar(shape.toArray, value)
 
-  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
+  def +(array: AbstractTensor) = new Nd4jTensor(tensor.add(array.tensor))
 
-  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
+  def -(array: AbstractTensor) = new Nd4jTensor(tensor.sub(array.tensor))
 
-  def \(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+  def \(array: AbstractTensor) = new Nd4jTensor(tensor.div(array.tensor))
 
-  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+  def /(array: AbstractTensor) = new Nd4jTensor(tensor.div(array.tensor))
 
-  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
+  def *(array: AbstractTensor) = new Nd4jTensor(tensor.mul(array.tensor))
 
   /**
    * Masking operations
    */
 
+  /**
+   * @todo not implemented yet because Nd4j lib does not provide map yet
+   */
   def <=(num: Double): Nd4jTensor = null //new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
-  def :=(num: Double): Nd4jTensor = {
-    new Nd4jTensor(tensor)//.map(p => if (p == num) p else 0.0))
-  }
+  /**
+   * @todo not implemented yet because Nd4j lib does not provide map yet
+   */
+  def :=(num: Double) = new Nd4jTensor(tensor)//.map(p => if (p == num) p else 0.0))
 
   /**
    * Linear Algebra Operations
    */
-  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.dot(array.tensor))
+  
+  def **(array: AbstractTensor) = new Nd4jTensor(tensor.dot(array.tensor))
 
   /**
    * SliceableArray operations
    */
 
-  def cols: Int = tensor.columns
+  def rows = tensor.rows
+  
+  def cols = tensor.columns
 
-  def rows: Int = tensor.rows
+  def apply = this
 
-  def apply: Nd4jTensor = this
-
-  def apply(ranges: (Int, Int)*): Nd4jTensor = {
+  def apply(ranges: (Int, Int)*) = {
     val rangeMap = ranges.map(p => TupleRange(p))
     val IndArray = tensor(rangeMap: _*)
     new Nd4jTensor(IndArray)
   }
 
-  def apply(indexes: Int*): Double = tensor.get(indexes.toArray)
+  def apply(indexes: Int*) = tensor.get(indexes.toArray)
 
-  def data: Array[Double] = tensor.data.asDouble()
+  def data = tensor.data.asDouble()
 
   /**
    * Utility Functions
    */
-  def cumsum: Double = tensor.sumNumber.asInstanceOf[Double]
+  
+  def cumsum = tensor.sumNumber.asInstanceOf[Double]
 
-  override def toString: String = tensor.toString
+  override def toString = tensor.toString
 
-  def isZero: Boolean = tensor.sumNumber.asInstanceOf[Double] <= 1E-9
+  def isZero = tensor.sumNumber.asInstanceOf[Double] <= 1E-9
 
-  def max : Double = tensor.maxNumber.asInstanceOf[Double]
+  def max = tensor.maxNumber.asInstanceOf[Double]
 
-  def min : Double = tensor.minNumber.asInstanceOf[Double]
+  def min = tensor.minNumber.asInstanceOf[Double]
 
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
+  
 }

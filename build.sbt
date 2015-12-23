@@ -8,6 +8,7 @@ version := "1.0"
 
 scalaVersion := "2.10.5"
 
+scalacOptions := Seq("-feature")
 
 mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
 
@@ -57,6 +58,7 @@ libraryDependencies ++= Seq(
   "org.nd4j" % "nd4j-x86" % "0.4-rc1",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.8.1",
+  "org.joda" % "joda-convert" % "1.8.1",
   "com.joestelmach" % "natty" % "0.11",
   "edu.ucar" % "cdm" % "4.6.0"
 )

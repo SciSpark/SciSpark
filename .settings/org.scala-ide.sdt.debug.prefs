@@ -1,0 +1,3 @@
+eclipse.preferences.version=1
+org.scalaide.debug.async.fadingPackages=scala.;akka.;play.
+org.scalaide.debug.async.programPoints=scala.concurrent.Future$,apply,0;scala.concurrent.package$,future,0;play.api.libs.iteratee.Cont$,apply,0;akka.actor.LocalActorRef,$bang,0;akka.actor.RepointableActorRef,$bang,0;scala.actors.InternalReplyReactor$class,$bang,1
