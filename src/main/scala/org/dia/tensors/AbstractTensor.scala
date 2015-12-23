@@ -3,7 +3,7 @@ package org.dia.tensors
 import org.slf4j.Logger
 
 /**
- * An abstract tensor.
+ * An abstract tensor
  */
 trait AbstractTensor extends Serializable with SliceableArray {
 
