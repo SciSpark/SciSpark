@@ -50,7 +50,7 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingDailyTRMMDimensions") {
-    val arrayTuple = NetCDFReader.loadNetCDFNDVars(dailyTrmmUrl, DAILY_TRMM_DATA_VAR)
+    val arrayTuple = NetCDFReader.loadNetCDFNDVar(dailyTrmmUrl, DAILY_TRMM_DATA_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
     assert(EXPECTED_ROWS_DAILY == resDenseMatrix.rows)
     assert(EXPECTED_COLS_DAILY == resDenseMatrix.cols)
@@ -63,7 +63,7 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
   test("ReadingHourlyTRMMDimensions") {
-    val arrayTuple = NetCDFReader.loadNetCDFNDVars(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR)
+    val arrayTuple = NetCDFReader.loadNetCDFNDVar(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
 
     assert(EXPECTED_ROWS_HOURLY == resDenseMatrix.rows)
@@ -78,7 +78,7 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
    * It is a 7k x 3k x 60 array.
    */
   test("ReadingKNMIDimensions") {
-    val arrayTuple = NetCDFReader.loadNetCDFNDVars(knmiUrl, KNMI_TASMAX_VAR)
+    val arrayTuple = NetCDFReader.loadNetCDFNDVar(knmiUrl, KNMI_TASMAX_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
 
     val ExpectedShape = arrayTuple._2

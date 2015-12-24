@@ -49,11 +49,11 @@ class Nd4jIntegrationTest extends org.scalatest.FunSuite {
   test("ReadingDailyTRMMDimensions") {
     // creating expected
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
-    val coordArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, DAILY_TRMM_DATA_VAR)
+    val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, DAILY_TRMM_DATA_VAR)
     val dSizes = coordArray._2.toList
     println("[%s] Dimensions for daily TRMM  data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
 
-    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVars(dailyTrmmUrl, DAILY_TRMM_DATA_VAR))
+    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(dailyTrmmUrl, DAILY_TRMM_DATA_VAR))
     assert(realTensor.data.length == (realTensor.shape(0) * realTensor.shape(1)))
     assert(realTensor.tensor.columns == EXPECTED_COLS_DAILY)
     assert(realTensor.tensor.rows == EXPECTED_ROWS_DAILY)
@@ -64,12 +64,12 @@ class Nd4jIntegrationTest extends org.scalatest.FunSuite {
    */
   test("ReadingHourlyTRMMDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
-    val coordArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, HOURLY_TRMM_DATA_VAR)
+    val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, HOURLY_TRMM_DATA_VAR)
     val ExpectedClass = Nd4j.create(coordArray._1, Array(EXPECTED_ROWS, EXPECTED_COLS))
     val dSizes = coordArray._2.toList
     println("[%s] Dimensions for hourly TRMM data set %s".format("ReadingTRMMDimensions", dSizes.toString()))
     // creating result
-    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVars(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR))
+    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR))
     assert(realTensor.tensor.getClass.equals(ExpectedClass.getClass))
     assert(realTensor.shape.toList == ExpectedClass.shape.toList)
   }
@@ -79,7 +79,7 @@ class Nd4jIntegrationTest extends org.scalatest.FunSuite {
    */
   test("ReadingKNMIDimensions") {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
-    val coordArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, KNMI_TASMAX_VAR)
+    val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, KNMI_TASMAX_VAR)
     val ExpectedType = Nd4j.zeros(240, 201, 194)
     val dSizes = coordArray._2.toList
     println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", dSizes.toString()))
@@ -93,7 +93,7 @@ class Nd4jIntegrationTest extends org.scalatest.FunSuite {
    * test for creating a N-Dimension array from AIRS compData
    */
   test("ReadingAIRSDimensions") {
-    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVars(airslvl3, TOTAL_LIQH20))
+    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(airslvl3, TOTAL_LIQH20))
     assert(realTensor.tensor.rows() == 180)
     assert(realTensor.tensor.columns() == 360)
   }

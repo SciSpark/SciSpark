@@ -51,7 +51,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
-    val sBreezeRdd = new SRDD[SciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVars, mapSubFoldersToFolders)
+    val sBreezeRdd = new SRDD[SciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVar, mapSubFoldersToFolders)
     sBreezeRdd.collect()
     assert(true)
   }

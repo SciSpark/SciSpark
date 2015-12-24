@@ -42,7 +42,7 @@ object NetCDFUtils {
    * For example the array shape (21, 5, 1, 2) is reduced to (21, 5, 2) since the 3rd dimension
    * has only one index in it.
    */
-  def netcdfArrayandShape(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
+  def netCDFArrayAndShape(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
     val SearchVariableArray: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
     if (SearchVariableArray == null) {
       LOG.error("Variable '%s' not found. Can't create array. Returning empty array.".format(variable))

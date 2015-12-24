@@ -22,53 +22,61 @@ import org.slf4j.Logger
 import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset
 
+/**
+ * Utility functions to create a multi-dimensional array from a NetCDF,
+ * most importantly from some URI.
+ */
 object NetCDFReader {
 
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
-   * Gets an NDimensional array of from a NetCDF url
-   * @param url where the netcdf file is located
-   * @param variable the NetCDF variable to search for
+   * Gets a multi-dimensional array from a NetCDF at some URI.
+   *
+   * @param uri where the NetCDF file is located
+   * @param variable the NetCDF variable to extract
    * @return
    */
-  def loadNetCDFNDVars(url: String, variable: String): (Array[Double], Array[Int]) = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
+  def loadNetCDFNDVar(uri: String, variable: String): (Array[Double], Array[Int]) = {
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(uri)
     if (netcdfFile == null) {
-      LOG.warn("Dataset %s not found!".format(url))
+      LOG.warn("Dataset %s not found!".format(uri))
       return (Array(-9999), Array(1, 1))
     }
 
-    val coordinateArray = NetCDFUtils.netcdfArrayandShape(netcdfFile, variable)
+    val coordinateArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, variable)
     val variableArray = coordinateArray._1
 
     if (variableArray.length < 1) {
-      LOG.warn("Variable '%s' in dataset in %s not found!".format(variable, url))
+      LOG.warn("Variable '%s' in dataset at %s not found!".format(variable, uri))
       return (Array(-9999), Array(1, 1))
     }
-
     coordinateArray
   }
 
-  def loadNetCDFVariables(url: String): List[String] = {
-    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(url)
-    val variables = netcdfFile.getVariables
+  /**
+   * Gets just the variable names of a NetCDF at some URI.
+   */
+  def loadNetCDFVar(uri: String): List[String] = {
+    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(uri)
+    val vars = netcdfFile.getVariables
+    /** We have to be mutable here because vars is a Java list which has no map function. */
     var list: List[String] = List()
-    for (i <- 0 to variables.size - 1) {
-      val k = variables.get(i).getShortName
+    for (i <- 0 to vars.size - 1) {
+      val k = vars.get(i).getShortName
       list ++= List(k)
     }
     list
   }
 
-  def loadNetCDFNDVars(dataset : NetcdfDataset, variable : String) : (Array[Double], Array[Int]) = {
+  def loadNetCDFNDVar(dataset: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
     if (dataset == null) {
       LOG.warn("Dataset %s not found!".format())
       return (Array(-9999), Array(1, 1))
     }
 
-    val coordinateArray = NetCDFUtils.netcdfArrayandShape(dataset, variable)
+    val coordinateArray = NetCDFUtils.netCDFArrayAndShape(dataset, variable)
     val variableArray = coordinateArray._1
 
     if (variableArray.length < 1) {
@@ -78,7 +86,7 @@ object NetCDFReader {
     coordinateArray
   }
 
-  def loadNetCDFFile(name : String, file : Array[Byte]) : NetcdfDataset = {
+  def loadNetCDFFile(name: String, file: Array[Byte]): NetcdfDataset = {
     new NetcdfDataset(NetcdfFile.openInMemory(name, file))
   }
 

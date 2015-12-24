@@ -18,44 +18,53 @@
 package org.dia.loaders
 
 import java.util.Random
-
 import org.nd4j.linalg.factory.Nd4j
 
 /**
+ * Generates random matrices.
  */
 object RandomMatrixReader {
 
-    def loadRandomArray(url : String, varname : String) : (Array[Double], Array[Int]) = {
-      val generator = new Random()
-      generator.setSeed(url.hashCode)
-      val randomCenter = generator.nextDouble * 20.0
-      val randomCenterOther = generator.nextDouble * 20
-      val otroRandomCenter = generator.nextDouble * 20
-      val ndArray = Nd4j.zeros(20, 20)
-      for(row <- 0 to ndArray.rows - 1){
-        for(col <- 0 to ndArray.columns - 1){
-          if (Math.pow(row - randomCenter, 2) + Math.pow(col - randomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
-          if (Math.pow(row - randomCenterOther, 2) + Math.pow(col - randomCenterOther, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
-          if (Math.pow(row - otroRandomCenter, 2) + Math.pow(col - otroRandomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
-        }
-      }
-      (ndArray.data.asDouble, ndArray.shape)
-    }
+  def dist(x: Double, y: Double) = Math.pow(x - y, 2)
 
-  def loadRandomArray(sizeTuple: (Int, Int))(url: String, varname: String): (Array[Double], Array[Int]) = {
+  def loadRandomArray(uri: String, varname: String): (Array[Double], Array[Int]) = {
     val generator = new Random()
-    generator.setSeed(url.hashCode)
-    val randomCenter = generator.nextDouble * sizeTuple._1
-    val randomCenterOther = generator.nextDouble * sizeTuple._1
-    val otroRandomCenter = generator.nextDouble * sizeTuple._1
-    val ndArray = Nd4j.zeros(sizeTuple._1, sizeTuple._1)
-    for (row <- 0 to ndArray.rows - 1) {
-      for (col <- 0 to ndArray.columns - 1) {
-        if (Math.pow(row - randomCenter, 2) + Math.pow(col - randomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
-        if (Math.pow(row - randomCenterOther, 2) + Math.pow(col - randomCenterOther, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
-        if (Math.pow(row - otroRandomCenter, 2) + Math.pow(col - otroRandomCenter, 2) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
+    generator.setSeed(uri.hashCode)
+    val n = 20
+    val randomCenter1 = generator.nextDouble * n
+    val randomCenter2 = generator.nextDouble * n
+    val randomCenter3 = generator.nextDouble * n
+    val ndArray = Nd4j.zeros(n, n)
+    for (row <- 0 to n - 1) {
+      for (col <- 0 to n - 1) {
+        if (dist(row, randomCenter1) + dist(col, randomCenter1) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
+        if (dist(row, randomCenter2) + dist(col, randomCenter2) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
+        if (dist(row, randomCenter3) + dist(col, randomCenter3) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
       }
     }
     (ndArray.data.asDouble, ndArray.shape)
   }
+
+  def loadRandomArray(sizeTuple: (Int, Int))(uri: String, varname: String): (Array[Double], Array[Int]) = {
+    val generator = new Random()
+    generator.setSeed(uri.hashCode)
+    val m = sizeTuple._1
+    val n = sizeTuple._2
+    val randomCenter1Row = generator.nextDouble * m
+    val randomCenter1Col = generator.nextDouble * n
+    val randomCenter2Row = generator.nextDouble * m
+    val randomCenter2Col = generator.nextDouble * n
+    val randomCenter3Row = generator.nextDouble * m
+    val randomCenter3Col = generator.nextDouble * n
+    val ndArray = Nd4j.zeros(m, n)
+    for (row <- 0 to m - 1) {
+      for (col <- 0 to n - 1) {
+        if (dist(row, randomCenter1Row) + dist(col, randomCenter1Col) <= 9) ndArray.put(row, col, generator.nextDouble * 340)
+        if (dist(row, randomCenter2Row) + dist(col, randomCenter2Col) <= 9) ndArray.put(row, col, generator.nextDouble * 7000)
+        if (dist(row, randomCenter3Row) + dist(col, randomCenter3Col) <= 9) ndArray.put(row, col, generator.nextDouble * 24000)
+      }
+    }
+    (ndArray.data.asDouble, ndArray.shape)
+  }
+
 }
