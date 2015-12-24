@@ -119,5 +119,5 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this(variableName, array)
     metaDataVar.map(p => metaData += p)
   }
-  
+
 }

@@ -85,15 +85,15 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    getIterator(split.asInstanceOf[sRDDPartition[T]])
+    getIterator(split.asInstanceOf[SRDDPartition[T]])
   }
 
   /**
-   * Given an sRDDPartition, the iterator traverses the list of URL's
+   * Given an SRDDPartition, the iterator traverses the list of URI's
    * assigned to the partition. Calls to next() will call the loader function
-   * and construct a SciTensor for each URL in the list.
+   * and construct a SciTensor for each URI in the list.
    */
-  def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
+  def getIterator(theSplit: SRDDPartition[T]): Iterator[T] = {
     val iterator = new Iterator[T] {
       var counter = 0
 
@@ -102,10 +102,10 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
       }
 
       override def next(): T = {
-        val urlValue = theSplit.uriList(counter)
+        val uriValue = theSplit.uriList(counter)
         val tensorMap = varName.map(avar => {
           val loader = () => {
-            loadFunc(urlValue, avar)
+            loadFunc(uriValue, avar)
           }
           (avar, TensorFactory.getTensors(arrLib, loader))
         }).toMap
@@ -114,7 +114,7 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
         counter += 1
 
         val sciArray = new SciTensor(hash)
-        sciArray.insertDictionary(("SOURCE", urlValue))
+        sciArray.insertDictionary(("SOURCE", uriValue))
         sciArray.asInstanceOf[T]
       }
     }
@@ -122,8 +122,8 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   }
 
   /**
-   * Returns the set of partitions in this RDD. Each partition represents a single URLs.
-   * The default setting is a grouping of 1 url.
+   * Returns the set of partitions in this RDD. Each partition represents a group of URIs.
+   * The default setting is 1 URI per group.
    *
    * @return
    */
@@ -133,7 +133,7 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
     val array = new Array[Partition](listOfLists.size)
 
     for (list <- listOfLists) {
-      array(pos) = new sRDDPartition(pos, list)
+      array(pos) = new SRDDPartition(pos, list)
       pos += 1
     }
     array
@@ -143,15 +143,15 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
    * Return a new RDD by applying a function to all elements of this RDD.
    */
   override def map[U: ClassTag](f: T => U): SRDD[U] = {
-    new sMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
+    new SMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
   }
 
   override def flatMap[U: ClassTag](f: T => TraversableOnce[U]): SRDD[U] = {
-    new sMapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(f))
+    new SMapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(f))
   }
 
   override def filter(f: T => Boolean): SRDD[T] = {
-    new sMapPartitionsRDD[T, T](
+    new SMapPartitionsRDD[T, T](
       this,
       (context, pid, iter) => iter.filter(f),
       preservesPartitioning = true)

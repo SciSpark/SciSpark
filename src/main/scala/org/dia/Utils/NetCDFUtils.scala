@@ -151,7 +151,7 @@ object NetCDFUtils {
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
       val d = it.next()
-      if (d.getName.equals(rowDim))
+      if (d.getShortName.equals(rowDim))
         dimSize = d.getLength
     }
     if (dimSize < 0)

@@ -56,7 +56,7 @@ object NetCDFReader {
     val variables = netcdfFile.getVariables
     var list: List[String] = List()
     for (i <- 0 to variables.size - 1) {
-      val k = variables.get(i).getName
+      val k = variables.get(i).getShortName
       list ++= List(k)
     }
     list
