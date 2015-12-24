@@ -22,7 +22,6 @@ import orq.dia.HDFSRandomAccessFile
 import ucar.ma2
 import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset
-
 import scala.language.implicitConversions
 
 /**

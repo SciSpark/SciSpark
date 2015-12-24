@@ -18,9 +18,8 @@
 package org.dia.algorithms.mcc
 
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, sRDD, SciTensor}
+import org.dia.core.{SciSparkContext, SRDD, SciTensor}
 import org.slf4j.Logger
-
 import scala.collection.mutable
 import scala.language.implicitConversions
 
@@ -83,7 +82,7 @@ object MainMemory {
     (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
   }
 
-  def getVertexArray(collection: sRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
+  def getVertexArray(collection: SRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
     val id = collection.map(p => (p.metaData("FRAME") , p.metaData("COMPONENT"))).collect().toList
     val size = id.length
     val range = 0 to (size - 1)

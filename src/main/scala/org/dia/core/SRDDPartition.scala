@@ -20,7 +20,7 @@ package org.dia.core
 import org.apache.spark.Partition
 
 /**
- * The sRDD partition used by sRDD. Each sRDDPartition
+ * The SRDD partition used by SRDD. Each sRDDPartition
  * contains a subset of the entire URI list.
   */
 class sRDDPartition[T](val index: Int,

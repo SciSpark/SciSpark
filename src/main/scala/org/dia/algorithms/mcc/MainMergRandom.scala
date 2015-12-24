@@ -74,7 +74,7 @@ object MainMergRandom {
     val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
     /**
-     * Ingest the input file and construct the sRDD.
+     * Ingest the input file and construct the SRDD.
      * For MCC the sources are used to map date-indexes.
      * The metadata variable "FRAME" corresponds to an index.
      * The indices themselves are numbered with respect to

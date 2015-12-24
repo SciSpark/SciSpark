@@ -70,7 +70,7 @@ class SciSparkContext(val conf: SparkConf) {
   def getConf: SparkConf = sparkContext.getConf
 
   /**
-   * Constructs an sRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
+   * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
    * If no names are provided then all variable arrays in that file are loaded.
    * The URI could be an OpenDapURL or a filesystem path.
    *
@@ -78,21 +78,21 @@ class SciSparkContext(val conf: SparkConf) {
    */
   def NetcdfFile(path: String,
                  varName: List[String] = Nil,
-                 minPartitions: Int = 2): sRDD[SciTensor] = {
+                 minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new sRDD[SciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URLs, variables, loadNetCDFNDVars, MapNUrl(PartitionSize))
   }
 
   /**
    * Constructs an RDD given URI pointing to an HDFS directory of Netcdf files and a list of variable names.
    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
-   * from SparkContext. This is why a normal RDD is returned instead of an sRDD.
+   * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
    *
-   * TODO :: Create an sRDD instead of a normal RDD
+   * TODO :: Create an SRDD instead of a normal RDD
    */
   def NetcdfDFSFile(path: String,
                     varName: List[String] = Nil,
@@ -117,24 +117,24 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs a random sRDD from a file of URI's, a list of variable names, and matrix dimensions.
+   * Constructs a random SRDD from a file of URI's, a list of variable names, and matrix dimensions.
    * The seed for matrix values is the path values, so the same input set will yield the the same data.
    *
    */
   def randomMatrices(path: String,
                      varName: List[String] = Nil,
                      matrixSize: (Int, Int),
-                     minPartitions: Int = 2): sRDD[SciTensor] = {
+                     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new sRDD[SciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), MapNUrl(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URLs, variables, loadRandomArray(matrixSize), MapNUrl(PartitionSize))
   }
 
   /**
-   * Constructs an sRDD given a file of URI's pointing to MERG files, a list of variables names,
+   * Constructs an SRDD given a file of URI's pointing to MERG files, a list of variables names,
    * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
    * and the value offset is 75.
    */
@@ -142,12 +142,12 @@ class SciSparkContext(val conf: SparkConf) {
                 varName: List[String] = List("TMP"),
                 shape: Array[Int] = Array(9896, 3298),
                 offset: Double = 75,
-                minPartitions: Int = 2): sRDD[SciTensor] = {
+                minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URLs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URLs.size > minPartitions) (URLs.size + minPartitions) / minPartitions else 1
 
-    new sRDD[SciTensor](sparkContext, URLs, varName, LoadMERGArray(shape, offset), MapNUrl(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URLs, varName, LoadMERGArray(shape, offset), MapNUrl(PartitionSize))
   }
 
   /**
@@ -156,9 +156,9 @@ class SciSparkContext(val conf: SparkConf) {
    * and the value offset is 75.
    *
    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
-   * from SparkContext. This is why a normal RDD is returned instead of an sRDD.
+   * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
    *
-   * TODO :: Create an sRDD instead of a normal RDD
+   * TODO :: Create an SRDD instead of a normal RDD
    */
   def mergDFSFile(path: String,
                   varName: List[String] = List("TMP"),
@@ -179,11 +179,11 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an sRDD given a nested directories of NetCDF files.
+   * Constructs an SRDD given a nested directories of NetCDF files.
    */
-  def OpenPath(path: String, varName: List[String] = Nil): sRDD[SciTensor] = {
+  def OpenPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
     val datasetPaths = List(path)
-    new sRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+    new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
   }
 
 }

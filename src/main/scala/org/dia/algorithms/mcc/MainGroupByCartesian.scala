@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat
 
 import org.dia.Parsers
 import org.dia.Utils.{FileUtils, JsonUtils}
-import org.dia.core.{SciSparkContext, sRDD, SciTensor}
+import org.dia.core.{SciSparkContext, SRDD, SciTensor}
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
@@ -77,7 +77,7 @@ object MainGroupByCartesian {
     val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
     /**
-     * Ingest the input file and construct the sRDD.
+     * Ingest the input file and construct the SRDD.
      * For MCC the sources are used to map date-indexes.
      * The metadata variable "FRAME" corresponds to an index.
      * The indices themselves are numbered with respect to
@@ -138,7 +138,7 @@ object MainGroupByCartesian {
     ((area >= 40.0) || (area < 40.0)) && (tempDiff > 10.0)
   }
 
-  def getVertexArray(collection: sRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
+  def getVertexArray(collection: SRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
     val id = collection.map(p => (p.metaData("FRAME"), p.metaData("COMPONENT"))).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
