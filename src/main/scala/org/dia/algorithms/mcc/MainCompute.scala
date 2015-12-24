@@ -20,7 +20,7 @@ package org.dia.algorithms.mcc
 import java.util.Random
 
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.core.{SciSparkContext, SciTensor}
 import org.dia.tensors.AbstractTensor
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
@@ -102,7 +102,7 @@ object MainCompute {
 //    FileUtils.writeToFile("./resources/graph.json", pretty(render(json)))
   }
 
-  def checkComponentsOverlap(sciTensor1: sciTensor, sciTensor2: sciTensor): List[(String, String)] = {
+  def checkComponentsOverlap(sciTensor1: SciTensor, sciTensor2: SciTensor): List[(String, String)] = {
     val currentTimeRDD = mccOps.findCloudElementsX(sciTensor1)
     val nextTimeRDD = mccOps.findCloudElementsX(sciTensor2)
     var edgePair = List.empty[(String, String)]

@@ -1,7 +1,11 @@
 package org.dia.tensors
 
-trait sliceableArray {
-  type T <: sliceableArray
+/**
+ * A sliceable array.
+ */
+trait SliceableArray {
+
+  type T <: SliceableArray
 
   def rows: Int
 
@@ -11,8 +15,8 @@ trait sliceableArray {
 
   def data: Array[Double]
 
-
   def apply(ranges: (Int, Int)*): T
 
   def apply(indexes: Int*): Double
+
 }

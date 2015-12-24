@@ -1,28 +1,25 @@
 package org.dia.core
 
-
 import java.io.Serializable
-
 import org.dia.algorithms.mcc.mccOps
 import org.dia.tensors.AbstractTensor
 import org.slf4j.Logger
-
 import scala.collection.mutable
+import scala.language.implicitConversions
 
 /**
- * The sciTensor is a self documented array object. It stores N number of variable arrays.
- * The sciTensor also keeps track of a metadata table for properties which the user may want to record.
- * Note that all linear algebra and ocw operations on sciTensors are performed on the variable in use.
- * Furthermore sciTensors are treated as immutable objects and so all operations return new sciTensor objects.
+ * The SciTensor is a self-documented array object. It stores N number of variable arrays.
+ * The SciTensor also keeps track of a metadata table for properties which the user may want to record.
+ * Note that all linear algebra and ocw operations on SciTensors are performed on the variable in use.
+ * Furthermore SciTensors are treated as immutable objects and so all operations return new SciTensor objects.
  *
- * @param variables a hasmap of variable arrays
+ * @param variables A hashmap of variable names to the tensor of variable values.
  */
-class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
+class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-  val metaData: mutable.HashMap[String, String] = new mutable.HashMap[String, String]
+  val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val metaData = new mutable.HashMap[String, String]
   var varInUse = variables.toArray.apply(0)._1
-
 
   def this(variableName: String, array: AbstractTensor) {
     this(new mutable.HashMap[String, AbstractTensor] += ((variableName, array)))
@@ -43,7 +40,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   /**
    * Slices the head variable array given the list of ranges per dimension.
    */
-  def apply(ranges: (Int, Int)*): sciTensor = {
+  def apply(ranges: (Int, Int)*): SciTensor = {
     variables(varInUse)(ranges: _*)
   }
 
@@ -51,7 +48,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * Shifts the variable in use pointer to a different variable array.
    * If the variable is not found, error message to log4j.
    */
-  def apply(variable: String): sciTensor = {
+  def apply(variable: String): SciTensor = {
     if (variables.keySet.contains(variable)) {
       varInUse = variable
     } else {
@@ -60,37 +57,37 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this
   }
 
-  def +(stensor: sciTensor): sciTensor = this.tensor + stensor.tensor
+  def +(stensor: SciTensor): SciTensor = this.tensor + stensor.tensor
 
   /**
    * returns the variable array that is currently being used
    */
   def tensor: AbstractTensor = variables(varInUse)
 
-  def -(stensor: sciTensor): sciTensor = this.tensor - stensor.tensor
+  def -(stensor: SciTensor): SciTensor = this.tensor - stensor.tensor
 
-  def \(stensor: sciTensor): sciTensor = this.tensor \ stensor.tensor
+  def \(stensor: SciTensor): SciTensor = this.tensor \ stensor.tensor
 
-  def /(stensor: sciTensor): sciTensor = this.tensor / stensor.tensor
+  def /(stensor: SciTensor): SciTensor = this.tensor / stensor.tensor
 
-  def *(stensor: sciTensor): sciTensor = this.tensor * stensor.tensor
+  def *(stensor: SciTensor): SciTensor = this.tensor * stensor.tensor
 
   /**
    * Linear Algebra Operations
    */
-  def **(stensor: sciTensor): sciTensor = this.tensor ** stensor.tensor
+  def **(stensor: SciTensor): SciTensor = this.tensor ** stensor.tensor
 
   /**
    * Masks the current variable array by preserving values
    * less than or equal to num.
    */
-  def <=(num: Double): sciTensor = variables(varInUse) <= num
+  def <=(num: Double): SciTensor = variables(varInUse) <= num
 
   /**
    * Returns a block averaged matrix where the blocks are squares with
    * dimensions blockInt.
    */
-  def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): sciTensor = {
+  def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): SciTensor = {
     mccOps.reduceResolution(variables(varInUse), blockInt, invalid)
   }
 
@@ -103,7 +100,7 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * Returns a block averaged matrix where the blocks are rectangles with dimensions
    * rowblockSize X colblockSize.
    */
-  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): sciTensor = {
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): SciTensor = {
     mccOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
   }
 
@@ -114,15 +111,12 @@ class sciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   }
 
   /**
-   * An implicit converter that is called on every sciTensor operator function.
+   * An implicit converter that is called on every SciTensor operator function.
    */
-  private implicit def convert(tensor: AbstractTensor): sciTensor = new sciTensor(varInUse, tensor, metaData)
+  private implicit def convert(tensor: AbstractTensor): SciTensor = new SciTensor(varInUse, tensor, metaData)
 
   def this(variableName: String, array: AbstractTensor, metaDataVar: mutable.HashMap[String, String]) {
     this(variableName, array)
     metaDataVar.map(p => metaData += p)
   }
-
-
 }
-

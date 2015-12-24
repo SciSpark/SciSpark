@@ -21,7 +21,7 @@ import java.io.File
 
 import org.dia.Constants._
 import org.dia.TestEnvironment.SparkTestConstants
-import org.dia.core.{sRDD, sciTensor}
+import org.dia.core.{sRDD, SciTensor}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.sPartitioner._
 
@@ -51,7 +51,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
-    val sBreezeRdd = new sRDD[sciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVars, mapSubFoldersToFolders)
+    val sBreezeRdd = new sRDD[SciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVars, mapSubFoldersToFolders)
     sBreezeRdd.collect()
     assert(true)
   }
@@ -60,7 +60,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     val path = "/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/"
-    val pathRDD: sRDD[sciTensor] = sc.OpenPath(path, List("precipitation"))
+    val pathRDD: sRDD[SciTensor] = sc.OpenPath(path, List("precipitation"))
     println(pathRDD.collect()(0).variables("precipitation").data.length)
     assert(true)
   }
@@ -70,7 +70,7 @@ class LoadersTest extends org.scalatest.FunSuite {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = "TestLinks2"
     //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
-    val pathRDD: sRDD[sciTensor] = sc.NetcdfFile(path)
+    val pathRDD: sRDD[SciTensor] = sc.NetcdfFile(path)
     val t = pathRDD.collect().toList
     println("Number loaded " + t.length)
     println(t.toString())

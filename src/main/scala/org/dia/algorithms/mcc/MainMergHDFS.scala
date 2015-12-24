@@ -19,7 +19,7 @@ package org.dia.algorithms.mcc
 
 import java.io.{File, PrintWriter}
 
-import org.dia.core.{SciSparkContext, sciTensor}
+import org.dia.core.{SciSparkContext, SciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -246,7 +246,7 @@ object MainMergHDFS {
     println(complete.toDebugString + "\n")
   }
 
-  def checkCriteria(p: sciTensor): Boolean = {
+  def checkCriteria(p: SciTensor): Boolean = {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble

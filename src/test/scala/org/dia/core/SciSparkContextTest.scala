@@ -32,10 +32,10 @@ class SciSparkContextTest extends FunSuite {
   test("NetcdfFile.Local") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = SparkTestConstants.datasetVariable
-    val nd4jRDD: sRDD[sciTensor] = sc.NetcdfFile(TestLinks, List(variable))
+    val nd4jRDD: sRDD[SciTensor] = sc.NetcdfFile(TestLinks, List(variable))
 
     val smoothRDD = nd4jRDD.map(p => p(variable).reduceResolution(5, -9999))
-    val collect: Array[sciTensor] = smoothRDD.map(p => p <= 241.0).collect()
+    val collect: Array[SciTensor] = smoothRDD.map(p => p <= 241.0).collect()
 
     collect.foreach(sciTensor => {
       for (i <- 0 to sciTensor.tensor.rows - 1) {

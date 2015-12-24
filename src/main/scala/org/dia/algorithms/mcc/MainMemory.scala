@@ -18,7 +18,7 @@
 package org.dia.algorithms.mcc
 
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, sRDD, sciTensor}
+import org.dia.core.{SciSparkContext, sRDD, SciTensor}
 import org.slf4j.Logger
 
 import scala.collection.mutable
@@ -76,14 +76,14 @@ object MainMemory {
     println(collectedEdges.length)
   }
 
-  def checkCriteria(p : sciTensor) : Boolean = {
+  def checkCriteria(p : SciTensor) : Boolean = {
     val hash = p.metaData
     val area = hash("AREA").toDouble
     val tempDiff = hash("DIFFERENCE").toDouble
     (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
   }
 
-  def getVertexArray(collection: sRDD[sciTensor]): mutable.HashMap[(String, String), Long] = {
+  def getVertexArray(collection: sRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
     val id = collection.map(p => (p.metaData("FRAME") , p.metaData("COMPONENT"))).collect().toList
     val size = id.length
     val range = 0 to (size - 1)
