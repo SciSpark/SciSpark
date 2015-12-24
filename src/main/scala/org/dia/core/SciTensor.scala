@@ -13,7 +13,7 @@ import scala.language.implicitConversions
  * Note that all linear algebra and ocw operations on SciTensors are performed on the variable in use.
  * Furthermore SciTensors are treated as immutable objects and so all operations return new SciTensor objects.
  *
- * @param variables A hashmap of variable names to the tensor of variable values.
+ * @param variables A hashmap of variable name to the tensor of variable values.
  */
 class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
 
@@ -57,25 +57,25 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this
   }
 
-  def +(stensor: SciTensor): SciTensor = this.tensor + stensor.tensor
+  def +(other: SciTensor): SciTensor = this.tensor + other.tensor
 
   /**
-   * returns the variable array that is currently being used
+   * Returns the variable array that is currently being used
    */
   def tensor: AbstractTensor = variables(varInUse)
 
-  def -(stensor: SciTensor): SciTensor = this.tensor - stensor.tensor
+  def -(other: SciTensor): SciTensor = this.tensor - other.tensor
 
-  def \(stensor: SciTensor): SciTensor = this.tensor \ stensor.tensor
+  def \(other: SciTensor): SciTensor = this.tensor \ other.tensor
 
-  def /(stensor: SciTensor): SciTensor = this.tensor / stensor.tensor
+  def /(other: SciTensor): SciTensor = this.tensor / other.tensor
 
-  def *(stensor: SciTensor): SciTensor = this.tensor * stensor.tensor
+  def *(other: SciTensor): SciTensor = this.tensor * other.tensor
 
   /**
    * Linear Algebra Operations
    */
-  def **(stensor: SciTensor): SciTensor = this.tensor ** stensor.tensor
+  def **(other: SciTensor): SciTensor = this.tensor ** other.tensor
 
   /**
    * Masks the current variable array by preserving values
@@ -84,7 +84,7 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def <=(num: Double): SciTensor = variables(varInUse) <= num
 
   /**
-   * Returns a block averaged matrix where the blocks are squares with
+   * Returns a block averaged tensor where the blocks are squares with
    * dimensions blockInt.
    */
   def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): SciTensor = {
@@ -119,4 +119,5 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this(variableName, array)
     metaDataVar.map(p => metaData += p)
   }
+
 }

@@ -18,29 +18,25 @@ package org.dia.core
 
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
-import org.dia.tensors.{AbstractTensor, TensorFactory}
-
+import org.dia.tensors.{ AbstractTensor, TensorFactory }
 import scala.collection.mutable
-
-//import scala.collection.immutable.HashMap
-//import scala.collection.parallel.mutable
 import scala.reflect.ClassTag
 
 /**
- * Scientific RDD. There are few differences between an sRDD and a normal RDD.
+ * Scientific RDD. There are few differences between an SRDD and a normal RDD.
  * In the future we will extend repartitioning by time and by space.
  *
- * Currently the sRDD differs from a normal RDD in the following ways.
+ * Currently the SRDD differs from a normal RDD in the following ways.
  * 1) Supports custom matrix loader functions with the following signature :
  * (String, String) => (Array[Double], Array[Int]) which is the 1-D array and dimensional shape
  * 2) Supports custom partitioning functions with the following signature :
  * List[String] => List[List[String]]
  *
  * Note that passing closures has it's drawbacks if the scope of a closure environment is not properly checked.
- * The internal API of the sRDD (spefically the constructors) may change in the future.
+ * The internal API of the SRDD (specifically the constructors) may change in the future.
  *
  */
-class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
   var datasets: List[String] = null
   var varName: Seq[String] = Nil
@@ -48,10 +44,10 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   var partitionFunc: List[String] => List[List[String]] = null
 
   def this(@transient sc: SparkContext,
-           data: List[String],
-           name: List[String],
-           loader: (String, String) => (Array[Double], Array[Int]),
-           partitioner: List[String] => List[List[String]]) {
+    data: List[String],
+    name: List[String],
+    loader: (String, String) => (Array[Double], Array[Int]),
+    partitioner: List[String] => List[List[String]]) {
 
     this(sc, Nil)
     datasets = data
@@ -69,7 +65,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   //    this(sc.sparkContext, data, name, loader, partitioner)
   //  }
 
-  def this(@transient oneParent: sRDD[_]) = {
+  def this(@transient oneParent: SRDD[_]) = {
     this(oneParent.context, List(new OneToOneDependency(oneParent)))
   }
 
@@ -89,15 +85,15 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
    * Computes the iterator needed according to the array lib needed.
    */
   def compute(split: Partition, context: TaskContext): Iterator[T] = {
-    getIterator(split.asInstanceOf[sRDDPartition[T]])
+    getIterator(split.asInstanceOf[SRDDPartition[T]])
   }
 
   /**
-   * Given an sRDDPartition, the iterator traverses the list of URL's
+   * Given an SRDDPartition, the iterator traverses the list of URI's
    * assigned to the partition. Calls to next() will call the loader function
-   * and construct a SciTensor for each URL in the list.
+   * and construct a SciTensor for each URI in the list.
    */
-  def getIterator(theSplit: sRDDPartition[T]): Iterator[T] = {
+  def getIterator(theSplit: SRDDPartition[T]): Iterator[T] = {
     val iterator = new Iterator[T] {
       var counter = 0
 
@@ -106,10 +102,10 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
       }
 
       override def next(): T = {
-        val urlValue = theSplit.uriList(counter)
+        val uriValue = theSplit.uriList(counter)
         val tensorMap = varName.map(avar => {
           val loader = () => {
-            loadFunc(urlValue, avar)
+            loadFunc(uriValue, avar)
           }
           (avar, TensorFactory.getTensors(arrLib, loader))
         }).toMap
@@ -118,7 +114,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
         counter += 1
 
         val sciArray = new SciTensor(hash)
-        sciArray.insertDictionary(("SOURCE", urlValue))
+        sciArray.insertDictionary(("SOURCE", uriValue))
         sciArray.asInstanceOf[T]
       }
     }
@@ -126,8 +122,8 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   }
 
   /**
-   * Returns the set of partitions in this RDD. Each partition represents a single URLs.
-   * The default setting is a grouping of 1 url.
+   * Returns the set of partitions in this RDD. Each partition represents a group of URIs.
+   * The default setting is 1 URI per group.
    *
    * @return
    */
@@ -137,7 +133,7 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
     val array = new Array[Partition](listOfLists.size)
 
     for (list <- listOfLists) {
-      array(pos) = new sRDDPartition(pos, list)
+      array(pos) = new SRDDPartition(pos, list)
       pos += 1
     }
     array
@@ -146,16 +142,16 @@ class sRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
   /**
    * Return a new RDD by applying a function to all elements of this RDD.
    */
-  override def map[U: ClassTag](f: T => U): sRDD[U] = {
-    new sMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
+  override def map[U: ClassTag](f: T => U): SRDD[U] = {
+    new SMapPartitionsRDD[U, T](this, (sc, pid, iter) => iter.map(f))
   }
 
-  override def flatMap[U: ClassTag](f: T => TraversableOnce[U]): sRDD[U] = {
-    new sMapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(f))
+  override def flatMap[U: ClassTag](f: T => TraversableOnce[U]): SRDD[U] = {
+    new SMapPartitionsRDD[U, T](this, (context, pid, iter) => iter.flatMap(f))
   }
 
-  override def filter(f: T => Boolean): sRDD[T] = {
-    new sMapPartitionsRDD[T, T](
+  override def filter(f: T => Boolean): SRDD[T] = {
+    new SMapPartitionsRDD[T, T](
       this,
       (context, pid, iter) => iter.filter(f),
       preservesPartitioning = true)

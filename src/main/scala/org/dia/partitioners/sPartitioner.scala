@@ -38,8 +38,8 @@ object sPartitioner {
   /**
    * A grouped mapping
    */
-  def MapNUrl(N: Int)(urls: List[String]): List[List[String]] = {
-    urls.grouped(N).toList
+  def MapNUri(N: Int)(uris: List[String]): List[List[String]] = {
+    uris.grouped(N).toList
   }
 
   /**

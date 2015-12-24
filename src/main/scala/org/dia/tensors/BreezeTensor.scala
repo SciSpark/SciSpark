@@ -110,9 +110,9 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   override def toString: String = if (tensor != null) tensor.toString() else null
 
-  def max: Double = tensor.max
+  def max = breeze.linalg.max(tensor)
 
-  def min: Double = tensor.min
+  def min = breeze.linalg.min(tensor)
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

@@ -18,11 +18,10 @@
 package org.dia.Utils
 
 import org.slf4j.Logger
-import orq.dia.HDFSRandomAccessFile
+import org.dia.HDFSRandomAccessFile
 import ucar.ma2
 import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset
-
 import scala.language.implicitConversions
 
 /**
@@ -152,7 +151,7 @@ object NetCDFUtils {
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
       val d = it.next()
-      if (d.getName.equals(rowDim))
+      if (d.getShortName.equals(rowDim))
         dimSize = d.getLength
     }
     if (dimSize < 0)
