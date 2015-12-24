@@ -18,24 +18,27 @@
 package org.dia.loaders
 
 import java.io.File
-
 import org.slf4j.Logger
 
 /**
- * Contains all functions needed to handle netCDF files
+ * Utility functions to get files (just names) from local file system.
  */
 object PathReader {
 
   // Class logger
   val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
+  /**
+   * Gets all files recursively starting at the path of a given file.
+   */
   def recursiveListFiles(f: File): Map[String, Array[String]] = {
     if (!f.exists()) {
       LOG.error("%s not found!".format(f.getAbsolutePath))
       throw new IllegalArgumentException("%s not found!".format(f.getAbsolutePath))
     }
-    val dirFiles: Map[String, Array[String]] = Map((f.getName, f.listFiles.filter(p => !p.isDirectory & !p.isHidden).map(f => f.getAbsolutePath)))
-    val these = f.listFiles
-    dirFiles ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+    val files = Map((f.getName, f.listFiles.filter(p => !p.isDirectory & !p.isHidden).map(f => f.getAbsolutePath)))
+    val dirs = f.listFiles.filter(_.isDirectory)
+    files ++ dirs.flatMap(recursiveListFiles)
   }
+
 }

@@ -1,6 +1,5 @@
 package org.dia.loaders
 
-
 import scala.io.Source
 
 /**
@@ -19,17 +18,17 @@ import scala.io.Source
  */
 object MergReader {
 
-  def LoadMERGArray(shape: Array[Int], offset: Double)(file: String, varName: String): (Array[Double], Array[Int]) = {
-    val java1dArray = ReadMergtoJavaArray(file, offset, shape)
+  def loadMERGArray(shape: Array[Int], offset: Double)(file: String, varName: String): (Array[Double], Array[Int]) = {
+    val java1dArray = readMergtoJavaArray(file, offset, shape)
     (java1dArray, shape)
   }
 
-  def LoadMERGArray(file: String, shape: Array[Int], offset: Double): (Array[Double], Array[Int]) = {
-    val java1dArray = ReadMergtoJavaArray(file, offset, shape)
+  def loadMERGArray(file: String, shape: Array[Int], offset: Double): (Array[Double], Array[Int]) = {
+    val java1dArray = readMergtoJavaArray(file, offset, shape)
     (java1dArray, shape)
   }
 
-  def ReadMergtoJavaArray(file: String, offset: Double, shape: Array[Int]): Array[Double] = {
+  def readMergtoJavaArray(file: String, offset: Double, shape: Array[Int]): Array[Double] = {
     val Sourcefile = Source.fromFile(file, "ISO8859-1")
     val numElems = shape.product
     val byteArray = Sourcefile.map(_.toInt).slice(0, numElems).toArray
@@ -38,7 +37,7 @@ object MergReader {
     SourceArray
   }
 
-  def ReadMergBytetoJavaArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
+  def readMergBytetoJavaArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
     val numElems = shape.product
     val array = byteArray.slice(0, numElems)
     val SourceArray = byteArray.map(floatByte => (floatByte & 0xff).asInstanceOf[Float].toDouble + offset)

@@ -82,7 +82,7 @@ class SciSparkContext(val conf: SparkConf) {
     val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVars, MapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, MapNUri(PartitionSize))
   }
 
   /**
@@ -103,7 +103,7 @@ class SciSparkContext(val conf: SparkConf) {
       val variableHashTable = new mutable.HashMap[String, AbstractTensor]
 
       varName.foreach(y => {
-        val arrayandShape = loadNetCDFNDVars(dataset, y)
+        val arrayandShape = loadNetCDFNDVar(dataset, y)
         val absT = new BreezeTensor(arrayandShape)
         variableHashTable += ((y, absT))
       })
@@ -145,7 +145,7 @@ class SciSparkContext(val conf: SparkConf) {
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
 
-    new SRDD[SciTensor](sparkContext, URIs, varName, LoadMERGArray(shape, offset), MapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), MapNUri(PartitionSize))
   }
 
   /**
@@ -167,7 +167,7 @@ class SciSparkContext(val conf: SparkConf) {
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
-      val doubleArray = ReadMergBytetoJavaArray(byteArray, offset, shape)
+      val doubleArray = readMergBytetoJavaArray(byteArray, offset, shape)
       val absT = new BreezeTensor(doubleArray, shape)
       val sciT = new SciTensor("TMP", absT)
       sciT.insertDictionary(("SOURCE", p._1))
@@ -181,7 +181,7 @@ class SciSparkContext(val conf: SparkConf) {
    */
   def OpenPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
     val datasetPaths = List(path)
-    new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVars, mapSubFoldersToFolders)
+    new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVar, mapSubFoldersToFolders)
   }
 
 }
