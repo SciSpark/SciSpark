@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.Utils
+package org.dia.utils
 
 import org.slf4j.Logger
 import org.dia.HDFSRandomAccessFile
@@ -25,40 +25,46 @@ import ucar.nc2.dataset.NetcdfDataset
 import scala.language.implicitConversions
 
 /**
- * Contains all functions needed to handle netCDF files.
- * Note that NaN's are not used for missing values.
- * Instead the value -9999.0 is used to indicate missing values.
+ * Utilities to read a NetCDF by URL or from HDFS.
+ *
+ * Note that we use -9999.0 instead of NaN to indicate missing values.
  */
 object NetCDFUtils {
 
   // Class logger
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-
+  val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
-   * Gets a tuple of 1D Java array of Doubles and Array of Ints for shape
-   * from a netCDFDataset using a variable. If a variable is not found then an Array with the element 0.0
-   * is returned with shape (1,1). Note that all dimensions of size 1 are elimanated.
+   * Extracts a variable's data from a NetCDF.
+   *
+   * If the variable is not found then an Array with the element 0.0
+   * is returned with shape (1,1). Note that all dimensions of size 1 are eliminated.
    * For example the array shape (21, 5, 1, 2) is reduced to (21, 5, 2) since the 3rd dimension
-   * has only one index in it.
+   * only ranges over a single value.
+   *
+   * @param netcdfFile The NetCDF file.
+   * @param variable The variable whose data we want to extract.
+   * @return Data and shape arrays.
    */
   def netCDFArrayAndShape(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
-    val SearchVariableArray: ma2.Array = getNetCDFVariableArray(netcdfFile, variable)
-    if (SearchVariableArray == null) {
+    val searchVariableArray = getNetCDFVariableArray(netcdfFile, variable)
+    if (searchVariableArray == null) {
       LOG.error("Variable '%s' not found. Can't create array. Returning empty array.".format(variable))
       return (Array(0.0), Array(1, 1))
     }
-    val nativeArray = convertMa2Arrayto1DJavaArray(SearchVariableArray)
-    val shape = SearchVariableArray.getShape.toList.filter(p => p != 1).toArray
+    val nativeArray = convertMa2Arrayto1DJavaArray(searchVariableArray)
+    val shape = searchVariableArray.getShape.toList.filter(_ != 1).toArray
     (nativeArray, shape)
   }
 
   /**
-   * Converts the native ma2.Array from the NetCDF library to a one dimensional
-   * Java Array of Doubles. Two copies of the array are made, since NetCDF
-   * does not have any api to tell what type the arrays are. Once the initial
-   * array of the loading is completed a type check is used to appropriatley
-   * convert the values into doubles. This involves a second copy
+   * Converts the native ma2.Array from the NetCDF library
+   * to a one dimensional Java Array of Doubles.
+   *
+   * Two copies of the array are made, since NetCDF does not have any API
+   * to tell what type the arrays are. Once the initial array of the loading
+   * is completed, a type check is used to appropriately convert the values
+   * into doubles. This involves a second copy.
    */
   def convertMa2Arrayto1DJavaArray(ma2Array: ma2.Array): Array[Double] = {
     var array: Array[Double] = Array(-123456789)
@@ -72,9 +78,7 @@ object NetCDFUtils {
       } else {
         array = javaArray.asInstanceOf[Array[Double]]
       }
-
       for (i <- array.indices) if (array(i) == -9999.0) array(i) = 0.0
-
     } catch {
       case ex: Exception =>
         println("Error while converting a netcdf.ucar.ma2 to a 1D array. Most likely occurred with casting")
@@ -83,68 +87,69 @@ object NetCDFUtils {
   }
 
   /**
-   * Gets a M2 array from a netCDF file using a variable
-   *
-   * TODO :: Ask why OCW hard codes the lattitude and longitude names
+   * Extracts a variable's data from a NetCDF file as an M2 array.
    *
    * @param netcdfFile the NetcdfDataSet to read from
-   * @param variable the variable array to extract
-   * @return
+   * @param variable the variable whose array we want to extract
+   * @todo Ask why OCW hardcodes the latitude and longitude names
    */
   def getNetCDFVariableArray(netcdfFile: NetcdfDataset, variable: String): ma2.Array = {
-    var SearchVariable: ma2.Array = null
+    var searchVariable: ma2.Array = null
     try {
       if (netcdfFile == null) throw new IllegalStateException("NetCDFDataset was not loaded")
       val netcdfVal = netcdfFile.findVariable(variable)
       if (netcdfVal == null) throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
-      SearchVariable = netcdfVal.read()
+      searchVariable = netcdfVal.read()
     } catch {
       case ex: Exception =>
         LOG.error("Variable '%s' not found when reading source %s.".format(variable, netcdfFile))
         LOG.info("Variables available: " + netcdfFile.getVariables)
         LOG.error(ex.getMessage)
     }
-    SearchVariable
+    searchVariable
   }
 
-
   /**
-   * Loads a NetCDF Dataset from a url
+   * Loads a NetCDF Dataset from a URL.
    */
   def loadNetCDFDataSet(url: String): NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
     try {
       NetcdfDataset.openDataset(url)
     } catch {
-      case e: java.io.IOException => LOG.error("Couldn't open dataset %s".format(url))
+      case e: java.io.IOException =>
+        LOG.error("Couldn't open dataset %s".format(url))
         null
-      case ex: Exception => LOG.error("Something went wrong while reading %s".format(url))
+      case ex: Exception =>
+        LOG.error("Something went wrong while reading %s".format(url))
         null
     }
   }
 
   /**
-    * Loads a NetCDF Dataset from HDFS
-    * @param dfsUri   HDFS URI(eg. hdfs://master:9000/)
-    * @param location file path on hdfs
-    * @param bufferSize the size of buffer to be used
-    */
-  def loadDFSNetCDFDataSet(dfsUri:String,location:String,bufferSize:Int):NetcdfDataset = {
+   * Loads a NetCDF Dataset from HDFS.
+   *
+   * @param dfsUri HDFS URI(eg. hdfs://master:9000/)
+   * @param location File path on HDFS
+   * @param bufferSize The size of the buffer to be used
+   */
+  def loadDFSNetCDFDataSet(dfsUri: String, location: String, bufferSize: Int): NetcdfDataset = {
     NetcdfDataset.setUseNaNs(false)
-    try{
-      val raf = new HDFSRandomAccessFile(dfsUri,location,bufferSize)
-      new NetcdfDataset(NetcdfFile.open(raf,location,null,null))
+    try {
+      val raf = new HDFSRandomAccessFile(dfsUri, location, bufferSize)
+      new NetcdfDataset(NetcdfFile.open(raf, location, null, null))
     } catch {
-      case e: java.io.IOException => LOG.error("Couldn't open dataset %s%s".format(dfsUri,location))
+      case e: java.io.IOException =>
+        LOG.error("Couldn't open dataset %s%s".format(dfsUri, location))
         null
-      case ex: Exception => LOG.error("Something went wrong while reading %s%s".format(dfsUri,location))
+      case ex: Exception =>
+        LOG.error("Something went wrong while reading %s%s".format(dfsUri, location))
         null
     }
   }
 
-
   /**
-   * Gets the dimension value of a specific files dimension name
+   * Gets the size of a dimension of a NetCDF file.
    */
   def getDimensionSize(netcdfFile: NetcdfDataset, rowDim: String): Int = {
     var dimSize = -1
@@ -158,6 +163,5 @@ object NetCDFUtils {
       throw new IllegalStateException("Dimension does not exist!!!")
     dimSize
   }
-
 
 }

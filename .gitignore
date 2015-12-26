@@ -4,3 +4,11 @@
 .project
 .classpath
 .settings
+
+# Build output folders
+project/project/
+project/target/
+target/
+
+.cache-main
+.cache-tests

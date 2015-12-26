@@ -17,7 +17,7 @@
  */
 package org.dia.IntegrationTests
 
-import org.dia.Utils.NetCDFUtils
+import org.dia.utils.NetCDFUtils
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.Nd4jTensor
 import org.nd4j.linalg.factory.Nd4j

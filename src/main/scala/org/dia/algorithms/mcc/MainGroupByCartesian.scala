@@ -20,12 +20,11 @@ package org.dia.algorithms.mcc
 import java.text.SimpleDateFormat
 
 import org.dia.Parsers
-import org.dia.Utils.{FileUtils, JsonUtils}
+import org.dia.utils.{FileUtils, JsonUtils}
 import org.dia.core.{SciSparkContext, SRDD, SciTensor}
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
-
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
@@ -118,14 +117,14 @@ object MainGroupByCartesian {
     })
 
     val collectedEdges = componentFrameRDD.collect()
-    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedNodes = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    println(vertex.size)
+    println(collectedNodes.size)
     println(collectedEdges.length)
     println(complete.toDebugString)
 
     if (!jsonOut.isEmpty) {
-      val res = JsonUtils.generateJson(collectedEdges, DateIndexTable, vertex)
+      val res = JsonUtils.generateJson(collectedNodes, collectedEdges, DateIndexTable)
       val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
       FileUtils.writeToFile(jsonOut, pretty(render(json)))
     }
