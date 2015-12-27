@@ -113,8 +113,8 @@ object MainGroupBy {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val components1 = mccOps.labelConnectedComponents(p._1.tensor)
-      val components2 = mccOps.labelConnectedComponents(p._2.tensor)
+      val components1 = MCCOps.labelConnectedComponents(p._1.tensor)
+      val components2 = MCCOps.labelConnectedComponents(p._2.tensor)
       val product = components1._1 * components2._1
 
       var ArrList = mutable.MutableList[(Double, Double)]()

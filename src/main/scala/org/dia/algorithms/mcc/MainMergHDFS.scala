@@ -138,8 +138,8 @@ object MainMergHDFS {
        * This way only one traverse is necessary instead of a 2nd traverse
        * to find the highest labelled.
        */
-      val components1 = mccOps.labelConnectedComponents(p._1.tensor)
-      val components2 = mccOps.labelConnectedComponents(p._2.tensor)
+      val components1 = MCCOps.labelConnectedComponents(p._1.tensor)
+      val components2 = MCCOps.labelConnectedComponents(p._2.tensor)
 
       /**
        * The labelled components are elementwise multiplied

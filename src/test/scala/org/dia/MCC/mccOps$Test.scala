@@ -1,7 +1,7 @@
 package org.dia.MCC
 
 import breeze.linalg.DenseMatrix
-import org.dia.algorithms.mcc.mccOps
+import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
@@ -30,7 +30,7 @@ class mccOps$Test extends FunSuite {
     val ccArray = Nd4j.create(cc)
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
-    val labelled = mccOps.labelConnectedComponents(t)
+    val labelled = MCCOps.labelConnectedComponents(t)
     println(labelled)
     assert(labelled._1.equals(cct))
   }
@@ -49,8 +49,8 @@ class mccOps$Test extends FunSuite {
     val ndArray = new DenseMatrix(5, 4, k, 0, 4, true)
     val t: AbstractTensor = new BreezeTensor(ndArray)
     println()
-    println(mccOps.reduceResolution(t, 5, 1))
-    val reduced = mccOps.reduceRectangleResolution(t, 3, 3, 99999999)
+    println(MCCOps.reduceResolution(t, 5, 1))
+    val reduced = MCCOps.reduceRectangleResolution(t, 3, 3, 99999999)
     println(reduced)
   }
 
@@ -75,8 +75,8 @@ class mccOps$Test extends FunSuite {
     val ccArray = Nd4j.create(cc)
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
-    val frames = mccOps.findConnectedComponents(t)
-    val ccframes = mccOps.findConnectedComponents(cct)
+    val frames = MCCOps.findConnectedComponents(t)
+    val ccframes = MCCOps.findConnectedComponents(cct)
     assert(frames == ccframes)
   }
 

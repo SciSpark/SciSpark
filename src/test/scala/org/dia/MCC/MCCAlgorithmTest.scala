@@ -18,7 +18,7 @@
 package org.dia.MCC
 
 import breeze.linalg.DenseMatrix
-import org.dia.algorithms.mcc.mccOps
+import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{BreezeTensor, Nd4jTensor}
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
@@ -40,9 +40,9 @@ class MCCAlgorithmTest extends FunSuite {
     val nd4j = new Nd4jTensor(nd)
 
     println("breeze")
-    val b = mccOps.reduceResolution(breeze, 2, 999999)
+    val b = MCCOps.reduceResolution(breeze, 2, 999999)
     println("nd4j")
-    val n = mccOps.reduceResolution(nd4j, 2, 999999)
+    val n = MCCOps.reduceResolution(nd4j, 2, 999999)
 
 
     println(breeze)

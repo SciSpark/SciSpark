@@ -107,8 +107,8 @@ object MainGroupByCartesian {
 
     val componentFrameRDD = complete.flatMap(p => {
 
-      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
-      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      val compUnfiltered1 = MCCOps.findCloudComponents(p._1)
+      val compUnfiltered2 = MCCOps.findCloudComponents(p._2)
       val components1 = compUnfiltered1.filter(checkCriteria)
       val components2 = compUnfiltered2.filter(checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)

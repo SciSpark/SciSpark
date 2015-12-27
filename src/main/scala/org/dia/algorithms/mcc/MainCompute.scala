@@ -18,19 +18,17 @@
 package org.dia.algorithms.mcc
 
 import java.util.Random
-
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, SciTensor}
+import org.dia.core.{ SciSparkContext, SciTensor }
 import org.dia.tensors.AbstractTensor
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.slf4j.Logger
-
 import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
-  */
+ */
 object MainCompute {
 
   /**
@@ -67,10 +65,10 @@ object MainCompute {
 
     val filCartesian = filtered.cartesian(filtered)
       .filter(pair => {
-      val d1 = Integer.parseInt(pair._1.metaData("FRAME"))
-      val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
-      (d1 + 1) == d2
-    })
+        val d1 = Integer.parseInt(pair._1.metaData("FRAME"))
+        val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
+        (d1 + 1) == d2
+      })
     LOG.info("C" +
       "" +
       "" +
@@ -86,7 +84,6 @@ object MainCompute {
     var jsonNodes = mutable.Set[JObject]()
     var jsonEdges = mutable.Set[JObject]()
 
-
     //    colEdges.map(edgesList => {
     //      if (edgesList.nonEmpty) {
     //        val res = generateJson(edgesList, dates)
@@ -98,13 +95,13 @@ object MainCompute {
     println(nodes.size)
     println(totEdges)
     println("*****************")
-//    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
-//    FileUtils.writeToFile("./resources/graph.json", pretty(render(json)))
+    //    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
+    //    FileUtils.writeToFile("./resources/graph.json", pretty(render(json)))
   }
 
   def checkComponentsOverlap(sciTensor1: SciTensor, sciTensor2: SciTensor): List[(String, String)] = {
-    val currentTimeRDD = mccOps.findCloudElementsX(sciTensor1)
-    val nextTimeRDD = mccOps.findCloudElementsX(sciTensor2)
+    val currentTimeRDD = MCCOps.findCloudElements(sciTensor1)
+    val nextTimeRDD = MCCOps.findCloudElements(sciTensor2)
     var edgePair = List.empty[(String, String)]
     // cartesian product
     (1 to currentTimeRDD.metaData("NUM_COMPONENTS").toInt).foreach(cIdx => {

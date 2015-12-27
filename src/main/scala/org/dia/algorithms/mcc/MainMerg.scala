@@ -113,10 +113,10 @@ object MainMerg {
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = complete.flatMap(p => {
-      val compUnfiltered1 = mccOps.findCloudComponents(p._1)
+      val compUnfiltered1 = MCCOps.findCloudComponents(p._1)
       println("THE SIZE OF COMPONENT 1 : " + p._1.metaData("FRAME") + " " + compUnfiltered1.size)
 
-      val compUnfiltered2 = mccOps.findCloudComponents(p._2)
+      val compUnfiltered2 = MCCOps.findCloudComponents(p._2)
       println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
       val components1 = compUnfiltered1.filter(checkCriteria)
       val components2 = compUnfiltered2.filter(checkCriteria)

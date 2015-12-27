@@ -78,7 +78,7 @@ object MainPorted {
 
     val filtered = sRDD.map(p => p(variable) <= 241.0)
 
-    val componentFrameRDD = filtered.flatMap(p => mccOps.findCloudComponents(p))
+    val componentFrameRDD = filtered.flatMap(p => MCCOps.findCloudComponents(p))
 
     val criteriaRDD = componentFrameRDD.filter(p => {
       val hash = p.metaData
