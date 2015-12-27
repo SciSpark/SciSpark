@@ -60,7 +60,7 @@ object MainPorted {
 
     val orderedDateList = URLs.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
-      val date = Parsers.ParseDateFromString(source)
+      val date = Parsers.parseDateFromString(source)
       new SimpleDateFormat("YYYY-MM-DD").format(date)
     }).sorted
 

@@ -58,7 +58,7 @@ object MainMergRandom {
 
     val orderedDateList = URLs.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
-      Parsers.ParseDateFromString(source)
+      Parsers.parseDateFromString(source)
     }).sorted
 
     for (i <- orderedDateList.indices) {
@@ -87,7 +87,7 @@ object MainMergRandom {
 
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
-      val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.ParseDateFromString(source))
+      val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.parseDateFromString(source))
       val FrameID = DateIndexTable(date)
       p.insertDictionary(("FRAME", FrameID.toString))
       p

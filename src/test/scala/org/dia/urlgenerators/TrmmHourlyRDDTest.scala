@@ -53,7 +53,7 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     val datasetUrls = Source.fromFile(urls).mkString.split("\n").toList
     val formatter = new SimpleDateFormat("yyyy-MM-dd")
     datasetUrls.foreach(p => {
-      val dated = Parsers.ParseDateFromString(p)
+      val dated = Parsers.parseDateFromString(p)
     })
     assert(true)
   }
