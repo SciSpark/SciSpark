@@ -18,7 +18,6 @@
 package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
-
 import org.dia.Parsers
 import org.dia.utils.{FileUtils, JsonUtils}
 import org.dia.core.{SciSparkContext, SRDD, SciTensor}
@@ -109,8 +108,8 @@ object MainGroupByCartesian {
 
       val compUnfiltered1 = MCCOps.findCloudComponents(p._1)
       val compUnfiltered2 = MCCOps.findCloudComponents(p._2)
-      val components1 = compUnfiltered1.filter(checkCriteria)
-      val components2 = compUnfiltered2.filter(checkCriteria)
+      val components1 = compUnfiltered1.filter(MCCOps.checkCriteria)
+      val components2 = compUnfiltered2.filter(MCCOps.checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
@@ -130,19 +129,4 @@ object MainGroupByCartesian {
     }
   }
 
-  def checkCriteria(p: SciTensor): Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    ((area >= 40.0) || (area < 40.0)) && (tempDiff > 10.0)
-  }
-
-  def getVertexArray(collection: SRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
-    val id = collection.map(p => (p.metaData("FRAME"), p.metaData("COMPONENT"))).collect().toList
-    val size = id.length
-    val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[(String, String), Long]
-    range.map(p => hash += ((id(p), p)))
-    hash
-  }
 }

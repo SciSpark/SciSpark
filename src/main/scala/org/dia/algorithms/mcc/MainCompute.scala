@@ -159,34 +159,4 @@ object MainCompute {
     (maskedData1 * maskedData2).isZero == false
   }
 
-  def generateJson(edgesList: List[(String, String)], dates: mutable.HashMap[Int, String]): (mutable.Set[JObject], mutable.Set[JObject]) = {
-    val generator = new Random()
-    var jsonNodes = mutable.Set[JObject]()
-    var jsonEdges = mutable.Set[JObject]()
-
-    edgesList.indices.foreach(cnt => {
-      var x = 0.0
-      var y = 0.0
-      if (generator.nextBoolean()) {
-        x = generator.nextDouble % 1
-        y = Math.sqrt(1 - x * x)
-      } else {
-        y = generator.nextDouble % 1
-        x = Math.sqrt(1 - y * y)
-      }
-      if (!nodes.contains(edgesList(cnt)._1)) {
-        nodes += edgesList(cnt)._1
-        val color = "rgb(255," + generator.nextInt(256).toString + ",102)"
-        jsonNodes += ("id" -> edgesList(cnt)._1) ~ ("label" -> dates.get(edgesList(cnt)._1.split(":").apply(0).toInt)) ~ ("size" -> 100) ~ ("x" -> x * 100.0) ~ ("y" -> y * 100.0) ~ ("color" -> color)
-      }
-      if (!nodes.contains(edgesList(cnt)._2)) {
-        nodes += edgesList(cnt)._2
-        val color = "rgb(255," + generator.nextInt(256).toString + ",102)"
-        jsonNodes += ("id" -> edgesList(cnt)._2) ~ ("label" -> dates.get(edgesList(cnt)._1.split(":").apply(0).toInt)) ~ ("size" -> 100) ~ ("x" -> x * -100.0) ~ ("y" -> y * -100.0) ~ ("color" -> color)
-      }
-      jsonEdges += ("id" -> totEdges) ~ ("source" -> edgesList(cnt)._1) ~ ("target" -> edgesList(cnt)._2)
-      totEdges += 1
-    })
-    (jsonNodes, jsonEdges)
-  }
 }

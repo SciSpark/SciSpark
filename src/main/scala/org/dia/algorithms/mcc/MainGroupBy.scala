@@ -211,23 +211,7 @@ object MainGroupBy {
     println("NUM EDGES : " + collectedEdges.length + "\n")
     println(complete.toDebugString + "\n")
   }
-
-
-  def checkCriteria(p: SciTensor): Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
-
-  def getVertexArray(collection: SRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
-    val id = collection.map(p => (p.metaData("FRAME"), p.metaData("COMPONENT"))).collect().toList
-    val size = id.length
-    val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[(String, String), Long]
-    range.map(p => hash += ((id(p), p)))
-    hash
-  }
+  
 }
 
 

@@ -222,4 +222,18 @@ object MCCOps {
     new SciTensor(tensor.varInUse, labeledTensor._1, metadata)
   }
 
+  /**
+   * Checks whether connected component is indeed a cloud.
+   * 
+   * @param comp masked component with AREA and DIFFERENCE meta info
+   * @todo make sure this is only applied if AREA and DIFFERENCE
+   * meta fields exist! 
+   */
+  def checkCriteria(comp: SciTensor): Boolean = {
+    val hash = comp.metaData
+    val area = hash("AREA").toDouble
+    val tempDiff = hash("DIFFERENCE").toDouble
+    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
+  }
+  
 }

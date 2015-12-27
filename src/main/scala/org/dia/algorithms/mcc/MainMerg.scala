@@ -118,8 +118,8 @@ object MainMerg {
 
       val compUnfiltered2 = MCCOps.findCloudComponents(p._2)
       println("THE SIZE OF COMPONENT 2 : " + p._2.metaData("FRAME") + " " + compUnfiltered2.size)
-      val components1 = compUnfiltered1.filter(checkCriteria)
-      val components2 = compUnfiltered2.filter(checkCriteria)
+      val components1 = compUnfiltered1.filter(MCCOps.checkCriteria)
+      val components2 = compUnfiltered2.filter(MCCOps.checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
       val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
@@ -140,12 +140,6 @@ object MainMerg {
     println(complete.toDebugString)
   }
 
-  def checkCriteria(p: SciTensor): Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
 }
 
 

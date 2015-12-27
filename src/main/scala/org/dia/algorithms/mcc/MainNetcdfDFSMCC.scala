@@ -233,12 +233,6 @@ object MainNetcdfDFSMCC {
     println(complete.toDebugString + "\n")
   }
 
-  def checkCriteria(p: SciTensor): Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 60.0) || (area < 60.0) && (tempDiff > 10.0)
-  }
 }
 
 

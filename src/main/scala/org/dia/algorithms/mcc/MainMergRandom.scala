@@ -250,12 +250,6 @@ object MainMergRandom {
     println(complete.toDebugString + "\n")
   }
 
-  def checkCriteria(p: SciTensor): Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
 }
 
 
