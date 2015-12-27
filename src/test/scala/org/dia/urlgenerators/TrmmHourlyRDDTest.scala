@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.URLGenerator
+package org.dia.urlgenerators
 
 import java.text.SimpleDateFormat
-
 import org.dia.Parsers
+import org.dia.urlgenerators.HourlyTrmmURLGenerator;
 import org.joda.time.DateTime
 import org.scalatest.Ignore
 
@@ -44,7 +44,7 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     expectedReadings +=("3B42.19980307.03.7.HDF.Z", "3B42.19980307.06.7.HDF.Z",
       "3B42.19980307.09.7.HDF.Z", "3B42.19980307.12.7.HDF.Z", "3B42.19980307.15.7.HDF.Z",
       "3B42.19980307.18.7.HDF.Z", "3B42.19980307.21.7.HDF.Z", "3B42.19980308.00.7.HDF.Z")
-    val trmmHourlyUrls = HourlyTrmmUrlGenerator.generateDayReadings(realDate)
+    val trmmHourlyUrls = HourlyTrmmURLGenerator.generateDayReadings(realDate)
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 

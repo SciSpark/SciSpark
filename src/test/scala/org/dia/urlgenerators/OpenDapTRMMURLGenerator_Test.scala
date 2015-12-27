@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.URLGenerator
+package org.dia.urlgenerators
 
-import java.nio.file.{Files, Paths}
-
-import org.scalatest.{FunSuite, Ignore}
+import org.dia.urlgenerators.OpenDapTRMMURLGenerator;
+import org.scalatest._
+import java.nio.file.{Paths, Files}
 
 /**
  * Testing for the OpenDapTRMM link creator works
