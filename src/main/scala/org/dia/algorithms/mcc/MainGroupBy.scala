@@ -17,24 +17,24 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.text.SimpleDateFormat
 import org.dia.Parsers
-import org.dia.core.{SciSparkContext, SRDD, SciTensor}
+import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
 import org.slf4j.Logger
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
 
-
 object MainGroupBy {
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+
+  val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**
-     * Input arguements to the program :
+     * Input arguments to the program :
      * args(0) - the path to the source file
-     * args(1) - the spark master url. Example : spark://HOST_NAME:7077
+     * args(1) - the spark master URL. Example : spark://HOST_NAME:7077
      * args(2) - the number of desired partitions. Default : 2
      * args(3) - square matrix dimension. Default : 20
      * args(4) - variable name
@@ -48,19 +48,19 @@ object MainGroupBy {
     val jsonOut = if (args.length <= 5) "" else args(5)
 
     /**
-     * Parse the date from each URL.
-     * Compute the maps from Date to element index.
+     * Parse the date from each URI.
+     * Compute the maps from date to element index.
      * The DateIndexTable holds the mappings.
      */
-    val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
+    val URIs = Source.fromFile(inputFile).mkString.split("\n").toList
     val DateIndexTable = new mutable.HashMap[String, Int]()
 
-    val orderedDateList = URLs.map(p => {
+    val orderedDateList = URIs.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
       Parsers.parseDateFromString(source)
     }).sorted
 
-    for (i <- orderedDateList.indices) {
+    orderedDateList.indices.foreach { i =>
       val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
       val dateString = dateFormat.format(orderedDateList(i))
       DateIndexTable += ((dateString, i))
@@ -68,7 +68,6 @@ object MainGroupBy {
 
     /**
      * Initialize the spark context to point to the master URL
-     *
      */
     val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
@@ -81,7 +80,6 @@ object MainGroupBy {
      */
     val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
     val labeled = sRDD.map(p => {
-      //println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.parseDateFromString(source))
       val FrameID = DateIndexTable(date)
@@ -90,29 +88,26 @@ object MainGroupBy {
     })
 
     /**
-     * The MCC algorithim : Mining for graph vertices and edges
+     * The MCC algorithm : Mining for graph vertices and edges
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
 
-    //val reshaped = filtered.map(p => p(variable).reduceResolution(50))
-
-
-    val complete = filtered.flatMap(p => {
+    val consecFrames = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
-      .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
-      .map(p => p.sortBy(_.metaData("FRAME").toInt))
+      .map(_._2.map(e => e._2).toList)
+      .filter(_.size > 1)
+      .map(_.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
     /**
      * Core MCC
      * For each consecutive frame pair, find it's components.
-     * For each component pairing, find if the elementwise
+     * For each component pairing, find if the element-wise
      * component pairing results in a zero matrix.
      * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
      */
-    val componentFrameRDD = complete.flatMap(p => {
+    val componentFrameRDD = consecFrames.flatMap(p => {
       val components1 = MCCOps.labelConnectedComponents(p._1.tensor)
       val components2 = MCCOps.labelConnectedComponents(p._2.tensor)
       val product = components1._1 * components2._1
@@ -120,16 +115,17 @@ object MainGroupBy {
       var ArrList = mutable.MutableList[(Double, Double)]()
       var hashComps = new mutable.HashMap[String, (Double, Double, Double)]
 
-      var area = 0
       for (row <- 0 to product.rows - 1) {
         for (col <- 0 to product.cols - 1) {
+
+          /** Add the new edge */
           if (product(row, col) != 0.0) {
-            // save components ids
             val value1 = components1._1(row, col)
             val value2 = components2._1(row, col)
             ArrList += ((value1, value2))
-
           }
+
+          /** Update basic statistics about components in sciTensor1 */
           if (components1._1(row, col) != 0.0) {
             var area1 = 0.0
             var max1 = Double.MinValue
@@ -143,7 +139,6 @@ object MainGroupBy {
                 min1 = p._1.tensor(row, col)
               if (p._1.tensor(row, col) > max1)
                 max1 = p._1.tensor(row, col)
-
             } else {
               min1 = p._1.tensor(row, col)
               max1 = p._1.tensor(row, col)
@@ -152,6 +147,7 @@ object MainGroupBy {
             hashComps += ((p._1.metaData("FRAME") + ":" + components1._1(row, col), (area1, max1, min1)))
           }
 
+          /** Update basic statistics about components in sciTensor2 */
           if (components2._1(row, col) != 0.0) {
             var area2 = 0.0
             var max2 = Double.MinValue
@@ -163,10 +159,8 @@ object MainGroupBy {
               min2 = compMetrics.get._3
               if (p._2.tensor(row, col) < min2)
                 min2 = p._2.tensor(row, col)
-
               if (p._2.tensor(row, col) > max2)
                 max2 = p._2.tensor(row, col)
-
             } else {
               min2 = p._2.tensor(row, col)
               max2 = p._2.tensor(row, col)
@@ -177,22 +171,29 @@ object MainGroupBy {
 
         }
       }
-      val EdgeSet = ArrList.toSet
-      val overlap = EdgeSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
 
-      val filtered = overlap.filter(entry => {
-        val frameId1 = entry._1._1
-        val compId1 = entry._1._2
-        val compVals1 = hashComps(frameId1 + ":" + compId1)
-        val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
+      val edgesSet = ArrList.toSet
+      val edges = edgesSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
 
-        val frameId2 = entry._2._1
-        val compId2 = entry._2._2
-        val compVals2 = hashComps(frameId2 + ":" + compId2)
-        val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
-        fil1 && fil2
+      /**
+       * Filter out edges whose nodes are actually
+       * clouds according to some criterion.
+       */
+      val overlaps = edges.filter({
+        case (n1, n2) => {
+          val frameId1 = n1._1
+          val compId1 = n1._2
+          val (area1, max1, min1) = hashComps(frameId1 + ":" + compId1)
+          val isCloud1 = ((area1 >= 40.0) || (area1 < 40.0)) && ((max1 - min1) > 10.0)
+
+          val frameId2 = n2._1
+          val compId2 = n2._2
+          val (area2, max2, min2) = hashComps(frameId2 + ":" + compId2)
+          val isCloud2 = ((area2 >= 40.0) || (area2 < 40.0)) && ((max2 - min2) > 10.0)
+          isCloud1 && isCloud2
+        }
       })
-      filtered
+      overlaps
     })
 
     /**
@@ -201,17 +202,17 @@ object MainGroupBy {
      * Repeated vertices are eliminated due to the set conversion.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
 
-    val k = new PrintWriter(new File("VertexAndEdgeList.txt"))
-    k.write(vertex.toList.sortBy(p => p._1) + "\n")
-    k.write(collectedEdges.toList.sorted + "\n")
-    k.close()
-    println("NUM VERTEX : " + vertex.size + "\n")
+    val out = new PrintWriter(new File("VertexAndEdgeList.txt"))
+    out.write(collectedVertices.toList.sortBy(_._1) + "\n")
+    out.write(collectedEdges.toList.sorted + "\n")
+    out.close()
+    println("NUM VERTICES : " + collectedVertices.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
-    println(complete.toDebugString + "\n")
+    println(consecFrames.toDebugString + "\n")
   }
-  
+
 }
 
 

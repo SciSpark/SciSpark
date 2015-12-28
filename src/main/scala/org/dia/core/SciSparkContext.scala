@@ -79,10 +79,10 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, mapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, mapNUri(partitionSize))
   }
 
   /**
@@ -125,10 +125,10 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadRandomArray(matrixSize), mapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, variables, loadRandomArray(matrixSize), mapNUri(partitionSize))
   }
 
   /**
@@ -143,9 +143,9 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
 
-    new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), mapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), mapNUri(partitionSize))
   }
 
   /**
