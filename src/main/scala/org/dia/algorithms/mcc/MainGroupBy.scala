@@ -26,6 +26,9 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
 
+/**
+ * Implements MCC with GroupBy + In-place iteration.
+ */
 object MainGroupBy {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -101,7 +104,7 @@ object MainGroupBy {
       .map(p => (p(0), p(1)))
 
     /**
-     * Core MCC
+     * Core MCC using in-place iteration.
      * For each consecutive frame pair, find it's components.
      * For each component pairing, find if the element-wise
      * component pairing results in a zero matrix.
@@ -202,7 +205,7 @@ object MainGroupBy {
      * Repeated vertices are eliminated due to the set conversion.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val collectedVertices = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
 
     val out = new PrintWriter(new File("VertexAndEdgeList.txt"))
     out.write(collectedVertices.toList.sortBy(_._1) + "\n")

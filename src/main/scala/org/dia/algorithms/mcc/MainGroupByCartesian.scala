@@ -19,8 +19,8 @@ package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
 import org.dia.Parsers
-import org.dia.utils.{FileUtils, JsonUtils}
-import org.dia.core.{SciSparkContext, SRDD, SciTensor}
+import org.dia.utils.{ FileUtils, JsonUtils }
+import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 import org.slf4j.Logger
@@ -28,15 +28,18 @@ import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
 
-
+/**
+ * Implements MCC with GroupBy + Cartesian product.
+ */
 object MainGroupByCartesian {
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+
+  val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**
-     * Input arguements to the program :
+     * Input arguments to the program :
      * args(0) - the path to the source file
-     * args(1) - the spark master url. Example : spark://HOST_NAME:7077
+     * args(1) - the spark master URL. Example : spark://HOST_NAME:7077
      * args(2) - the number of desired partitions. Default : 2
      * args(3) - square matrix dimension. Default : 20
      * args(4) - variable name
@@ -50,19 +53,19 @@ object MainGroupByCartesian {
     val jsonOut = if (args.length <= 5) "" else args(5)
 
     /**
-     * Parse the date from each URL.
-     * Compute the maps from Date to element index.
+     * Parse the date from each URI.
+     * Compute the maps from date to element index.
      * The DateIndexTable holds the mappings.
      */
-    val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
+    val URIs = Source.fromFile(inputFile).mkString.split("\n").toList
     val DateIndexTable = new mutable.HashMap[String, Int]()
 
-    val orderedDateList = URLs.map(p => {
+    val orderedDateList = URIs.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
       Parsers.parseDateFromString(source)
     }).sorted
 
-    for (i <- orderedDateList.indices) {
+    orderedDateList.indices.foreach { i =>
       val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
       val dateString = dateFormat.format(orderedDateList(i))
       DateIndexTable += ((dateString, i))
@@ -70,7 +73,6 @@ object MainGroupByCartesian {
 
     /**
      * Initialize the spark context to point to the master URL
-     *
      */
     val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
@@ -83,7 +85,6 @@ object MainGroupByCartesian {
      */
     val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
     val labeled = sRDD.map(p => {
-      //println(p.tensor)
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.parseDateFromString(source))
       val FrameID = DateIndexTable(date)
@@ -92,39 +93,49 @@ object MainGroupByCartesian {
     })
 
     /**
-     * The MCC algorithim : Mining for graph vertices and edges
+     * The MCC algorithm : Mining for graph vertices and edges
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    //val reshaped = filtered.map(p => p(variable).reduceResolution(50))
-    val complete = filtered.flatMap(p => {
+
+    val consecFrames = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
-      .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
-      .map(p => p.sortBy(_.metaData("FRAME").toInt))
+      .map(_._2.map(e => e._2).toList)
+      .filter(_.size > 1)
+      .map(_.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
-    val componentFrameRDD = complete.flatMap(p => {
-
-      val compUnfiltered1 = MCCOps.findCloudComponents(p._1)
-      val compUnfiltered2 = MCCOps.findCloudComponents(p._2)
-      val components1 = compUnfiltered1.filter(MCCOps.checkCriteria)
-      val components2 = compUnfiltered2.filter(MCCOps.checkCriteria)
-      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
+    /**
+     * Core MCC using Cartesian product approach.
+     */
+    val componentFrameRDD = consecFrames.flatMap(p => {
+      val compsUnfiltered1 = MCCOps.findCloudComponents(p._1)
+      val compsUnfiltered2 = MCCOps.findCloudComponents(p._2)
+      val comps1 = compsUnfiltered1.filter(MCCOps.checkCriteria)
+      val comps2 = compsUnfiltered2.filter(MCCOps.checkCriteria)
+      val compPairs = for (x <- comps1; y <- comps2) yield (x, y)
+      val overlaps = compPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZero })
+      overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
     })
 
+    /**
+     * Collect the edges.
+     * From the edge pairs collect all used vertices.
+     * Repeated vertices are eliminated due to the set conversion.
+     */
     val collectedEdges = componentFrameRDD.collect()
-    val collectedNodes = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
 
-    println(collectedNodes.size)
+    println(collectedVertices.size)
     println(collectedEdges.length)
-    println(complete.toDebugString)
+    println(consecFrames.toDebugString)
 
+    /**
+     * Write result graph out to JSON.
+     */
     if (!jsonOut.isEmpty) {
-      val res = JsonUtils.generateJson(collectedNodes, collectedEdges, DateIndexTable)
-      val json = ("nodes" -> res._1) ~ ("edges" -> res._2)
+      val (jnodes, jedges) = JsonUtils.generateJson(collectedVertices, collectedEdges, DateIndexTable)
+      val json = ("nodes" -> jnodes) ~ ("edges" -> jedges)
       FileUtils.writeToFile(jsonOut, pretty(render(json)))
     }
   }
