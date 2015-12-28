@@ -156,7 +156,7 @@ object MainCompute {
     })
     var result = false
     // check overlap
-    (maskedData1 * maskedData2).isZero == false
+    (maskedData1 * maskedData2).isZeroShortcut == false
   }
 
 }

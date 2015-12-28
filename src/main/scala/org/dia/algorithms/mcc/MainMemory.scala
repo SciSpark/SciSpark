@@ -63,7 +63,7 @@ object MainMemory {
       val components1 = MCCOps.findCloudComponents(p._1).filter(MCCOps.checkCriteria)
       val components2 = MCCOps.findCloudComponents(p._2).filter(MCCOps.checkCriteria)
       val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
+      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZeroShortcut)
       overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
     })
 

@@ -70,6 +70,11 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def shape: Array[Int]
 
   def isZero: Boolean
+  /**
+   *  Shortcut test whether tensor is zero
+   *  in case we know its entries are all non-negative.
+   */
+  def isZeroShortcut: Boolean
   def max: Double
   def min: Double
 

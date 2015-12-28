@@ -114,7 +114,7 @@ object MainGroupByCartesian {
       val comps1 = compsUnfiltered1.filter(MCCOps.checkCriteria)
       val comps2 = compsUnfiltered2.filter(MCCOps.checkCriteria)
       val compPairs = for (x <- comps1; y <- comps2) yield (x, y)
-      val overlaps = compPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZero })
+      val overlaps = compPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
       overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
     })
 
