@@ -2,16 +2,22 @@ package org.dia.tensors
 
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
+import org.nd4s.Implicits._
 
+/**
+ * Checks that for 2D arrays, using Breeze or Nd4j
+ * leads to the same tensor.
+ */
 class ComparisonTest extends FunSuite {
+
   val ArraySample = Array(
     Array(0.0, 1.0, 0.0, 1.0, 1.0),
     Array(0.0, 1.0, 0.0, 2.0, 1.0),
     Array(2.0, 3.0, 4.0, 1.0, 2.0),
     Array(0.0, 1.0, 0.0, 1.0, 1.0),
     Array(0.0, 1.0, 0.0004003492849200234294, 2.0, 1.0),
-    Array(2.0, 3.0, 4.0, 1.0, 2.0)
-  )
+    Array(2.0, 3.0, 4.0, 1.0, 2.0))
+
   val sample = Nd4j.create(ArraySample)
   val shapePair = (sample.data.asDouble, sample.shape)
 
@@ -22,4 +28,5 @@ class ComparisonTest extends FunSuite {
     assert(nd4j.cols == breeze.cols)
     assert(nd4j == breeze)
   }
+
 }
