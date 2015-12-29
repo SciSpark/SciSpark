@@ -17,15 +17,14 @@
  */
 package org.dia.IntegrationTests
 
-
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.BreezeTensor
-
+import org.scalatest.FunSuite
 
 /**
- * Tests for the Breeze functions
+ * Tests for the Breeze functions.
  */
-class BreezeIntegrationTest extends org.scalatest.FunSuite {
+class BreezeIntegrationTest extends FunSuite {
 
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
   val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
@@ -43,8 +42,8 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
   val BLOCK_SIZE = 5
 
   /**
-   * Testing creation of 2D Array (DenseMatrix) from daily collected TRMM data
-   * Note that Breeze by default uses fortran column major ordering.
+   * Testing creation of 2D Array (DenseMatrix) from daily collected TRMM data.
+   * Note that Breeze by default uses Fortran column major ordering.
    * We check specifically that BreezeTensor flips this and uses row major ordering.
    * Notice the flipped parameters for the DenseMatrix constructor.
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
@@ -57,7 +56,6 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
     assert(true)
   }
 
-
   /**
    * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM data
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
@@ -65,27 +63,23 @@ class BreezeIntegrationTest extends org.scalatest.FunSuite {
   test("ReadingHourlyTRMMDimensions") {
     val arrayTuple = NetCDFReader.loadNetCDFNDVar(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
-
     assert(EXPECTED_ROWS_HOURLY == resDenseMatrix.rows)
     assert(EXPECTED_COLS_HOURLY == resDenseMatrix.cols)
     assert(true)
   }
 
-
   /**
-   * test for creating a N-Dimension array from KNMI data
+   * Testing creation of an N-Dimension array from KNMI data.
    * This test is ignored due to the massive data set size.
    * It is a 7k x 3k x 60 array.
    */
   test("ReadingKNMIDimensions") {
     val arrayTuple = NetCDFReader.loadNetCDFNDVar(knmiUrl, KNMI_TASMAX_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
-
-    val ExpectedShape = arrayTuple._2
-    val BreezeShapeLimit = Array(ExpectedShape(0), ExpectedShape(1)).toList
-    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", ExpectedShape.toList.toString()))
-    assert(resDenseMatrix.shape.toList.equals(BreezeShapeLimit))
+    val expectedShape = arrayTuple._2
+    val breezeShapeLimit = Array(expectedShape(0), expectedShape(1)).toList
+    println("[%s] Dimensions for KNMI data set %s".format("ReadingKMIDimensions", expectedShape.toList.toString()))
+    assert(resDenseMatrix.shape.toList.equals(breezeShapeLimit))
   }
-
 
 }

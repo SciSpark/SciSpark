@@ -7,27 +7,27 @@ import org.dia.urlgenerators.HourlyTrmmURLGenerator;
 import org.scalatest.FunSuite
 
 /**
- * Tests for proper construction of SRDD's.
+ * Tests for proper construction of SRDD's from URIs.
  */
-class sRDDTest extends FunSuite {
+class SRDDTest extends FunSuite {
+  
   val sc = SparkTestConstants.sc
-  val TestLinks = SparkTestConstants.datasetPath
+  val testLinks = SparkTestConstants.datasetPath
 
   test("GroupingByYearPartitioning") {
     val urls = HourlyTrmmURLGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
-
-    val sRdd = new SRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVar, mapOneYearToManyTensorTRMM)
-    val Tensor = sRdd.collect()(0)
+    val sRDD = new SRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVar, mapOneYearToManyTensorTRMM)
+    val Tensor = sRDD.collect()(0)
     assert(true)
   }
 
   test("GroupingByDayPartitioning") {
     val urls = HourlyTrmmURLGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
-
-    val sRdd = new SRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVar, mapOneDayToManyTensorTRMM)
-    val Tensor = sRdd.collect()(0)
+    val sRDD = new SRDD[SciTensor](sc.sparkContext, urls, List("precipitation"), loadNetCDFNDVar, mapOneDayToManyTensorTRMM)
+    val Tensor = sRDD.collect()(0)
     assert(true)
   }
+
 }
