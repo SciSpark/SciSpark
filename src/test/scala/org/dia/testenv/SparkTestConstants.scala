@@ -1,4 +1,4 @@
-package org.dia.TestEnvironment
+package org.dia.testenv
 
 import org.dia.core.SciSparkContext
 

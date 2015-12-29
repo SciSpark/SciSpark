@@ -1,6 +1,6 @@
 package org.dia.core
 
-import org.dia.TestEnvironment.SparkTestConstants
+import org.dia.testenv.SparkTestConstants
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.STrmmPartitioner._
 import org.dia.urlgenerators.HourlyTrmmURLGenerator;
@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
  * Tests for proper construction of SRDD's from URIs.
  */
 class SRDDTest extends FunSuite {
-  
+
   val sc = SparkTestConstants.sc
   val testLinks = SparkTestConstants.datasetPath
 

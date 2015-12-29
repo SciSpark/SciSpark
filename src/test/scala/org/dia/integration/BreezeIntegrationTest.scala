@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.IntegrationTests
+package org.dia.integration
 
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.BreezeTensor
 import org.scalatest.FunSuite
 
 /**
- * Tests for the Breeze functions.
+ * Tests whether the creation of Breeze tensors works.
  */
 class BreezeIntegrationTest extends FunSuite {
 
@@ -69,8 +69,8 @@ class BreezeIntegrationTest extends FunSuite {
   }
 
   /**
-   * Testing creation of an N-Dimension array from KNMI data.
-   * This test is ignored due to the massive data set size.
+   * Testing creation of an N-dimensional array from KNMI data.
+   * This test is ignored due to the massive size of the data set.
    * It is a 7k x 3k x 60 array.
    */
   test("ReadingKNMIDimensions") {

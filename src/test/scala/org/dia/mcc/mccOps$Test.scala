@@ -1,4 +1,4 @@
-package org.dia.MCC
+package org.dia.mcc
 
 import breeze.linalg.DenseMatrix
 import org.dia.algorithms.mcc.MCCOps
