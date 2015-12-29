@@ -34,7 +34,7 @@ object MainMemory {
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     var master = ""
@@ -54,7 +54,7 @@ object MainMemory {
 
 
     val filtered = sRDD.map(p => p(variable) <= 241.0)
-    LOG.info("Matrices have been filtered")
+    logger.info("Matrices have been filtered")
 
     val filteredCartesian = filtered.cartesian(filtered).
       filter(p => p._1.metaData("FRAME").toInt == p._2.metaData("FRAME").toInt - 1)

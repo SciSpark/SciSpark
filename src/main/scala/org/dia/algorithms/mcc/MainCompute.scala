@@ -38,8 +38,8 @@ object MainCompute {
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  // Class logger
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  // Class loggerger
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
   var nodes = scala.collection.mutable.Set[String]()
   var totEdges = 0
 
@@ -49,7 +49,7 @@ object MainCompute {
     if (args.isEmpty || args.length <= 1) master = "local[50]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
-    LOG.info("SciSparkContext created")
+    logger.info("SciSparkContext created")
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
     //TotCldLiqH2O_A
@@ -61,7 +61,7 @@ object MainCompute {
 
     val preCollected = sRDD
     val filtered = preCollected.map(p => p(variable) <= 241.0)
-    LOG.info("Matrices have been filtered")
+    logger.info("Matrices have been filtered")
 
     val filCartesian = filtered.cartesian(filtered)
       .filter(pair => {
@@ -69,7 +69,7 @@ object MainCompute {
         val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
         (d1 + 1) == d2
       })
-    LOG.info("C" +
+    logger.info("C" +
       "" +
       "" +
       "artesian product have been done.")
@@ -77,7 +77,7 @@ object MainCompute {
     val edgesRdd = filCartesian.map(pair => {
       checkComponentsOverlap(pair._1, pair._2)
     })
-    LOG.info("Checked edges and overlap.")
+    logger.info("Checked edges and overlap.")
 
     val colEdges = edgesRdd.collect()
 

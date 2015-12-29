@@ -27,7 +27,7 @@ import scala.io.Source
 import scala.language.implicitConversions
 
 object MainMergHDFS {
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**

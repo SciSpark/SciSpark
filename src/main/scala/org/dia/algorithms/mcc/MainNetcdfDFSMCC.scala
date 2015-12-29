@@ -33,7 +33,7 @@ import scala.language.implicitConversions
  */
 object MainNetcdfDFSMCC {
 
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**
