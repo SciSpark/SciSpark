@@ -19,13 +19,13 @@ package org.dia.urlgenerators
 
 import org.dia.urlgenerators.OpenDapTRMMURLGenerator;
 import org.scalatest._
-import java.nio.file.{Paths, Files}
+import java.nio.file.{ Paths, Files }
 
 /**
- * Testing for the OpenDapTRMM link creator works
+ * Tests whether the OpenDapTRMM URLs creator works.
  */
 @Ignore
-class OpenDapTRMMURLGenerator_Test extends FunSuite {
+class OpenDapTRMMURLGeneratorTest extends FunSuite {
 
   test("testLinkGeneration") {
     val checkLink = false

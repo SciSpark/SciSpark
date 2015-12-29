@@ -1,4 +1,4 @@
-package org.perf
+package org.dia.tensors.perf
 
 import breeze.linalg.DenseMatrix
 import org.nd4j.linalg.factory.Nd4j
@@ -66,7 +66,6 @@ object Performance {
       val stop = System.nanoTime()
       println(stop - start)
     }
-
   }
 
 }
