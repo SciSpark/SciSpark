@@ -105,7 +105,9 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   override def toString = tensor.toString
 
-  def isZero = tensor.sumNumber.asInstanceOf[Double] <= 1E-9
+  def isZero = tensor.mul(tensor).sumNumber.asInstanceOf[Double] <= 1E-9
+  
+  def isZeroShortcut = tensor.sumNumber().asInstanceOf[Double] <= 1E-9
 
   def max = tensor.maxNumber.asInstanceOf[Double]
 

@@ -17,7 +17,7 @@
  */
 package org.dia.loaders
 
-import org.dia.Utils.NetCDFUtils
+import org.dia.utils.NetCDFUtils
 import org.slf4j.Logger
 import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset

@@ -106,7 +106,9 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   
   def cumsum = sum(tensor)
 
-  def isZero = sum(tensor) <= 1E-9
+  def isZero = sum(tensor :* tensor) <= 1E-9
+  
+  def isZeroShortcut = sum(tensor) <= 1E-9
 
   override def toString: String = if (tensor != null) tensor.toString() else null
 

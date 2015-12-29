@@ -15,34 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.URLGenerator
+package org.dia.urlgenerators
 
-import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
+import org.dia.Constants.{ TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL }
 import org.joda.time.DateTime
-
 import scala.collection.mutable.ListBuffer
 
 /**
  * Generates hourly TRMM URL's.
- * The function is used more as staging function to generate TRMM URL's.
- * It doesn't necessarily have to be part of the application pipeline.
+ *
+ * The function is used more as a staging function to generate TRMM URL's.
+ * It does not necessarily have to be part of the application pipeline.
  */
-object HourlyTrmmUrlGenerator {
+object HourlyTrmmURLGenerator {
 
   /**
-   * Generates the readings between two years
+   * Generates the readings between two years.
    */
   def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
     val yearReadings = new ListBuffer[String]()
     val maxDays = 2
-    // only a single year
+    /** only a single year */
     if (finalYear == 0) {
       for (day <- 1 to maxDays) {
         val realDate = (new DateTime).withYear(iniYear).withDayOfYear(day)
         yearReadings.appendAll(generateDayReadings(realDate))
       }
     } else {
-      // a range of years
+      /** a range of years */
       for (iYear <- iniYear to finalYear by 1) {
         for (day <- 1 to maxDays) {
           val realDate = (new DateTime).withYear(iYear).withDayOfYear(day)
@@ -54,11 +54,11 @@ object HourlyTrmmUrlGenerator {
   }
 
   /**
-   * Generating readings for a specific day from a date
+   * Generating readings for a specific day.
    */
   def generateDayReadings(realDate: DateTime) = {
-    val sb = new StringBuilder
     var dailyReadings = new ListBuffer[String]()
+    val sb = new StringBuilder
     for (reading <- 3 to 24 by 3) {
       sb.append(TRMM_HOURLY_URL).append(realDate.getYear.toString).append("/")
       sb.append("%03d".format(realDate.getDayOfYear)).append("/")
@@ -66,8 +66,7 @@ object HourlyTrmmUrlGenerator {
       if (reading != 24) {
         sb.append("%s".format(realDate.toString("yyyyMMdd"))).append(".")
         sb.append("%02d".format(reading))
-      }
-      else {
+      } else {
         sb.append("%s".format(realDate.plusDays(1).toString("yyyyMMdd"))).append(".")
         sb.append("00")
       }
@@ -77,4 +76,5 @@ object HourlyTrmmUrlGenerator {
     }
     dailyReadings
   }
+
 }

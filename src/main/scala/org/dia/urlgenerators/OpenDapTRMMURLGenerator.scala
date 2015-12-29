@@ -15,20 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.URLGenerator
+package org.dia.urlgenerators
 
-import java.io.{File, PrintWriter}
-import java.net.{HttpURLConnection, URL}
+import java.io.{ File, PrintWriter }
+import java.net.{ HttpURLConnection, URL }
 import java.util
-
 import org.joda.time.DateTime
-
 import scala.collection.JavaConversions._
 
 /**
- * Generates a list of links for the TRMM URLs
+ * Generates a list of links for the TRMM URLs.
  */
 object OpenDapTRMMURLGenerator {
+
   val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/"
   val DEFAULT_FILE_NAME = "TRMM_L3_Links.txt"
   val iniYear = 1997
@@ -42,14 +41,16 @@ object OpenDapTRMMURLGenerator {
 
   /**
    * Runs the OpenDapTRMMURL link generator
-   * @param checkLink if the link needs to bec checked ?Deprecated?
+   * 
+   * @param checkLink if the link needs to be checked, deprecated?
+   * @param fName file to write URLs into
    */
   def run(checkLink: Boolean, fName: String): Unit = {
-    // initializing variables
+    /** initializing variables */
     checkUrl = checkLink
     fileName = fName
     val numYears = (0 to (endYear - iniYear)).toList
-    // reading time
+    /** reading time */
     var readTime = new DateTime(1997, 1, 2, 0, 0)
     val pw = new PrintWriter(new File(fileName))
     pw.flush()
@@ -68,9 +69,10 @@ object OpenDapTRMMURLGenerator {
   }
 
   /**
-   * Gets the links per year
-   * @param year the year offset 1997 e.g. For Starting at 2000 -> year = 3
-   * @return
+   * Gets the links per year.
+   * 
+   * @param year the year offset from 1997 e.g. for starting at 2000 -> year = 3
+   * @return URLs for that year
    */
   def generateLinksPerYear(year: Int): util.ArrayList[String] = {
 
@@ -78,7 +80,7 @@ object OpenDapTRMMURLGenerator {
     val urls = new util.ArrayList[String]()
     val days = if (checkedYear % 4 == 0) 366 else 365
     var readTime = new DateTime(checkedYear, 1, 2, 0, 0)
-    //for each year try to generate each day
+    /** for each year try to generate each day */
     for (day <- 1 to days) {
       val paddedDay = (day.toString.reverse + "00").substring(0, 3).reverse
       val paddedMonth = (readTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
@@ -91,10 +93,10 @@ object OpenDapTRMMURLGenerator {
       sb.append("3B42_daily.").append(readTime.getYear).append(".")
       sb.append(paddedMonth).append(".")
       sb.append(paddedReadDay).append(".7.bin")
-      // check url and stop if it doesn't exist
+      /** check url and stop if it doesn't exist */
       val tmpUrl = URL + sb.toString
       if (checkUrl) {
-        if (getResponseCode(tmpUrl)) {
+        if (urlExists(tmpUrl)) {
           urls.add(tmpUrl)
           //println(tmpUrl)
         }
@@ -104,11 +106,13 @@ object OpenDapTRMMURLGenerator {
   }
 
   /**
-   * Checks if the url actually exists
-   * @param urlString the url
-   * @return
+   * Checks if the URL actually exists
+   * by sending an HTTP HEAD request.
+   * 
+   * @param urlString the URL
+   * @return boolean whether URL exists.
    */
-  def getResponseCode(urlString: String): Boolean = {
+  def urlExists(urlString: String): Boolean = {
     val u = new URL(urlString)
     val huc = u.openConnection().asInstanceOf[HttpURLConnection]
     huc.setConnectTimeout(100000)

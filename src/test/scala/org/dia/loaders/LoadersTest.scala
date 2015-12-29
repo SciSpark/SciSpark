@@ -23,7 +23,7 @@ import org.dia.Constants._
 import org.dia.TestEnvironment.SparkTestConstants
 import org.dia.core.{SRDD, SciTensor}
 import org.dia.loaders.NetCDFReader._
-import org.dia.partitioners.sPartitioner._
+import org.dia.partitioners.SPartitioner._
 
 /**
  * Tests for grouping from system paths.

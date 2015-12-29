@@ -1,7 +1,7 @@
 package org.dia.core
 
 import java.io.Serializable
-import org.dia.algorithms.mcc.mccOps
+import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.AbstractTensor
 import org.slf4j.Logger
 import scala.collection.mutable
@@ -88,7 +88,7 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * dimensions blockInt.
    */
   def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): SciTensor = {
-    mccOps.reduceResolution(variables(varInUse), blockInt, invalid)
+    MCCOps.reduceResolution(variables(varInUse), blockInt, invalid)
   }
 
   /**
@@ -101,7 +101,7 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * rowblockSize X colblockSize.
    */
   def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): SciTensor = {
-    mccOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
+    MCCOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
   }
 
   override def toString: String = {

@@ -18,32 +18,32 @@
 package org.dia.partitioners
 
 import java.io.File
-
 import org.dia.loaders.PathReader.recursiveListFiles
-
 import scala.language.implicitConversions
 
 /**
- * Functions needed to partitions sets of input paths.
+ * Functions needed to split input paths into groups.
  */
-object sPartitioner {
+object SPartitioner {
 
   /**
-   * Sort of an identity mapping
+   * Each input path is its own group.
    */
-  def MapOneUrl(urls: List[String]): List[List[String]] = {
-    urls.map(elem => List(elem))
+  def mapOneUrl(uris: List[String]): List[List[String]] = {
+    uris.map(elem => List(elem))
   }
 
   /**
-   * A grouped mapping
+   * Partitions input paths in fixed sized groups.
    */
-  def MapNUri(N: Int)(uris: List[String]): List[List[String]] = {
+  def mapNUri(N: Int)(uris: List[String]): List[List[String]] = {
     uris.grouped(N).toList
   }
 
   /**
-   * Maps subfolders to lists containing their files
+   * Maps folders to lists containing their files.
+   *
+   * @param paths List of folders
    */
   def mapSubFoldersToFolders(paths: List[String]): List[List[String]] = {
     var fileList: List[List[String]] = List()
@@ -53,5 +53,6 @@ object sPartitioner {
     }
     fileList
   }
+
 }
 

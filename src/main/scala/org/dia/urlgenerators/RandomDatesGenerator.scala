@@ -15,21 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.URLGenerator
+package org.dia.urlgenerators
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
-
-import org.dia.Utils.FileUtils
+import org.dia.utils.FileUtils
 
 /**
- * Creates a file of random number of lines.
+ * Creates a file of some dates.
  */
 object RandomDatesGenerator {
 
   var numDates = 100
-  var fileName = "/tmp/urls"
-  var sb: StringBuilder = new StringBuilder
+  var fileName = "/tmp/dates"
+  var sb = new StringBuilder
 
   def main(args: Array[String]) {
     if (args.length >= 1)
@@ -37,12 +36,12 @@ object RandomDatesGenerator {
     if (args.length >= 2)
       fileName = args(1)
 
-    val c: Calendar = Calendar.getInstance()
-    val sdf: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    val c = Calendar.getInstance()
+    val sdf = new SimpleDateFormat("yyyy-MM-dd")
     c.setTime(sdf.parse("0000-01-01"))
 
     println("Generating dates . . .")
-    (1 to numDates).foreach(e => {
+    (1 to numDates).foreach(_ => {
       c.add(Calendar.DATE, 1)
       sb.append(sdf.format(c.getTime)).append("\n")
     })

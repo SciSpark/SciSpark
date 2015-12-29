@@ -18,78 +18,63 @@
 package org.dia.algorithms.mcc
 
 import org.dia.Constants._
-import org.dia.core.{SciSparkContext, SRDD, SciTensor}
+import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
 import org.slf4j.Logger
 import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
-  */
+ * Implements MCC with Cartesian product + Cartesian product.
+ * Source is random matrices.
+ */
 object MainMemory {
 
   /**
    * NetCDF variables to use
-   * TODO:: Make the netcdf variables global - however this may need broadcasting
+   * @todo Make the NetCDF variables global - however this may need broadcasting
    */
-  val rowDim = 180
-  val columnDim = 360
-  val TextFile = "TestLinks"
-  val LOG: Logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val rowDim = 20
+  val colDim = 20
+  val textFile = "TestLinks"
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
-    var master = ""
-    val testFile = if (args.isEmpty) "TestLinks" else args(0)
-    if (args.isEmpty || args.length <= 1) master = "local[24]" else master = args(1)
+
+    val master = if (args.isEmpty || args.length <= 1) "local[24]" else args(1)
+    val testFile = if (args.isEmpty) textFile else args(0)
 
     val sc = new SciSparkContext(master, "test")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
-    val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
-    val RDDmetatuple = sc.randomMatrices(testFile, List(variable), dimension, partitionNum)
-
-    val sRDD = RDDmetatuple
-    //    val dateMap = RDDmetatuple._2
-
+    val dimension = if (args.isEmpty || args.length <= 4) (rowDim, colDim) else (args(4).toInt, args(4).toInt)
+    val sRDD = sc.randomMatrices(testFile, List(variable), dimension, partitionNum)
 
     val filtered = sRDD.map(p => p(variable) <= 241.0)
-    LOG.info("Matrices have been filtered")
+    logger.info("Matrices have been filtered")
 
-    val filteredCartesian = filtered.cartesian(filtered).
-      filter(p => p._1.metaData("FRAME").toInt == p._2.metaData("FRAME").toInt - 1)
+    val consecFrames = filtered.cartesian(filtered).
+      filter({ case (t1, t2) => t1.metaData("FRAME").toInt == t2.metaData("FRAME").toInt - 1 })
 
-    val componentFrameRDD = filteredCartesian.flatMap(p => {
-      val components1 = mccOps.findCloudComponents(p._1).filter(checkCriteria)
-      val components2 = mccOps.findCloudComponents(p._2).filter(checkCriteria)
-      val componentPairs = for (x <- components1; y <- components2) yield (x, y)
-      val overlapped = componentPairs.filter(p => !(p._1.tensor * p._2.tensor).isZero)
-      overlapped.map(p => ((p._1.metaData("FRAME"), p._1.metaData("COMPONENT")), (p._2.metaData("FRAME"), p._2.metaData("COMPONENT"))))
+    val componentFrameRDD = consecFrames.flatMap({
+      case (t1, t2) => {
+        val comps1 = MCCOps.findCloudComponents(t1).filter(MCCOps.checkCriteria)
+        val comps2 = MCCOps.findCloudComponents(t2).filter(MCCOps.checkCriteria)
+        val compsPairs = for (x <- comps1; y <- comps2) yield (x, y)
+        val overlaps = compsPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
+        overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
+      }
     })
 
     val collectedEdges = componentFrameRDD.collect()
-    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
-    println(vertex.toList.sortBy(p => p._1))
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
+    println(collectedVertices.toList.sortBy(_._1))
     println(collectedEdges.toList.sorted)
-    println(vertex.size)
+    println(collectedVertices.size)
     println(collectedEdges.length)
   }
 
-  def checkCriteria(p : SciTensor) : Boolean = {
-    val hash = p.metaData
-    val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
-  }
-
-  def getVertexArray(collection: SRDD[SciTensor]): mutable.HashMap[(String, String), Long] = {
-    val id = collection.map(p => (p.metaData("FRAME") , p.metaData("COMPONENT"))).collect().toList
-    val size = id.length
-    val range = 0 to (size - 1)
-    val hash = new mutable.HashMap[(String, String), Long]
-    range.map(p => hash += ((id(p), p)))
-    hash
-  }
 }
 
 

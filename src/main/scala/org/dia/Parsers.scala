@@ -17,13 +17,12 @@
  */
 package org.dia
 
-import java.util.{Calendar, Date}
-
+import java.util.{ Calendar, Date }
 import com.joestelmach.natty.Parser
 
 object Parsers {
 
-  def ParseDateFromString(Name: String): Date = {
+  def parseDateFromString(Name: String): Date = {
     val Parser = new Parser
     val DataGroups = Parser.parse(Name)
     if (DataGroups.size() > 0) {
@@ -34,4 +33,5 @@ object Parsers {
       null
     }
   }
+
 }

@@ -24,7 +24,7 @@ import org.dia.Constants._
 import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.RandomMatrixReader._
-import org.dia.partitioners.sPartitioner._
+import org.dia.partitioners.SPartitioner._
 import org.dia.tensors.{ AbstractTensor, BreezeTensor }
 import scala.io.Source
 import scala.collection.mutable
@@ -79,10 +79,10 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, MapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, mapNUri(partitionSize))
   }
 
   /**
@@ -125,10 +125,10 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
     val variables: List[String] = varName
 
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadRandomArray(matrixSize), MapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, variables, loadRandomArray(matrixSize), mapNUri(partitionSize))
   }
 
   /**
@@ -143,9 +143,9 @@ class SciSparkContext(val conf: SparkConf) {
     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val PartitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
 
-    new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), MapNUri(PartitionSize))
+    new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), mapNUri(partitionSize))
   }
 
   /**
