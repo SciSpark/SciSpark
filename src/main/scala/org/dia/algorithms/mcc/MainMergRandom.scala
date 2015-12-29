@@ -17,24 +17,28 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{File, PrintWriter}
+import java.io.{ File, PrintWriter }
 import java.text.SimpleDateFormat
-
 import org.dia.Parsers
-import org.dia.core.{SciSparkContext, SciTensor}
+import org.dia.core.{ SciSparkContext, SciTensor }
 import org.slf4j.Logger
-
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+/**
+ * Implements MCC with GroupBy + In-place iteration.
+ * Data are random matrices.
+ */
 object MainMergRandom {
+
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
     /**
-     * Input arguements to the program :
+     * Input arguments to the program :
      * args(0) - the path to the source file
-     * args(1) - the spark master url. Example : spark://HOST_NAME:7077
+     * args(1) - the spark master URL. Example : spark://HOST_NAME:7077
      * args(2) - the number of desired partitions. Default : 2
      * args(3) - square matrix dimension. Default : 20
      * args(4) - variable name
@@ -53,10 +57,10 @@ object MainMergRandom {
      * The DateIndexTable holds the mappings.
      *
      */
-    val DateIndexTable = new mutable.HashMap[String, Int]()
-    val URLs = Source.fromFile(inputFile).mkString.split("\n").toList
+    val dateIndexTable = new mutable.HashMap[String, Int]()
+    val uris = Source.fromFile(inputFile).mkString.split("\n").toList
 
-    val orderedDateList = URLs.map(p => {
+    val orderedDateList = uris.map(p => {
       val source = p.split("/").last.replaceAllLiterally(".", "/")
       Parsers.parseDateFromString(source)
     }).sorted
@@ -64,7 +68,7 @@ object MainMergRandom {
     for (i <- orderedDateList.indices) {
       val dateFormat = new SimpleDateFormat("YYYY-MM-dd")
       val dateString = dateFormat.format(orderedDateList(i))
-      DateIndexTable += ((dateString, i))
+      dateIndexTable += ((dateString, i))
     }
 
     /**
@@ -80,7 +84,7 @@ object MainMergRandom {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      *
-     * Note if no hdfs path is given, then randomly generated matrices are used
+     * Note if no HDFS path is given, then randomly generated matrices are used
      *
      */
     val sRDD = sc.randomMatrices(inputFile, List(variable), dimension, partCount)
@@ -88,27 +92,26 @@ object MainMergRandom {
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.replaceAllLiterally(".", "/")
       val date = new SimpleDateFormat("YYYY-MM-dd").format(Parsers.parseDateFromString(source))
-      val FrameID = DateIndexTable(date)
+      val FrameID = dateIndexTable(date)
       p.insertDictionary(("FRAME", FrameID.toString))
       p
     })
 
     /**
-     * The MCC algorithim : Mining for graph vertices and edges
+     * The MCC algorithm : Mining for graph vertices and edges
      *
-     * For each array N* where a N is the frame number and N* is the array
-     * output the following pairs (N*, N), (N*, N + 1).
+     * For each array N* where N is the frame number and N* is the array
+     * output the following pairs (N, N*), (N + 1, N*).
      *
-     * After flatmapping the pairs and applying additional pre-processing
-     * we have pairs of (X, Y) where X is a matrix and Y is a label.
+     * After flat-mapping the pairs and applying additional pre-processing
+     * we have pairs of (X, Y) where X is a label and Y a tensor.
      *
-     * After grouping by Y and reordering pairs we pairs of the following
+     * After grouping by X and reordering we obtain pairs
      * (N*, (N+1)*) which achieves the consecutive pairwise grouping
      * of frames.
      */
-    //val reducedRes = labeled.map(p => p.reduceRectangleResolution(25, 8, 330))
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val complete = filtered.flatMap(p => {
+    val consecFrames = filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
       .map(p => p._2.map(e => e._2).toList)
@@ -116,138 +119,137 @@ object MainMergRandom {
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
-
-
     /**
      * Core MCC
      * For each consecutive frame pair, find it's components.
-     * For each component pairing, find if the elementwise
+     * For each component pairing, find if the element-wise
      * component pairing results in a zero matrix.
-     * If not output a new edge pairing in the form ((Frame, Component), (Frame, Component))
+     * If not output a new edge pairing in the form ((frameId, componentId), (frameId, componentId))
      */
-    val componentFrameRDD = complete.flatMap(p => {
-      /**
-       * First label the connected components in each pair.
-       * The following example illustrates labelling.
-       * [0,1,2,0]       [0,1,1,0]
-       * [1,2,0,0]   ->  [1,1,0,0]
-       * [0,0,0,1]       [0,0,0,2]
-       *
-       * Note that a tuple of (Matrix, MaxLabel) is returned
-       * to denote the labelled elements and the highest label.
-       * This way only one traverse is necessary instead of a 2nd traverse
-       * to find the highest labelled.
-       */
-      val components1 = MCCOps.labelConnectedComponents(p._1.tensor)
-      val components2 = MCCOps.labelConnectedComponents(p._2.tensor)
+    val componentFrameRDD = consecFrames.flatMap({
+      case (t1, t2) => {
+        /**
+         * First label the connected components in each pair.
+         * The following example illustrates labeling.
+         *
+         * [0,1,2,0]       [0,1,1,0]
+         * [1,2,0,0]   ->  [1,1,0,0]
+         * [0,0,0,1]       [0,0,0,2]
+         *
+         * Note that a tuple of (Matrix, MaxLabel) is returned
+         * to denote the labeled elements and the highest label.
+         * This way only one traverse is necessary instead of a 2nd traverse
+         * to find the highest label.
+         */
+        val (components1, _) = MCCOps.labelConnectedComponents(t1.tensor)
+        val (components2, _) = MCCOps.labelConnectedComponents(t2.tensor)
 
-      /**
-       * The labelled components are elementwise multiplied
-       * to find overlapping regions. Non-overlapping regions
-       * result in a 0.
-       *
-       * [0,1,1,0]       [0,1,1,0]     [0,1,1,0]
-       * [1,1,0,0]   X   [2,0,0,0]  =  [2,0,0,0]
-       * [0,0,0,2]       [0,0,0,3]     [0,0,0,6]
-       *
-       */
-      val product = components1._1 * components2._1
+        /**
+         * The labeled components are element-wise multiplied
+         * to find overlapping regions. Non-overlapping regions
+         * result in a 0.
+         *
+         * [0,1,1,0]       [0,1,1,0]     [0,1,1,0]
+         * [1,1,0,0]   X   [2,0,0,0]  =  [2,0,0,0]
+         * [0,0,0,2]       [0,0,0,3]     [0,0,0,6]
+         *
+         */
+        val product = components1 * components2
+        /**
+         * The overlappedPairsList keeps track of all points that
+         * overlap between the labeled arrays. Note that the overlappedPairsList
+         * will have several duplicate pairs if there are large regions of overlap.
+         *
+         * This is achieved by iterating through the product array and noting
+         * all points that are not 0.
+         */
+        var overlappedPairsList = mutable.MutableList[(Double, Double)]()
 
-      /**
-       * The OverlappedPairsList keeps track of all points that
-       * overlap between the labelled arrays. Note that the OverlappedPairsList
-       * will have several duplicate pairs if their are large regions of overlap.
-       *
-       * This is achieved by iterating through the product array and noting
-       * all points that are not 0.
-       */
-      var OverlappedPairsList = mutable.MutableList[(Double, Double)]()
+        /**
+         * The areaMinMaxTable keeps track of the area, minimum value, and maximum value
+         * of all labeled regions in both components. For this reason the hash key has the following form :
+         * 'F : C' where F = Frame Number and C = Component Number.
+         * The areaMinMaxTable is updated by the updateComponent function, which is called in the for loop.
+         *
+         * @todo Extend it to have a lat long bounds for component
+         */
+        var areaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
-      /**
-       * The AreaMinMaxTable keeps track of the Area, Minimum value, and Maximum value
-       * of all labelled regions in both components. For this reason the hash key has the following form :
-       * 'F : C' where F = Frame Number and C = Component Number.
-       * The AreaMinMaxTable is updated by the updateComponent function, which is called in the for loop.
-       * TODO :: Extend it to have a lat lon bounds for component
-       */
-      var AreaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
-
-      def updateComponent(label: Double, frame: String, value: Double): Unit = {
-        if (label != 0.0) {
-          var area = 1.0
-          var max = Double.MinValue
-          var min = Double.MaxValue
-          val currentProperties = AreaMinMaxTable.get(frame + ":" + label)
-          if (currentProperties != null && currentProperties.isDefined) {
-            area = currentProperties.get._1
-            max = currentProperties.get._2
-            min = currentProperties.get._3
-            if (value < min) min = value
-            if (value > max) max = value
-          } else {
-            min = value
-            max = value
+        def updateComponent(label: Double, frame: String, value: Double): Unit = {
+          if (label != 0.0) {
+            var area = 0.0
+            var max = Double.MinValue
+            var min = Double.MaxValue
+            val currentProperties = areaMinMaxTable.get(frame + ":" + label)
+            if (currentProperties != null && currentProperties.isDefined) {
+              area = currentProperties.get._1
+              max = currentProperties.get._2
+              min = currentProperties.get._3
+              if (value < min) min = value
+              if (value > max) max = value
+            } else {
+              min = value
+              max = value
+            }
+            area += 1
+            areaMinMaxTable += ((frame + ":" + label, (area, max, min)))
           }
-          area += 1
-          AreaMinMaxTable += ((frame + ":" + label, (area, max, min)))
         }
-      }
 
-      for (row <- 0 to product.rows - 1) {
-        for (col <- 0 to product.cols - 1) {
-          // Find non-zero points in product array
-          if (product(row, col) != 0.0) {
-            // save components ids
-            val value1 = components1._1(row, col)
-            val value2 = components2._1(row, col)
-            OverlappedPairsList += ((value1, value2))
+        for (row <- 0 to product.rows - 1) {
+          for (col <- 0 to product.cols - 1) {
+            // Find non-zero points in product array
+            if (product(row, col) != 0.0) {
+              // save components ids
+              val value1 = components1(row, col)
+              val value2 = components2(row, col)
+              overlappedPairsList += ((value1, value2))
+            }
+            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col))
+            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col))
           }
-          updateComponent(components1._1(row, col), p._1.metaData("FRAME"), p._1.tensor(row, col))
-          updateComponent(components2._1(row, col), p._2.metaData("FRAME"), p._2.tensor(row, col))
         }
+        /**
+         * Once the overlapped pairs have been computed, eliminate all duplicates
+         * by converting the collection to a set. The component edges are then
+         * mapped to the respective frames, so the global space of edges (outside of this task)
+         * consists of unique tuples.
+         */
+        val edgesSet = overlappedPairsList.toSet
+        val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
+
+        val filtered = edges.filter({
+          case ((frameId1, compId1), (frameId2, compId2)) => {
+            val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
+            val isCloud1 = ((area1 >= 40.0) || (area1 < 40.0)) && ((max1 - min1) > 10.0)
+            val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
+            val isCloud2 = ((area2 >= 40.0) || (area2 < 40.0)) && ((max2 - min2) > 10.0)
+            isCloud1 && isCloud2
+          }
+        })
+        filtered
       }
-
-      /**
-       * Once the overlapped pairs have been computed eliminate all duplicates
-       * by converting the collection to a set. The component edges are then
-       * mapped to the respective frames, so the global space of edges (outside of this task)
-       * consists of unique tuples.
-       */
-      val EdgeSet = OverlappedPairsList.toSet
-      val overlap = EdgeSet.map(x => ((p._1.metaData("FRAME"), x._1), (p._2.metaData("FRAME"), x._2)))
-
-      val filtered = overlap.filter(entry => {
-        val frameId1 = entry._1._1
-        val compId1 = entry._1._2
-        val compVals1 = AreaMinMaxTable(frameId1 + ":" + compId1)
-        val fil1 = ((compVals1._1 >= 40.0) || (compVals1._1 < 40.0)) && ((compVals1._2 - compVals1._3) > 10.0)
-
-        val frameId2 = entry._2._1
-        val compId2 = entry._2._2
-        val compVals2 = AreaMinMaxTable(frameId2 + ":" + compId2)
-        val fil2 = ((compVals2._1 >= 40.0) || (compVals2._1 < 40.0)) && ((compVals2._2 - compVals2._3) > 10.0)
-        fil1 && fil2
-      })
-      filtered
     })
 
     /**
-     * ((String, Double), (String, Double))
-     * TODO :: ((String, Double), Area, Min, Max), (String, Double) Area, Min, Max))
-     * Collect the edges.
-     * From the edge pairs collect all used vertices.
+     * Collect the edges of the form ((String, Double), (String, Double))
+     * From the edges collect all used vertices.
      * Repeated vertices are eliminated due to the set conversion.
+     *
+     * @todo Make a vertex be of the form
+     * ((frameId, componentId), area, min, max)
+     * to also store area, min, max at the end of MCC.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val vertex = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
 
-    val k = new PrintWriter(new File("VertexAndEdgeList.txt"))
-    k.write(vertex.toList.sortBy(p => p._1) + "\n")
-    k.write(collectedEdges.toList.sorted + "\n")
-    k.close()
-    println("NUM VERTEX : " + vertex.size + "\n")
+    val out = new PrintWriter(new File("VertexAndEdgeList.txt"))
+    out.write(collectedVertices.toList.sortBy(_._1) + "\n")
+    out.write(collectedEdges.toList.sorted + "\n")
+    out.close()
+    println("NUM VERTICES: " + collectedVertices.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
-    println(complete.toDebugString + "\n")
+    println(consecFrames.toDebugString + "\n")
   }
 
 }

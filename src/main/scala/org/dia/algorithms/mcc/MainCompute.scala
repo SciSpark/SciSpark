@@ -28,135 +28,57 @@ import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
+ * Implements MCC with Cartesian + [neither Cartesian nor in-place approach].
+ * Data is random matrices.
  */
 object MainCompute {
 
   /**
    * NetCDF variables to use
-   * TODO:: Make the netcdf variables global - however this may need broadcasting
+   * @todo Make the NetCDF variables global - however this may need broadcasting
    */
   val rowDim = 180
   val columnDim = 360
   val TextFile = "TestLinks"
-  // Class loggerger
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-  var nodes = scala.collection.mutable.Set[String]()
-  var totEdges = 0
 
   def main(args: Array[String]): Unit = {
-    var master = ""
+
+    val master = if (args.isEmpty || args.length <= 1) "local[50]" else args(1)
     val testFile = if (args.isEmpty) TextFile else args(0)
-    if (args.isEmpty || args.length <= 1) master = "local[50]" else master = args(1)
 
     val sc = new SciSparkContext(master, "test")
     logger.info("SciSparkContext created")
 
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    //TotCldLiqH2O_A
+
     val partitionNum = if (args.isEmpty || args.length <= 2) 2 else args(2).toInt
     val variable = if (args.isEmpty || args.length <= 3) "TotCldLiqH2O_A" else args(3)
     val dimension = if (args.isEmpty || args.length <= 4) (20, 20) else (args(4).toInt, args(4).toInt)
-    val netcdfFile = sc.randomMatrices(testFile, List(variable), dimension, partitionNum)
-    val sRDD = netcdfFile
+    val sRDD = sc.randomMatrices(testFile, List(variable), dimension, partitionNum)
 
-    val preCollected = sRDD
-    val filtered = preCollected.map(p => p(variable) <= 241.0)
+    val filtered = sRDD.map(p => p(variable) <= 241.0)
     logger.info("Matrices have been filtered")
 
-    val filCartesian = filtered.cartesian(filtered)
-      .filter(pair => {
-        val d1 = Integer.parseInt(pair._1.metaData("FRAME"))
-        val d2 = Integer.parseInt(pair._2.metaData("FRAME"))
-        (d1 + 1) == d2
+    val consecFrames = filtered.cartesian(filtered)
+      .filter({
+        case (t1, t2) => {
+          val d1 = Integer.parseInt(t1.metaData("FRAME"))
+          val d2 = Integer.parseInt(t2.metaData("FRAME"))
+          (d1 + 1) == d2
+        }
       })
-    logger.info("C" +
-      "" +
-      "" +
-      "artesian product have been done.")
+    logger.info("Pairing consecutive frames is done.")
 
-    val edgesRdd = filCartesian.map(pair => {
-      checkComponentsOverlap(pair._1, pair._2)
+    val edgesRdd = consecFrames.map({
+      case (t1, t2) => {
+        MCCOps.checkComponentsOverlap(t1, t2)
+      }
     })
     logger.info("Checked edges and overlap.")
 
-    val colEdges = edgesRdd.collect()
+    val collectedEdges = edgesRdd.collect()
 
-    var jsonNodes = mutable.Set[JObject]()
-    var jsonEdges = mutable.Set[JObject]()
-
-    //    colEdges.map(edgesList => {
-    //      if (edgesList.nonEmpty) {
-    //        val res = generateJson(edgesList, dates)
-    //        jsonNodes ++= res._1
-    //        jsonEdges ++= res._2
-    //      }
-    //    })
-    println("*****************")
-    println(nodes.size)
-    println(totEdges)
-    println("*****************")
-    //    val json = ("nodes" -> jsonNodes) ~ ("edges" -> jsonEdges)
-    //    FileUtils.writeToFile("./resources/graph.json", pretty(render(json)))
-  }
-
-  def checkComponentsOverlap(sciTensor1: SciTensor, sciTensor2: SciTensor): List[(String, String)] = {
-    val currentTimeRDD = MCCOps.findCloudElements(sciTensor1)
-    val nextTimeRDD = MCCOps.findCloudElements(sciTensor2)
-    var edgePair = List.empty[(String, String)]
-    // cartesian product
-    (1 to currentTimeRDD.metaData("NUM_COMPONENTS").toInt).foreach(cIdx => {
-      (1 to nextTimeRDD.metaData("NUM_COMPONENTS").toInt).foreach(nIdx => {
-        // check if valid
-        if (checkCriteria(sciTensor1.tensor.data, currentTimeRDD.tensor.data, cIdx)
-          && checkCriteria(sciTensor2.tensor.data, nextTimeRDD.tensor.data, nIdx)) {
-          //verify overlap
-          if (overlap(currentTimeRDD.tensor, nextTimeRDD.tensor, cIdx, nIdx)) {
-            val tup = (currentTimeRDD.metaData("FRAME") + ":" + cIdx, nextTimeRDD.metaData("FRAME") + ":" + nIdx)
-            edgePair :+= tup
-          }
-          // else don't do anything
-        }
-      })
-    })
-    edgePair
-  }
-
-  def checkCriteria(origData: Array[Double], compData: Array[Double], compNum: Int): Boolean = {
-    var result = false
-    var area = 0.0
-    val maskedTen = compData.map(e => {
-      if (e == compNum) {
-        area += 1.0
-        1.0
-      } else 0.0
-    })
-    var idx = 0
-    var dMax = Double.MinValue
-    var dMin = Double.MaxValue
-    val origMasked = origData.map(e => {
-      if (dMax < e && maskedTen(idx) != 0) dMax = e
-      if (dMin > e && maskedTen(idx) != 0) dMin = e
-      val nval = e * maskedTen(idx)
-      idx += 1
-      nval
-    })
-
-    if ((area >= 40.0) || (area < 40.0) && ((dMax - dMin) > 10.0))
-      result = true
-    result
-  }
-
-  def overlap(origData: AbstractTensor, origData2: AbstractTensor, compNum1: Int, compNum2: Int): Boolean = {
-    // mask for specific component
-    val maskedData1 = origData.map(e => {
-      if (e == compNum1) 1.0 else 0.0
-    })
-    val maskedData2 = origData2.map(e => {
-      if (e == compNum2) 1.0 else 0.0
-    })
-    var result = false
-    // check overlap
-    (maskedData1 * maskedData2).isZeroShortcut == false
   }
 
 }

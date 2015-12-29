@@ -214,7 +214,7 @@ object MCCOps {
    * Very similar to labelConnectedComponents except also
    * adds number of components as meta information.
    * Further it is expecting and returning a SciTensor,
-   * not an AbstracTensor.
+   * not an AbstractTensor.
    */
   def findCloudElements(tensor: SciTensor): SciTensor = {
     val labeledTensor = labelConnectedComponents(tensor.tensor)
@@ -224,10 +224,10 @@ object MCCOps {
 
   /**
    * Checks whether connected component is indeed a cloud.
-   * 
+   *
    * @param comp masked component with AREA and DIFFERENCE meta info
    * @todo make sure this is only applied if AREA and DIFFERENCE
-   * meta fields exist! 
+   * meta fields exist!
    */
   def checkCriteria(comp: SciTensor): Boolean = {
     val hash = comp.metaData
@@ -235,5 +235,94 @@ object MCCOps {
     val tempDiff = hash("DIFFERENCE").toDouble
     (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
   }
-  
+
+  /**
+   * Returns the edges from first to second tensor.
+   *
+   * @param sciTensor1 first tensor
+   * @param sciTensor2 second tensor
+   * @return list of (String, String) = (frameId1:componentId1, frameId2:componentId2)
+   * such that componentId1+2 satisfy the criteria and overlap.
+   */
+  def checkComponentsOverlap(sciTensor1: SciTensor, sciTensor2: SciTensor): List[(String, String)] = {
+    val currentTimeRDD = MCCOps.findCloudElements(sciTensor1)
+    val nextTimeRDD = MCCOps.findCloudElements(sciTensor2)
+    var edges = List.empty[(String, String)]
+    /** Cartesian product */
+    (1 to currentTimeRDD.metaData("NUM_COMPONENTS").toInt).foreach(cIdx => {
+      (1 to nextTimeRDD.metaData("NUM_COMPONENTS").toInt).foreach(nIdx => {
+        /** check if valid */
+        if (checkCriteria(sciTensor1.tensor.data, currentTimeRDD.tensor.data, cIdx)
+          && checkCriteria(sciTensor2.tensor.data, nextTimeRDD.tensor.data, nIdx)) {
+          /** verify overlap */
+          if (overlap(currentTimeRDD.tensor, nextTimeRDD.tensor, cIdx, nIdx)) {
+            val tup = (currentTimeRDD.metaData("FRAME") + ":" + cIdx, nextTimeRDD.metaData("FRAME") + ":" + nIdx)
+            edges :+= tup
+          }
+        }
+      })
+    })
+    edges
+  }
+
+  /**
+   * Whether component satisfies criteria.
+   *
+   * @param origData linearized tensor values
+   * @param compData linearized tensor component labels
+   * @param compNum component label
+   * @return whether component satisfies criteria
+   * @todo make it only callable from within checkComponentsOverlap
+   */
+  def checkCriteria(origData: Array[Double], compData: Array[Double], compNum: Int): Boolean = {
+    var area = 0.0
+    var cnt = 0
+    val maskedTen = compData.map(e => {
+      cnt += 1
+      if (e == compNum) {
+        area += 1.0
+        1.0
+      } else 0.0
+    })
+    var dMax = Double.MinValue
+    var dMin = Double.MaxValue
+    var idx = 0
+    /** @todo is there a better soln than initializing it to 0.0? */
+    var curVal = 0.0
+    while (idx < cnt) {
+      if (maskedTen(idx) != 0) {
+        curVal = origData(idx)
+        if (dMax < curVal) dMax = origData(idx)
+        if (dMin > curVal) dMin = origData(idx)
+      }
+      idx += 1
+    }
+    (area >= 40.0) || (area < 40.0) && ((dMax - dMin) > 10.0)
+  }
+
+  /**
+   * Whether two components overlap.
+   *
+   * @param comps1 first component tensor
+   * @param comps2 second component tensor
+   * @param compNum1 first component number
+   * @param compNum2 second component number
+   * @return whether the two components overlap
+   * @todo this method only makes sense if the two tensors are component tensors,
+   * i.e. the values are the component numbers not normal values. make sure that
+   * this method is thus only callable with such tensors, e.g. make it only callable
+   * from within checkComponentsOverlap.
+   */
+  def overlap(comps1: AbstractTensor, comps2: AbstractTensor, compNum1: Int, compNum2: Int): Boolean = {
+    /** mask for specific component */
+    val maskedComp1 = comps1.map(e => {
+      if (e == compNum1) 1.0 else 0.0
+    })
+    val maskedComp2 = comps1.map(e => {
+      if (e == compNum2) 1.0 else 0.0
+    })
+    /** check overlap */
+    !(maskedComp1 * maskedComp2).isZeroShortcut
+  }
+
 }

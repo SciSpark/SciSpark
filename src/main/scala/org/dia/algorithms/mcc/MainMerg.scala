@@ -125,7 +125,7 @@ object MainMerg {
      * Repeated vertices are eliminated due to the set conversion.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val collectedVertices = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
 
     println(collectedVertices.toList.sortBy(_._1))
     println(collectedEdges.toList.sorted)

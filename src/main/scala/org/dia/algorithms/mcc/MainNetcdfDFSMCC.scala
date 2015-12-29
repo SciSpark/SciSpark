@@ -78,12 +78,12 @@ object MainNetcdfDFSMCC {
      * The MCC algorithm : Mining for graph vertices and edges
      *
      * For each array N* where N is the frame number and N* is the array
-     * output the following pairs (N*, N), (N*, N + 1).
+     * output the following pairs (N, N*), (N + 1, N*).
      *
      * After flat-mapping the pairs and applying additional pre-processing
-     * we have pairs (X, Y) where X is a matrix and Y is a label.
+     * we have pairs (X, Y) where X is a label and Y a tensor.
      *
-     * After grouping by Y and reordering pairs we obtain pairs
+     * After grouping by X and reordering pairs we obtain pairs
      * (N*, (N+1)*) which achieves the consecutive pairwise grouping
      * of frames.
      */
@@ -216,7 +216,7 @@ object MainNetcdfDFSMCC {
      * to also store area, min, max at the end of MCC.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val collectedVertices = collectedEdges.flatMap(p => List(p._1, p._2)).toSet
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
 
     val outv = new PrintWriter(new File("VertexList.txt"))
     outv.write(collectedVertices.toList.sortBy(_._1) + "\n")
