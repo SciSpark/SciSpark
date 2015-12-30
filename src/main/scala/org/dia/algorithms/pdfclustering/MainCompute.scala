@@ -35,12 +35,14 @@ object MainCompute {
     //      println(v + ": " + NetCDFReader.loadNetCDFNDVar(uri, v)._2.deep.mkString(" "))
     //    }
 
+    //    /** This is just to check the variables' meta info */
+    //    val uri = "resources/merra/MERRA2_400.tavgU_2d_lnd_Nx.201101.nc4"
     //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(uri)
-    //    val variables = netcdfFile.getVariables
-    //    val numVars = variables.size()
+    //    val someVars = netcdfFile.getVariables
+    //    val numVars = someVars.size()
     //    var idx = 0
     //    while (idx < numVars) {
-    //      val variable = variables.get(idx)
+    //      val variable = someVars.get(idx)
     //      println(variable)
     //      idx += 1
     //    }
@@ -52,10 +54,31 @@ object MainCompute {
 
     val sc = new SciSparkContext(masterURL, "PDF clustering")
 
+    /**
+     *  Each SciTensor of this RDD here is of the form T(time,lat,lon)
+     *  where T = surface temperature.
+     */
     val rdd = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
-    val fst = rdd.collect()(0)
-    
-    
+
+    //    /** some plausibility checks */
+    //    val rddCollected = rdd.collect()
+    //    println(rddCollected.length)
+    //    val firstTensorShape = rddCollected(0).variables.get("TSURF").map(_.shape)
+    //    val output = firstTensorShape match {
+    //      case Some(shape) => shape.deep.mkString(" ")
+    //      case _ => "NONE"
+    //    }
+    //    /** should print 24 361 576 (time lat lon) */
+    //    println(output)
+
+    /**
+     * This will give us an RDD with SciTensor's of the form
+     * metaInfo: (lat,lon) + data: TSURF -> T(time).
+     * This is the complicated + time-consuming part (because
+     * of network traffic) of the entire clustering algorithm.
+     */
+//    val reshapedRDD = rdd
+
   }
 
 }
