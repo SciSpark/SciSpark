@@ -15,25 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.tensors
+package org.dia.urlgenerators
+
+import org.dia.urlgenerators.OpenDapTRMMURLGenerator;
+import org.scalatest._
+import java.nio.file.{ Paths, Files }
 
 /**
- * A sliceable array.
+ * Tests whether the OpenDapTRMM URLs creator works.
  */
-trait SliceableArray {
+@Ignore
+class OpenDapTRMMURLGeneratorTest extends FunSuite {
 
-  type T <: SliceableArray
-
-  def rows: Int
-
-  def cols: Int
-
-  def shape: Array[Int]
-
-  def data: Array[Double]
-
-  def apply(ranges: (Int, Int)*): T
-
-  def apply(indexes: Int*): Double
+  test("testLinkGeneration") {
+    val checkLink = false
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfile.txt")
+    assert(Files.exists(Paths.get("testLinkfile.txt")))
+  }
 
 }

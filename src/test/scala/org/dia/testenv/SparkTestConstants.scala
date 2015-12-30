@@ -15,22 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.urlgenerators
+package org.dia.testenv
 
-import org.dia.urlgenerators.OpenDapTRMMURLGenerator;
-import org.scalatest._
-import java.nio.file.{Paths, Files}
+import org.dia.core.SciSparkContext
 
-/**
- * Testing for the OpenDapTRMM link creator works
- */
-@Ignore
-class OpenDapTRMMURLGenerator_Test extends FunSuite {
-
-  test("testLinkGeneration") {
-    val checkLink = false
-    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfile.txt")
-    assert(Files.exists(Paths.get("testLinkfile.txt")))
-  }
-
+object SparkTestConstants {
+  val sc = new SciSparkContext("local[4]", "test")
+  val datasetPath = "src/test/resources/TestLinks"
+  val datasetVariable = "data"
 }

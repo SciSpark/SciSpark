@@ -17,33 +17,27 @@
  */
 package org.dia.tensors.perf
 
-
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.{ FunSuite, Ignore }
+
 /**
- * The Nd4j Performance Tests
- * Created by rahulsp on 7/7/15.
+ * Nd4j Performance Tests
  */
-class MainMemory$Nd4JPerformanceTest extends FunSuite {
+class MainMemoryNd4JPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {
     println("ND4J.element.wise.test")
     (1 to 20).foreach { i =>
-      //var sum = 0L
-      //      (1 to 3).foreach { p =>
       val m1 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)
       val m2 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)
       /**
-       * Vector subtraction
+       * subtraction
        */
       val start = System.nanoTime()
-      val m3 = m1 - (m2)
+      val m3 = m1 - m2
       val stop = System.nanoTime()
       println((stop - start))
-      //  sum += stop - start
-      //    }
-      //  println("Final " + (sum / 3))
     }
     assert(true)
   }
@@ -51,20 +45,15 @@ class MainMemory$Nd4JPerformanceTest extends FunSuite {
   test("ND4J.vector.wise.test") {
     println("ND4J.vector.wise.test")
     (1 to 20).foreach { i =>
-      // var sum = 0L
-      //(1 to 3).foreach { p =>
       val m1 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)
       val m2 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)
       /**
-       * Vector subtraction
+       * element-wise multiplication
        */
       val start = System.nanoTime()
       val m3 = m1 * m2
       val stop = System.nanoTime()
       println(stop - start)
-      //sum += stop - start
-      //}
-      //println("Final " + (sum / 3))
     }
     assert(true)
   }

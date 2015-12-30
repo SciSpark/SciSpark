@@ -31,7 +31,7 @@ object TensorFactory {
    * @param loadFunc
    * @return Breeze/Nd4j tensor depending on chosen library.
    */
-  def getTensors[T <: AbstractTensor](arrayLib: String, loadFunc: () => (Array[Double], Array[Int])): AbstractTensor = {
+  def getTensor[T <: AbstractTensor](arrayLib: String, loadFunc: () => (Array[Double], Array[Int])): AbstractTensor = {
     arrayLib match {
       case BREEZE_LIB => return new BreezeTensor(loadFunc)
       case ND4J_LIB => return new Nd4jTensor(loadFunc)

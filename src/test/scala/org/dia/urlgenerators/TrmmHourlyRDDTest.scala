@@ -22,32 +22,33 @@ import org.dia.Parsers
 import org.dia.urlgenerators.HourlyTrmmURLGenerator;
 import org.joda.time.DateTime
 import org.scalatest.Ignore
-
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
 /**
- * Testing TrmmHourly
+ * Tests whether the TrmmHourly URLs creator works.
  */
-
 @Ignore
 class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
 
   val HOURLY_TRMM_DATA_VAR = "precipitation"
 
   /**
-   * Test if the generated hourly readings are correct
+   * Test if the generated hourly readings are correct.
    */
   test("GeneratingHourlyTRMMFileUrls") {
     val realDate = (new DateTime).withYear(1998).withDayOfYear(66)
     var expectedReadings = new ListBuffer[String]()
-    expectedReadings +=("3B42.19980307.03.7.HDF.Z", "3B42.19980307.06.7.HDF.Z",
+    expectedReadings += ("3B42.19980307.03.7.HDF.Z", "3B42.19980307.06.7.HDF.Z",
       "3B42.19980307.09.7.HDF.Z", "3B42.19980307.12.7.HDF.Z", "3B42.19980307.15.7.HDF.Z",
       "3B42.19980307.18.7.HDF.Z", "3B42.19980307.21.7.HDF.Z", "3B42.19980308.00.7.HDF.Z")
     val trmmHourlyUrls = HourlyTrmmURLGenerator.generateDayReadings(realDate)
     expectedReadings.foreach(v => assert(trmmHourlyUrls.contains(v)))
   }
 
+  /**
+   * Tests whether we can parse the dates from the URLs.
+   */
   test("URL.date.parser.test") {
     val urls = "TestLinks"
     val datasetUrls = Source.fromFile(urls).mkString.split("\n").toList
@@ -57,4 +58,5 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     })
     assert(true)
   }
+
 }

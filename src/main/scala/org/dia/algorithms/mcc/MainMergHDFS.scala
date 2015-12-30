@@ -47,7 +47,7 @@ object MainMergHDFS {
     val partCount = if (args.length <= 2) 2 else args(2).toInt
     val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
     val variable = if (args.length <= 4) "TMP" else args(4)
-    val hdfspath = if (args.length <= 5) "resources/MERG" else args(5)
+    val hdfspath = if (args.length <= 5) "resources/merg" else args(5)
 
     /**
      * Parse the date from each URL.

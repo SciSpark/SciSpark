@@ -18,44 +18,49 @@
 package org.dia.core
 
 import org.dia.Constants._
-import org.dia.TestEnvironment.SparkTestConstants
+import org.dia.testenv.SparkTestConstants
 import org.scalatest.FunSuite
 
 /**
- * Tests for creating RDDs from different api calls.
+ * Tests for creating SRDDs from different sources.
  */
 class SciSparkContextTest extends FunSuite {
 
   val sc = SparkTestConstants.sc
-  val TestLinks = SparkTestConstants.datasetPath
+  val testLinks = SparkTestConstants.datasetPath
 
+  /**
+   * Creates SRDD from a file of URIs.
+   */
   test("NetcdfFile.Local") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = SparkTestConstants.datasetVariable
-    val nd4jRDD: SRDD[SciTensor] = sc.NetcdfFile(TestLinks, List(variable))
+    val sRDD = sc.NetcdfFile(testLinks, List(variable))
 
-    val smoothRDD = nd4jRDD.map(p => p(variable).reduceResolution(5, -9999))
-    val collect: Array[SciTensor] = smoothRDD.map(p => p <= 241.0).collect()
+    val smoothedSRDD = sRDD.map(p => p(variable).reduceResolution(5, -9999))
+    val collect = smoothedSRDD.map(_ <= 241.0).collect()
 
-    collect.foreach(sciTensor => {
-      for (i <- 0 to sciTensor.tensor.rows - 1) {
-        for (j <- 0 to sciTensor.tensor.cols - 1) {
-          val ij = sciTensor.tensor(i, j)
-          if (ij > 241.0) assert(false, "Indices : (" + i + "," + j + ") has value " + ij + "which is greater than 241.0")
+    collect.foreach(t => {
+      for (i <- 0 to t.tensor.rows - 1) {
+        for (j <- 0 to t.tensor.cols - 1) {
+          if (t.tensor(i, j) > 241.0) assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
         }
       }
     })
-
     assert(true)
   }
 
+  /**
+   * Creates SRDD from a directory with NetCDF files in it.
+   */
   test("NetcdfDFSFile.Local") {
     val variable = "data"
-    val t = sc.NetcdfDFSFile("src/test/resources/Netcdf", List(variable))
-    t.collect.map(p => {
+    val rdd = sc.NetcdfDFSFile("src/test/resources/Netcdf", List(variable))
+    rdd.collect.map(p => {
       println(p)
       println(p.tensor)
     })
     assert(true)
   }
+
 }

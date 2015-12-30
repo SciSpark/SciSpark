@@ -107,7 +107,7 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Se
           val loader = () => {
             loadFunc(uriValue, avar)
           }
-          (avar, TensorFactory.getTensors(arrLib, loader))
+          (avar, TensorFactory.getTensor(arrLib, loader))
         }).toMap
         val hash = new mutable.HashMap[String, AbstractTensor]
         tensorMap.map(p => hash += p)

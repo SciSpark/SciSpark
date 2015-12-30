@@ -15,25 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.tensors
+package org.dia.algorithms.pdfclustering
 
-/**
- * A sliceable array.
- */
-trait SliceableArray {
+import org.dia.loaders.NetCDFReader
+import org.dia.utils.NetCDFUtils
+import ucar.nc2.dataset.NetcdfDataset
+import org.dia.core.SciSparkContext
 
-  type T <: SliceableArray
+object MainCompute {
 
-  def rows: Int
+  def main(args: Array[String]): Unit = {
 
-  def cols: Int
+    val partCount = 2
 
-  def shape: Array[Int]
+    val netcdfDir = "resources/merra"
+    
+    /** TSURF(time, lat, lon) */
+    val variables = List("TSURF")
 
-  def data: Array[Double]
+    val masterURL = "local[2]"
 
-  def apply(ranges: (Int, Int)*): T
+    val sc = new SciSparkContext(masterURL, "PDF clustering")
 
-  def apply(indexes: Int*): Double
+    /**
+     *  Each SciTensor of this RDD here is of the form T(time,lat,lon)
+     *  where T = surface temperature.
+     */
+    val rdd = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
+
+  }
 
 }

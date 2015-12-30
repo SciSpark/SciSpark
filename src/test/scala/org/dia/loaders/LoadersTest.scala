@@ -18,44 +18,55 @@
 package org.dia.loaders
 
 import java.io.File
-
 import org.dia.Constants._
-import org.dia.TestEnvironment.SparkTestConstants
-import org.dia.core.{SRDD, SciTensor}
+import org.dia.testenv.SparkTestConstants
+import org.dia.core.{ SRDD, SciTensor }
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.SPartitioner._
+import org.scalatest.FunSuite
 
 /**
- * Tests for grouping from system paths.
+ * Tests NetCDF loaders from URIs, from local FS.
  */
-class LoadersTest extends org.scalatest.FunSuite {
+class LoadersTest extends FunSuite {
 
+  /**
+   * Tests whether recursiveListFiles lists all files in all sub-directories.
+   */
   test("RecursiveFileListing") {
     val path = "src/main/scala/"
-    val files = PathReader.recursiveListFiles(new File(path))
-    println("Found: %d sub-directories.".format(files.size))
-    files.foreach(vals => {
-      if (vals._2.length > 0) {
-        vals._2.foreach(e => println(e))
-        println()
-      } else {
-        println("Empty")
+    val dirsWithFiles = PathReader.recursiveListFiles(new File(path))
+    println("Found: %d sub-directories.".format(dirsWithFiles.size))
+    dirsWithFiles.foreach({
+      case (dir, files) => {
+        if (files.length > 0) {
+          files.foreach(println)
+          println()
+        } else {
+          println("Empty")
+        }
       }
     })
     assert(true)
   }
 
+  /**
+   * Tests SRDD creation if NetCDFs are the files within a provided local directory.
+   */
   test("LoadPathGrouping") {
     val dataUrls = List("/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/")
     val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-
     val sBreezeRdd = new SRDD[SciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVar, mapSubFoldersToFolders)
     sBreezeRdd.collect()
     assert(true)
   }
 
+  /**
+   * Tests SRDD creation if NetCDFs are the files within a provided local directory,
+   * but this time through the higher-level SciSparkContext.
+   */
   test("OpenLocalPath") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
@@ -65,16 +76,20 @@ class LoadersTest extends org.scalatest.FunSuite {
     assert(true)
   }
 
+  /**
+   * Tests SRDD creation if NetCDFs come from URIs provided in a local file.
+   * This test here is in fact not loading any variables.
+   */
   test("LoadMultiVariable") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = "TestLinks2"
-    //val variables = List("TotalCounts_A", "TotCldLiqH2O_A", "TotCldLiqH2O_A_ct")
-    val pathRDD: SRDD[SciTensor] = sc.NetcdfFile(path)
-    val t = pathRDD.collect().toList
-    println("Number loaded " + t.length)
-    println(t.toString())
+    val pathRDD = sc.NetcdfFile(path)
+    val tensors = pathRDD.collect().toList
+    println("Number of tensors loaded " + tensors.length)
+    println(tensors.toString())
     println("DONEDONEDONE")
     assert(true)
   }
+
 }
