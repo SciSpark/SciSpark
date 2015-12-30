@@ -28,6 +28,7 @@ import org.dia.partitioners.SPartitioner._
 import org.dia.tensors.{ AbstractTensor, BreezeTensor }
 import scala.io.Source
 import scala.collection.mutable
+import org.dia.tensors.Nd4jTensor
 
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
@@ -104,7 +105,8 @@ class SciSparkContext(val conf: SparkConf) {
 
       varName.foreach(y => {
         val arrayandShape = loadNetCDFNDVar(dataset, y)
-        val absT = new BreezeTensor(arrayandShape)
+//        val absT = new BreezeTensor(arrayandShape)
+        val absT = new Nd4jTensor(arrayandShape)
         variableHashTable += ((y, absT))
       })
       val sciT = new SciTensor(variableHashTable)
