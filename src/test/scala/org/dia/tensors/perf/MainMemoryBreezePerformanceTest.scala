@@ -26,7 +26,6 @@ import org.scalatest.FunSuite
  * test the performance of simple matrix functions.
  *
  * Source : https://github.com/apache/climate/blob/master/ocw/metrics.py
- * @author Created by rahulsp on 6/22/15.
  */
 class MainMemoryBreezePerformanceTest extends FunSuite {
 

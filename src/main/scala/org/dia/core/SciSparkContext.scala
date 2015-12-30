@@ -25,7 +25,7 @@ import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
-import org.dia.tensors.{ AbstractTensor, BreezeTensor }
+import org.dia.tensors.{ AbstractTensor, BreezeTensor, TensorFactory }
 import scala.io.Source
 import scala.collection.mutable
 import org.dia.tensors.Nd4jTensor
@@ -105,7 +105,6 @@ class SciSparkContext(val conf: SparkConf) {
 
       varName.foreach(y => {
         val arrayandShape = loadNetCDFNDVar(dataset, y)
-//        val absT = new BreezeTensor(arrayandShape)
         val absT = new Nd4jTensor(arrayandShape)
         variableHashTable += ((y, absT))
       })

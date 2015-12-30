@@ -23,7 +23,6 @@ import org.scalatest.{ FunSuite, Ignore }
 
 /**
  * Nd4j Performance Tests
- * @author Created by rahulsp on 7/7/15.
  */
 class MainMemoryNd4JPerformanceTest extends FunSuite {
 

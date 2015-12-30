@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.dia.algorithms.pdfclustering
 
 import org.dia.loaders.NetCDFReader
@@ -12,43 +29,9 @@ object MainCompute {
     val partCount = 2
 
     val netcdfDir = "resources/merra"
+    
     /** TSURF(time, lat, lon) */
     val variables = List("TSURF")
-
-    //    val vars = NetCDFReader.loadNetCDFVar(uri)
-    //    val lon = NetCDFReader.loadNetCDFNDVar(uri, "lon")
-    //    val lat = NetCDFReader.loadNetCDFNDVar(uri, "lat")
-    //    val lev = NetCDFReader.loadNetCDFNDVar(uri, "lev")
-    //    val time = NetCDFReader.loadNetCDFNDVar(uri, "time")
-    //    val surfTemp = NetCDFReader.loadNetCDFNDVar(uri, "T")
-
-    //    val netCDF = NetCDFUtils.loadNetCDFDataSet(url)
-    //    val netCDF = NetcdfDataset.openDataset(url)
-    //    println(vars)
-    //    println("long: " + lon._2.deep.mkString(" "))
-    //    println("lat: " + lat._2.deep.mkString(" "))
-    //    println("lev: " + lev._2.deep.mkString(" "))
-    //    println("time: " + time._2.deep.mkString(" "))
-    //    println("surfTemp: " + surfTemp._2.deep.mkString(" "))
-
-    //    vars.foreach { v =>
-    //      println(v + ": " + NetCDFReader.loadNetCDFNDVar(uri, v)._2.deep.mkString(" "))
-    //    }
-
-    //    /** This is just to check the variables' meta info */
-    //    val uri = "resources/merra/MERRA2_400.tavgU_2d_lnd_Nx.201101.nc4"
-    //    val netcdfFile = NetCDFUtils.loadNetCDFDataSet(uri)
-    //    val someVars = netcdfFile.getVariables
-    //    val numVars = someVars.size()
-    //    var idx = 0
-    //    while (idx < numVars) {
-    //      val variable = someVars.get(idx)
-    //      println(variable)
-    //      idx += 1
-    //    }
-
-    //    val surfTemp = NetCDFReader.loadNetCDFNDVar(uri, variable)
-    //    println("surfTemp: " + surfTemp._2.deep.mkString(" "))
 
     val masterURL = "local[2]"
 
@@ -59,25 +42,6 @@ object MainCompute {
      *  where T = surface temperature.
      */
     val rdd = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
-
-    //    /** some plausibility checks */
-    //    val rddCollected = rdd.collect()
-    //    println(rddCollected.length)
-    //    val firstTensorShape = rddCollected(0).variables.get("TSURF").map(_.shape)
-    //    val output = firstTensorShape match {
-    //      case Some(shape) => shape.deep.mkString(" ")
-    //      case _ => "NONE"
-    //    }
-    //    /** should print 24 361 576 (time lat lon) */
-    //    println(output)
-
-    /**
-     * This will give us an RDD with SciTensor's of the form
-     * metaInfo: (lat,lon) + data: TSURF -> T(time).
-     * This is the complicated + time-consuming part (because
-     * of network traffic) of the entire clustering algorithm.
-     */
-//    val reshapedRDD = rdd
 
   }
 
