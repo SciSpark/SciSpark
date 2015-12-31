@@ -63,6 +63,18 @@ object MainCompute {
       t
     })
 
+    /**
+     * Build RDD[SciTensor] where SciTensor = T(time,lat,lon) with
+     * time = only hours over one day + meta = year:dayOfJanuary
+     */
+    //    val rddByDay = rddStart.flatMap(netCDF => {
+    //      /** slice out hours for first day */
+    //      val hrsDay1 = netCDF((0, 11))
+    //      /** slice out hours for second day */
+    //      val hrsDay2 = netCDF((11, 23))
+    //      List(hrsDay1, hrsDay2)
+    //    })
+
     val collected = rddStartWithDate.collect()(0)
     println(collected.metaData)
 
