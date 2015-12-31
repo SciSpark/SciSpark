@@ -21,6 +21,8 @@ import org.dia.loaders.NetCDFReader
 import org.dia.utils.NetCDFUtils
 import ucar.nc2.dataset.NetcdfDataset
 import org.dia.core.SciSparkContext
+import java.text.SimpleDateFormat
+import org.dia.Parsers
 
 object MainCompute {
 
@@ -28,20 +30,41 @@ object MainCompute {
 
     val partCount = 2
 
-    val netcdfDir = "resources/merra"
-    
-    /** TSURF(time, lat, lon) */
-    val variables = List("TSURF")
+    val netcdfDir = "resources/multisen"
+
+    /**
+     *  prec(time,lat,lon)
+     */
+    val variables = List("lat", "lon", "prec")
 
     val masterURL = "local[2]"
 
     val sc = new SciSparkContext(masterURL, "PDF clustering")
 
     /**
-     *  Each SciTensor of this RDD here is of the form T(time,lat,lon)
-     *  where T = surface temperature.
+     * Each SciTensor is
+     * prec -> prec(time=8,lat=720,lon=1440)
+     * lat -> lat(lat=720)
+     * lon -> lon(lon=1440)
+     * with meta data
+     * SOURCE -> file:[absolute local FS path of NetCDF]
      */
-    val rdd = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
+    val rddStart = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
+
+    /**
+     * Equip SciTensors with additional meta data
+     * DAYOFJANUARY -> Day of January
+     */
+    val rddStartWithDate = rddStart.map(t => {
+      val fileName = t.metaData("SOURCE").split("/").last
+      val lastPart = fileName.split("_").last
+      val dayOfJan = lastPart.substring(6, 8)
+      t.insertDictionary(("DAYOFJANUARY", dayOfJan))
+      t
+    })
+
+    val collected = rddStartWithDate.collect()(0)
+    println(collected.metaData)
 
   }
 

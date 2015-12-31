@@ -16,3 +16,5 @@ target/
 # Some NetCDF, GRIB files for testing
 resources/merra
 resources/narr
+resources/noaa
+resources/multisen
