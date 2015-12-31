@@ -80,6 +80,8 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def **(array: AbstractTensor) = tensor * array.tensor
 
+  def div(num: Double): BreezeTensor = tensor / num
+
   def data = tensor.t.toArray
 
   /**
@@ -87,7 +89,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    */
 
   def rows = tensor.rows
-  
+
   def cols = tensor.cols
 
   def apply = this
@@ -103,11 +105,11 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Utility Operations
    */
-  
+
   def cumsum = sum(tensor)
 
   def isZero = sum(tensor :* tensor) <= 1E-9
-  
+
   def isZeroShortcut = sum(tensor) <= 1E-9
 
   override def toString: String = if (tensor != null) tensor.toString() else null
@@ -119,7 +121,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */
-  
+
   private implicit def convert(array: DenseMatrix[Double]): BreezeTensor = new BreezeTensor(array)
 
   private implicit def abstractConvert(brzT: AbstractTensor): BreezeTensor = brzT.asInstanceOf[BreezeTensor]
