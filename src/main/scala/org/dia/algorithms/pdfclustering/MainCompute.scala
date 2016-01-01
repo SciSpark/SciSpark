@@ -28,93 +28,91 @@ import org.dia.tensors.{ Nd4jTensor, AbstractTensor }
 import org.nd4j.linalg.factory.Nd4j
 import scala.collection.mutable.Set
 import scala.math
+import scala.collection.mutable.{ AbstractBuffer, ArrayBuffer, HashMap }
+import scala.collection.mutable.ArraySeq
+import org.apache.spark.mllib.clustering.{ KMeans, KMeansModel }
+import org.apache.spark.mllib.linalg.{ Vector, DenseVector }
 
 object MainCompute {
 
   def main(args: Array[String]): Unit = {
 
-    val partCount = 2
-
-    val netcdfDir = "resources/multisen"
-    val numYears = 3
+    /**
+     * Describing the parameters of the dataset.
+     */
+    val startYear = 2001
+    val endYear = 2002
+    val numYears = endYear - startYear + 1
     val numJanuaryDays = 2
     val totNumDays = numYears * numJanuaryDays
-    val numLats = 720
-    val numLongs = 1440
-    val numHourly = 8
-
-    /**
-     *  prec(time,lat,lon)
-     */
-    val variables = List("lat", "lon", "prec")
+    val numLats = 2
+    val numLongs = 2
+    val numHourly = 2
 
     val masterURL = "local[2]"
-
     val sc = new SciSparkContext(masterURL, "PDF clustering")
 
     /**
-     * Each SciTensor is
-     * prec -> prec(time=8,lat=720,lon=1440)
-     * lat -> lat(lat=720)
-     * lon -> lon(lon=1440)
-     * with meta data
-     * SOURCE -> file:[absolute local FS path of NetCDF]
+     * Compute random lat's,lon's together with random precipitation(lat,lon).
      */
-    val rddStart = sc.NetcdfDFSFile(netcdfDir, variables, partCount)
+    val randTensors = ArrayBuffer.empty[SciTensor]
+    var idxTensor = 0
+    val years = startYear to endYear
+    val daysOfJan = 1 to numJanuaryDays
+    val randLat: AbstractTensor = new Nd4jTensor(Nd4j.rand(Array(numLats)))
+    val randLon: AbstractTensor = new Nd4jTensor(Nd4j.rand(Array(numLongs)))
+    while (idxTensor < totNumDays) {
+      val randPrec: AbstractTensor = new Nd4jTensor(Nd4j.rand(Array(numHourly, numLats, numLongs)))
+      val randMap = HashMap("lat" -> randLat, "lon" -> randLon, "prec" -> randPrec)
+      val randSciTensor = new SciTensor(randMap)
+      val year = years(idxTensor / numJanuaryDays)
+      val dayOfJan = daysOfJan(idxTensor % numJanuaryDays)
+      randSciTensor.insertDictionary(("YEAR", year.toString()))
+      randSciTensor.insertDictionary(("DAYOFJAN", dayOfJan.toString()))
+      randTensors += randSciTensor
+      idxTensor += 1
+    }
 
     /**
-     * Equip SciTensors with additional meta data
-     * DAYOFJANUARY -> Day of January
+     * Distribute it out to the Spark executors.
      */
-    val rddStartWithDate = rddStart.map(t => {
-      val fileName = t.metaData("SOURCE").split("/").last
-      val lastPart = fileName.split("_").last
-      val dayOfJan = lastPart.substring(6, 8)
-      t.insertDictionary(("DAYOFJANUARY", dayOfJan))
-      t
-    })
+    val rddStart = sc.sparkContext.parallelize(randTensors)
 
     /**
-     * Average the hourly precipitation amounts to daily amounts.
-     * Each SciTensor now is
-     * prec -> prec(lat=720,lon=1440)
-     * lat -> lat(lat=720)
-     * lon -> lon(lon=1440)
-     * with meta data
-     * SOURCE -> file:[absolute local FS path of NetCDF]
-     * DAYOFJANUARY -> Day of January (i.e. "01" - "31")
+     * Average precipitation values over the hours for every day.
      */
-    val dayAvgs = rddStartWithDate.map({ t =>
+    val dayAvgs = rddStart.map({ t =>
       /**
        * Averages the SciTensor along a dimension.
        *
        * @todo abstract this out into AbstractTensor
-       * @todo generalize "prec" field and dims (720,1440)
-       * @todo can we get rid of explicit 'AbstractTensor's here?
+       * @todo generalize "prec" field
+       * @todo can we get rid of explicit ': AbstractTensor's here?
        * also need to maybe slightly modify AbstractTensor interface
        * to achieve that.
        */
       def avgAlongDim(st: SciTensor): AbstractTensor = {
         val prec = st.variables("prec")
         val dummy: AbstractTensor = prec((0, 0))
-        println("Attention dummy: " + dummy.shape.deep.mkString(" "))
         val avg: AbstractTensor = dummy.zeros(Seq(numLats, numLongs): _*)
-        println("Attention avg: " + avg.shape.deep.mkString(" "))
-        var idx = 0
+        var hour = 0
         var lats = 0
-        val longs = 0
-        while (idx < numHourly) {
+        var longs = 0
+        while (hour < numHourly) {
+          lats = 0
           while (lats < numLats) {
+            longs = 0
             while (longs < numLongs) {
-              val curSum = avg(lats,longs)
-              val newSum = curSum + prec(idx,lats,longs)
-              avg.put(newSum, Seq(lats, longs): _*)   
+              val curSum = avg(lats, longs)
+              val newSum = curSum + prec(hour, lats, longs)
+              avg.put(newSum, Seq(lats, longs): _*)
+              longs += 1
             }
+            lats += 1
           }
-          println("Attention slice: " + prec((idx, idx)).shape.deep.mkString(" "))
-          idx += 1
+          hour += 1
         }
-        avg.div(8)
+        avg.div(numHourly)
       }
       val precAvg = avgAlongDim(t)
       /** overwrites prec with precAvg but keeps lat,lon tensors */
@@ -122,10 +120,17 @@ object MainCompute {
       t
     })
 
+    /**
+     * Group by the day of January,
+     * as a preparation for the next step.
+     */
     val groupedByJanDay = dayAvgs.groupBy({ t =>
-      t.metaData("DAYOFJANUARY")
+      t.metaData("DAYOFJAN")
     })
 
+    /**
+     * Average over the years for every fixed day of January.
+     */
     val subAvgByDay = groupedByJanDay.flatMap({
       case (day, ts) =>
         def compAvg(tensors: Iterable[SciTensor]): AbstractTensor = {
@@ -140,14 +145,14 @@ object MainCompute {
         })
     })
 
-    val totalAvg = subAvgByDay.map(_.variables("prec")).reduce(_ + _).div(totNumDays)
-
-    val subTotalAvg = subAvgByDay.map({ t =>
-      t.insertVar("prec", t.variables("prec") - totalAvg)
-      t
-    })
-
-    val timeSeriesPerLatLon = subTotalAvg.flatMap({ t =>
+    /**
+     * Rearrange the RDD by going from
+     * RDD[SciTensor] with SciTensor = (lat,lon,prec(lat,lon))
+     * to
+     * RDD[((lat,lon),prec(lat,lon))]
+     * as a preparation for subsequent steps below.
+     */
+    val precPerLatLon = subAvgByDay.flatMap({ t =>
       val vars = t.variables
       val lats = vars("lat")
       val longs = vars("lon")
@@ -157,6 +162,7 @@ object MainCompute {
       var jdx = 0
       var precPerLatLon: Set[((Double, Double), Double)] = Set()
       while (idx < numLats) {
+        jdx = 0
         while (jdx < numLongs) {
           val elem = ((lats(idx), longs(jdx)), prec(idx, jdx))
           precPerLatLon += elem
@@ -167,20 +173,62 @@ object MainCompute {
       precPerLatLon
     })
 
-    var accumMin = sc.sparkContext.accumulator(Double.MaxValue, "Minimum precipitation")
-    var accumMax = sc.sparkContext.accumulator(Double.MinValue, "Maximum precipitation")
-    timeSeriesPerLatLon.foreach({
-      case (_, prec) =>
-        if (prec < accumMin.value)
-          accumMin.setValue(prec)
-        if (prec > accumMax.value)
-          accumMax.setValue(prec)
+    /**
+     * Compute the bin size.
+     */
+    val minPrec = precPerLatLon.map(_._2).fold(Double.MaxValue)(math.min)
+    val maxPrec = precPerLatLon.map(_._2).fold(Double.MinValue)(math.max)
+    val range = maxPrec - minPrec
+    val numBins = 10
+    val binSize = range / numBins
+
+    /**
+     * Do the binning.
+     */
+    val timeSeriesPerLatLon = precPerLatLon.groupByKey
+    val binned = timeSeriesPerLatLon.map({
+      case (pos, precs) =>
+        val binCounts = new Array[Double](numBins)
+        def getBinNo(prec: Double): Option[Int] = {
+          var idx = 0
+          while (idx < numBins) {
+            if (minPrec + idx * binSize <= prec && prec <= minPrec + (idx + 1) * binSize)
+              return Some(idx)
+            idx += 1
+          }
+          return None
+        }
+        precs.foreach({ prec =>
+          getBinNo(prec) match {
+            case Some(idx) => binCounts(idx) += 1
+            case _ => ()
+          }
+        })
+        /**
+         * @todo add log10. but be aware: it leads to -Infinity's which spoils the
+         * result of the clustering. think about how to resolve that.
+         */
+        val normalizedBinCounts = binCounts.map(bc => bc / totNumDays)
+        /** make bin counts an mllib vector so we can use pre-written clustering */
+        val vec: Vector = new DenseVector(normalizedBinCounts)
+        (pos, vec)
     })
 
-    val range = accumMax.value - accumMin.value
-    val binSize = 0.1
-    val numBins = range / binSize
-    println(numBins)
+    /**
+     * Now we can actually start the clustering.
+     */
+    val numClusters = 3
+    val numIterations = 10
+    val binnedWithoutPos = binned.map(_._2).cache()
+    val clusteringOut = KMeans.train(binnedWithoutPos, numClusters, numIterations)
+    /** cluster centers */
+    val clusterCenters = clusteringOut.clusterCenters
+    /** (lat,lon) with cluster it belongs to */
+    val clusters = binned.map({
+      case (pos, bcs) =>
+        val clusterId = clusteringOut.predict(bcs)
+        (pos, clusterId)
+    })
 
   }
 
