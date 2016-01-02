@@ -45,7 +45,8 @@ classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "3.0.0-M14",
-  "org.apache.spark" % "spark-core_2.11" % "1.5.2" exclude("org.slf4j", "slf4j-api"),
+  "org.apache.spark" % "spark-core_2.11" % "1.6.0" exclude("org.slf4j", "slf4j-api"),
+  "org.apache.spark" % "spark-mllib_2.11" % "1.6.0",
   //Math Libraries
   //"org.jblas" % "jblas" % "1.2.3",
   // other dependencies here

@@ -53,6 +53,15 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def insertDictionary(metaDataVar: (String, String)*): Unit = {
     for (variable <- metaDataVar) metaData += variable
   }
+  
+  /** 
+   *  Insert a variable with its values into the SciTensor.
+   *  
+   *  Note that this overwrites the variable in case it already exists.
+   */
+  def insertVar(varName: String, varTensor: AbstractTensor): Unit = {
+    variables.put(varName, varTensor)
+  }
 
   /**
    * Slices the head variable array given the list of ranges per dimension.
