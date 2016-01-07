@@ -31,28 +31,29 @@ import scala.collection.mutable
 import org.dia.tensors.Nd4jTensor
 
 /**
- * A SciSparkContext is a wrapper for the SparkContext.
- * SciSparkContext provides existing SparkContext functionality.
- * However there are many private functions within SparkContext
- * that are useful for catching unwanted calls. Such as
- * executing one of the functions after the SparkContext has been stopped.
- */
-class SciSparkContext(val conf: SparkConf) {
+  * A SciSparkContext is a wrapper for the SparkContext.
+  * SciSparkContext provides existing SparkContext functionality.
+  * However there are many private functions within SparkContext
+  * that are useful for catching unwanted calls. Such as
+  * executing one of the functions after the SparkContext has been stopped.
+  */
+class SciSparkContext(val sparkContext: SparkContext) {
 
   /**
-   * Log4j Setup
-   * By default the natty Parser log4j messages are turned OFF.
-   */
+    * Log4j Setup
+    * By default the natty Parser log4j messages are turned OFF.
+    */
   val DateParserClass = Class.forName("com.joestelmach.natty.Parser")
   val ParserLevel = org.apache.log4j.Level.OFF
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
-
-  /**
-   * SparkContext setup
-   * The default matrix library is Scala Breeze
-   */
-  val sparkContext = new SparkContext(conf)
   sparkContext.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
+  /**
+    * SparkContext setup
+    * The default matrix library is Scala Breeze
+    */
+  def this(conf: SparkConf) {
+    this(new SparkContext(conf))
+  }
 
   def this(uri: String, name: String) {
     this(new SparkConf().setMaster(uri).setAppName(name))
@@ -69,15 +70,15 @@ class SciSparkContext(val conf: SparkConf) {
   def getConf: SparkConf = sparkContext.getConf
 
   /**
-   * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
-   * If no names are provided then all variable arrays in the file are loaded.
-   * The URI could be an OpenDapURL or a filesystem path.
-   *
-   * For reading from HDFS check NetcdfDFSFile.
-   */
+    * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
+    * If no names are provided then all variable arrays in the file are loaded.
+    * The URI could be an OpenDapURL or a filesystem path.
+    *
+    * For reading from HDFS check NetcdfDFSFile.
+    */
   def NetcdfFile(path: String,
-    varName: List[String] = Nil,
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+                 varName: List[String] = Nil,
+                 minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
@@ -87,15 +88,15 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an RDD given a URI pointing to an HDFS directory of Netcdf files and a list of variable names.
-   * Note that since the files are read from HDFS, the binaryFiles function is used which is called
-   * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
-   *
-   * TODO :: Create an SRDD instead of a normal RDD
-   */
+    * Constructs an RDD given a URI pointing to an HDFS directory of Netcdf files and a list of variable names.
+    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
+    * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
+    *
+    * TODO :: Create an SRDD instead of a normal RDD
+    */
   def NetcdfDFSFile(path: String,
-    varName: List[String] = Nil,
-    minPartitions: Int = 2): RDD[SciTensor] = {
+                    varName: List[String] = Nil,
+                    minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
@@ -116,14 +117,14 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs a random SRDD from a file of URI's, a list of variable names, and matrix dimensions.
-   * The seed for matrix values is the path values, so the same input set will yield the same data.
-   *
-   */
+    * Constructs a random SRDD from a file of URI's, a list of variable names, and matrix dimensions.
+    * The seed for matrix values is the path values, so the same input set will yield the same data.
+    *
+    */
   def randomMatrices(path: String,
-    varName: List[String] = Nil,
-    matrixSize: (Int, Int),
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+                     varName: List[String] = Nil,
+                     matrixSize: (Int, Int),
+                     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
@@ -133,15 +134,15 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an SRDD given a file of URI's pointing to MERG files, a list of variables names,
-   * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
-   * and the value offset is 75.
-   */
+    * Constructs an SRDD given a file of URI's pointing to MERG files, a list of variables names,
+    * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
+    * and the value offset is 75.
+    */
   def mergeFile(path: String,
-    varName: List[String] = List("TMP"),
-    shape: Array[Int] = Array(9896, 3298),
-    offset: Double = 75,
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+                varName: List[String] = List("TMP"),
+                shape: Array[Int] = Array(9896, 3298),
+                offset: Double = 75,
+                minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
@@ -150,20 +151,20 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an RDD given URI pointing to an HDFS directory of MERG files, a list of variable names,
-   * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
-   * and the value offset is 75.
-   *
-   * Note that since the files are read from HDFS, the binaryFiles function is used which is called
-   * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
-   *
-   * TODO :: Create an SRDD instead of a normal RDD
-   */
+    * Constructs an RDD given URI pointing to an HDFS directory of MERG files, a list of variable names,
+    * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
+    * and the value offset is 75.
+    *
+    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
+    * from SparkContext. This is why a normal RDD is returned instead of an SRDD.
+    *
+    * TODO :: Create an SRDD instead of a normal RDD
+    */
   def mergDFSFile(path: String,
-    varName: List[String] = List("TMP"),
-    offset: Double = 75,
-    shape: Array[Int] = Array(9896, 3298),
-    minPartitions: Int = 2): RDD[SciTensor] = {
+                  varName: List[String] = List("TMP"),
+                  offset: Double = 75,
+                  shape: Array[Int] = Array(9896, 3298),
+                  minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
@@ -178,8 +179,8 @@ class SciSparkContext(val conf: SparkConf) {
   }
 
   /**
-   * Constructs an SRDD given a nested directories of NetCDF files.
-   */
+    * Constructs an SRDD given a nested directories of NetCDF files.
+    */
   def OpenPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
     val datasetPaths = List(path)
     new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVar, mapSubFoldersToFolders)
