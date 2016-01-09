@@ -43,7 +43,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * @todo not implemented yet because Nd4j lib does not provide map yet
    */
-  def map(f: Double => Double) = new Nd4jTensor(tensor) //.map(p => f(p)))
+  def map(f: Double => Double) = new Nd4jTensor(tensor.map(p => f(p)))
 
   def put(value: Double, shape: Int*) = tensor.putScalar(shape.toArray, value)
 
