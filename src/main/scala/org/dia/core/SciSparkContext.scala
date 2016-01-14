@@ -37,7 +37,7 @@ import org.dia.tensors.Nd4jTensor
  * that are useful for catching unwanted calls. Such as
  * executing one of the functions after the SparkContext has been stopped.
  */
-class SciSparkContext(val conf: SparkConf) {
+class SciSparkContext(val sparkContext: SparkContext) {
 
   /**
    * Log4j Setup
@@ -51,8 +51,11 @@ class SciSparkContext(val conf: SparkConf) {
    * SparkContext setup
    * The default matrix library is Scala Breeze
    */
-  val sparkContext = new SparkContext(conf)
   sparkContext.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
+
+  def this(conf: SparkConf) {
+    this(new SparkContext(conf))
+  }
 
   def this(uri: String, name: String) {
     this(new SparkConf().setMaster(uri).setAppName(name))

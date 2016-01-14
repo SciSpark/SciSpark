@@ -55,8 +55,8 @@ libraryDependencies ++= Seq(
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" % "breeze-natives_2.11" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  //"org.nd4s" % "nd4s_2.10" % "0.4-rc0",
-  "org.nd4j" % "nd4j-x86" % "0.4-rc3.7",
+  "org.nd4j" % "nd4s_2.11" % "0.4-rc3.8",
+  "org.nd4j" % "nd4j-x86" % "0.4-rc3.8",
   "edu.ucar" % "opendap" % "2.2.2",
   "joda-time" % "joda-time" % "2.9.1",
   "org.joda" % "joda-convert" % "1.8.1",
