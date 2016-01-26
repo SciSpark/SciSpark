@@ -314,7 +314,7 @@ object MCCOps {
       }
       idx += 1
     }
-    ((area1 >= 2400.0) || ((area1 < 2400.0) && ((dMin/dMax) > 0.9)))
+    ((area >= 2400.0) || ((area < 2400.0) && ((dMin/dMax) > 0.9)))
   }
 
   /**
