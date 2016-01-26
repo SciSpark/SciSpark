@@ -38,17 +38,18 @@ object MainNetcdfDFSMCC {
   def main(args: Array[String]): Unit = {
     /**
      * Input arguments to the program :
-     * args(1) - the spark master URL. Example : spark://HOST_NAME:7077
-     * args(2) - the number of desired partitions. Default : 2
-     * args(3) - square matrix dimension. Default : 20
-     * args(4) - variable name
+     * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
+     * args(1) - the number of desired partitions. Default : 2
+     * args(2) - square matrix dimension. Default : 20
+     * args(3) - variable name
+     * args(4) - local path to files
      *
      */
-    val masterURL = if (args.length <= 1) "local[2]" else args(1)
-    val partCount = if (args.length <= 2) 2 else args(2).toInt
-    val dimension = if (args.length <= 3) (20, 20) else (args(3).toInt, args(3).toInt)
-    val variable = if (args.length <= 4) "ch4" else args(4)
-    val hdfspath = if (args.length <= 5) "resources/merg" else args(5)
+    val masterURL = if (args.length <= 1) "local[2]" else args(0)
+    val partCount = if (args.length <= 2) 2 else args(1).toInt
+    val dimension = if (args.length <= 3) (20, 20) else (args(2).toInt, args(2).toInt)
+    val variable = if (args.length <= 4) "ch4" else args(3)
+    val hdfspath = if (args.length <= 5) "resources/merg" else args(4)
 
     /**
      * Initialize the spark context to point to the master URL
