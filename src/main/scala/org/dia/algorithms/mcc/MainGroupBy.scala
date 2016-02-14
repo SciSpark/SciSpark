@@ -187,12 +187,12 @@ object MainGroupBy {
           val frameId1 = n1._1
           val compId1 = n1._2
           val (area1, max1, min1) = hashComps(frameId1 + ":" + compId1)
-          val isCloud1 = ((area1 >= 40.0) || (area1 < 40.0)) && ((max1 - min1) > 10.0)
+          val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) > 0.9)))
 
           val frameId2 = n2._1
           val compId2 = n2._2
           val (area2, max2, min2) = hashComps(frameId2 + ":" + compId2)
-          val isCloud2 = ((area2 >= 40.0) || (area2 < 40.0)) && ((max2 - min2) > 10.0)
+          val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) > 0.9)))
           isCloud1 && isCloud2
         }
       })

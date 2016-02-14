@@ -100,7 +100,7 @@ object MCCOps {
       val area = areaTuple._1
       val max = areaTuple._2
       val min = areaTuple._3
-      val metadata = tensor.metaData += (("AREA", "" + area)) += (("DIFFERENCE", "" + (max - min))) += (("COMPONENT", "" + p))
+      val metadata = tensor.metaData += (("AREA", "" + area)) += (("CONVECTIVE_FRACTION", "" + (min/max))) += (("COMPONENT", "" + p))
       new SciTensor(tensor.varInUse, masked, metadata)
     })
     comps.toList
@@ -242,15 +242,15 @@ object MCCOps {
   /**
    * Checks whether connected component is indeed a cloud.
    *
-   * @param comp masked component with AREA and DIFFERENCE meta info
-   * @todo make sure this is only applied if AREA and DIFFERENCE
+   * @param comp masked component with AREA and CONVECTIVE_FRACTION meta info
+   * @todo make sure this is only applied if AREA and CONVECTIVE_FRACTION
    * meta fields exist!
    */
   def checkCriteria(comp: SciTensor): Boolean = {
     val hash = comp.metaData
     val area = hash("AREA").toDouble
-    val tempDiff = hash("DIFFERENCE").toDouble
-    (area >= 40.0) || (area < 40.0) && (tempDiff > 10.0)
+    val convectiveFrac = hash("CONVECTIVE_FRACTION").toDouble
+    ((area >= 2400.0) || ((area < 2400.0) && ((convectiveFrac) > 0.9)))
   }
 
   /**
@@ -314,7 +314,7 @@ object MCCOps {
       }
       idx += 1
     }
-    (area >= 40.0) || (area < 40.0) && ((dMax - dMin) > 10.0)
+    ((area >= 2400.0) || ((area < 2400.0) && ((dMin/dMax) > 0.9)))
   }
 
   /**
