@@ -25,7 +25,6 @@ object Constants extends Serializable {
    * mapping between compData set and variables
    *  @todo find a better way to retrieve the variables per dataSet
    */
-  val DATASET_VARS = collection.immutable.HashMap("TRMM_L3" -> "compData", "ncml" -> "TotCldLiqH2O_A")
 
   /** potential names for the different axis of the grid that is present in NetCDF files */
   val X_AXIS_NAMES = Array("x", "rlat", "rlats", "lat", "lats", "rows", "nlat", "latitude", "latitudes")
