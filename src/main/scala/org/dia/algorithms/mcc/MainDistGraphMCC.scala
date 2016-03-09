@@ -1,7 +1,7 @@
 package org.dia.algorithms.mcc
 
 
-import java.io.{FileOutputStream, OutputStreamWriter, BufferedWriter}
+import java.io.{FileOutputStream, OutputStreamWriter, BufferedWriter, File}
 import breeze.io.TextWriter.FileWriter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -26,6 +26,10 @@ object MainDistGraphMCC {
   val frameChunkSize = 70
   val minAcceptableFeatureLength = 3
 
+  /*
+  This is the function which recursively creates subgraphs and merges partitions
+  untill we are left with one partition or no edges to process.
+   */
   def getSubgraphs(graph: RDD[(Integer, Iterable[MCCEdge])]): Unit = {
 
     if (graph.isEmpty()) {
@@ -48,6 +52,9 @@ object MainDistGraphMCC {
     return getSubgraphs(newGraph)
   }
 
+  /*
+  Converting an Iterable[Iterable[MCCEdge]] to Iterable[MCCEdge]
+   */
   def flattenSets(bucket: Integer, edgeList: Iterable[Iterable[MCCEdge]]): (Integer, Iterable[MCCEdge]) = {
     val collapsedEdgeList = new mutable.HashSet[MCCEdge]
     for (edgeSet <- edgeList) {
@@ -84,45 +91,55 @@ object MainDistGraphMCC {
         minFrame = edge.srcNode.frameNum
       }
     }
-    val filteredEdgeList = new mutable.HashSet[MCCEdge]
-
-    // Set of Graphs originating in the bucket,
-    // i.e have no incoming edges from previous partitions
-    val sourceNodeSet = new mutable.HashSet[MCCNode]
 
     // Building the partial graphs
+    val nodeSet = new mutable.HashSet[MCCNode]
+    val borderNodes = new mutable.HashSet[MCCNode]
+    val borderEdges = new mutable.HashSet[MCCEdge]
     nodeMap.foreach((node: (String, mutable.Set[MCCEdge])) => {
       for (edge <- node._2) {
         val destNodeKey: String = edge.destNode.frameNum + "" + edge.destNode.cloudElemNum
-        if (nodeMap.contains(destNodeKey)) {
-          sourceNodeSet += edge.srcNode
-          edge.srcNode.addOutgoingEdge(edge)
-          edge.destNode.addIncomingEdge(edge)
-        }
+        nodeSet += edge.srcNode
+        edge.srcNode.addOutgoingEdge(edge)
+        edge.destNode.addIncomingEdge(edge)
         /*
         If destNode does not exist in the NodeMap, we can infer that
         this edge is originating from the last frame in this bucket.
+        Or if this is the start frame of the partition
          */
-        else {
-          println("Adding the last frame to edgelist : " + edge)
-          filteredEdgeList += edge
+        if(!nodeMap.contains(destNodeKey) || edge.srcNode.frameNum == bucketStartFrame) {
+          borderEdges += edge
+          borderNodes += edge.srcNode
         }
       }
     })
-    val outputSubgraphs = new mutable.MutableList[mutable.HashSet[MCCEdge]]
+    // Finding all source nodes from the node set
+    val sourceNodeSet = nodeSet.filter(node => !node.inEdges.isEmpty)
+
+    val filteredEdgeList = new mutable.HashSet[MCCEdge]
     val out = new BufferedWriter(
-      new OutputStreamWriter(new FileOutputStream("file:/Users/sujen/Desktop/development/spark-demo/intermediate.txt")))
+      new OutputStreamWriter(new FileOutputStream(new File("intermediate.txt"))))
     if (!sourceNodeSet.isEmpty) {
       for (node <- sourceNodeSet) {
-        val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge])
-        if (result._1 > minAcceptableFeatureLength) {
-          //          filteredEdgeList ++=result._2
-          if (node.frameNum == bucketStartFrame) {
-            filteredEdgeList ++= result._2
-          }
-          else {
+        val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], borderEdges, false)
+
+        //If the source node is a border node, add its entire subgraph as it needs further investigation
+        if(borderNodes.contains(node)) {
+          filteredEdgeList ++= result._2
+        }
+          // If the subgraph contains a border edge, add it to filteredEdges for further investigation
+        else if(result._3){
+          filteredEdgeList ++= result._2
+        }
+        /* If the subgraph is entirely contained within the bounds of the partition,
+        then check for feature length and write to file or discard accordingly
+        */
+        else if(result._1 > minAcceptableFeatureLength) {
             out.write(result._2.toString())
-          }
+        }
+        else {
+          //DEBUGGING
+          println("Edges that dont meet above criteria : " + result._2)
         }
         out.newLine()
       }
@@ -132,28 +149,30 @@ object MainDistGraphMCC {
     if (filteredEdgeList.isEmpty) {
       return (-1, filteredEdgeList)
     }
-    return (bucket / (frameChunkSize * 2) + 1, filteredEdgeList)
+    return (1 + bucket/(frameChunkSize * 2), filteredEdgeList)
   }
 
   /*
     To get the max length of the subgraph, starting from the
     source node to the farthest child.
+    Also return a boolean if the subgraph contains a border edge.
+    If it contains a border that means we need further investigation.
    */
-  def getSubgraphLenth(source: MCCNode, length: Int, edges: mutable.HashSet[MCCEdge]):
-  (Int, mutable.HashSet[MCCEdge]) = {
+  def getSubgraphLenth(source: MCCNode, length: Int, edges: mutable.HashSet[MCCEdge], borderEdges: mutable.HashSet[MCCEdge], containsBorderEdge: Boolean):
+  (Int, mutable.HashSet[MCCEdge], Boolean) = {
     var maxLength = length
     if (source == Nil)
-      return (maxLength, edges)
+      return (maxLength, edges, containsBorderEdge)
     else {
       for (outEdge: MCCEdge <- source.outEdges) {
         edges += outEdge
-        var l = getSubgraphLenth(outEdge.destNode, length + 1, edges)
+        val l = getSubgraphLenth(outEdge.destNode, length + 1, edges, borderEdges, borderEdges.contains(outEdge))
         if (maxLength < l._1) {
           maxLength = l._1
         }
       }
     }
-    return (maxLength, edges)
+    return (maxLength, edges, containsBorderEdge)
   }
 
   def mapFrames(x: String): (Integer, MCCEdge) = {
@@ -185,7 +204,7 @@ object MainDistGraphMCC {
       * args(3) - local path to files
       *
       */
-    val masterURL = if (args.length <= 1) "local[2]" else args(0)
+    val masterURL = if (args.length <= 1) "local[4]" else args(0)
     val partCount = if (args.length <= 2) 2 else args(1).toInt
     val hdfspath = if (args.length <= 3) "resources/graph/EdgeList.txt" else args(2)
 
@@ -201,7 +220,7 @@ object MainDistGraphMCC {
     val count = RDD.flatMap(line => line.split(", "))
       .map(mapFrames)
       .groupByKey()
-
+    getSubgraphs(count)
     count.saveAsTextFile("MCCDistGraphOutput")
     println("Done")
   }
