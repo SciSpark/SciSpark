@@ -75,7 +75,7 @@ object MainDistGraphMCC {
    */
   def createPartialGraphs(bucket: Integer, edgeList: Iterable[MCCEdge]): (Integer, Iterable[MCCEdge]) = {
 
-    println("Initial edgelist " + edgeList)
+    println(s"Initial edgelist from bucket $bucket" + edgeList)
     val nodeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
 
     val bucketStartFrame = bucket * frameChunkSize - frameChunkSize + 1 //The first frame numner in the bucket
@@ -107,7 +107,7 @@ object MainDistGraphMCC {
         this edge is originating from the last frame in this bucket.
         Or if this is the start frame of the partition
          */
-        if(!nodeMap.contains(destNodeKey) || edge.srcNode.frameNum == bucketStartFrame) {
+        if (!nodeMap.contains(destNodeKey) || edge.srcNode.frameNum == bucketStartFrame) {
           borderEdges += edge
           borderNodes += edge.srcNode
         }
@@ -124,32 +124,34 @@ object MainDistGraphMCC {
         val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], borderEdges, false)
 
         //If the source node is a border node, add its entire subgraph as it needs further investigation
-        if(borderNodes.contains(node)) {
+        if (borderNodes.contains(node)) {
           filteredEdgeList ++= result._2
         }
-          // If the subgraph contains a border edge, add it to filteredEdges for further investigation
-        else if(result._3){
+        // If the subgraph contains a border edge, add it to filteredEdges for further investigation
+        else if (result._3) {
           filteredEdgeList ++= result._2
         }
         /* If the subgraph is entirely contained within the bounds of the partition,
         then check for feature length and write to file or discard accordingly
         */
-        else if(result._1 > minAcceptableFeatureLength) {
-            out.write(result._2.toString())
+        else if (result._1 > minAcceptableFeatureLength) {
+          //DEBUG
+          println(s"Subgraphs filtered from $bucket: " + result._2)
+          out.write(result._2.toString())
         }
         else {
           //DEBUGGING
-          println("Edges that dont meet above criteria : " + result._2)
+          println(s"Edges that don't meet above criteria from bucket $bucket : " + result._2)
         }
         out.newLine()
       }
     }
     out.close()
-    println("Filtered Edgelist " + filteredEdgeList)
+    println(s"Edgelist for next round from bucket $bucket" + filteredEdgeList)
     if (filteredEdgeList.isEmpty) {
       return (-1, filteredEdgeList)
     }
-    return (1 + bucket/(frameChunkSize * 2), filteredEdgeList)
+    return (1 + bucket / (frameChunkSize * 2), filteredEdgeList)
   }
 
   /*
