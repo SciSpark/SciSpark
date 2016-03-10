@@ -21,21 +21,26 @@ object MainDistGraphMCC {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  val bins: Int = 100
-  val frames = 7000
-  val frameChunkSize = 70
+  val bins: Int = 8
+  val frames: Int = 40
+  val frameChunkSize: Float = frames / bins
   val minAcceptableFeatureLength = 3
 
   /*
   This is the function which recursively creates subgraphs and merges partitions
   untill we are left with one partition or no edges to process.
    */
-  def getSubgraphs(graph: RDD[(Integer, Iterable[MCCEdge])]): Unit = {
+  def getSubgraphs(graph: RDD[(Integer, Iterable[MCCEdge])], iter: Int): Unit = {
 
     if (graph.isEmpty()) {
+      debug("Graph empty exiting")
       return
     }
-    val newGraph = graph.map(x => createPartialGraphs(x._1, x._2))
+    debug(s"Entering partial graphs ${graph.count()}")
+    graph.foreach(x => {
+      debug(s"$x")
+    })
+    val newGraph = graph.map(x => createPartialGraphs(x._1, x._2, iter))
       .filter(x => x._1 != -1)
       .groupByKey()
       .map(x => flattenSets(x._1, x._2))
@@ -49,13 +54,19 @@ object MainDistGraphMCC {
     //        return graph
     //      }
 
-    return getSubgraphs(newGraph)
+    if(iter == 3){
+      return
+    }
+     getSubgraphs(newGraph, iter+1)
+
   }
+
 
   /*
   Converting an Iterable[Iterable[MCCEdge]] to Iterable[MCCEdge]
    */
   def flattenSets(bucket: Integer, edgeList: Iterable[Iterable[MCCEdge]]): (Integer, Iterable[MCCEdge]) = {
+    debug(s"Flatten for bucket $bucket : $edgeList")
     val collapsedEdgeList = new mutable.HashSet[MCCEdge]
     for (edgeSet <- edgeList) {
       collapsedEdgeList ++= edgeSet
@@ -73,17 +84,23 @@ object MainDistGraphMCC {
   Ex - Input bucketIds - 1,2,3,4
        Output would contain 2 bucketIds - 1(1,2) and 2(3,4)
    */
-  def createPartialGraphs(bucket: Integer, edgeList: Iterable[MCCEdge]): (Integer, Iterable[MCCEdge]) = {
+  def createPartialGraphs(bucket: Integer, edgeList: Iterable[MCCEdge], iteration: Int): (Integer, Iterable[MCCEdge]) = {
 
-    println(s"Initial edgelist from bucket $bucket" + edgeList)
-    val nodeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
+    val edgeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
+    val nodeMap = new mutable.HashMap[String, MCCNode]() // for faster lookups for nodes
 
-    val bucketStartFrame = bucket * frameChunkSize - frameChunkSize + 1 //The first frame numner in the bucket
+    val currentFrameChunkSize = frameChunkSize*iteration
+    val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 //The first frame number in the bucket
+    val bucketEndFrame = bucket * currentFrameChunkSize // last frame in bucket
     var minFrame = Integer.MAX_VALUE
     var maxFrame = 0
+
+    debug(s"Iteration $iteration : chunksize $currentFrameChunkSize Initial edgelist from bucket BID:$bucket" + edgeList)
     for (edge <- edgeList) {
       // Keying on concatenation of FrameCloudElemNum, Ex - given F:12 CE: 3.0 => "123.0"
-      nodeMap.addBinding(edge.srcNode.frameNum + "" + edge.srcNode.cloudElemNum, edge)
+      edgeMap.addBinding(edge.srcNode.frameNum + "" + edge.srcNode.cloudElemNum, edge)
+      nodeMap.put(edge.srcNode.toString(), edge.srcNode)
+      nodeMap.put(edge.destNode.toString(), edge.destNode)
       if (edge.srcNode.frameNum > maxFrame) {
         maxFrame = edge.srcNode.frameNum
       }
@@ -91,67 +108,87 @@ object MainDistGraphMCC {
         minFrame = edge.srcNode.frameNum
       }
     }
-
+    debug(s"Nodemap in  BID:$bucket " + nodeMap)
     // Building the partial graphs
-    val nodeSet = new mutable.HashSet[MCCNode]
-    val borderNodes = new mutable.HashSet[MCCNode]
-    val borderEdges = new mutable.HashSet[MCCEdge]
-    nodeMap.foreach((node: (String, mutable.Set[MCCEdge])) => {
-      for (edge <- node._2) {
-        val destNodeKey: String = edge.destNode.frameNum + "" + edge.destNode.cloudElemNum
-        nodeSet += edge.srcNode
-        edge.srcNode.addOutgoingEdge(edge)
-        edge.destNode.addIncomingEdge(edge)
-        /*
-        If destNode does not exist in the NodeMap, we can infer that
-        this edge is originating from the last frame in this bucket.
-        Or if this is the start frame of the partition
-         */
-        if (!nodeMap.contains(destNodeKey) || edge.srcNode.frameNum == bucketStartFrame) {
-          borderEdges += edge
-          borderNodes += edge.srcNode
-        }
+    val nodeSet = new mutable.HashSet[MCCNode]()
+    val borderNodes = new mutable.HashSet[MCCNode]()
+    val borderEdges = new mutable.HashSet[MCCEdge]()
+
+    for (edge <- edgeList) {
+      val destNodeKey: String = edge.destNode.frameNum + "" + edge.destNode.cloudElemNum
+      var srcNode: MCCNode = nodeMap.get(edge.srcNode.toString()).get
+      var destNode: MCCNode = nodeMap.get(edge.destNode.toString()).get
+      nodeSet += srcNode
+//      debug(s"Edge in  BID:$bucket " + edge)
+//      debug(s"Source $srcNode outgoing before adding in BID:$bucket " + srcNode.outEdges)
+      srcNode.addOutgoingEdge(edge)
+//      debug(s"Source $srcNode outgoing after adding in BID:$bucket " + srcNode.outEdges)
+//      debug(s"destNode $destNode incoming before adding in BID:$bucket " + destNode.inEdges)
+      destNode.addIncomingEdge(edge)
+//      debug(s"destNode $destNode incoming after adding in BID:$bucket " + destNode.inEdges)
+      /*
+      If destNode does not exist in the NodeMap, we can infer that
+      this edge is originating from the last frame in this bucket.
+      Or if this is the start frame of the partition
+       */
+      if (srcNode.frameNum == bucketStartFrame || srcNode.frameNum == bucketEndFrame) {
+        borderEdges += edge
+        borderNodes += srcNode
+        srcNode.isBorder = true;
+        debug(s"Adding to borderedge source ${srcNode.hashCode()} ${srcNode.isBorder} BID:$bucket " + edge)
+      }
+    }
+
+    // Finding all source nodes from the node set
+    val sourceNodeSet = new mutable.HashSet[MCCNode]()
+    nodeSet.foreach(node => {
+      debug(s"Node $node ${node.hashCode()} in BID:$bucket " + node.inEdges + " outedges : " + node.outEdges)
+      if(node.inEdges.size<1){
+        sourceNodeSet += node
       }
     })
-    // Finding all source nodes from the node set
-    val sourceNodeSet = nodeSet.filter(node => !node.inEdges.isEmpty)
+    debug(s"Source node from bucket BID:$bucket " + sourceNodeSet)
 
     val filteredEdgeList = new mutable.HashSet[MCCEdge]
-    val out = new BufferedWriter(
-      new OutputStreamWriter(new FileOutputStream(new File("intermediate.txt"))))
+//        val out = new BufferedWriter(
+//          new OutputStreamWriter(new FileOutputStream(new File("intermediate.txt"))))
     if (!sourceNodeSet.isEmpty) {
       for (node <- sourceNodeSet) {
-        val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], borderEdges, false)
-
+        val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], nodeMap, false, bucket)
+        debug(s"DFS result for BID:$bucket $result")
         //If the source node is a border node, add its entire subgraph as it needs further investigation
         if (borderNodes.contains(node)) {
           filteredEdgeList ++= result._2
+          debug(s"Adding to filteredgelist due to border Node BID:$bucket " + result._2)
         }
         // If the subgraph contains a border edge, add it to filteredEdges for further investigation
-        else if (result._3) {
+        else if (result._3 == true) {
           filteredEdgeList ++= result._2
+          debug(s"Adding to filteredgelist due to border Edge BID:$bucket " + result._2)
         }
         /* If the subgraph is entirely contained within the bounds of the partition,
         then check for feature length and write to file or discard accordingly
         */
-        else if (result._1 > minAcceptableFeatureLength) {
+        else if (result._1 > minAcceptableFeatureLength && !result._3) {
           //DEBUG
-          println(s"Subgraphs filtered from $bucket: " + result._2)
-          out.write(result._2.toString())
+          println(s"Subgraphs filtered from BID:$bucket: " + result._2)
+//                    out.write(result._2.toString())
         }
         else {
           //DEBUGGING
-          println(s"Edges that don't meet above criteria from bucket $bucket : " + result._2)
+          println(s"Edges that don't meet above criteria from bucket BID:$bucket : " + result._2)
         }
-        out.newLine()
+//                out.newLine()
       }
     }
-    out.close()
-    println(s"Edgelist for next round from bucket $bucket" + filteredEdgeList)
+//        out.close()
+    println(s"Edgelist for next round from bucket BID:$bucket" + filteredEdgeList)
     if (filteredEdgeList.isEmpty) {
       return (-1, filteredEdgeList)
     }
-    return (1 + bucket / (frameChunkSize * 2), filteredEdgeList)
+    val newBucket = if(bucket%2==0) bucket/2 else (1 + bucket/2)
+    debug(s"Sending to bucket $newBucket from BID:$bucket")
+    return (newBucket, filteredEdgeList)
   }
 
   /*
@@ -160,41 +197,65 @@ object MainDistGraphMCC {
     Also return a boolean if the subgraph contains a border edge.
     If it contains a border that means we need further investigation.
    */
-  def getSubgraphLenth(source: MCCNode, length: Int, edges: mutable.HashSet[MCCEdge], borderEdges: mutable.HashSet[MCCEdge], containsBorderEdge: Boolean):
+  def getSubgraphLenth(source: MCCNode, length: Int, edges: mutable.HashSet[MCCEdge],
+                       nodeMap: mutable.HashMap[String, MCCNode], containsBorderEdge: Boolean, bucket: Int):
   (Int, mutable.HashSet[MCCEdge], Boolean) = {
     var maxLength = length
+    var hasBorderEdge = containsBorderEdge
     if (source == Nil)
-      return (maxLength, edges, containsBorderEdge)
+      return (maxLength, edges, hasBorderEdge)
     else {
+      debug(s"BID:$bucket DFS: Source $source  ${source.hashCode()} outedgelist " + source.outEdges +
+        s" borderEdge = $containsBorderEdge")
+
       for (outEdge: MCCEdge <- source.outEdges) {
+        debug(s"BID:$bucket DFS: $source ${source.hashCode()} ${source.isBorder} outedge in consideration : $outEdge")
         edges += outEdge
-        val l = getSubgraphLenth(outEdge.destNode, length + 1, edges, borderEdges, borderEdges.contains(outEdge))
+        hasBorderEdge = if (containsBorderEdge) containsBorderEdge else source.isBorder
+        val childNode = nodeMap.get(outEdge.destNode.toString()).get
+        val l = getSubgraphLenth(childNode, length + 1, edges, nodeMap,
+          hasBorderEdge, bucket)
         if (maxLength < l._1) {
           maxLength = l._1
         }
+        hasBorderEdge = if(containsBorderEdge) containsBorderEdge else l._3
       }
     }
-    return (maxLength, edges, containsBorderEdge)
+    return (maxLength, edges, hasBorderEdge)
+  }
+
+  def debug(x: String) = {
+    println(x)
   }
 
   def mapFrames(x: String): (Integer, MCCEdge) = {
-
     val nodes = x.split("\\),\\(")
-    val source = nodes(0).slice(2, nodes(0).length).split(",")
-    val dest = nodes(1).slice(0, nodes(1).length - 2).split(",")
-
+    val source = nodes(0).slice(2, nodes(0).length).split(",") // (FrameNum, CloudElemNum)
+    val dest = nodes(1).slice(0, nodes(1).length - 2).split(",") // (FrameNum, CloudElemNum)
+    val nodeMap = new mutable.HashMap[String, MCCNode]()
     val sourceFrameNum = x.slice(2, x.indexOfSlice(",")).toInt
+    val sourceKey = source(0) + source(1)
+    val destKey = dest(0) + dest(1)
+    if (!nodeMap.contains(sourceKey)) {
+      nodeMap.put(sourceKey, new MCCNode(source(0).toInt, source(1).toFloat))
+    }
+    if (!nodeMap.contains(destKey)) {
+      nodeMap.put(destKey, new MCCNode(dest(0).toInt, dest(1).toFloat))
+    }
+    val sourceNode: MCCNode = nodeMap.get(sourceKey).get
+    val destNode = nodeMap.get(destKey).get
+
     for (i <- 1 to bins) {
-      if (sourceFrameNum < frameChunkSize * i) {
+      if (sourceFrameNum <= frameChunkSize * i) {
         val bucket: Int = i
+        debug(s"Frame chunk : $frameChunkSize, BID:$bucket adding egde $sourceNode ${sourceNode.hashCode()},
+          $destNode ${destNode.hashCode()}")
         return (bucket,
-          new MCCEdge(new MCCNode(source(0).toInt, source(1).toFloat), //creating an edge from String
-            new MCCNode(dest(0).toInt, dest(1).toFloat)))
+          new MCCEdge(sourceNode, destNode))
       }
     }
     return (bins,
-      new MCCEdge(new MCCNode(source(0).toInt, source(1).toFloat),
-        new MCCNode(dest(0).toInt, dest(1).toFloat))
+      new MCCEdge(sourceNode, destNode)
       )
   }
 
@@ -206,9 +267,9 @@ object MainDistGraphMCC {
       * args(3) - local path to files
       *
       */
-    val masterURL = if (args.length <= 1) "local[4]" else args(0)
+    val masterURL = if (args.length <= 1) "local[2]" else args(0)
     val partCount = if (args.length <= 2) 2 else args(1).toInt
-    val hdfspath = if (args.length <= 3) "resources/graph/EdgeList.txt" else args(2)
+    val hdfspath = if (args.length <= 3) "resources/graph/graphEdges" else args(2)
 
     /**
       * Initialize the spark context to point to the master URL
@@ -222,8 +283,7 @@ object MainDistGraphMCC {
     val count = RDD.flatMap(line => line.split(", "))
       .map(mapFrames)
       .groupByKey()
-    getSubgraphs(count)
-    count.saveAsTextFile("MCCDistGraphOutput")
+    getSubgraphs(count, 1)
     println("Done")
   }
 }
