@@ -17,8 +17,9 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Float) extends Serializable 
   //    val dest = Value("Destination")
   //  }
 
-  var inEdges : mutable.MutableList[MCCEdge] = new mutable.MutableList[MCCEdge]
-  var outEdges : mutable.MutableList[MCCEdge] = new mutable.MutableList[MCCEdge]
+  var inEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var outEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var isBorder = false
 
   def connectTo(destNode: MCCNode, weight: Float): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)
@@ -33,11 +34,11 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Float) extends Serializable 
   }
 
   def addIncomingEdge(edge: MCCEdge) = {
-    inEdges+=edge
+    inEdges += edge
   }
 
   def addOutgoingEdge(edge: MCCEdge) = {
-    outEdges+=edge
+    outEdges += edge
   }
 
   def getFrameNum : Int = {
