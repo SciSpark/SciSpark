@@ -45,11 +45,11 @@ object MainNetcdfDFSMCC {
      * args(4) - local path to files
      *
      */
-    val masterURL = if (args.length <= 1) "local[2]" else args(0)
-    val partCount = if (args.length <= 2) 2 else args(1).toInt
-    val dimension = if (args.length <= 3) (20, 20) else (args(2).toInt, args(2).toInt)
-    val variable = if (args.length <= 4) "ch4" else args(3)
-    val hdfspath = if (args.length <= 5) "resources/merg" else args(4)
+    val masterURL = if (args.isEmpty) "local[2]" else args(0)
+    val partCount = if (args.length <= 1) 2 else args(1).toInt
+    val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
+    val variable = if (args.length <= 3) "ch4" else args(3)
+    val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
 
     /**
      * Initialize the spark context to point to the master URL
