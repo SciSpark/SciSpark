@@ -20,6 +20,9 @@ package org.dia
 import java.util.{ Calendar, Date }
 import com.joestelmach.natty.Parser
 
+/**
+ * Contains a set of parse methods relevant to the entire SciSpark source tree
+ */
 object Parsers {
 
   def parseDateFromString(Name: String): Date = {

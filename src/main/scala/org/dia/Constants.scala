@@ -18,7 +18,7 @@
 package org.dia
 
 /**
- * Constants
+ * Constants relevant across the SciSpark source tree
  */
 object Constants extends Serializable {
   /**

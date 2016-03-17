@@ -30,6 +30,9 @@ object PathReader {
 
   /**
    * Gets all files recursively starting at the path of a given file.
+   *
+   * @param f a specified file object serving as the root starting path
+   * @return a map mapping a set of file names against paths
    */
   def recursiveListFiles(f: File): Map[String, Array[String]] = {
     if (!f.exists()) {
