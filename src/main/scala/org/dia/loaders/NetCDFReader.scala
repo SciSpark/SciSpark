@@ -58,7 +58,7 @@ object NetCDFReader {
   /**
    * Gets just the variable names of a NetCDF at some URI.
    *
-   * @param uri
+   * @param uri where the NetCDF file is located
    * @return
    */
   def loadNetCDFVar(uri: String): List[String] = {
@@ -74,9 +74,10 @@ object NetCDFReader {
   }
 
   /**
+   * Loads the NetCDF file based on a variable name
    *
-   * @param dataset
-   * @param variable
+   * @param dataset the dataset to perform a load operation upon
+   * @param variable the specific variable within the dataset to load
    * @return
    */
   def loadNetCDFNDVar(dataset: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
@@ -96,9 +97,10 @@ object NetCDFReader {
   }
 
   /**
+   * Loads the NetCDF file based on a byte array
    *
-   * @param name
-   * @param file
+   * @param name the file name in question
+   * @param file the array of bytes representing the file
    * @return
    */
   def loadNetCDFFile(name: String, file: Array[Byte]): NetcdfDataset = {
