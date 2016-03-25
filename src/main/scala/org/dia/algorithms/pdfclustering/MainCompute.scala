@@ -33,6 +33,9 @@ import scala.collection.mutable.ArraySeq
 import org.apache.spark.mllib.clustering.{ KMeans, KMeansModel }
 import org.apache.spark.mllib.linalg.{ Vector, DenseVector }
 
+/**
+ *
+ */
 object MainCompute {
 
   def main(args: Array[String]): Unit = {

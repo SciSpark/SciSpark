@@ -35,16 +35,41 @@ import scala.io.Source
  */
 object MergReader {
 
+  /**
+   * Returns a Java 1-dimensional array loaded from a shape array at a specified offset
+   *
+   * @param shape a shape integer array representing the MERG shape
+   * @param offset an offset within the array to start reading from
+   * @param file a file path pointing to the MERG file
+   * @param varName a variable name to extract
+   * @return
+   */
   def loadMERGArray(shape: Array[Int], offset: Double)(file: String, varName: String): (Array[Double], Array[Int]) = {
     val java1dArray = readMergtoJavaArray(file, offset, shape)
     (java1dArray, shape)
   }
 
+  /**
+   * Returns a Java 1-dimensional array loaded from a MERG file path at a specified offset
+   *
+   * @param file a file path pointing to the MERG file
+   * @param shape a shape integer array representing the MERG shape
+   * @param offset an offset within the array to start reading from
+   * @return
+   */
   def loadMERGArray(file: String, shape: Array[Int], offset: Double): (Array[Double], Array[Int]) = {
     val java1dArray = readMergtoJavaArray(file, offset, shape)
     (java1dArray, shape)
   }
 
+  /**
+   * Returns a Java array loaded from a MERG file at a specified offset, with a specified shape
+   *
+   * @param file a file path pointing to the MERG file
+   * @param offset an offset within the array to start reading from
+   * @param shape a shape integer array representing the MERG shape
+   * @return
+   */
   def readMergtoJavaArray(file: String, offset: Double, shape: Array[Int]): Array[Double] = {
     val Sourcefile = Source.fromFile(file, "ISO8859-1")
     val numElems = shape.product
@@ -54,6 +79,14 @@ object MergReader {
     SourceArray
   }
 
+  /**
+   * Returns a Java array loaded from a MERG byte array at a specified offset based on a specified shape
+   *
+   * @param byteArray a byte array containing bytes from a MERG file
+   * @param offset an offset within the array to start reading from
+   * @param shape a shape integer array representing the MERG shape
+   * @return
+   */
   def readMergBytetoJavaArray(byteArray: Array[Byte], offset: Double, shape: Array[Int]): Array[Double] = {
     val numElems = shape.product
     val array = byteArray.slice(0, numElems)

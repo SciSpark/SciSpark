@@ -5,6 +5,9 @@
 .classpath
 .settings
 
+# IDEA folders
+.idea
+
 # Build output folders
 project/project/
 project/target/

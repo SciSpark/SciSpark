@@ -57,6 +57,9 @@ object NetCDFReader {
 
   /**
    * Gets just the variable names of a NetCDF at some URI.
+   *
+   * @param uri where the NetCDF file is located
+   * @return
    */
   def loadNetCDFVar(uri: String): List[String] = {
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(uri)
@@ -70,6 +73,13 @@ object NetCDFReader {
     list
   }
 
+  /**
+   * Loads the NetCDF file based on a variable name
+   *
+   * @param dataset the dataset to perform a load operation upon
+   * @param variable the specific variable within the dataset to load
+   * @return
+   */
   def loadNetCDFNDVar(dataset: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
     if (dataset == null) {
       LOG.warn("Dataset %s not found!".format())
@@ -86,6 +96,13 @@ object NetCDFReader {
     coordinateArray
   }
 
+  /**
+   * Loads the NetCDF file based on a byte array
+   *
+   * @param name the file name in question
+   * @param file the array of bytes representing the file
+   * @return
+   */
   def loadNetCDFFile(name: String, file: Array[Byte]): NetcdfDataset = {
     new NetcdfDataset(NetcdfFile.openInMemory(name, file))
   }

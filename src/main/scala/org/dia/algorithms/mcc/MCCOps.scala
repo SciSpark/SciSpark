@@ -168,6 +168,8 @@ object MCCOps {
 
     /**
      * Pushes unlabeled neighbors onto the stack.
+     *
+     * @param currentLabel the component label being added
      */
     def dfs(currentLabel: Int): Unit = {
       while (!stack.isEmpty) {
