@@ -17,7 +17,7 @@
  */
 package org.dia.algorithms.mcc
 
-class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Float) extends Serializable {
+class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
   override def toString = s"($srcNode,$destNode)"
 
