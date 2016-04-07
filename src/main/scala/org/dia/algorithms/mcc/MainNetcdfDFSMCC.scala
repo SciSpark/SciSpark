@@ -51,6 +51,8 @@ object MainNetcdfDFSMCC {
     val variable = if (args.length <= 3) "ch4" else args(3)
     val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
 
+    println("Starting MCC")
+
     /**
      * Initialize the spark context to point to the master URL
      */
@@ -97,6 +99,7 @@ object MainNetcdfDFSMCC {
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
 
+    val debug = consecFrames.collect()
     /**
      * Core MCC
      * For each consecutive frame pair, find it's components.
@@ -140,7 +143,7 @@ object MainNetcdfDFSMCC {
          * This is achieved by iterating through the product array and noting
          * all points that are not 0.
          */
-        var overlappedPairsList = mutable.MutableList[(Double, Double)]()
+        var overlappedPairsList = mutable.MutableList[((Double, Double))]()
         /**
          * The areaMinMaxTable keeps track of the area, minimum value, and maximum value
          * of all labeled regions in both components. For this reason the hash key has the following form :
@@ -152,6 +155,7 @@ object MainNetcdfDFSMCC {
         var areaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
         def updateComponent(label: Double, frame: String, value: Double): Unit = {
+
           if (label != 0.0) {
             var area = 0.0
             var max = Double.MinValue
@@ -185,25 +189,48 @@ object MainNetcdfDFSMCC {
             updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col))
           }
         }
+        //println(s"Area table $areaMinMaxTable")
         /**
          * Once the overlapped pairs have been computed, eliminate all duplicates
          * by converting the collection to a set. The component edges are then
          * mapped to the respective frames, so the global space of edges (outside of this task)
          * consists of unique tuples.
          */
+        var overlappedMap = overlappedPairsList.groupBy(identity).mapValues(_.size)
+        println(s"Overlap Map ${overlappedMap.size}")
         val edgesSet = overlappedPairsList.toSet
+        println(s"Overlap SEt ${edgesSet.size}  : ")
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
-
+        println(s"Edges ${edges.size} ")
         val filtered = edges.filter({
           case ((frameId1, compId1), (frameId2, compId2)) => {
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
             val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) < 0.9)))
+            if(isCloud1 && isCloud2){
+              val areaOverlap = (overlappedMap.get(compId1, compId2).get / (area1 + area2))
+              if(areaOverlap >= 0.66){
+                overlappedMap += (((compId1, compId2), 1))
+              }
+              else if(areaOverlap < 0.66 && areaOverlap >= .50){
+
+              }
+            }
             isCloud1 && isCloud2
           }
         })
-        filtered
+
+        val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
+        filtered.foreach(edge => {
+          val key = (edge._1._2, edge._2._2)
+          if(overlappedMap.contains(key)){
+            edgeList += ((edge._1, edge._2, overlappedMap.get(key).get))
+          }
+        })
+        println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
+        println(s"filtered Map ${filtered.size}")
+        edgeList
       }
     })
 
@@ -217,15 +244,17 @@ object MainNetcdfDFSMCC {
      * to also store area, min, max at the end of MCC.
      */
     val collectedEdges = componentFrameRDD.collect()
-    val collectedVertices = collectedEdges.flatMap({ case (n1, n2) => List(n1, n2) }).toSet
-
+    val collectedVertices = collectedEdges.flatMap({ case (n1, n2, n3) => List(n1, n2) }).toSet
+//
     val outv = new PrintWriter(new File("VertexList.txt"))
     outv.write(collectedVertices.toList.sortBy(_._1) + "\n")
     outv.close()
-
+//
     val oute = new PrintWriter(new File("EdgeList.txt"))
     oute.write(collectedEdges.toList.sorted + "\n")
     oute.close()
+
+//    MainDistGraphMCC.performMCCfromRDD(componentFrameRDD)
 
     println("NUM VERTICES : " + collectedVertices.size + "\n")
     println("NUM EDGES : " + collectedEdges.length + "\n")
