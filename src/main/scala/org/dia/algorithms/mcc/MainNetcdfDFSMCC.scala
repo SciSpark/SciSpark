@@ -189,19 +189,28 @@ object MainNetcdfDFSMCC {
             updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col))
           }
         }
-        //println(s"Area table $areaMinMaxTable")
+
         /**
-         * Once the overlapped pairs have been computed, eliminate all duplicates
-         * by converting the collection to a set. The component edges are then
-         * mapped to the respective frames, so the global space of edges (outside of this task)
-         * consists of unique tuples.
-         */
+          * This code essetially computes the number of times the same tuple occurred in the list,
+          * a repeat occurrance would indicate that the components overlapped for more than one cell
+          * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
+          * they overlapped for and since each cell is of a fixed area we can compute the area overlap
+          * between those two components.
+          */
         var overlappedMap = overlappedPairsList.groupBy(identity).mapValues(_.size)
         println(s"Overlap Map ${overlappedMap.size}")
+
+        /**
+          * Once the overlapped pairs have been computed, eliminate all duplicates
+          * by converting the collection to a set. The component edges are then
+          * mapped to the respective frames, so the global space of edges (outside of this task)
+          * consists of unique tuples.
+          */
         val edgesSet = overlappedPairsList.toSet
-        println(s"Overlap SEt ${edgesSet.size}  : ")
+        println(s"Overlap SEt ${edgesSet.size}  : ") // for debugging
+
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
-        println(s"Edges ${edges.size} ")
+        println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
           case ((frameId1, compId1), (frameId2, compId2)) => {
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
