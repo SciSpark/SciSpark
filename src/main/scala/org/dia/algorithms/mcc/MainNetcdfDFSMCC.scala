@@ -50,7 +50,9 @@ object MainNetcdfDFSMCC {
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
     val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
-
+    val maxAreaOverlapThreshold = 0.66
+    val minAreaOverlapThreshold = 0.50
+    val minArea = 10000
     println("Starting MCC")
 
     /**
@@ -217,16 +219,27 @@ object MainNetcdfDFSMCC {
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
             val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) < 0.9)))
-            if(isCloud1 && isCloud2){
-              val areaOverlap = (overlappedMap.get(compId1, compId2).get / (area1 + area2))
-              if(areaOverlap >= 0.66){
-                overlappedMap += (((compId1, compId2), 1))
+            var meetsCriteria = true
+            if(isCloud1 && isCloud2) {
+              val areaOverlap = overlappedMap.get(compId1, compId2).get
+              val percentAreaOverlap = math.max((areaOverlap / area1), (areaOverlap / area2))
+              var edgeWeight = 0
+              if (percentAreaOverlap >= maxAreaOverlapThreshold) {
+                edgeWeight = 1
               }
-              else if(areaOverlap < 0.66 && areaOverlap >= .50){
-
+              else if (percentAreaOverlap < maxAreaOverlapThreshold &&
+                percentAreaOverlap >= minAreaOverlapThreshold) {
+                edgeWeight = 2
               }
+              else if (areaOverlap >= minArea) {
+                edgeWeight = 3
+              }
+              else {
+                meetsCriteria = false
+              }
+              overlappedMap += (((compId1, compId2), 1))
             }
-            isCloud1 && isCloud2
+            isCloud1 && isCloud2 && meetsCriteria
           }
         })
 
