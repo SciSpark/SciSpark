@@ -16,22 +16,13 @@ If any visitors have insights into achieving this, please see the issue titled
 
 #Installation
 
-Requirements (in-order):
-* ND4J: https://github.com/deeplearning4j/nd4j
-* ND4S: https://github.com/deeplearning4j/nd4s
-* Scala: v2.10.5+
-* Maven 2.0x+
-* SBT: v0.13.5+
-
-Steps:
-
-1. Ensure ND4J and ND4S are installed in you local Maven repository
-2. Open a terminal, and enter: `sbt clean assembly`
-3. You should see a [success] message at the bottom if the package built correctly.
-
-Test your installation:
-
-```sbt "run"```
+1. Install Scala: 2.10.x (http://www.scala-lang.org/download/) Be sure to add scala/bin folder to your environment.
+2. Install Spark 1.6.0 with Scala 2.10 dependency. NB: To do so you must build the Spark installation. Download the SciSpark source file at http://spark.apache.org/downloads.html and follow the directions for builidng with Scala 2.11 http://spark.apache.org/docs/latest/building-spark.html#building-for-scala-211
+3. Add the installation folder to your environment SPARK_HOME = /path/to/installation
+4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
+5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
+6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
+7. Run sbt clean assembly
 
 Possible pitfalls:
 
