@@ -17,12 +17,45 @@ If any visitors have insights into achieving this, please see the issue titled
 #Installation
 
 1. Install Scala: 2.10.x (http://www.scala-lang.org/download/) Be sure to add scala/bin folder to your environment.
-2. Install Spark 1.6.0 with Scala 2.10 dependency. NB: To do so you must build the Spark installation. Download the Spark source file at http://spark.apache.org/downloads.html and follow the directions under "builidng for Scala 2.11" (except change the version in the commands to 2.10) at http://spark.apache.org/docs/latest/building-spark.html#building-for-scala-211
+2. Install Spark 1.6.0 which has a Scala 2.10 dependency at http://spark.apache.org/downloads.html.
 3. Add the installation folder to your environment SPARK_HOME = /path/to/installation
 4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
 5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
 6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
 7. Run ```sbt clean assembly```
+8. Find where your SciSpark.jar (or similarly named) file is and get its path. It is likely under target and then under scala-2.10.
+9. Download and untar Zeppelin 0.5.6 at https://zeppelin.incubator.apache.org/download.html
+10. Find zeppelin-env.sh.template in Zeppelin's conf folder and create zeppelin-env.sh with the following command:
+
+    ```
+    cp zeppelin-env.sh.template
+    ```
+
+11. Point your configuration to your SciSpark jar file by adding the following to zeppelin-env.sh:
+
+    ```
+    export ZEPPELIN_JAVA_OPTS="-Dspark.jars=/path/to/SciSpark.jar"
+    export SPARK_SUBMIT_OPTIONS="--jars /path/to/SciSpark.jar"
+    ```
+
+12. Start Zeppelin:
+
+    ```
+    bin/zeppelin-daemon.sh start
+    ```
+
+13. Open your local configuration (localhost:8080/#) and create a new note. Paste the following into the first cell:
+
+    ```
+    //SciSpark imports
+    import org.dia.Parsers
+    import org.dia.core.{ SciSparkContext, SciTensor }
+    import org.dia.algorithms.mcc.MCCOps
+    import org.dia.algorithms.mcc.MainDistGraphMCC
+    import org.dia.urlgenerators.{RandomDatesGenerator}
+    ```
+
+14. Run this note. If it works, your configuration is set up correctly.
 
 Possible pitfalls:
 
