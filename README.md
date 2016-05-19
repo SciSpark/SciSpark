@@ -17,12 +17,12 @@ If any visitors have insights into achieving this, please see the issue titled
 #Installation
 
 1. Install Scala: 2.10.x (http://www.scala-lang.org/download/) Be sure to add scala/bin folder to your environment.
-2. Install Spark 1.6.0 with Scala 2.10 dependency. NB: To do so you must build the Spark installation. Download the SciSpark source file at http://spark.apache.org/downloads.html and follow the directions for builidng with Scala 2.11 http://spark.apache.org/docs/latest/building-spark.html#building-for-scala-211
+2. Install Spark 1.6.0 with Scala 2.10 dependency. NB: To do so you must build the Spark installation. Download the Spark source file at http://spark.apache.org/downloads.html and follow the directions under "builidng for Scala 2.11" (except change the version in the commands to 2.10) at http://spark.apache.org/docs/latest/building-spark.html#building-for-scala-211
 3. Add the installation folder to your environment SPARK_HOME = /path/to/installation
 4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
 5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
 6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
-7. Run sbt clean assembly
+7. Run ```sbt clean assembly```
 
 Possible pitfalls:
 
