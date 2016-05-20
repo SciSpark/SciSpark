@@ -16,29 +16,57 @@ If any visitors have insights into achieving this, please see the issue titled
 
 #Installation
 
-Requirements (in-order):
-* ND4J: https://github.com/deeplearning4j/nd4j
-* ND4S: https://github.com/deeplearning4j/nd4s
-* Scala: v2.10.5+
-* Maven 2.0x+
-* SBT: v0.13.5+
+1. Install Scala: 2.10.x (http://www.scala-lang.org/download/) Be sure to add scala/bin folder to your environment.
+2. Install Spark 1.6.0 which has a Scala 2.10 dependency at http://spark.apache.org/downloads.html.
+3. Add the installation folder to your environment SPARK_HOME = /path/to/installation
+4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
+5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
+6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
+7. Within your SciSpark folder, run ```sbt clean assembly```
+8. Find where your SciSpark.jar (or similarly named) file is and get its path as follows /path_to_SciSpark/target/scala-2.10/SciSpark.jar.
+9. Download and untar Zeppelin 0.5.6 at https://zeppelin.incubator.apache.org/download.html
+10. Find zeppelin-env.sh.template in Zeppelin's conf folder and create zeppelin-env.sh with the following command:
 
-Steps:
+    ```
+    cp zeppelin-env.sh.template
+    ```
 
-1. Ensure ND4J and ND4S are installed in you local Maven repository
-2. Open a terminal, and enter: `sbt clean assembly`
-3. You should see a [success] message at the bottom if the package built correctly.
+11. Point your configuration to your SciSpark jar file by adding the following to zeppelin-env.sh:
 
-Test your installation:
+    ```
+    export ZEPPELIN_JAVA_OPTS="-Dspark.jars=/path/to/SciSpark.jar"
+    export SPARK_SUBMIT_OPTIONS="--jars /path/to/SciSpark.jar"
+    ```
 
-```sbt "run"```
+12. Start Zeppelin:
+
+    ```
+    bin/zeppelin-daemon.sh start
+    ```
+
+13. Open your local configuration (localhost:8080/#) and create a new note. Paste the following into the first cell:
+
+    ```
+    //SciSpark imports
+    import org.dia.Parsers
+    import org.dia.core.{ SciSparkContext, SciTensor }
+    import org.dia.algorithms.mcc.MCCOps
+    import org.dia.algorithms.mcc.MainDistGraphMCC
+    import org.dia.urlgenerators.{RandomDatesGenerator}
+    ```
+
+14. Run this note. If it works, your configuration is set up correctly.
+15. Now, we want to change the skin of our notebook to have a SciSpark theme. This can be done by downloading a zip file of the Zeppelin web repo at https://github.com/SciSpark/scispark_zeppelin_web. Then, go to your zeppelin installation and replace all folders under webapps/webapp/ with the folders of the same name under your web installation's src folder.
 
 Possible pitfalls:
 
-ND4S + Scala compilation issues: If problems occur, consider changing the scala version in the build.sbt file of the nd4s to scala version 2.10. Update the libraries dependenices in build.sbt in scispark accordingly. 
-* Note that the current SciSpark build includes an nd4s jar that is part of the classpath. 
-The jar is created by downloading nd4s from github and cbanging the scala version to 2.10. The jar is then copied
-under /lib in the SciSparkTestExperiments directory. 
+Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reload your browser and restart Zeppelin as follows. It may take a few tries to clear the cache:
+
+```
+bin/zeppelin-daemon.sh stop
+bin/zeppelin-daemon.sh start
+```
+
 
 #Getting Started
 
