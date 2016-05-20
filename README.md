@@ -56,13 +56,17 @@ If any visitors have insights into achieving this, please see the issue titled
     ```
 
 14. Run this note. If it works, your configuration is set up correctly.
+15. Now, we want to change the skin of our notebook to have a SciSpark theme. This can be done by downloading a zip file of the Zeppelin web repo at https://github.com/SciSpark/scispark_zeppelin_web. Then, go to your zeppelin installation and replace all folders under webapps/webapp/ with the folders of the same name under your web installation's src folder.
 
 Possible pitfalls:
 
-ND4S + Scala compilation issues: If problems occur, consider changing the scala version in the build.sbt file of the nd4s to scala version 2.10. Update the libraries dependenices in build.sbt in scispark accordingly. 
-* Note that the current SciSpark build includes an nd4s jar that is part of the classpath. 
-The jar is created by downloading nd4s from github and cbanging the scala version to 2.10. The jar is then copied
-under /lib in the SciSparkTestExperiments directory. 
+Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reload your browser and restart Zeppelin as follows. It may take a few tries to clear the cache:
+
+```
+bin/zeppelin-daemon.sh stop
+bin/zeppelin-daemon.sh start
+```
+
 
 #Getting Started
 
