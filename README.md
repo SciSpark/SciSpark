@@ -22,7 +22,7 @@ If any visitors have insights into achieving this, please see the issue titled
 4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
 5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
 6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
-7. Run ```sbt clean assembly```
+7. Within your SciSpark folder, run ```sbt clean assembly```
 8. Find where your SciSpark.jar (or similarly named) file is and get its path as follows /path_to_SciSpark/target/scala-2.10/SciSpark.jar.
 9. Download and untar Zeppelin 0.5.6 at https://zeppelin.incubator.apache.org/download.html
 10. Find zeppelin-env.sh.template in Zeppelin's conf folder and create zeppelin-env.sh with the following command:
