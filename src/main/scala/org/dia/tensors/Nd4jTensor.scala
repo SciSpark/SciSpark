@@ -58,9 +58,18 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * Masking operations
    */
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
+  def <(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
 
-  def :=(num: Double) = new Nd4jTensor(tensor.map(p => if (p == num) p else 0.0))
+  def >(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p > num) p else 0.0))
+
+  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p <= num) p else 0.0))
+
+  def >=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p >= num) p else 0.0))
+
+  def :=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p == num) p else 0.0))
+
+  def !=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p != num) p else 0.0))
+
 
   /**
    * Linear Algebra Operations

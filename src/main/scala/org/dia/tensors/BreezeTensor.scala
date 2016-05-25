@@ -69,10 +69,18 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def /(array: AbstractTensor) = tensor / array.tensor
 
   def *(array: AbstractTensor) = tensor :* array.tensor
+  
+  def <(num: Double) = tensor.map(v => if (v < num) v else 0.0)
+  
+  def >(num: Double) = tensor.map(v => if (v > num) v else 0.0)
 
   def <=(num: Double) = tensor.map(v => if (v <= num) v else 0.0)
 
+  def >=(num: Double) = tensor.map(v => if (v >= num) v else 0.0)
+
   def :=(num: Double) = tensor.map(v => if (v == num) v else 0.0)
+
+  def !=(num: Double) = tensor.map(v => if (v != num) v else 0.0)
 
   /**
    * Linear Algebra Operations
