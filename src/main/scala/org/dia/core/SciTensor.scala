@@ -129,15 +129,16 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
 
 /**
    * Masks the current variable array by preserving values
-   * equal to num.
-   */
-  def :==(num: Double): SciTensor = variables(varInUse) :== num
-
-/**
-   * Masks the current variable array by preserving values
    * not equal to num.
    */
   def !=(num: Double): SciTensor = variables(varInUse) != num
+
+/**
+   * Masks the current variable array by preserving values
+   * equal to num.
+   */
+  def :=(num: Double): SciTensor = variables(varInUse) := num
+
 
 
   /**
