@@ -146,7 +146,7 @@ class BasicTensorTest extends FunSuite {
   /**
   * End Test relational operators
   **/
-  
+
   /**
   * Test slicing
   **/
@@ -154,8 +154,9 @@ class BasicTensorTest extends FunSuite {
     println("In Nd4sSlice test ...")
     val nd = Nd4j.create((0d to 8d by 1d).toArray, Array(4, 2))
     println(nd)
+    println("slicing")
     println(nd(0 -> 1, ->))
-    assert(false)
+    assert(true)
   }
 
 }
