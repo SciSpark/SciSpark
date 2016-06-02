@@ -66,12 +66,7 @@ If any visitors have insights into achieving this, please see the issue titled
 
 Possible pitfalls:
 
-Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reload your browser and restart Zeppelin as follows. It may take a few tries to clear the cache:
-
-```
-bin/zeppelin-daemon.sh stop
-bin/zeppelin-daemon.sh start
-```
+Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reset the cache with command + shift + R.
 
 
 #Getting Started
