@@ -101,6 +101,22 @@ val sumAllRDD = reshapedRDD.reduce(_ + _)
 println(sumAllRDD)
 ```
 
+#Running the test
+```
+sbt
+```
+
+To run all the test use at the sbt prompt:
+```
+test
+```
+
+To run individual test use a command such as:
+```
+test-only org.dia.tensors.BasicTensorTest
+```
+
+
 #Grab em' Tag em' Graph em' : An Automated Search for Mesoscale Convective Complexes
 
 [GTG](http://static1.squarespace.com/static/538b31b5e4b02d5bb7053eba/t/53ea7f48e4b00015c3fcc5d3/1407876936029/KDW_ThesisFinal.pdf) is an algorithm designed to search for Mesoscale Convective Complexes given temperature brightness data.

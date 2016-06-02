@@ -47,8 +47,13 @@ trait AbstractTensor extends Serializable with SliceableArray {
    * Masking operations
    */
 
+  def <(num: Double): T
+  def >(num: Double): T
   def <=(num: Double): T
+  def >=(num: Double): T
   def :=(num: Double): T
+  def !=(num: Double): T
+  
 
   /**
    * Utility Methods
