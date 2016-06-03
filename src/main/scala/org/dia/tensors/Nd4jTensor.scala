@@ -44,9 +44,12 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def put(value: Double, shape: Int*) = tensor.putScalar(shape.toArray, value)
 
-  def +(array: AbstractTensor) = new Nd4jTensor(tensor.add(array.tensor))
+  def +(array: AbstractTensor) = new Nd4jTensor(tensor.addi(array.tensor))
+  def +(scalar: Double) = new Nd4jTensor(tensor.addi(scalar))
+
 
   def -(array: AbstractTensor) = new Nd4jTensor(tensor.sub(array.tensor))
+  def -(scalar: Double) = new Nd4jTensor(tensor.subi(scalar))
 
   def \(array: AbstractTensor) = new Nd4jTensor(tensor.div(array.tensor))
 

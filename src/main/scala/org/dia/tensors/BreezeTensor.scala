@@ -61,8 +61,10 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def put(value: Double, shape: Int*) = tensor.update(shape(0), shape(1), value)
 
   def +(array: AbstractTensor) = tensor + array.tensor
+  def +(scalar: Double) = tensor + scalar
 
   def -(array: AbstractTensor) = tensor - array.tensor
+  def -(scalar: Double) = tensor - scalar
 
   def \(array: AbstractTensor) = tensor \ array.tensor
 
