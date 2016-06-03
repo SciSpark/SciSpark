@@ -93,19 +93,20 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    */
   def **(other: SciTensor): SciTensor = this.tensor ** other.tensor
 
+  //in-place operators
   def +(other: SciTensor): SciTensor = this.tensor + other.tensor
   def +(scalar: Double): SciTensor = this.tensor + scalar
-
   
   def -(other: SciTensor): SciTensor = this.tensor - other.tensor
   def -(scalar: Double): SciTensor = this.tensor - scalar
 
-  def \(other: SciTensor): SciTensor = this.tensor \ other.tensor
-
   def /(other: SciTensor): SciTensor = this.tensor / other.tensor
+  def /(scalar: Double): SciTensor = this.tensor / scalar
 
   def *(other: SciTensor): SciTensor = this.tensor * other.tensor
+  def *(scalar: Double): SciTensor = this.tensor * scalar
 
+  
   /**
    * Masks the current variable array by preserving values
    * less than or equal to num.

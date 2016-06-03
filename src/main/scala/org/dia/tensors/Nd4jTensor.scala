@@ -47,15 +47,14 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def +(array: AbstractTensor) = new Nd4jTensor(tensor.addi(array.tensor))
   def +(scalar: Double) = new Nd4jTensor(tensor.addi(scalar))
 
-
-  def -(array: AbstractTensor) = new Nd4jTensor(tensor.sub(array.tensor))
+  def -(array: AbstractTensor) = new Nd4jTensor(tensor.subi(array.tensor))
   def -(scalar: Double) = new Nd4jTensor(tensor.subi(scalar))
 
-  def \(array: AbstractTensor) = new Nd4jTensor(tensor.div(array.tensor))
+  def /(array: AbstractTensor) = new Nd4jTensor(tensor.divi(array.tensor))
+  def /(scalar: Double) = new Nd4jTensor(tensor.divi(scalar))
 
-  def /(array: AbstractTensor) = new Nd4jTensor(tensor.div(array.tensor))
-
-  def *(array: AbstractTensor) = new Nd4jTensor(tensor.mul(array.tensor))
+  def *(array: AbstractTensor) = new Nd4jTensor(tensor.muli(array.tensor))
+  def *(scalar: Double) = new Nd4jTensor(tensor.muli(scalar))
 
   /**
    * Masking operations
