@@ -90,7 +90,6 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    */
   
   def **(array: AbstractTensor) = new Nd4jTensor(tensor.dot(array.tensor))
-  // def dot(array: AbstractTensor) = new Nd4jTensor(tensor.dot(array.tensor))
   
   def div(num: Double): Nd4jTensor = new Nd4jTensor(tensor.div(num))
 

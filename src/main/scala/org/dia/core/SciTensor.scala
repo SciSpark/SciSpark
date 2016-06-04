@@ -92,7 +92,6 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    * Linear Algebra Operations
    */
   def **(other: SciTensor): SciTensor = this.tensor ** other.tensor
-  //def dot(other: SciTensor): SciTensor = this.tensor dot other.tensor
 
   //in-place operators
   def +(other: SciTensor): SciTensor = this.tensor + other.tensor

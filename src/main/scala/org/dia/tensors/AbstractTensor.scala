@@ -54,7 +54,6 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
 
   def **(array: AbstractTensor): T
-  // def dot(array: AbstractTensor): T
   
   def div(num: Double): T
 

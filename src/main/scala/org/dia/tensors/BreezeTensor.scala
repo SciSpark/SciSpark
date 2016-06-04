@@ -100,7 +100,6 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    * Linear Algebra Operations
    */
   def **(array: AbstractTensor) = tensor * array.tensor
-  // def dot(array: AbstractTensor) = tensor * array.tensor
 
   def div(num: Double): BreezeTensor = tensor / num
 
