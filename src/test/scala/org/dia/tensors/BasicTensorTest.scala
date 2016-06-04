@@ -34,7 +34,9 @@ class BasicTensorTest extends FunSuite {
   val varName = List("randVar")
   val st = SparkTestConstants.sc.sparkContext
   val sRDD = new SRDD[SciTensor](st, fakeURI, varName, loadTestArray, mapOneUrl)
-
+  val fakeURIs = List("0000010100","0000010101", "0000010102", "0000010103", "0000010104" ,"0000010105")
+  val uSRDD = new SRDD[SciTensor](st, fakeURIs, varName, loadTestUniformArray, mapOneUrl)
+  
   /**
   * Test relational operators
   **/
@@ -158,5 +160,230 @@ class BasicTensorTest extends FunSuite {
     println(nd(0 -> 1, ->))
     assert(true)
   }
+
+  /**
+  * Test matrix artihmetic
+  **/
+  test("matrixAddition"){
+    println("In inPlaceMatrixAddition test ...")
+    println("The sciTensor is: "+ uSRDD.collect().toList)
+    println("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
+    // test scalar addition
+    val s = uSRDD.map(p => p("randVar") + 2.0)
+    println("Addition: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y.filter(_.toDouble  != 3.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test scalar addition
+    val t = uSRDD.map(p => p("randVar") :+ 2.0)
+    println("Addition: " + t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y1.filter(_.toDouble  != 3.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test matrix addition
+    // order the fakeURLs then sum pairs
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+      }).groupBy(_._1)
+          .map(p => p._2.map(e => e._2).toList)
+          .filter(p => p.size > 1)
+          .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+          .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
+    for (i <- c) println(i._1.metaData + " connected to " + i._2.metaData)
+
+    val ew = ordered.map(p => p._1("randVar") + p._2("randVar"))
+    val ewList = ew.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList.length)
+    for (eachArray <- ewList){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    } 
+    val ew1 = ordered.map(p => p._1("randVar") :+ p._2("randVar"))
+    val ewList1 = ew1.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList1.length)
+    for (eachArray <- ewList1){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }   
+  }
+
+  test("matrixSubtraction"){
+    println("In inPlaceMatrixSubtraction test ...")
+    println("The sciTensor is: "+ uSRDD.collect().toList)
+    println("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
+    // test scalar subtraction
+    val s = uSRDD.map(p => p("randVar") - 2.0)
+    println("Subtraction: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y.filter(_.toDouble  != -1.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test scalar subtraction
+    val t = uSRDD.map(p => p("randVar") :- 2.0)
+    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y1.filter(_.toDouble  != -1.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test matrix subtraction
+    // order the fakeURLs then subtract pairs
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+      }).groupBy(_._1)
+          .map(p => p._2.map(e => e._2).toList)
+          .filter(p => p.size > 1)
+          .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+          .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
+    for (i <- c) println(i._1.metaData + " connected to " + i._2.metaData)
+
+    val ew = ordered.map(p => p._2("randVar") - p._1("randVar"))
+    val ewList = ew.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList.length)
+    for (eachArray <- ewList){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=0.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    } 
+
+    val ew1 = ordered.map(p => p._2("randVar") :- p._1("randVar"))
+    val ewList1 = ew1.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList1.length)
+    for (eachArray <- ewList1){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=0.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }   
+  }
+
+  test("matrixDivision"){
+    println("In matrixDivision test ...")
+    println("The sciTensor is: "+ uSRDD.collect().toList)
+    println("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
+    // test scalar division
+    val s = uSRDD.map(p => p("randVar") / 2.0)
+    println("Division: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y.filter(_.toDouble  != 0.5).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    val t = uSRDD.map(p => p("randVar") :/ 2.0)
+    println("Division: " + t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y1.filter(_.toDouble  != 0.5).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test matrix division
+    // order the fakeURLs then multiply pairs
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+      }).groupBy(_._1)
+          .map(p => p._2.map(e => e._2).toList)
+          .filter(p => p.size > 1)
+          .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+          .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
+    for (i <- c) println(i._1.metaData + " connected to " + i._2.metaData)
+
+    val ew = ordered.map(p => p._1("randVar") :/ p._2("randVar"))
+    val ewList = ew.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList.length)
+    for (eachArray <- ewList){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=1.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }
+    
+    val ew1 = ordered.map(p => p._1("randVar") / p._2("randVar"))
+    val ewList1 = ew1.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList1.length)
+    for (eachArray <- ewList1){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=1.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }      
+  }
+
+  test("matrixMultiplication"){
+    println("In matrixMultiplication test ...")
+    println("The sciTensor is: "+ uSRDD.collect().toList)
+    println("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
+    // test scalar multiplication
+    val s = uSRDD.map(p => p("randVar") * 2.0)
+    println("Multiplication: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y.filter(_.toDouble  != 2.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test scalar multiplication
+    val t = uSRDD.map(p => p("randVar") :* 2.0)
+    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    if (y1.filter(_.toDouble  != 2.0).length == 0){
+        assert(true)
+    } else{
+      assert(false)
+    }
+    // test matrix multiplication
+    // order the fakeURLs then multiply pairs
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+      }).groupBy(_._1)
+          .map(p => p._2.map(e => e._2).toList)
+          .filter(p => p.size > 1)
+          .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+          .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
+    for (i <- c) println(i._1.metaData + " connected to " + i._2.metaData)
+    val ew = ordered.map(p => p._1("randVar") * p._2("randVar"))
+    val ewList = ew.collect().toList
+    for (eachArray <- ewList){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=1.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }    
+  
+    val ew1 = ordered.map(p => p._1("randVar") :* p._2("randVar"))
+    val ewList1 = ew.collect().toList
+    println("List length before is: " + c.length + " and after is length " + ewList1.length)
+    for (eachArray <- ewList1){
+      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=1.0).length == 30){
+        assert(true)
+      }else{
+        assert(false)
+      }
+    }    
+  }  
 
 }

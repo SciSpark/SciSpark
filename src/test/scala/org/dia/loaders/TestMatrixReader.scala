@@ -39,4 +39,8 @@ object TestMatrixReader {
     (sampleArray.data.asDouble, sampleArray.shape)
   }
 
+def loadTestUniformArray(uri: String, varname: String) = {
+    val sampleArray = Nd4j.ones(6,5)
+    (sampleArray.data.asDouble, sampleArray.shape)
+  }
 }
