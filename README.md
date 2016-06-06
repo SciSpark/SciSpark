@@ -66,7 +66,7 @@ If any visitors have insights into achieving this, please see the issue titled
 
 Possible pitfalls:
 
-Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reset the cache with command + shift + R.
+Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reset the cache with command + shift + R (on Mac).
 
 
 #Getting Started
