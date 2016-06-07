@@ -17,10 +17,16 @@ If any visitors have insights into achieving this, please see the issue titled
 #Installation
 
 1. Install Scala: 2.10.x (http://www.scala-lang.org/download/) Be sure to add scala/bin folder to your environment.
-2. Install Spark 1.6.0 which has a Scala 2.10 dependency at http://spark.apache.org/downloads.html.
-3. Add the installation folder to your environment SPARK_HOME = /path/to/installation
-4. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
-5. Maven 2.0x+ https://maven.apache.org/download.cgi Be sure to add Maven on your environment.
+2. Install Maven 2.0x+ at https://maven.apache.org/download.cgi and be sure to add Maven to your environment.
+3. Install Spark 1.6.0 which has a Scala 2.10 dependency at http://spark.apache.org/downloads.html. To build for Scala 2.10, run the following commands from your Spark folder:
+
+    ```
+    ./dev/change-scala-version.sh 2.10
+    mvn -Pyarn -Phadoop-2.4 -Dscala-2.10 -DskipTests clean package
+    ```
+
+4. Add the installation folder to your environment SPARK_HOME = /path/to/installation
+5. Download the latest version of SciSpark from https://github.com/SciSpark/SciSpark
 6. SBT: v0.13.5+ http://www.scala-sbt.org/download.html
 7. Within your SciSpark folder, run ```sbt clean assembly```
 8. Find where your SciSpark.jar (or similarly named) file is and get its path as follows /path_to_SciSpark/target/scala-2.10/SciSpark.jar.
@@ -60,12 +66,7 @@ If any visitors have insights into achieving this, please see the issue titled
 
 Possible pitfalls:
 
-Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reload your browser and restart Zeppelin as follows. It may take a few tries to clear the cache:
-
-```
-bin/zeppelin-daemon.sh stop
-bin/zeppelin-daemon.sh start
-```
+Your computer may cache some of your web files, resulting in a page that does not display the SciSpark skin correctly. If you suspect this is the case, you can reset the cache with command + shift + R (on Mac).
 
 
 #Getting Started
