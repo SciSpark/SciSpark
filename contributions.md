@@ -10,4 +10,4 @@ Here are the contributions we have made:
 ![Image of contributions](https://i.imgsafe.org/75b9629141.png)
 
 Here is a timeline of the contributions we have made so far:
-![Contribution Timeline](http://i.imgsafe.org/83daa68967.png)
+![Contribution Timeline](http://i.imgsafe.org/840aa5a74f.png)
