@@ -60,15 +60,29 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def put(value: Double, shape: Int*) = tensor.update(shape(0), shape(1), value)
 
-  def +(array: AbstractTensor) = tensor + array.tensor
+  def +(array: AbstractTensor) = tensor :+= array.tensor
+  def +(scalar: Double) = tensor :+= scalar
 
-  def -(array: AbstractTensor) = tensor - array.tensor
+  def -(array: AbstractTensor) = tensor :-= array.tensor
+  def -(scalar: Double) = tensor :-= scalar
 
-  def \(array: AbstractTensor) = tensor \ array.tensor
+  def /(array: AbstractTensor) = tensor :/= array.tensor
+  def /(scalar: Double) = tensor :/= scalar
 
-  def /(array: AbstractTensor) = tensor / array.tensor
+  def *(array: AbstractTensor) = tensor *= array.tensor
+  def *(scalar: Double) = tensor :*= scalar
 
-  def *(array: AbstractTensor) = tensor :* array.tensor
+  def :+(array: AbstractTensor) = tensor + array.tensor
+  def :+(scalar: Double) = tensor + scalar
+
+  def :-(array: AbstractTensor) = tensor - array.tensor
+  def :-(scalar: Double) = tensor - scalar
+
+  def :/(array: AbstractTensor) = tensor / array.tensor
+  def :/(scalar: Double) = tensor / scalar
+
+  def :*(array: AbstractTensor) = tensor :* array.tensor
+  def :*(scalar: Double) = tensor :* scalar
   
   def <(num: Double) = tensor.map(v => if (v < num) v else 0.0)
   
@@ -85,7 +99,6 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Linear Algebra Operations
    */
-
   def **(array: AbstractTensor) = tensor * array.tensor
 
   def div(num: Double): BreezeTensor = tensor / num

@@ -26,14 +26,28 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
 
   def +(array: AbstractTensor): T
+  def +(scalar: Double): T
 
-  def -(array: AbstractTensor): T
+  def -(array: AbstractTensor): T 
+  def -(scalar: Double): T
 
   def *(array: AbstractTensor): T
+  def *(scalar: Double): T
 
   def /(array: AbstractTensor): T
+  def /(scalar: Double): T
 
-  def \(array: AbstractTensor): T
+  def :+(array: AbstractTensor): T
+  def :+(scalar: Double): T
+
+  def :-(array: AbstractTensor): T 
+  def :-(scalar: Double): T
+
+  def :*(array: AbstractTensor): T
+  def :*(scalar: Double): T
+
+  def :/(array: AbstractTensor): T
+  def :/(scalar: Double): T
 
   /**
    * Linear Algebra Operations

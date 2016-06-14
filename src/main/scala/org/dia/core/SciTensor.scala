@@ -83,25 +83,41 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     this
   }
 
-  def +(other: SciTensor): SciTensor = this.tensor + other.tensor
-
   /**
    * Returns the variable array that is currently being used
    */
   def tensor: AbstractTensor = variables(varInUse)
 
-  def -(other: SciTensor): SciTensor = this.tensor - other.tensor
-
-  def \(other: SciTensor): SciTensor = this.tensor \ other.tensor
-
-  def /(other: SciTensor): SciTensor = this.tensor / other.tensor
-
-  def *(other: SciTensor): SciTensor = this.tensor * other.tensor
-
   /**
    * Linear Algebra Operations
    */
   def **(other: SciTensor): SciTensor = this.tensor ** other.tensor
+
+  //in-place operators
+  def +(other: SciTensor): SciTensor = this.tensor + other.tensor
+  def +(scalar: Double): SciTensor = this.tensor + scalar
+  
+  def -(other: SciTensor): SciTensor = this.tensor - other.tensor
+  def -(scalar: Double): SciTensor = this.tensor - scalar
+
+  def /(other: SciTensor): SciTensor = this.tensor / other.tensor
+  def /(scalar: Double): SciTensor = this.tensor / scalar
+
+  def *(other: SciTensor): SciTensor = this.tensor * other.tensor
+  def *(scalar: Double): SciTensor = this.tensor * scalar
+
+  //copy operators
+  def :+(other: SciTensor): SciTensor = this.tensor :+ other.tensor
+  def :+(scalar: Double): SciTensor = this.tensor :+ scalar
+  
+  def :-(other: SciTensor): SciTensor = this.tensor :- other.tensor
+  def :-(scalar: Double): SciTensor = this.tensor :- scalar
+
+  def :/(other: SciTensor): SciTensor = this.tensor :/ other.tensor
+  def :/(scalar: Double): SciTensor = this.tensor :/ scalar
+
+  def :*(other: SciTensor): SciTensor = this.tensor :* other.tensor
+  def :*(scalar: Double): SciTensor = this.tensor :* scalar
 
   /**
    * Masks the current variable array by preserving values
