@@ -6,7 +6,7 @@ name := "SciSparkTestExperiments"
 
 version := "1.0"
 
-scalaVersion := "2.10.5"
+scalaVersion := "2.10.6"
 
 scalacOptions := Seq("-feature", "-deprecation")
 
