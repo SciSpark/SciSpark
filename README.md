@@ -125,10 +125,10 @@ SciSpark documentation can be found at https://scispark.jpl.nasa.gov/api/
 [GTG](http://static1.squarespace.com/static/538b31b5e4b02d5bb7053eba/t/53ea7f48e4b00015c3fcc5d3/1407876936029/KDW_ThesisFinal.pdf) is an algorithm designed to search for Mesoscale Convective Complexes given temperature brightness data.
  
  The map-reduce implementation of GTG is found in the following files : 
- [MainNetcdfDFSMCC](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainNetcdfDFSMCC.scala) : Reads all NetCDF files from a directory 
- [MainMergHDFS](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergHDFS.scala) : Reads all MERG files from a directory in HDFS
+ [MainNetcdfDFSMCC](https://github.com/SciSpark/SciSpark/blob/master/src/main/scala/org/dia/algorithms/mcc/MainNetcdfDFSMCC.scala) : Reads all NetCDF files from a directory 
+ [MainMergHDFS](https://github.com/SciSpark/SciSpark/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergHDFS.scala) : Reads all MERG files from a directory in HDFS
  
- [MainMergRandom](https://github.com/rahulpalamuttam/SciSparkTestExperiments/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergRandom.scala)  : Generates random arrays without any source. The randomness is seeded by the hash value of your input paths, so the same input will yield the same output.
+ [MainMergRandom](https://github.com/SciSpark/SciSpark/blob/master/src/main/scala/org/dia/algorithms/mcc/MainMergRandom.scala)  : Generates random arrays without any source. The randomness is seeded by the hash value of your input paths, so the same input will yield the same output.
 ##Project Status
 
 This project is in active development.
@@ -136,7 +136,7 @@ Currently it is being refactored as the first phase of development has concluded
 with a focus on prototyping and designing GTG as a map-reduce algorithm.
 
 ##Want to Use or Contribute to this Project?
-Contact us at [scispark-team@jpl.nasa.gov](mailto:scispark-team@jpl.nasa.gov).
+Contact us at [scispark-team@jpl.nasa.gov](mailto:scispark-team@jpl.nasa.gov)
 
 ##Technology
 This project utilizes the following open-source technologies [Apache Spark][Spark] and is based on the NASA AIST14 project led by the PI [Chris Mattmann](http://github.com/chrismattmann/). The SciSpark team is at at JPL and actively working on the project.
