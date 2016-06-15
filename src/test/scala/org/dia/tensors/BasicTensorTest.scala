@@ -32,7 +32,7 @@ import org.dia.core.{ SRDD, SciTensor }
 class BasicTensorTest extends FunSuite {
 
   val fakeURI = List("0000010100")
-  val varName = List("randVar")
+  val varName = List("randVar", "randVar_1")
   val st = SparkTestConstants.sc.sparkContext
   val sRDD = new SRDD[SciTensor](st, fakeURI, varName, loadTestArray, mapOneUrl)
   val fakeURIs = List("0000010100","0000010101", "0000010102", "0000010103", "0000010104" ,"0000010105")
@@ -405,4 +405,27 @@ class BasicTensorTest extends FunSuite {
     }
   }
 
+  /**
+  * Test varInUse
+  **/
+  test("varInUse"){
+    println("varInUse test ...")
+    val t = sRDD.map(p => (p("randVar").data, p("randVar").shape))
+    val varData = t.collect()(0)
+    logger.info("The randVar data is: "+ varData._1.mkString(" ") + "\nShape: (" + varData._2.mkString(" , ")+")")
+
+    val t1 = sRDD.map(p => (p("randVar_1").data, p("randVar_1").shape))
+    val varData1 = t1.collect()(0)
+    logger.info("The randVar_1 data is: "+ varData1._1.mkString(" ") + "\nShape: (" + varData1._2.mkString(" , ")+")")
+
+    val tdefault = sRDD.map(p => (p.data, p.shape))
+    val varDataDef = tdefault.collect()(0)
+    logger.info("The varInUse default data is: "+ varDataDef._1.mkString(" ") + "\nShape: (" + varDataDef._2.mkString(" , ")+")")
+    
+    if (!(varData._1.sameElements(varData1._1)) && (varData1._1.sameElements(varDataDef._1))){
+      assert(true)
+    }else{
+      assert(false)
+    }    
+  }
 }
