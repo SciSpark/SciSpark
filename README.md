@@ -122,7 +122,7 @@ SciSpark documentation can be found at https://scispark.jpl.nasa.gov/api/
 
 #Grab em' Tag em' Graph em' : An Automated Search for Mesoscale Convective Complexes
 
-[GTG](http://static1.squarespace.com/static/538b31b5e4b02d5bb7053eba/t/53ea7f48e4b00015c3fcc5d3/1407876936029/KDW_ThesisFinal.pdf) is an algorithm designed to search for Mesoscale Convective Complexes given temperature brightness data.
+[GTG](http://link.springer.com/article/10.1007/s12145-014-0181-3) is an algorithm designed to search for Mesoscale Convective Complexes given temperature brightness data.
  
  The map-reduce implementation of GTG is found in the following files : 
  [MainNetcdfDFSMCC](https://github.com/SciSpark/SciSpark/blob/master/src/main/scala/org/dia/algorithms/mcc/MainNetcdfDFSMCC.scala) : Reads all NetCDF files from a directory 
