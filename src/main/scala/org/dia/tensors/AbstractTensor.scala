@@ -68,7 +68,18 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def :=(num: Double): T
   def !=(num: Double): T
   
+  /**
+   * Returns the data as a flattened array
+   *
+   */
+  def data: Array[Double]
 
+   /**
+   * Returns the data dimensions
+   *
+   */
+  def shape: Array[Int]
+  
   /**
    * Utility Methods
    */
@@ -88,7 +99,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
     true
   }
 
-  def shape: Array[Int]
+  
 
   def isZero: Boolean
   /**

@@ -155,7 +155,12 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    */
   def :=(num: Double): SciTensor = variables(varInUse) := num
 
-
+  /**
+   * Returns the data as a flattened array and the dimensions
+   *
+   */
+  def shape: Array[Int] = variables(varInUse).shape
+  def data : Array[Double] = variables(varInUse).data
 
   /**
    * Returns a block averaged tensor where the blocks are squares with
