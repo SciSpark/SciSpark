@@ -117,6 +117,8 @@ To run individual test use a command such as:
 test-only org.dia.tensors.BasicTensorTest
 ```
 
+#API
+SciSpark documentation can be found at https://scispark.jpl.nasa.gov/api/
 
 #Grab em' Tag em' Graph em' : An Automated Search for Mesoscale Convective Complexes
 
