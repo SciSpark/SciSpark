@@ -10,7 +10,7 @@ scalaVersion := "2.10.6"
 
 scalacOptions := Seq("-feature", "-deprecation")
 
-mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainDistGraphMCC")
 
 resolvers ++= Seq(
   Resolver.mavenLocal,
