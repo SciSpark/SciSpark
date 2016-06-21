@@ -388,4 +388,21 @@ class BasicTensorTest extends FunSuite {
     }    
   }  
 
+  /**
+  * Test data retrieval - values,shape
+  **/
+  test("getVarData"){
+    println("getVarData test ...")
+    val x = Array(240.0,241.0,240.0,241.0,241.0,230.0,231.0,240.0,222.0,241.0,242.0,243.0,244.0,241.0,232.0,240.0,
+      241.0,230.0,231.0,241.0,240.0,241.0,240.0,242.0,241.0,242.0,243.0,244.0,241.0,242.0)
+    val t = sRDD.map(p => (p("randVar").data, p("randVar").shape))
+    val varData = t.collect()(0)
+    logger.info("The data is: "+ varData._1.mkString(" ") + "\nShape: (" + varData._2.mkString(" , ")+")")
+    if (varData._2(0) == 6 && varData._2(1) == 5 && varData._1.length == 30 && varData._1.sameElements(x)){
+      assert(true)
+    }else{
+      assert(false)
+    }
+  }
+
 }
