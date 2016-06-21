@@ -26,13 +26,24 @@ import org.nd4j.linalg.factory.Nd4j
 object TestMatrixReader {
 
   def loadTestArray(uri: String, varname: String) = {
-    val sample = Array(
-    Array(240.0, 241.0, 240.0, 241.0, 241.0),
-    Array(230.0, 231.0, 240.0, 222.0, 241.0),
-    Array(242.0, 243.0, 244.0, 241.0, 232.0),
-    Array(240.0, 241.0, 230.0, 231.0, 241.0),
-    Array(240.0, 241.0, 240.0, 242.0, 241.0),
-    Array(242.0, 243.0, 244.0, 241.0, 242.0))
+    var sample : Array[Array[Double]] = Array()
+    if (varname == "randVar"){
+      sample = Array(
+        Array(240.0, 241.0, 240.0, 241.0, 241.0),
+        Array(230.0, 231.0, 240.0, 222.0, 241.0),
+        Array(242.0, 243.0, 244.0, 241.0, 232.0),
+        Array(240.0, 241.0, 230.0, 231.0, 241.0),
+        Array(240.0, 241.0, 240.0, 242.0, 241.0),
+        Array(242.0, 243.0, 244.0, 241.0, 242.0))
+      }else if (varname == "randVar_1"){
+        sample = Array(
+          Array(240.0, 240.0, 241.0, 243.0, 240.0),
+          Array(234.0, 230.0, 243.0, 224.0, 244.0),
+          Array(240.0, 245.0, 240.0, 240.0, 235.0),
+          Array(249.0, 244.0, 239.0, 238.0, 240.0),
+          Array(242.0, 242.0, 242.0, 241.0, 242.0),
+          Array(241.0, 240.0, 241.0, 243.0, 241.0))
+      }
 
     val sampleArray = Nd4j.create(sample)
 
