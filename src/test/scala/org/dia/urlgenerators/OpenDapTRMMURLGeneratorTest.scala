@@ -17,20 +17,33 @@
  */
 package org.dia.urlgenerators
 
-import org.dia.urlgenerators.OpenDapTRMMURLGenerator;
-import org.scalatest._
+import org.dia.urlgenerators.OpenDapTRMMURLGenerator
+import org.scalatest.FunSuite 
 import java.nio.file.{ Paths, Files }
 
 /**
  * Tests whether the OpenDapTRMM URLs creator works.
  */
-@Ignore
 class OpenDapTRMMURLGeneratorTest extends FunSuite {
 
-  test("testLinkGeneration") {
+  test("testLinkGenerationDaily") {
     val checkLink = false
-    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfile.txt")
-    assert(Files.exists(Paths.get("testLinkfile.txt")))
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileD.txt", "200103290000", "200103310000", 1)
+    if (Files.exists(Paths.get("testLinkfileD.txt")) && Files.size(Paths.get("testLinkfileD.txt")) != 0){
+      assert(true)
+    }else {
+      assert(false)
+    }
+  }
+
+  test("testLinkGeneration3Hrly") {
+    val checkLink = false
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileH.txt", "200103290300", "200103311500", 2)
+    if (Files.exists(Paths.get("testLinkfileH.txt")) && Files.size(Paths.get("testLinkfileH.txt")) != 0){
+      assert(true)
+    }else {
+      assert(false)
+    }
   }
 
 }
