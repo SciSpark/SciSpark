@@ -121,18 +121,18 @@ object OpenDapTRMMURLGenerator {
     if (currYear == startTime.substring(0,4).toInt){
       currTime = new DateTime(sTime._1, sTime._2, sTime._3, sTime._4, sTime._5)
       newYear = if (currYear == endTime.substring(0,4).toInt) new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
-        else new DateTime(currYear+1, 1, 2, 0, 0)
-      startday = currTime.getDayOfYear() - 1
+        else new DateTime(currYear+1, 1, 1, 0, 0) 
+      startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() - 1 else 1
       days =  Days.daysBetween(currTime, newYear).getDays + 1
     }else if (currYear == endTime.substring(0,4).toInt){
       currTime = new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
-      newYear = new DateTime(currYear, 1, 2, 0, 0)
+      newYear = new DateTime(currYear, 1, 1, 0, 0) 
       startday = 1
       days =  Days.daysBetween(newYear, currTime).getDays + 1
-      currTime = new DateTime(currYear, 1, 2, 0, 0)
+      currTime = new DateTime(currYear, 1, 1, 0, 0) 
     }else{
       days = if (currYear % 4 == 0) 366 else 365
-      currTime = new DateTime(currYear, 1, 2, 0, 0)
+      currTime = new DateTime(currYear, 1, 1, 0, 0) 
       startday = 1
     }
     (startday, days, currTime)
@@ -165,29 +165,49 @@ object OpenDapTRMMURLGenerator {
     for (year <- numYears){
       val currYear = startTime.substring(0,4).toInt + year
       var (startday, days, currTime) = numOfDaysAndDate(currYear, startTime, endTime)
-
+     
       // add the data for the days
       for (day <- 1 to days) {
-        val paddedDay = ((startday + day - 1).toString.reverse + "00").substring(0, 3).reverse
         val paddedMonth = (currTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
         val paddedReadDay = (currTime.getDayOfMonth.toString.reverse + "0").substring(0, 2).reverse
-
-        val sb = new StringBuilder()
-        sb.append(currYear).append("/")
-        sb.append(paddedDay).append("/")
-        sb.append("3B42_daily.").append(currTime.getYear).append(".")
-        sb.append(paddedMonth).append(".")
-        sb.append(paddedReadDay).append(".7.bin")
-
-        /** check url */
-        val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
-
-        if (checkUrl) {
-          if (urlExists(tmpUrl+".html")) {
-            urls.add(tmpUrl+".nc")
-          }
-        } else { urls.add(tmpUrl + ".nc")}
+        var paddedDay = ""
         
+        if (startday == 1 && day == 1){
+          paddedDay = if ((currYear -1) %4 == 0) "366" else "365"
+          val sb = new StringBuilder()
+          sb.append(currYear-1).append("/")
+          sb.append(paddedDay).append("/")
+          sb.append("3B42_daily.").append(currTime.getYear).append(".")
+          sb.append(paddedMonth).append(".")
+          sb.append("01").append(".7.bin")
+          startday = 0
+
+          /** check url */
+          val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
+
+          if (checkUrl) {
+            if (urlExists(tmpUrl+".html")) {
+              urls.add(tmpUrl+".nc")
+            }
+          } else { urls.add(tmpUrl + ".nc")}
+        }else{        
+          paddedDay = ((startday + day - 1).toString.reverse + "00").substring(0, 3).reverse
+          val sb = new StringBuilder()
+          sb.append(currYear).append("/")
+          sb.append(paddedDay).append("/")
+          sb.append("3B42_daily.").append(currTime.getYear).append(".")
+          sb.append(paddedMonth).append(".")
+          sb.append(paddedReadDay).append(".7.bin")
+
+          /** check url */
+          val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
+
+          if (checkUrl) {
+            if (urlExists(tmpUrl+".html")) {
+              urls.add(tmpUrl+".nc")
+            }
+          } else { urls.add(tmpUrl + ".nc")}
+        }
         currTime = currTime.plusDays(1)
       }
     }
@@ -209,13 +229,16 @@ object OpenDapTRMMURLGenerator {
     for (year <- numYears){
       val currYear = startTime.substring(0,4).toInt + year
       var (startday, days, currTime) = numOfDaysAndDate(currYear, startTime, endTime)
-      
       // add the data for the days
       for (day <- 1 to days) {
         var paddedDay = ((startday + day - 1).toString.reverse + "00").substring(0, 3).reverse
         val paddedMonth = (currTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
         val paddedReadDay = (currTime.getDayOfMonth.toString.reverse + "0").substring(0, 2).reverse
         var numHrs = (0 to 21 by 3).toList
+        if (startday == 1 && day == 1){
+          paddedDay = if ((currYear -1) %4 == 0) "366" else "365"
+          startday = 0
+        }
         
         if (currYear == endTime.substring(0,4).toInt && currTime.getMonthOfYear == endTime.substring(4,6).toInt && currTime.getDayOfMonth == endTime.substring(6,8).toInt){   
           numHrs = if (currYear == startTime.substring(0,4).toInt && currTime.getMonthOfYear == startTime.substring(4,6).toInt && currTime.getDayOfMonth == startTime.substring(6,8).toInt)
@@ -226,11 +249,13 @@ object OpenDapTRMMURLGenerator {
 
         for (hr <- numHrs){
           var paddedHrs = if (hr.toString.length == 1) (hr.toString + "0").reverse else hr.toString
-
           if (hr != 0){ paddedDay = ((startday + day).toString.reverse + "00").substring(0, 3).reverse}
-          
           val sb = new StringBuilder()
-          sb.append(currYear).append("/")
+          if (startday == 0 && day == 1 && hr == 0){
+            sb.append(currYear-1).append("/")
+          }else{
+            sb.append(currYear).append("/")
+          }
           sb.append(paddedDay).append("/")
           sb.append("3B42.").append(currTime.getYear).append(paddedMonth).append(paddedReadDay).append(".")
           sb.append(paddedHrs).append(".7A.HDF.Z")
@@ -244,8 +269,7 @@ object OpenDapTRMMURLGenerator {
             }
           } else { urls.add(tmpUrl + ".nc")}
           currTime = currTime.plusHours(3)
-        }
-        // currTime = currTime.plusDays(1)      
+        }     
       }
     }
   urls
