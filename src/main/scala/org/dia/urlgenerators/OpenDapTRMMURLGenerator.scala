@@ -258,7 +258,12 @@ object OpenDapTRMMURLGenerator {
           }
           sb.append(paddedDay).append("/")
           sb.append("3B42.").append(currTime.getYear).append(paddedMonth).append(paddedReadDay).append(".")
-          sb.append(paddedHrs).append(".7A.HDF.Z")
+          if (currTime.getYear < 2011){
+            sb.append(paddedHrs).append(".7A.HDF.Z")
+            }else{
+              sb.append(paddedHrs).append(".7.HDF.Z")
+            }
+          
           
           /** check url */  
           val tmpUrl = URL + "TRMM_3B42/" + sb.toString
