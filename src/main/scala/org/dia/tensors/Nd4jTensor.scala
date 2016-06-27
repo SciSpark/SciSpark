@@ -29,7 +29,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override type T = Nd4jTensor
   val name: String = "nd4j"
   val shape = tensor.shape
-
+  var mask = 0.0
   def this(shapePair: (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
   }
@@ -71,18 +71,22 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Masking operations
    */
+  def setMask(num: Double): Nd4jTensor = {
+    this.mask = num
+    this
+  }
 
-  def <(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else 0.0))
+  def <(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else mask))
 
-  def >(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p > num) p else 0.0))
+  def >(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p > num) p else mask))
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p <= num) p else 0.0))
+  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p <= num) p else mask))
 
-  def >=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p >= num) p else 0.0))
+  def >=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p >= num) p else mask))
 
-  def :=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p == num) p else 0.0))
+  def :=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p == num) p else mask))
 
-  def !=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p != num) p else 0.0))
+  def !=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p != num) p else mask))
 
 
   /**

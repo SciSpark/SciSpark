@@ -51,6 +51,16 @@ class BasicTensorTest extends FunSuite {
     assert(true)
   }
 
+  test("setMask") {
+    logger.info("In setMask test ...")
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
+    val t = dense.map(p => if (p < 241.0) p else 100)
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2.setMask(100) < 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
  test("filterLessThan") {
     logger.info("In filterLessThan test ...")
     val t = sRDD.map(p => p("randVar") < 241.0)
