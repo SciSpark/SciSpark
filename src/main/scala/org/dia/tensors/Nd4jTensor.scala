@@ -71,6 +71,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Masking operations
    */
+  def mask(f: Double => Boolean, mask: Double = 0.0) = new Nd4jTensor(tensor.map(v => if (f(v)) v else mask))
+
   def setMask(num: Double): Nd4jTensor = {
     this.mask = num
     this

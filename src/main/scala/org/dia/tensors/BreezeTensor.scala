@@ -30,7 +30,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   override type T = BreezeTensor
   val name: String = "breeze"
   val shape = Array(tensor.rows, tensor.cols)
-  var mask = 0.0
+  var maskVal = 0.0
 
   /**
    * Constructs a BreezeTensor from a linear data array and the shape array.
@@ -88,22 +88,24 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
     * Masking operations
     */
+  def mask(f: Double => Boolean, mask: Double = 0.0) = tensor.map(v => if (f(v)) v else mask)
+
   def setMask(num: Double): BreezeTensor = {
-    this.mask = num
+    this.maskVal = num
     this
   }
 
-  def <(num: Double) = tensor.map(v => if (v < num) v else mask)
-  
-  def >(num: Double) = tensor.map(v => if (v > num) v else mask)
+  def <(num: Double) = tensor.map(v => if (v < num) v else maskVal)
 
-  def <=(num: Double) = tensor.map(v => if (v <= num) v else mask)
+  def >(num: Double) = tensor.map(v => if (v > num) v else maskVal)
 
-  def >=(num: Double) = tensor.map(v => if (v >= num) v else mask)
+  def <=(num: Double) = tensor.map(v => if (v <= num) v else maskVal)
 
-  def :=(num: Double) = tensor.map(v => if (v == num) v else mask)
+  def >=(num: Double) = tensor.map(v => if (v >= num) v else maskVal)
 
-  def !=(num: Double) = tensor.map(v => if (v != num) v else mask)
+  def :=(num: Double) = tensor.map(v => if (v == num) v else maskVal)
+
+  def !=(num: Double) = tensor.map(v => if (v != num) v else maskVal)
 
   /**
    * Linear Algebra Operations

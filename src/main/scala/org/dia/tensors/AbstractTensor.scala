@@ -60,6 +60,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   /**
    * Masking operations
    */
+  def mask(f: Double => Boolean, mask: Double) : T
   def setMask(num: Double): T
   def <(num: Double): T
   def >(num: Double): T
