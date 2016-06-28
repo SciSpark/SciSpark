@@ -119,7 +119,12 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def :*(other: SciTensor): SciTensor = this.tensor :* other.tensor
   def :*(scalar: Double): SciTensor = this.tensor :* scalar
 
+
+  /**
+   * Applies a masking function on the current variable array
+   */
   def mask(f: Double => Boolean, maskVal: Double = 0.0) : SciTensor = variables(varInUse).mask(f, maskVal)
+
   /**
    * Sets the default mask value for the particular array being used.
    */
@@ -131,31 +136,31 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
    */
   def <=(num: Double): SciTensor = variables(varInUse) <= num
 
-  /**
+/**
    * Masks the current variable array by preserving values
    * greater than or equal to num.
    */
   def >=(num: Double): SciTensor = variables(varInUse) >= num
 
-  /**
+/**
    * Masks the current variable array by preserving values
    * less than to num.
    */
   def <(num: Double): SciTensor = variables(varInUse) < num
 
-  /**
+/**
    * Masks the current variable array by preserving values
    * greater than num.
    */
   def >(num: Double): SciTensor = variables(varInUse) > num
 
-  /**
+/**
    * Masks the current variable array by preserving values
    * not equal to num.
    */
   def !=(num: Double): SciTensor = variables(varInUse) != num
 
-  /**
+/**
    * Masks the current variable array by preserving values
    * equal to num.
    */
