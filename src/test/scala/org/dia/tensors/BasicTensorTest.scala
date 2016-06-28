@@ -52,7 +52,7 @@ class BasicTensorTest extends FunSuite {
   }
 
   test("mask") {
-    logger.info("In setMask test ...")
+    logger.info("In mask test ...")
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
     val t = dense.map(p => if (p < 241.0) p else 100)
     val Nd4jt1 = new Nd4jTensor(t)
