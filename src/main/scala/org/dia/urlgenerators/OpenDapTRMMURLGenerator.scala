@@ -24,13 +24,14 @@ import scala.collection.JavaConversions._
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.joda.time.format.DateTimeFormat
+import scala.util.control.Breaks._
 
 /**
  * Generates a list of links for the TRMM URLs.
  */
 object OpenDapTRMMURLGenerator {
 
-  val URL = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/" 
+  val URL = "http://disc2.nascom.nasa.gov/opendap/hyrax/TRMM_L3/"//"http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/" 
   val DEFAULT_FILE_NAME = "Test_TRMM_L3_Links.txt"
   var fileName = ""
   var checkUrl = false
@@ -51,7 +52,7 @@ object OpenDapTRMMURLGenerator {
    * @param endTime endtime in the format YYYYMMDDHHmm
    * @param tRes temporal resolution for the files. Options are 1-daily or 2-3hrly
    */
-  def run(checkLink: Boolean, fName: String, starttime: String, endtime: String, tres:Int): Unit = {
+  def run(checkLink: Boolean, fName: String, starttime: String, endtime: String, tres:Int, varNames:List[String]): Unit = {
     /** initializing variables */
     checkUrl = checkLink
     fileName = fName
@@ -83,13 +84,13 @@ object OpenDapTRMMURLGenerator {
         // ensure the HH and mm options are 00
         startTime = startTime.substring(0,8) + "0000"
         endTime = endTime.substring(0,8) + "0000" 
-        totalUrls.addAll(generateDailyLinks(startTime, endTime))
+        totalUrls.addAll(generateDailyLinks(startTime, endTime, varNames))
         }else if (tRes == 2){
           val thisURL = URL + "TRMM_3B42/"  
           // ensure the mm option is 00
           startTime = startTime.substring(0,10) + "00"
           endTime = endTime.substring(0,10) + "00"
-          totalUrls.addAll(generate3HrlyLinks(startTime, endTime))
+          totalUrls.addAll(generate3HrlyLinks(startTime, endTime, varNames))
         }
       totalUrls.foreach { e => pw.append(e.toString + "\n") }
     } catch {
@@ -123,6 +124,7 @@ object OpenDapTRMMURLGenerator {
       newYear = if (currYear == endTime.substring(0,4).toInt) new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
         else new DateTime(currYear+1, 1, 1, 0, 0) 
       startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() - 1 else 1
+      // startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() else 1
       days =  Days.daysBetween(currTime, newYear).getDays + 1
     }else if (currYear == endTime.substring(0,4).toInt){
       currTime = new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
@@ -155,9 +157,14 @@ object OpenDapTRMMURLGenerator {
    * 
    * @param startTime A 12- character String in the format YYYYMMDDHHmm representing the startTime
    * @param endTime A 12- character String in the format YYYYMMDDHHmm representing the endTime
+   * @param varNames a list of strings entered for the variable and the dimensions to extract from opendap. 
+   *        The dim order of the string is "varname, lonminindex, lonmaxindex, latminindex, latmaxindex" 
+   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values. Using -1 indicates not to subset the dataset.
    * @return URLs List of URLs from the OPeNDaP server for the period
    */
-  def generateDailyLinks(startTime:String, endTime:String): util.ArrayList[String] = { 
+  def generateDailyLinks(startTime:String, endTime:String, varNames:List[String]): util.ArrayList[String] = { 
+    // def generateDailyLinks(startTime:String, endTime:String): util.ArrayList[(String,(Int,Int))] = { 
+
 
     val numYears = (0 to (endTime.substring(0,4).toInt - startTime.substring(0,4).toInt)).toList
     var urls = new util.ArrayList[String]()
@@ -165,49 +172,61 @@ object OpenDapTRMMURLGenerator {
     for (year <- numYears){
       val currYear = startTime.substring(0,4).toInt + year
       var (startday, days, currTime) = numOfDaysAndDate(currYear, startTime, endTime)
-     
+      
       // add the data for the days
       for (day <- 1 to days) {
         val paddedMonth = (currTime.getMonthOfYear.toString.reverse + "0").substring(0, 2).reverse
         val paddedReadDay = (currTime.getDayOfMonth.toString.reverse + "0").substring(0, 2).reverse
         var paddedDay = ""
-        
+        val sb = new StringBuilder()
         if (startday == 1 && day == 1){
-          paddedDay = if ((currYear -1) %4 == 0) "366" else "365"
-          val sb = new StringBuilder()
+          paddedDay = if ((currYear -1) %4 == 0) "366" else "365"    
           sb.append(currYear-1).append("/")
           sb.append(paddedDay).append("/")
           sb.append("3B42_daily.").append(currTime.getYear).append(".")
           sb.append(paddedMonth).append(".")
-          sb.append("01").append(".7.bin")
+          sb.append("01").append(".7.bin?")
           startday = 0
-
-          /** check url */
-          val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
-
-          if (checkUrl) {
-            if (urlExists(tmpUrl+".html")) {
-              urls.add(tmpUrl+".nc")
-            }
-          } else { urls.add(tmpUrl + ".nc")}
         }else{        
           paddedDay = ((startday + day - 1).toString.reverse + "00").substring(0, 3).reverse
-          val sb = new StringBuilder()
           sb.append(currYear).append("/")
           sb.append(paddedDay).append("/")
           sb.append("3B42_daily.").append(currTime.getYear).append(".")
           sb.append(paddedMonth).append(".")
-          sb.append(paddedReadDay).append(".7.bin")
-
-          /** check url */
-          val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
-
-          if (checkUrl) {
-            if (urlExists(tmpUrl+".html")) {
-              urls.add(tmpUrl+".nc")
-            }
-          } else { urls.add(tmpUrl + ".nc")}
+          sb.append(paddedReadDay).append(".7.bin?")
         }
+        // check varNames
+        varNames.foreach(y => {
+          val z = y.split(",")
+          if (z.length > 1){
+            sb.append(z(0))
+            for (i <- 1 to z.length-1){
+              if (z(i).toInt != -1 && i%2 == 1){
+                sb.append("[0:"+z(i)+":")
+              }else if (z(i).toInt != -1 && i%2 == 0){
+                sb.append(z(i)+"]")
+              }else if (z(i).toInt == -1){
+                break
+              }
+            } 
+          }else{
+            sb.append(y)
+          }
+          sb.append(",")
+        })
+
+        /** check url */  
+        val tmpUrl = URL + "TRMM_3B42_daily/" + sb.dropRight(1).toString
+        // /** check url */
+        // val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
+
+        // if (checkUrl) {
+        //   if (urlExists(tmpUrl+".html")) {
+        //     urls.add(tmpUrl+".nc")
+        //   }
+        // } else { urls.add(tmpUrl + ".nc")}
+        urls.add(tmpUrl)
+
         currTime = currTime.plusDays(1)
       }
     }
@@ -219,9 +238,12 @@ object OpenDapTRMMURLGenerator {
    * 
    * @param startTime A 12- character String in the format YYYYMMDDHHmm representing the startTime
    * @param endTime A 12- character String in the format YYYYMMDDHHmm representing the endTime
+   * @param varNames a list of strings entered for the variable and the dimensions to extract from opendap. 
+   *        The dim order of the string is "varname, lonminindex, lonmaxindex, latminindex, latmaxindex" 
+   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values. Using -1 indicates not to subset the dataset.
    * @return URLs List of URLs from the OPeNDaP server for the period
    */
-  def generate3HrlyLinks(startTime:String, endTime:String): util.ArrayList[String] = { 
+  def generate3HrlyLinks(startTime:String, endTime:String, varNames:List[String]): util.ArrayList[String] = { 
 
     val numYears = (0 to (endTime.substring(0,4).toInt - startTime.substring(0,4).toInt)).toList
     var urls = new util.ArrayList[String]()
@@ -259,20 +281,39 @@ object OpenDapTRMMURLGenerator {
           sb.append(paddedDay).append("/")
           sb.append("3B42.").append(currTime.getYear).append(paddedMonth).append(paddedReadDay).append(".")
           if (currTime.getYear < 2011){
-            sb.append(paddedHrs).append(".7A.HDF.Z")
+            sb.append(paddedHrs).append(".7A.HDF.Z?")
+          }else{
+            sb.append(paddedHrs).append(".7.HDF.Z?")
+          }
+          
+          // check varNames
+          varNames.foreach(y => {
+            val z = y.split(",")
+            if (z.length > 1){
+              sb.append(z(0))
+              for (i <- 1 to z.length-1){
+                if (z(i).toInt != -1 && i%2 == 1){
+                  sb.append("[0:"+z(i)+":")
+                }else if (z(i).toInt != -1 && i%2 == 0){
+                  sb.append(z(i)+"]")
+                }else if (z(i).toInt == -1){
+                  break
+                }
+              } 
             }else{
-              sb.append(paddedHrs).append(".7.HDF.Z")
+              sb.append(y)
             }
-          
-          
-          /** check url */  
-          val tmpUrl = URL + "TRMM_3B42/" + sb.toString
+            sb.append(",")
+          })
 
-          if (checkUrl) {
-            if (urlExists(tmpUrl+".html")) {
-              urls.add(tmpUrl+".nc")
-            }
-          } else { urls.add(tmpUrl + ".nc")}
+          /** check url */  
+          val tmpUrl = URL + "TRMM_3B42/" + sb.dropRight(1).toString
+          urls.add(tmpUrl)
+          // if (checkUrl) {
+          //   if (urlExists(tmpUrl+".html")) {
+          //     urls.add(tmpUrl)
+          //   } //else break with error msg
+          // } else { urls.add(tmpUrl)}
           currTime = currTime.plusHours(3)
         }     
       }
