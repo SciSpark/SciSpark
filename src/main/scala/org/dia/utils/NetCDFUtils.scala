@@ -78,7 +78,6 @@ object NetCDFUtils {
       } else {
         array = javaArray.asInstanceOf[Array[Double]]
       }
-      for (i <- array.indices) if (array(i) == -9999.0) array(i) = 0.0
     } catch {
       case ex: Exception =>
         println("Error while converting a netcdf.ucar.ma2 to a 1D array. Most likely occurred with casting")
