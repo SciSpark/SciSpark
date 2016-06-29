@@ -38,7 +38,7 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite {
 
   test("testLinkGeneration3Hrly") {
     val checkLink = false
-    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileH.txt",  "201001010000",   "201001031500", 2, List("precipitation")) //"201003010300", "201003031500", 2)
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileH.txt",  "201001010000",   "201001031500", 2, List("precipitation")) 
     if (Files.exists(Paths.get("testLinkfileH.txt")) && Files.size(Paths.get("testLinkfileH.txt")) != 0){
       assert(true)
     }else {
@@ -48,8 +48,8 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite {
 
   test("testLinkGenerationDailyWithSelection") {
     val checkLink = false
-    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileDsub.txt", "200103010000", "200103310000", 1 , List("precipitation,1,1439,1,399","nlon,1,1439","nlat,1,399"))
-    if (Files.exists(Paths.get("testLinkfileD.txt")) && Files.size(Paths.get("testLinkfileDsub.txt")) != 0){
+    OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileDsub.txt", "200103010000", "200103310000", 1 , List("data,1,399,1,1439"))
+    if (Files.exists(Paths.get("testLinkfileDsub.txt")) && Files.size(Paths.get("testLinkfileDsub.txt")) != 0){
       assert(true)
     }else {
       assert(false)
@@ -57,9 +57,9 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite {
   }
 
   test("testLinkGeneration3HrlyWithSelection") {
-    val checkLink = false
+    val checkLink = true
     OpenDapTRMMURLGenerator.run(checkLink, "testLinkfileHsub.txt",  "201006150000",   "201006161500", 2 , List("precipitation,1,1439,1,399","nlon,1,1439","nlat,1,399")) //"201003010300", "201003031500", 2)
-    if (Files.exists(Paths.get("testLinkfileH.txt")) && Files.size(Paths.get("testLinkfileHsub.txt")) != 0){
+    if (Files.exists(Paths.get("testLinkfileHsub.txt")) && Files.size(Paths.get("testLinkfileHsub.txt")) != 0){
       assert(true)
     }else {
       assert(false)
