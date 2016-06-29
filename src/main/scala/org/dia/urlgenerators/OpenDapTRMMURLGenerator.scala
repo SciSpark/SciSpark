@@ -124,7 +124,6 @@ object OpenDapTRMMURLGenerator {
       newYear = if (currYear == endTime.substring(0,4).toInt) new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
         else new DateTime(currYear+1, 1, 1, 0, 0) 
       startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() - 1 else 1
-      // startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() else 1
       days =  Days.daysBetween(currTime, newYear).getDays + 1
     }else if (currYear == endTime.substring(0,4).toInt){
       currTime = new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
@@ -163,9 +162,7 @@ object OpenDapTRMMURLGenerator {
    * @return URLs List of URLs from the OPeNDaP server for the period
    */
   def generateDailyLinks(startTime:String, endTime:String, varNames:List[String]): util.ArrayList[String] = { 
-    // def generateDailyLinks(startTime:String, endTime:String): util.ArrayList[(String,(Int,Int))] = { 
-
-
+    
     val numYears = (0 to (endTime.substring(0,4).toInt - startTime.substring(0,4).toInt)).toList
     var urls = new util.ArrayList[String]()
       
@@ -195,6 +192,7 @@ object OpenDapTRMMURLGenerator {
           sb.append(paddedMonth).append(".")
           sb.append(paddedReadDay).append(".7.bin?")
         }
+        val toCheckUrl = URL + "TRMM_3B42_daily/" + sb.dropRight(1).toString + ".html"
         // check varNames
         varNames.foreach(y => {
           val z = y.split(",")
@@ -218,14 +216,16 @@ object OpenDapTRMMURLGenerator {
         /** check url */  
         val tmpUrl = URL + "TRMM_3B42_daily/" + sb.dropRight(1).toString
         // /** check url */
-        // val tmpUrl = URL + "TRMM_3B42_daily/" + sb.toString
-
-        // if (checkUrl) {
-        //   if (urlExists(tmpUrl+".html")) {
-        //     urls.add(tmpUrl+".nc")
-        //   }
-        // } else { urls.add(tmpUrl + ".nc")}
-        urls.add(tmpUrl)
+        if (checkUrl) {
+          try{
+            if (urlExists(toCheckUrl)) {urls.add(tmpUrl)}
+          }catch {
+            case ex: Exception =>
+              println("Problem with this link")
+          }  
+        } else { 
+          urls.add(tmpUrl)
+        }
 
         currTime = currTime.plusDays(1)
       }
@@ -285,7 +285,7 @@ object OpenDapTRMMURLGenerator {
           }else{
             sb.append(paddedHrs).append(".7.HDF.Z?")
           }
-          
+          val toCheckUrl = URL + "TRMM_3B42/" + sb.dropRight(1).toString + ".html"
           // check varNames
           varNames.foreach(y => {
             val z = y.split(",")
@@ -308,12 +308,17 @@ object OpenDapTRMMURLGenerator {
 
           /** check url */  
           val tmpUrl = URL + "TRMM_3B42/" + sb.dropRight(1).toString
-          urls.add(tmpUrl)
-          // if (checkUrl) {
-          //   if (urlExists(tmpUrl+".html")) {
-          //     urls.add(tmpUrl)
-          //   } //else break with error msg
-          // } else { urls.add(tmpUrl)}
+          // urls.add(tmpUrl)
+          if (checkUrl) {
+            try{
+              if (urlExists(toCheckUrl)) {urls.add(tmpUrl)}
+            }catch {
+              case ex: Exception =>
+                println("Problem with this link")
+            }  
+          } else { 
+            urls.add(tmpUrl)
+          }
           currTime = currTime.plusHours(3)
         }     
       }
