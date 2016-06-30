@@ -36,17 +36,11 @@ object OpenDapTRMMURLGenerator {
 
   val URL = "http://disc2.nascom.nasa.gov/opendap/hyrax/TRMM_L3/"//"http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/" 
   val DEFAULT_FILE_NAME = "Test_TRMM_L3_Links.txt"
-  var fileName = ""
   var checkUrl = false
   var startTime = ""
   var endTime = ""
   var tRes = 0
   val hadoopConf = new Configuration()
-
-
-  // def run(checkLink: Boolean): Unit = {
-  //   run(checkLink, DEFAULT_FILE_NAME)
-  // }
 
   /**
    * Runs the OpenDapTRMMURL link generator
@@ -61,14 +55,13 @@ object OpenDapTRMMURLGenerator {
   def run(checkLink: Boolean, hdfsURL:String, fName: String, starttime: String, endtime: String, tres:Int, varNames:List[String]): Unit = {
     /** initializing variables */
     checkUrl = checkLink
-    fileName = new Path(fName)
+    val fileName = new Path(fName)
     startTime = starttime
     endTime = endtime
     tRes = tres
 
     hadoopConf.set("fs.defaultFS", hdfsURL)
     val hdfs = FileSystem.get(hadoopConf)
-  
 
     if (startTime.length != 12){
       println("startTime is an incorrect format. Using defaults value of 199701020000")
@@ -84,10 +77,9 @@ object OpenDapTRMMURLGenerator {
       tRes = 2
     }
 
-    // val pw = new PrintWriter(new File(fileName))
     val pw = hdfs.create(fileName)
     println(pw)
-    // pw.flush()
+    
     var totalUrls = new util.ArrayList[String]()
 
     try {
@@ -103,7 +95,6 @@ object OpenDapTRMMURLGenerator {
           endTime = endTime.substring(0,10) + "00"
           totalUrls.addAll(generate3HrlyLinks(startTime, endTime, varNames))
         }
-      // totalUrls.foreach { e => pw.append(e.toString + "\n") }
       totalUrls.foreach { e => pw.write((e.toString + "\n").getBytes) }
     } catch {
       case ex: Exception =>
