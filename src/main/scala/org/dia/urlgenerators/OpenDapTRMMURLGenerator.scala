@@ -25,6 +25,9 @@ import org.joda.time.DateTime
 import org.joda.time.Days
 import org.joda.time.format.DateTimeFormat
 import scala.util.control.Breaks._
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 
 /**
  * Generates a list of links for the TRMM URLs.
@@ -38,6 +41,8 @@ object OpenDapTRMMURLGenerator {
   var startTime = ""
   var endTime = ""
   var tRes = 0
+  val hadoopConf = new Configuration()
+
 
   // def run(checkLink: Boolean): Unit = {
   //   run(checkLink, DEFAULT_FILE_NAME)
@@ -47,18 +52,23 @@ object OpenDapTRMMURLGenerator {
    * Runs the OpenDapTRMMURL link generator
    * 
    * @param checkLink if the link needs to be checked, deprecated?
+   * @param hdfsURL string representing the HDFS URL where the data will be written
    * @param fName file to write URLs into
    * @param startTime starttime in the format YYYYMMDDHHmm
    * @param endTime endtime in the format YYYYMMDDHHmm
    * @param tRes temporal resolution for the files. Options are 1-daily or 2-3hrly
    */
-  def run(checkLink: Boolean, fName: String, starttime: String, endtime: String, tres:Int, varNames:List[String]): Unit = {
+  def run(checkLink: Boolean, hdfsURL:String, fName: String, starttime: String, endtime: String, tres:Int, varNames:List[String]): Unit = {
     /** initializing variables */
     checkUrl = checkLink
-    fileName = fName
+    fileName = new Path(fName)
     startTime = starttime
     endTime = endtime
     tRes = tres
+
+    hadoopConf.set("fs.defaultFS", hdfsURL)
+    val hdfs = FileSystem.get(hadoopConf)
+  
 
     if (startTime.length != 12){
       println("startTime is an incorrect format. Using defaults value of 199701020000")
@@ -74,9 +84,10 @@ object OpenDapTRMMURLGenerator {
       tRes = 2
     }
 
-    val pw = new PrintWriter(new File(fileName))
+    // val pw = new PrintWriter(new File(fileName))
+    val pw = hdfs.create(fileName)
     println(pw)
-    pw.flush()
+    // pw.flush()
     var totalUrls = new util.ArrayList[String]()
 
     try {
@@ -92,7 +103,8 @@ object OpenDapTRMMURLGenerator {
           endTime = endTime.substring(0,10) + "00"
           totalUrls.addAll(generate3HrlyLinks(startTime, endTime, varNames))
         }
-      totalUrls.foreach { e => pw.append(e.toString + "\n") }
+      // totalUrls.foreach { e => pw.append(e.toString + "\n") }
+      totalUrls.foreach { e => pw.write((e.toString + "\n").getBytes) }
     } catch {
       case ex: Exception =>
         println("Exception")
@@ -100,6 +112,7 @@ object OpenDapTRMMURLGenerator {
     } finally {
       pw.close()
     }
+
   }
 
   /**
