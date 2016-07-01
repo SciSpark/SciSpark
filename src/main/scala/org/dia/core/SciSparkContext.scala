@@ -86,9 +86,9 @@ class SciSparkContext(val sparkContext: SparkContext) {
     varName: List[String] = Nil,
     minPartitions: Int = 2): RDD[SciTensor] = {
 
-    val URIs = sparkContext.textFile(path, minPartitions)
+    val URIsFile = sparkContext.textFile(path, minPartitions)
     
-    val rdd = URIs.map(p => {
+    val rdd = URIsFile.map(p => {
       
       val variableHashTable = new mutable.HashMap[String, AbstractTensor]
       var uriVars = p.split("\\?").drop(1).mkString.split(",")
@@ -108,7 +108,7 @@ class SciSparkContext(val sparkContext: SparkContext) {
             val absT = new Nd4jTensor(arrayandShape)
             variableHashTable += ((y, absT))
           }else{
-            logger.info(y +" is not available from the URL")
+            println(y +" is not available from the URL")
           }        
         })
       }else{
