@@ -18,6 +18,7 @@
 package org.dia.core
 
 import org.apache.log4j.LogManager
+import org.slf4j.Logger
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{ SparkConf, SparkContext }
 import org.dia.Constants._
@@ -45,6 +46,8 @@ class SciSparkContext(val sparkContext: SparkContext) {
    */
   val DateParserClass = Class.forName("com.joestelmach.natty.Parser")
   val ParserLevel = org.apache.log4j.Level.OFF
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
+  val r = scala.util.Random
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
 
   /**
@@ -53,8 +56,9 @@ class SciSparkContext(val sparkContext: SparkContext) {
    */
   sparkContext.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
+
   def this(conf: SparkConf) {
-    this(new SparkContext(conf))
+    this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").set("spark.kryo.classesToRegister", "java.lang.Thread")))
   }
 
   def this(uri: String, name: String) {
@@ -80,13 +84,45 @@ class SciSparkContext(val sparkContext: SparkContext) {
    */
   def NetcdfFile(path: String,
     varName: List[String] = Nil,
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+    minPartitions: Int = 2): RDD[SciTensor] = {
 
-    val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
-    val variables: List[String] = varName
-
-    new SRDD[SciTensor](sparkContext, URIs, variables, loadNetCDFNDVar, mapNUri(partitionSize))
+    val URIs = sparkContext.textFile(path, minPartitions)
+    
+    val rdd = URIs.map(p => {
+      
+      val variableHashTable = new mutable.HashMap[String, AbstractTensor]
+      var uriVars = p.split("\\?").drop(1).mkString.split(",")
+      val mainURL = p.split("\\?").take(1).mkString+"?"
+      var varDapPart = ""
+      
+      if (uriVars.length > 0){   
+        varName.foreach(y => {
+          uriVars.foreach(i => {
+            if(i.contains(y)){ varDapPart = i }
+            })
+          if (varDapPart != ""){
+            //We forced Thread to be serializable when the sparkContext was initalized
+            // but this isnt working. So need to find another way to do this. 
+            //Thread.sleep((r.nextFloat * 10.0).toLong)
+            val arrayandShape = loadNetCDFNDVar(mainURL+varDapPart, y)
+            val absT = new Nd4jTensor(arrayandShape)
+            variableHashTable += ((y, absT))
+          }else{
+            logger.info(y +" is not available from the URL")
+          }        
+        })
+      }else{
+        varName.foreach(y => {
+          val arrayandShape = loadNetCDFNDVar(p, y)
+          val absT = new Nd4jTensor(arrayandShape)
+          variableHashTable += ((y, absT))
+        })
+      }
+      val sciT = new SciTensor(variableHashTable)
+      sciT.insertDictionary(("SOURCE", p))
+      sciT
+    })
+    rdd
   }
 
   /**
@@ -118,6 +154,7 @@ class SciSparkContext(val sparkContext: SparkContext) {
     rdd
   }
 
+  
   /**
    * Constructs a random SRDD from a file of URI's, a list of variable names, and matrix dimensions.
    * The seed for matrix values is the path values, so the same input set will yield the same data.
