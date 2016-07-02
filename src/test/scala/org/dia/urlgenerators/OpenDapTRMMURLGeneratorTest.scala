@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.Path
  * Tests whether the OpenDapTRMM URLs creator works. NB the parameter hdfsURL is passed on the command line via -DhdfsURL=hdfs://<hostname>:<port>
  */
 class OpenDapTRMMURLGeneratorTest extends FunSuite {
+  val hdfsURL = sys.props("hdfsURL")
   val hadoopConf = new Configuration()
   hadoopConf.set("fs.defaultFS", hdfsURL)    
   val hdfs = FileSystem.get(hadoopConf)
