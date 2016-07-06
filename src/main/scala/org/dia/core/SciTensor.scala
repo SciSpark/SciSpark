@@ -50,7 +50,7 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   /**
    * Reshapes the variable in use
    */
-  def reshape(reshapedVarName : String, shape : Array[Int]) : SciTensor = {
+  def reshape(reshapedVarName : String = varInUse, shape : Array[Int]) : SciTensor = {
     insertVar(reshapedVarName, variables(varInUse).reshape(shape))
     this
   }
