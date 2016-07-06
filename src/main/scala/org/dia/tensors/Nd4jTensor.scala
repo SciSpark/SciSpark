@@ -38,6 +38,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     this(loadFunc())
   }
 
+  def reshape(shape: Array[Int]) = new Nd4jTensor(Nd4j.create(this.data, shape))
+
   def zeros(shape: Int*) = new Nd4jTensor(Nd4j.create(shape: _*))
 
   def map(f: Double => Double) = new Nd4jTensor(tensor.map(p => f(p)))
@@ -117,7 +119,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def apply(indexes: Int*) = tensor.get(indexes.toArray)
 
-  def data = tensor.data.asDouble()
+  def data : Array[Double] = tensor.data.asDouble()
 
   /**
    * Utility Functions

@@ -48,6 +48,14 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   }
 
   /**
+   * Reshapes the variable in use
+   */
+  def reshape(reshapedVarName : String, shape : Array[Int]) : SciTensor = {
+    insertVar(reshapedVarName, variables(varInUse).reshape(shape))
+    this
+  }
+
+  /**
    * Writes metaData in the form of key-value pairs
    */
   def insertDictionary(metaDataVar: (String, String)*): Unit = {
