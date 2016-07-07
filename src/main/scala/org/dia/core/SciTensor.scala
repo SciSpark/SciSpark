@@ -187,6 +187,19 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def data : Array[Double] = variables(varInUse).data
 
   /**
+   * Statistical operations
+   */
+
+  /**
+   * Computes the mean along the given axis of the variable in use.
+   * @param axis
+   * @return
+   */
+  def mean(axis: Int*): SciTensor = {
+    variables(varInUse).mean(axis: _*)
+  }
+
+  /**
    * Returns a block averaged tensor where the blocks are squares with
    * dimensions blockInt.
    */

@@ -127,6 +127,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   
   def cumsum = tensor.sumNumber.asInstanceOf[Double]
 
+  def mean(axis : Int*) = new Nd4jTensor(tensor.mean(axis: _*))
+
   override def toString = tensor.toString
 
   def isZero = tensor.mul(tensor).sumNumber.asInstanceOf[Double] <= 1E-9

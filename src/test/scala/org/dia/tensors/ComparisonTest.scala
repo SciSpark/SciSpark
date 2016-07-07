@@ -35,6 +35,13 @@ class ComparisonTest extends FunSuite {
     Array(0.0, 1.0, 0.0004003492849200234294, 2.0, 1.0),
     Array(2.0, 3.0, 4.0, 1.0, 2.0))
 
+  val ArraySampleCascade = Array(
+    ArraySample,
+    ArraySample,
+    ArraySample,
+    ArraySample
+  )
+
   val sample = Nd4j.create(ArraySample)
   val shapePair = (sample.data.asDouble, sample.shape)
 

@@ -40,6 +40,25 @@ class BasicTensorTest extends FunSuite {
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
+   * Test statistical operations
+   **/
+  test("mean") {
+    logger.info("In mean test ...")
+    val array = randVar
+    val flattened = array.flatten
+    val cascadedArray = flattened ++ flattened ++ flattened
+    val square = Nd4j.create(array)
+
+    val squareTensor = new Nd4jTensor(square)
+    logger.info("The square shape is " + squareTensor.shape.toList)
+    val cubeTensor = new Nd4jTensor((cascadedArray, Array(3) ++ squareTensor.shape))
+
+    val averagedCube = cubeTensor.mean(0)
+
+    assert(averagedCube == squareTensor)
+  }
+
+  /**
   * Test relational operators
   **/
 

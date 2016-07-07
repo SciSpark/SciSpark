@@ -17,7 +17,7 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.{ DenseMatrix, sum }
+import breeze.linalg.{ DenseMatrix, sum, Axis}
 import scala.language.implicitConversions
 
 /**
@@ -142,6 +142,15 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    */
 
   def cumsum = sum(tensor)
+
+  /**
+   * TODO :: Implement the mean along axis function for BreezeTensor
+   * @param axis
+   * @return
+   */
+  def mean(axis : Int*) = {
+      throw new Exception("BreezeTensor does not support the mean along axis operation yet")
+  }
 
   def isZero = sum(tensor :* tensor) <= 1E-9
 
