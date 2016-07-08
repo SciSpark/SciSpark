@@ -93,13 +93,14 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
   override def equals(any: Any): Boolean = {
     val array = any.asInstanceOf[AbstractTensor]
-    if (array.rows != this.rows) return false
-    if (array.cols != this.cols) return false
-    for (row <- 0 to array.rows - 1) {
-      for (col <- 0 to array.cols - 1) {
-        if (array(row, col) != this(row, col)) return false
-      }
-    }
+    val shape = array.shape
+    val thisShape = this.shape
+
+    if(!shape.sameElements(thisShape)) return false
+
+    val thisData = this.data
+    val otherData = array.data
+    for(index <- 0 to thisData.length - 1) if(thisData(index) != otherData(index)) return false
     true
   }
 
