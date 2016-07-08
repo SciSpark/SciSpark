@@ -40,6 +40,17 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def reshape(shape: Array[Int]) = new Nd4jTensor(Nd4j.create(this.data, shape))
 
+  def broadcast(shape: Array[Int]) = {
+    //new Nd4jTensor(tensor.broadcast(shape: _*))
+    val extraDims = shape diff this.shape
+    val totalExtraCopies = extraDims.reduce((A, B) => A * B)
+    var rawLinearArray = this.data
+    for (i <- 0 to totalExtraCopies by 1){
+      rawLinearArray = rawLinearArray ++ rawLinearArray
+    }
+    new Nd4jTensor((rawLinearArray, shape))
+  }
+
   def zeros(shape: Int*) = new Nd4jTensor(Nd4j.create(shape: _*))
 
   def map(f: Double => Double) = new Nd4jTensor(tensor.map(p => f(p)))

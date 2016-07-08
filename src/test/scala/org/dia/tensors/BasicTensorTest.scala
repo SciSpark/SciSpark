@@ -326,6 +326,25 @@ class BasicTensorTest extends FunSuite {
     }   
   }
 
+  test("broadcastmatrixSubtraction"){
+    logger.info("In broadcastmatrixSubtraction")
+    val array = randVar
+    val flattened = array.flatten
+    val cascadedArray = flattened ++ flattened ++ flattened
+    val square = Nd4j.create(array)
+
+    val squareTensor = new Nd4jTensor(square)
+    val cubeTensor = new Nd4jTensor((cascadedArray, Array(3) ++ squareTensor.shape))
+    val cubeTensorShape = cubeTensor.shape
+    val zeroTensor = cubeTensor.zeros(cubeTensorShape: _*)
+    print(squareTensor.shape.toList)
+    print(cubeTensorShape.toList)
+    val broadcastSquareTensor = squareTensor.broadcast(Array(3, 6, 5))
+    print(broadcastSquareTensor.shape.toList)
+    val subtractTensor = cubeTensor - broadcastSquareTensor
+    assert(subtractTensor == zeroTensor)
+  }
+
   test("matrixDivision"){
     logger.info("In matrixDivision test ...")
     logger.info("The sciTensor is: "+ uSRDD.collect().toList)

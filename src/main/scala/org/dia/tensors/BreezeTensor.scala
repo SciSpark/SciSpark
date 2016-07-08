@@ -50,6 +50,11 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def reshape(shape: Array[Int]) = {
     new BreezeTensor((this.data, shape))
   }
+
+  def broadcast(shape: Array[Int]) = {
+    throw new Exception("BreezeTensor does not support the broadcast operation yet")
+  }
+
   /**
    * Constructs a zeroed BreezeTensor.
    *
