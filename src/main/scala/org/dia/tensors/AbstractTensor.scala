@@ -12,6 +12,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def reshape(shape: Array[Int]): T
+  def broadcast(shape: Array[Int]): T
   def zeros(shape: Int*): T
 
   def map(f: Double => Double): AbstractTensor
