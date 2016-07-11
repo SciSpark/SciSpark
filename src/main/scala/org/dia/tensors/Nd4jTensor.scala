@@ -173,8 +173,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
       // however it would be nice to use the lapack gelsd operator
       // The operation isn't yet suppored by nd4j
       val coef = inverse.InvertMatrix.invert(A.transpose().dot(A), true).dot(A.transpose()).dot(newdata(sl))
-      val solution = Nd4j.create(N, prod/N, coef.ordering())
-      val dot = A.mmuli(coef, solution)
+      val dot = A.dot(coef)
 
       newdata(sl).subi(dot)
     }

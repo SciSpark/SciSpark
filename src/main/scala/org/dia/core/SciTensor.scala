@@ -200,6 +200,19 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   }
 
   /**
+   * Computes and returns the array broadcasted to
+   * the specified shape requirements.
+   * @param shape
+   * @return
+   */
+  def broadcast(shape: Array[Int]): SciTensor = {
+    variables(varInUse).broadcast(shape)
+  }
+
+  def detrend(shape: Array[Int]): SciTensor = {
+    variables(varInUse).detrend(0)
+  }
+  /**
    * Returns a block averaged tensor where the blocks are squares with
    * dimensions blockInt.
    */

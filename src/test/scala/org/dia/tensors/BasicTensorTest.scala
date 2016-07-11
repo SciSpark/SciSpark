@@ -498,49 +498,15 @@ class BasicTensorTest extends FunSuite {
 
   test("detrend") {
     val axis = 0
-    val sample = Array(1,5,4,6,8,3,2,2,4,5,7,2,3,4,2,23,45,32,33,879,34,22, 34, 54, 55, 66, 23).map(p => p.toDouble)
+    val sample = Array(1,2,4,6,54,333,2,12,4,5,7,8,3,4,2,23,45,32,33,879,34,22, 34, 54, 55, 66, 23).map(p => p.toDouble)
+    // NOTE : The solution matrix was obtaied by using the signal.detrend function from Scipy
+    val solution = Array(4, 144.5, 3.67, 3.67, 13.33, 63.83, 1.83, -2.00, -6.17, -8.00, -289.00, -7.33, -7.33, -26.67,
+                        -127.67, -3.67, 4.00, 12.33, 4.00, 144.50, 3.67, 3.67, 13.33, 63.83, 1.83, -2.00, -6.17)
+    val solutionDetrended = Nd4j.create(solution, Array(3,3,3))
     val cube = Nd4j.create(sample, Array(3,3,3))
-    val dshape = cube.shape
-    val N = dshape(axis)
-    val bp = Array(0, N)
-    val Nreg = bp.length - 1
-    val rank = dshape.length
-    val newdims = Array(axis) ++ (0 until axis) ++  ((axis + 1) until rank)
-    val prod = dshape.reduce((A, B) => A * B)
-    // The complete scipy conversion would be cube.transpose(newdims)).reshape(N, prod/N)
-    // however, we cannot transpose and permute by the axis yet. The backend libraries
-    // do not support it
-    val newdata = cube.reshape(N, prod / N)
-
-    for(m <- 0 until Nreg) {
-      val Npts = bp(m + 1) - bp(m)
-      val A = Nd4j.ones(Npts, 2)
-      val normalizedRange = Nd4j.create((1 until Npts + 1).map(p => p * 1.0 / Npts).toArray)
-      val Acol = A.getColumn(0)
-      Acol.assign(normalizedRange)
-      val sl = bp(m) -> bp(m + 1)
-      // The least squares algorithm takes  and newdata[sl]
-      // linalg.lstsq(A, newdaa[sl]
-      val newdata_sl = newdata(sl)
-
-      // To compute the coefficient matrix
-      // I relied on the following python algorithm found here:
-      // https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)
-      // Furthermore scipy's detrend algorithm only require the coefficient matrix
-      // So the algorithm wasn't needed
-      // however it would be nice to use the lapack gelsd operator
-      // The operation isn't yet suppored by nd4j
-      val coef = inverse.InvertMatrix.invert(A.transpose().dot(A), true).dot(A.transpose()).dot(newdata_sl)
-
-      val newdataSubdot = newdata(sl) - A.dot(coef)
-      newdata(sl).assign(newdataSubdot)
-    }
-    val tdshape = newdims.map(p => dshape(0))
-    val ret = newdata.reshape(tdshape: _*)
-    print(ret)
-      //.dot(A)
-
-      // Using breeze implementation
-//      val sol = Nd4j.getBlasWrapper.gelsd(A, newdata(sl))
+    val cubeTensor = new Nd4jTensor(cube)
+    val solutionTensor = new Nd4jTensor(solutionDetrended)
+    val detrended = cubeTensor.detrend(0)
+    assert(detrended == solutionTensor)
   }
 }
