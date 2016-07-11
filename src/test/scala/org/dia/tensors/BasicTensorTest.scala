@@ -509,4 +509,21 @@ class BasicTensorTest extends FunSuite {
     val detrended = cubeTensor.detrend(0)
     assert(detrended == solutionTensor)
   }
+
+  test("assign") {
+    val sample = (1d to 27d by 1d).toArray
+    val solution = sample.map(p => if (p < 10) 3 else p)
+    val cube = Nd4j.create(sample, Array(3,3,3))
+    val cubeTensor = new Nd4jTensor(cube)
+    val solutionCube = Nd4j.create(solution, Array(3,3,3))
+    val solutionTensor = new Nd4jTensor(solutionCube)
+
+    val slice_1 = cubeTensor.slice((0,1))
+    slice_1.assign(new Nd4jTensor(Array(3,3,3,3,3,3,3,3,3), Array(3,3)))
+
+    assert(cubeTensor == solutionTensor)
+    //val k = cubeTensor((0,1))
+
+
+  }
 }

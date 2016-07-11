@@ -129,6 +129,12 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     new Nd4jTensor(IndArray)
   }
 
+  def slice(ranges: (Int, Int)*) = {
+    val rangeMap = ranges.map(p => TupleRange(p))
+    val IndArray = tensor(rangeMap: _*)
+    new Nd4jTensor(IndArray)
+  }
+
   def apply(indexes: Int*) = tensor.get(indexes.toArray)
 
   def data : Array[Double] = tensor.data.asDouble()
@@ -183,6 +189,16 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     new Nd4jTensor(ret)
   }
 
+  /**
+    * Copies over the data in a new tensor to the current tensor
+    * @param newTensor
+    * @return
+    */
+  def assign(newTensor: AbstractTensor) : Nd4jTensor = {
+    this.tensor.assign(newTensor.tensor)
+    this
+  }
+
   override def toString = tensor.toString
 
   def isZero = tensor.mul(tensor).sumNumber.asInstanceOf[Double] <= 1E-9
@@ -192,6 +208,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def max = tensor.maxNumber.asInstanceOf[Double]
 
   def min = tensor.minNumber.asInstanceOf[Double]
+
+  def copy = new Nd4jTensor(this.tensor.dup())
 
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
   

@@ -166,6 +166,15 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     throw new Exception("BreezeTensor does not yet support detrending")
   }
 
+  /**
+   * Copies over the data in a new tensor to the current tensor
+   * @param newTensor
+   * @return
+   */
+  def assign(newTensor: AbstractTensor) : BreezeTensor = {
+    this.tensor := newTensor.tensor
+  }
+
   def isZero = sum(tensor :* tensor) <= 1E-9
 
   def isZeroShortcut = sum(tensor) <= 1E-9
@@ -175,6 +184,8 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def max = breeze.linalg.max(tensor)
 
   def min = breeze.linalg.min(tensor)
+
+  def copy = tensor.copy
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

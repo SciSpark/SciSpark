@@ -187,6 +187,12 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def data : Array[Double] = variables(varInUse).data
 
   /**
+   * Creates a copy of the variable in use
+   * @return
+   */
+  def copy : SciTensor = variables(varInUse).copy
+
+  /**
    * Statistical operations
    */
 

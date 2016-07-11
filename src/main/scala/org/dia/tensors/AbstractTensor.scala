@@ -90,6 +90,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def cumsum: Double
   def mean(axis : Int*) : T
   def detrend(axis: Int) : T
+  def assign(newTensor: AbstractTensor) : T
   def toString: String
 
   /**
@@ -127,7 +128,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
     true
   }
 
-  
+  def copy: T
 
   def isZero: Boolean
   /**
