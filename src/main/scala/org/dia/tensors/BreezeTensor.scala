@@ -157,6 +157,15 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
       throw new Exception("BreezeTensor does not support the mean along axis operation yet")
   }
 
+  /**
+    * TODO :: Implement detrend along axis
+    * @param axis
+    * @return
+    */
+  def detrend(axis : Int) = {
+    throw new Exception("BreezeTensor does not yet support detrending")
+  }
+
   def isZero = sum(tensor :* tensor) <= 1E-9
 
   def isZeroShortcut = sum(tensor) <= 1E-9

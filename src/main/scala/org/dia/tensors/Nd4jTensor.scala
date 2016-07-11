@@ -19,6 +19,7 @@ package org.dia.tensors
 
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.inverse
 import org.nd4s.Implicits._
 import scala.language.implicitConversions
 
@@ -28,7 +29,7 @@ import scala.language.implicitConversions
 class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override type T = Nd4jTensor
   val name: String = "nd4j"
-  val shape = tensor.shape
+  val shape = tensor.shape.filter(p => p != 0 && p != 1)
   var mask = 0.0
   def this(shapePair: (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
@@ -139,6 +140,49 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def cumsum = tensor.sumNumber.asInstanceOf[Double]
 
   def mean(axis : Int*) = new Nd4jTensor(tensor.mean(axis: _*))
+
+  def detrend(axis: Int) = {
+    val cube = tensor
+    val dshape = cube.shape
+    val N = dshape(axis)
+    val bp = Array(0, N)
+    val Nreg = bp.length - 1
+    val rank = dshape.length
+    val newdims = Array(axis) ++ (0 until axis) ++  ((axis + 1) until rank)
+    val prod = dshape.reduce((A, B) => A * B)
+    // The complete scipy conversion would be cube.transpose(newdims)).reshape(N, prod/N)
+    // however, we cannot transpose and permute by the axis yet. The backend libraries
+    // do not support it
+    val newdata = cube.reshape(N, prod / N)
+    for(m <- 0 until Nreg) {
+      val Npts = bp(m + 1) - bp(m)
+      val A = Nd4j.ones(Npts, 2)
+      val normalizedRange = Nd4j.create((1 until Npts + 1).map(p => p * 1.0 / Npts).toArray)
+      val Acol = A.getColumn(0)
+      Acol.assign(normalizedRange)
+      val sl = bp(m) -> bp(m + 1)
+      // The least squares algorithm takes  and newdata[sl]
+      // linalg.lstsq(A, newdaa[sl]
+      //val newdata_sl = newdata(sl).dup
+
+      // To compute the coefficient matrix
+      // I relied on the following python algorithm found here:
+      // https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)
+      // Furthermore scipy's detrend algorithm only requires the coefficient matrix
+      // So the algorithm wasn't needed
+      // however it would be nice to use the lapack gelsd operator
+      // The operation isn't yet suppored by nd4j
+      val coef = inverse.InvertMatrix.invert(A.transpose().dot(A), true).dot(A.transpose()).dot(newdata(sl))
+      val solution = Nd4j.create(N, prod/N, coef.ordering())
+      val dot = A.mmuli(coef, solution)
+
+      newdata(sl).subi(dot)
+    }
+    val tdshape = newdims.map(p => dshape(p))
+
+    val ret = Nd4j.create(newdata.data().asDouble(), tdshape)
+    new Nd4jTensor(ret)
+  }
 
   override def toString = tensor.toString
 

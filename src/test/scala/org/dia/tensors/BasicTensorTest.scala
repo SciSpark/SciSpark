@@ -18,6 +18,9 @@
 package org.dia.tensors
 
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.inverse
+import breeze.linalg._
+import breeze.stats.regression.leastSquares
 import org.scalatest.FunSuite
 import org.nd4s.Implicits._
 import org.slf4j.Logger
@@ -337,10 +340,7 @@ class BasicTensorTest extends FunSuite {
     val cubeTensor = new Nd4jTensor((cascadedArray, Array(3) ++ squareTensor.shape))
     val cubeTensorShape = cubeTensor.shape
     val zeroTensor = cubeTensor.zeros(cubeTensorShape: _*)
-    print(squareTensor.shape.toList)
-    print(cubeTensorShape.toList)
     val broadcastSquareTensor = squareTensor.broadcast(Array(3, 6, 5))
-    print(broadcastSquareTensor.shape.toList)
     val subtractTensor = cubeTensor - broadcastSquareTensor
     assert(subtractTensor == zeroTensor)
   }
@@ -494,5 +494,53 @@ class BasicTensorTest extends FunSuite {
     }else{
       assert(false)
     }    
+  }
+
+  test("detrend") {
+    val axis = 0
+    val sample = Array(1,5,4,6,8,3,2,2,4,5,7,2,3,4,2,23,45,32,33,879,34,22, 34, 54, 55, 66, 23).map(p => p.toDouble)
+    val cube = Nd4j.create(sample, Array(3,3,3))
+    val dshape = cube.shape
+    val N = dshape(axis)
+    val bp = Array(0, N)
+    val Nreg = bp.length - 1
+    val rank = dshape.length
+    val newdims = Array(axis) ++ (0 until axis) ++  ((axis + 1) until rank)
+    val prod = dshape.reduce((A, B) => A * B)
+    // The complete scipy conversion would be cube.transpose(newdims)).reshape(N, prod/N)
+    // however, we cannot transpose and permute by the axis yet. The backend libraries
+    // do not support it
+    val newdata = cube.reshape(N, prod / N)
+
+    for(m <- 0 until Nreg) {
+      val Npts = bp(m + 1) - bp(m)
+      val A = Nd4j.ones(Npts, 2)
+      val normalizedRange = Nd4j.create((1 until Npts + 1).map(p => p * 1.0 / Npts).toArray)
+      val Acol = A.getColumn(0)
+      Acol.assign(normalizedRange)
+      val sl = bp(m) -> bp(m + 1)
+      // The least squares algorithm takes  and newdata[sl]
+      // linalg.lstsq(A, newdaa[sl]
+      val newdata_sl = newdata(sl)
+
+      // To compute the coefficient matrix
+      // I relied on the following python algorithm found here:
+      // https://en.wikipedia.org/wiki/Linear_least_squares_(mathematics)
+      // Furthermore scipy's detrend algorithm only require the coefficient matrix
+      // So the algorithm wasn't needed
+      // however it would be nice to use the lapack gelsd operator
+      // The operation isn't yet suppored by nd4j
+      val coef = inverse.InvertMatrix.invert(A.transpose().dot(A), true).dot(A.transpose()).dot(newdata_sl)
+
+      val newdataSubdot = newdata(sl) - A.dot(coef)
+      newdata(sl).assign(newdataSubdot)
+    }
+    val tdshape = newdims.map(p => dshape(0))
+    val ret = newdata.reshape(tdshape: _*)
+    print(ret)
+      //.dot(A)
+
+      // Using breeze implementation
+//      val sol = Nd4j.getBlasWrapper.gelsd(A, newdata(sl))
   }
 }
