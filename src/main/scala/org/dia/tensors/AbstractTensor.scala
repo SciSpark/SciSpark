@@ -92,6 +92,13 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def detrend(axis: Int) : T
   def toString: String
 
+  /**
+   * Due to properties of Doubles, the equals method
+   * utilizes the percent error rather than checking absolute equality.
+   * The threshold for percent error is if it is greater than 0.5% or .005.
+   * @param any
+   * @return
+   */
   override def equals(any: Any): Boolean = {
     val array = any.asInstanceOf[AbstractTensor]
     val shape = array.shape
@@ -101,7 +108,22 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
     val thisData = this.data
     val otherData = array.data
-    for(index <- 0 to thisData.length - 1) if(thisData(index) != otherData(index)) return false
+    for(index <- 0 to thisData.length - 1){
+      val left = thisData(index)
+      val right = otherData(index)
+      if(left != 0.0 && right == 0.0){
+        return false
+      } else if (right == 0.0 && left != 0.0) {
+        return false
+      } else if ( right != 0.0 && left != 0.0) {
+        val absoluteError = Math.abs(left - right)
+        val percentageError = absoluteError / Math.max(left, right)
+        if(percentageError > 5E-3) {
+          return false
+        }
+      }
+
+    }
     true
   }
 
