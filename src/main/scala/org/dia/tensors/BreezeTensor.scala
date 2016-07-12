@@ -17,7 +17,7 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.{ DenseMatrix, sum }
+import breeze.linalg.{ DenseMatrix, sum, Axis}
 import scala.language.implicitConversions
 
 /**
@@ -50,6 +50,11 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def reshape(shape: Array[Int]) = {
     new BreezeTensor((this.data, shape))
   }
+
+  def broadcast(shape: Array[Int]) = {
+    throw new Exception("BreezeTensor does not support the broadcast operation yet")
+  }
+
   /**
    * Constructs a zeroed BreezeTensor.
    *
@@ -143,6 +148,40 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def cumsum = sum(tensor)
 
+  /**
+   * TODO :: Implement the mean along axis function for BreezeTensor
+   * @param axis
+   * @return
+   */
+  def mean(axis : Int*) = {
+      throw new Exception("BreezeTensor does not support the mean along axis operation yet")
+  }
+
+  /**
+    * TODO :: Implement detrend along axis
+    * @param axis
+    * @return
+    */
+  def detrend(axis : Int) = {
+    throw new Exception("BreezeTensor does not yet support detrending")
+  }
+
+  def std(axis : Int*) = {
+    throw new Exception("BreezeTensor does not yet support standard deviation along axis")
+  }
+
+  def skew(axis: Int*) = {
+    throw new Exception("BreezeTensor does not yet support skewness along an axis")
+  }
+  /**
+   * Copies over the data in a new tensor to the current tensor
+   * @param newTensor
+   * @return
+   */
+  def assign(newTensor: AbstractTensor) : BreezeTensor = {
+    this.tensor := newTensor.tensor
+  }
+
   def isZero = sum(tensor :* tensor) <= 1E-9
 
   def isZeroShortcut = sum(tensor) <= 1E-9
@@ -152,6 +191,8 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def max = breeze.linalg.max(tensor)
 
   def min = breeze.linalg.min(tensor)
+
+  def copy = tensor.copy
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

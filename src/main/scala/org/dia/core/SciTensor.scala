@@ -187,6 +187,46 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   def data : Array[Double] = variables(varInUse).data
 
   /**
+   * Creates a copy of the variable in use
+   * @return
+   */
+  def copy : SciTensor = variables(varInUse).copy
+
+  /**
+   * Statistical operations
+   */
+
+  /**
+   * Computes the mean along the given axis of the variable in use.
+   * @param axis
+   * @return
+   */
+  def mean(axis: Int*): SciTensor = {
+    variables(varInUse).mean(axis: _*)
+  }
+
+  /**
+   * Computes and returns the array broadcasted to
+   * the specified shape requirements.
+   * @param shape
+   * @return
+   */
+  def broadcast(shape: Array[Int]): SciTensor = {
+    variables(varInUse).broadcast(shape)
+  }
+
+  def detrend(axis: Array[Int]): SciTensor = {
+    variables(varInUse).detrend(0)
+  }
+
+  def std(axis: Array[Int]): SciTensor = {
+    variables(varInUse).std(axis: _*)
+  }
+
+  def skew(axis: Array[Int]): SciTensor = {
+    variables(varInUse).skew(axis:_ *)
+  }
+  /**
    * Returns a block averaged tensor where the blocks are squares with
    * dimensions blockInt.
    */

@@ -12,6 +12,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def reshape(shape: Array[Int]): T
+  def broadcast(shape: Array[Int]): T
   def zeros(shape: Int*): T
 
   def map(f: Double => Double): AbstractTensor
@@ -87,21 +88,49 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
 
   def cumsum: Double
+  def mean(axis : Int*) : T
+  def detrend(axis: Int) : T
+  def std(axis: Int*): T
+  def skew(axis: Int*): T
+  def assign(newTensor: AbstractTensor) : T
   def toString: String
 
+  /**
+   * Due to properties of Doubles, the equals method
+   * utilizes the percent error rather than checking absolute equality.
+   * The threshold for percent error is if it is greater than 0.5% or .005.
+   * @param any
+   * @return
+   */
   override def equals(any: Any): Boolean = {
     val array = any.asInstanceOf[AbstractTensor]
-    if (array.rows != this.rows) return false
-    if (array.cols != this.cols) return false
-    for (row <- 0 to array.rows - 1) {
-      for (col <- 0 to array.cols - 1) {
-        if (array(row, col) != this(row, col)) return false
+    val shape = array.shape
+    val thisShape = this.shape
+
+    if(!shape.sameElements(thisShape)) return false
+
+    val thisData = this.data
+    val otherData = array.data
+    for(index <- 0 to thisData.length - 1){
+      val left = thisData(index)
+      val right = otherData(index)
+      if(left != 0.0 && right == 0.0){
+        return false
+      } else if (right == 0.0 && left != 0.0) {
+        return false
+      } else if ( right != 0.0 && left != 0.0) {
+        val absoluteError = Math.abs(left - right)
+        val percentageError = absoluteError / Math.max(left, right)
+        if(percentageError > 5E-3) {
+          return false
+        }
       }
+
     }
     true
   }
 
-  
+  def copy: T
 
   def isZero: Boolean
   /**
