@@ -48,6 +48,19 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
   }
 
   /**
+   * Reshapes the array and inserts the reshaped array into the variable hashmap.
+   * If a new name is not specified then the variable in use is used by default.
+   * The AbstractTensor which corresponds to the variable in use is replaced by
+   * the reshaped one.
+   * @param reshapedVarName The new variable name. Default is the current variable in use.
+   * @param shape The array specifying dimensions of the new shape
+   */
+  def reshape(shape : Array[Int], reshapedVarName : String = varInUse) : SciTensor = {
+    insertVar(reshapedVarName, variables(varInUse).reshape(shape))
+    this
+  }
+
+  /**
    * Writes metaData in the form of key-value pairs
    */
   def insertDictionary(metaDataVar: (String, String)*): Unit = {

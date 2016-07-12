@@ -47,6 +47,9 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     this(loadFunc())
   }
 
+  def reshape(shape: Array[Int]) = {
+    new BreezeTensor((this.data, shape))
+  }
   /**
    * Constructs a zeroed BreezeTensor.
    *
@@ -114,7 +117,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def div(num: Double): BreezeTensor = tensor / num
 
-  def data = tensor.t.toArray
+  def data : Array[Double] = tensor.t.toArray
 
   /**
    * SlicableArray operations

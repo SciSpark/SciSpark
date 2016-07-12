@@ -43,6 +43,15 @@ class BasicTensorTest extends FunSuite {
   * Test relational operators
   **/
 
+  test("reshape") {
+    logger.info("In reshape test ...")
+    val cube = Nd4j.create((1d to 16d by 1d).toArray, Array(2,2,2,2))
+    val square = Nd4j.create((1d to 16d by 1d).toArray, Array(4,4))
+    val cubeTensor = new Nd4jTensor(cube)
+    val squareTensor = new Nd4jTensor(square)
+    val reshapedcubeTensor = cubeTensor.reshape(Array(4,4))
+    assert(reshapedcubeTensor == squareTensor)
+  }
   test("filter") {
     logger.info("In filter test ...")
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
@@ -441,7 +450,7 @@ class BasicTensorTest extends FunSuite {
     val tdefault = sRDD.map(p => (p.data, p.shape))
     val varDataDef = tdefault.collect()(0)
     logger.info("The varInUse default data is: "+ varDataDef._1.mkString(" ") + "\nShape: (" + varDataDef._2.mkString(" , ")+")")
-    
+
     if (!(varData._1.sameElements(varData1._1)) && (varData1._1.sameElements(varDataDef._1))){
       assert(true)
     }else{
