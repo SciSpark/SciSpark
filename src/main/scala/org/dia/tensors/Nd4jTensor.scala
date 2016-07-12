@@ -20,6 +20,7 @@ package org.dia.tensors
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.inverse
+import org.nd4j.linalg.ops.transforms.Transforms
 import org.nd4s.Implicits._
 import scala.language.implicitConversions
 
@@ -187,6 +188,25 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
     val ret = Nd4j.create(newdata.data().asDouble(), tdshape)
     new Nd4jTensor(ret)
+  }
+
+  def std(axis : Int*) = {
+    new Nd4jTensor(tensor.std(axis: _*))
+  }
+
+  def skew(axis: Int*) = {
+    var meanAlongAxis = tensor.mean(axis: _*)
+    val shapeMatch = Array(1) ++ meanAlongAxis.shape
+    meanAlongAxis = meanAlongAxis.reshape(shapeMatch: _*)
+    val copy = tensor.dup()
+    val std = tensor.std(axis: _*).reshape(shapeMatch: _*)
+    for(i <- 0 until this.shape(axis(0))){
+      val diffOversd = (copy((i, i+1)).subi(meanAlongAxis)).divi(std)
+      val cubed = Transforms.pow(diffOversd, 3, false)
+    }
+
+    val third = copy.sum(axis: _*).divi(this.shape(axis(0)))
+    new Nd4jTensor(third)
   }
 
   /**

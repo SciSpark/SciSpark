@@ -215,8 +215,16 @@ class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends 
     variables(varInUse).broadcast(shape)
   }
 
-  def detrend(shape: Array[Int]): SciTensor = {
+  def detrend(axis: Array[Int]): SciTensor = {
     variables(varInUse).detrend(0)
+  }
+
+  def std(axis: Array[Int]): SciTensor = {
+    variables(varInUse).std(axis: _*)
+  }
+
+  def skew(axis: Array[Int]): SciTensor = {
+    variables(varInUse).skew(axis:_ *)
   }
   /**
    * Returns a block averaged tensor where the blocks are squares with

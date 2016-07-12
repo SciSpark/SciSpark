@@ -523,7 +523,25 @@ class BasicTensorTest extends FunSuite {
 
     assert(cubeTensor == solutionTensor)
     //val k = cubeTensor((0,1))
+  }
 
+  test("std") {
+    val sample = (0d to 27d by 1d).toArray
+    val solution = (0d to 8d by 1d).map(p => 9.0).toArray
+    val cube = Nd4j.create(sample, Array(3,3,3))
+    val solCube = Nd4j.create(solution, Array(3,3))
+    val cubeTensor = new Nd4jTensor(cube)
+    val solutionTensor = new Nd4jTensor(solCube)
+    val std = cubeTensor.std(0)
+    assert(solutionTensor == std)
+  }
 
+  test("skew") {
+    val sample = (0d to 27d by 1d).toArray
+    val cube = Nd4j.create(sample, Array(3,3,3))
+    val cubeTensor = new Nd4jTensor(cube)
+    val skw = cubeTensor.skew(0)
+    val zeroSkew = new Nd4jTensor(Nd4j.zeros(3,3))
+    assert(skw == zeroSkew)
   }
 }

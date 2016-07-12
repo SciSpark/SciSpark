@@ -166,6 +166,13 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     throw new Exception("BreezeTensor does not yet support detrending")
   }
 
+  def std(axis : Int*) = {
+    throw new Exception("BreezeTensor does not yet support standard deviation along axis")
+  }
+
+  def skew(axis: Int*) = {
+    throw new Exception("BreezeTensor does not yet support skewness along an axis")
+  }
   /**
    * Copies over the data in a new tensor to the current tensor
    * @param newTensor

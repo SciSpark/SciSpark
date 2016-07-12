@@ -60,7 +60,7 @@ class SciSparkContext(val sparkContext: SparkContext) {
   def this(conf: SparkConf) {
     this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.classesToRegister", "java.lang.Thread")
-    .set("spark.kryoserializer.buffer.max.mb", "256MB")))
+    .set("spark.kryoserializer.buffer.max", "256MB")))
   }
 
   def this(uri: String, name: String) {
