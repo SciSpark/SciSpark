@@ -36,6 +36,11 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable
 
   var inEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var outEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var metadata : mutable.HashMap[String, Any] = new mutable.HashMap[String, Any]()
+
+  def setMetadata(_metadata: mutable.HashMap[String, Any]): Unit = {
+    metadata = _metadata
+  }
 
   def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)

@@ -142,7 +142,7 @@ class SciSparkContext(val sparkContext: SparkContext) {
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
       val dataset = loadNetCDFFile(p._1, byteArray)
-      val variableHashTable = new mutable.HashMap[String, AbstractTensor]
+      val variableHashTable = new mutable.LinkedHashMap[String, AbstractTensor]
 
       varName.foreach(y => {
         val arrayandShape = loadNetCDFNDVar(dataset, y)

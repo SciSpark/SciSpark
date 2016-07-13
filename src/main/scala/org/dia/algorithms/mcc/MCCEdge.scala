@@ -19,7 +19,7 @@ package org.dia.algorithms.mcc
 
 class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
-  override def toString = s"($srcNode,$destNode)"
+  override def toString = s"((${srcNode.frameNum},${srcNode.cloudElemNum}) , (${destNode.frameNum},${destNode.cloudElemNum}))"
 
   override def equals(that: Any): Boolean = that match {
     case that: MCCEdge => that.srcNode == this.srcNode && that.destNode == this.destNode

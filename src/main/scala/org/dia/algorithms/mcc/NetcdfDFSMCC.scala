@@ -1,6 +1,6 @@
 package org.dia.algorithms.mcc
 
-import java.io.{File, PrintWriter}
+import java.io._
 import java.text.SimpleDateFormat
 import org.apache.spark.rdd.RDD
 import org.dia.Parsers
@@ -318,11 +318,13 @@ object NetcdfDFSMCC {
       * Note if no HDFS path is given, then randomly generated matrices are used.
       *
       */
-    val sRDD = sc.NetcdfDFSFile(hdfspath, List("ch4"), partCount)
-
+    val sRDD = sc.NetcdfDFSFile(hdfspath, List("ch4", "longitude", "latitude"), partCount)
+//    val sRDD = sc.randomMatrices("/Users/sujen/Desktop/development/SciSpark/resources/testing/random.txt",
+//      List("ch4"), (20,20), 2)
     val labeled = createLabelledRDD(sRDD)
     val collected = labeled.collect()
-
+    val lon = collected(0).variables("longitude").data
+    val lat = collected(0).variables("latitude").data
     val collected_filtered = collected.map(p => p(variable) <= 241.0)
     //    val filtered = labeled.map(p => p(variable) <= 241.0)
     val consecFrames = collected_filtered.flatMap(p => {
@@ -332,6 +334,9 @@ object NetcdfDFSMCC {
       .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("FRAME").toInt))
       .map(p => (p(0), p(1)))
+
+    val MCCEdgeList = new mutable.MutableList[MCCEdge]
+    val MCCNodeMap = new mutable.HashMap[String, MCCNode]()
 
     val componentFrameRDD = consecFrames.flatMap({
       case (t1, t2) => {
@@ -378,44 +383,64 @@ object NetcdfDFSMCC {
           *
           * @todo Extend it to have a lat long bounds for component.
           */
-        var areaMinMaxTable = new mutable.HashMap[String, mutable.HashMap[String, Double]]
+        var areaMinMaxTable = new mutable.HashMap[String, mutable.HashMap[String, Any]]
 
-        def updateComponent(label: Double, frame: String, value: Double): Unit = {
+        def updateComponent(label: Double, frame: String, value: Double, row: Int, col: Int): Unit = {
 
           if (label != 0.0) {
             var area = 0.0
             var max = Double.MinValue
             var min = Double.MaxValue
+            var rowMax = 0.0
+            var colMax = 0.0
+            var rowMin = Double.MaxValue
+            var colMin = Double.MaxValue
 
-            var outerTempArea = 0.0
-            var innerTempArea = 0.0
-            if (value < innerTemp) innerTempArea = 1.0 // value is the temperature value from the tensor
-            else if (value < outerTemp) outerTempArea = 1.0
-
+            var grid = new mutable.HashMap[(Int, Int), Double]()
             var currentProperties = new mutable.HashMap[String, Double]()
+            var metadata = new mutable.HashMap[String, Any]()
             if (areaMinMaxTable.contains(frame + ":" + label)) {
-              currentProperties = areaMinMaxTable.get(frame + ":" + label).get
+              metadata = areaMinMaxTable.get(frame + ":" + label).get
+              currentProperties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+              grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[(Int, Int), Double]]
               area = currentProperties.get("area").get
               max = currentProperties.get("maxTemp").get
               min = currentProperties.get("minTemp").get
+              rowMax = currentProperties.get("rowMax").get
+              colMax = currentProperties.get("colMax").get
+              rowMin = currentProperties.get("rowMin").get
+              colMin = currentProperties.get("colMin").get
+
               if (value < min) min = value
               if (value > max) max = value
 
-              val currentInnerTempCount = currentProperties.get("innerArea").get
-              val currentOuterTempCount = currentProperties.get("outerArea").get
-              currentProperties += (("innerArea", currentInnerTempCount + innerTempArea))
-              currentProperties += (("outerArea", currentOuterTempCount + outerTempArea))
 
             } else {
-              currentProperties = new mutable.HashMap[String, Double]()
               currentProperties += (("minTemp", value))
               currentProperties += (("maxTemp", value))
-              currentProperties += (("innerArea", innerTempArea))
-              currentProperties += (("outerArea", outerTempArea))
             }
+            rowMax = if (row > rowMax) row else rowMax
+            colMax = if (col > colMax) col else colMax
+            rowMin = if (row < rowMin) row else rowMin
+            colMin = if (col < colMin) col else colMin
+
+
             area += 1
             currentProperties += (("area", area))
-            areaMinMaxTable += ((frame + ":" + label, currentProperties))
+            currentProperties += (("rowMax", rowMax))
+            currentProperties += (("colMax", colMax))
+            currentProperties += (("rowMin", rowMin))
+            currentProperties += (("colMin", colMin))
+            currentProperties += (("latMin", lat(rowMin.toInt)))
+            currentProperties += (("latMax", lat(rowMax.toInt)))
+            currentProperties += (("lonMin", lon(colMin.toInt)))
+            currentProperties += (("lonMax", lon(colMax.toInt)))
+
+
+            grid += (((row,col), value))
+            metadata += (("properties", currentProperties))
+            metadata += (("grid", grid))
+            areaMinMaxTable += ((frame + ":" + label, metadata))
           }
         }
 
@@ -428,8 +453,8 @@ object NetcdfDFSMCC {
               val value2 = components2(row, col)
               overlappedPairsList += ((value1, value2))
             }
-            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col))
-            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col))
+            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col), row, col)
+            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col), row, col)
           }
         }
 
@@ -452,14 +477,15 @@ object NetcdfDFSMCC {
         val edgesSet = overlappedPairsList.toSet
         println(s"Overlap Set ${edgesSet.size}  : ") // for debugging
 
+
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
             case ((frameId1, compId1), (frameId2, compId2)) => {
-              val cloud1 = areaMinMaxTable(frameId1 + ":" + compId1)
+              val cloud1 = areaMinMaxTable(frameId1 + ":" + compId1)("properties").asInstanceOf[mutable.HashMap[String, Double]]
               val (area1, min1, max1) = (cloud1("area"), cloud1("minTemp"), cloud1("maxTemp"))
               val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
-              val cloud2 = areaMinMaxTable(frameId2 + ":" + compId2)
+              val cloud2 = areaMinMaxTable(frameId2 + ":" + compId2)("properties").asInstanceOf[mutable.HashMap[String, Double]]
               val (area2, max2, min2) = (cloud2("area"), cloud2("minTemp"), cloud2("maxTemp"))
               val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) < 0.9)))
               var meetsCriteria = true
@@ -480,24 +506,49 @@ object NetcdfDFSMCC {
                 else {
                   meetsCriteria = false
                 }
-                overlappedMap += (((compId1, compId2), 1))
+                overlappedMap += (((compId1, compId2), edgeWeight))
+                if(meetsCriteria) {
+                  var node1: MCCNode = new MCCNode(frameId1.toInt, compId1.toFloat)
+                  node1.setMetadata(areaMinMaxTable(frameId1 + ":" + compId1))
+
+                  var node2: MCCNode = new MCCNode(frameId2.toInt, compId2.toFloat)
+                  node2.setMetadata(areaMinMaxTable(frameId2 + ":" + compId2))
+
+                  MCCNodeMap += (((frameId1 + ":" + compId1), node1))
+                  MCCNodeMap += (((frameId2 + ":" + compId2), node2))
+                  MCCEdgeList += new MCCEdge(node1, node2, edgeWeight)
+
+                }
               }
               isCloud1 && isCloud2 && meetsCriteria
             }
           })
 
-        val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
+        val edgeList = new mutable.MutableList[((String, Double), (String, Double), Int, Any)]()
         filtered.foreach(edge => {
           val key = (edge._1._2, edge._2._2)
           if(overlappedMap.contains(key)){
-            edgeList += ((edge._1, edge._2, overlappedMap.get(key).get))
+            val gridMap = areaMinMaxTable(edge._1._1 + ":" + edge._1._2)
+            edgeList += ((edge._1, edge._2, overlappedMap.get(key).get, gridMap("grid")))
           }
         })
-        println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
-        println(s"filtered Map ${filtered.size}")
-        edgeList
+
+        //println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
+        //println(s"filtered Map ${filtered.size}")
+
+        MCCEdgeList
       }
     })
+
+    var fos = new FileOutputStream("MCCNodes.txt")
+    var oos = new ObjectOutputStream(fos)
+    oos.writeObject(MCCNodeMap)
+    oos.close()
+
+    val fw = new FileWriter("MCCEdges.txt")
+    fw.write(MCCEdgeList.toString())
+    fw.close()
+
 
   }
 }
