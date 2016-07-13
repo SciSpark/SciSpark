@@ -435,6 +435,8 @@ object NetcdfDFSMCC {
             currentProperties += (("latMax", lat(rowMax.toInt)))
             currentProperties += (("lonMin", lon(colMin.toInt)))
             currentProperties += (("lonMax", lon(colMax.toInt)))
+            currentProperties += (("centerLat", ((lat(rowMax.toInt)+lat(rowMin.toInt))/2)))
+            currentProperties += (("centerLon", ((lon(colMax.toInt)+lon(colMin.toInt))/2)))
 
 
             grid += (((row,col), value))
@@ -544,6 +546,7 @@ object NetcdfDFSMCC {
     var oos = new ObjectOutputStream(fos)
     oos.writeObject(MCCNodeMap)
     oos.close()
+    fos.close()
 
     val fw = new FileWriter("MCCEdges.txt")
     fw.write(MCCEdgeList.toString())
