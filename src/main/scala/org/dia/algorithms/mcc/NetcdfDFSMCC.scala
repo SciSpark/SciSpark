@@ -413,9 +413,14 @@ object NetcdfDFSMCC {
               rowMin = currentProperties.get("rowMin").get
               colMin = currentProperties.get("colMin").get
 
-              if (value < min) min = value
-              if (value > max) max = value
-
+              if (value < min) {
+                min = value
+                currentProperties += (("minTemp", min))
+              }
+              if (value > max) {
+                max = value
+                currentProperties += (("maxTemp", max))
+              }
 
             } else {
               currentProperties += (("minTemp", value))
