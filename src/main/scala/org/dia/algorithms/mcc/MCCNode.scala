@@ -17,11 +17,30 @@
  */
 package org.dia.algorithms.mcc
 
+import java.util
+
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import scala.collection.mutable
+import scala.collection.JavaConverters._
+import scala.util.parsing.json.JSONObject
 
 class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable {
 
-  override def toString = s"($frameNum,$cloudElemNum)"
+  override def toString = {
+    val map = new util.HashMap[String, Any]()
+    map.put("frameNum", frameNum)
+    map.put("coudElemNum", cloudElemNum)
+    val properties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+//    map += (("properties", (new JSONObject(properties.toMap)).toString()))
+    map.put("properties", properties.asJava)
+
+    val grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+//    map += (("grid", (new JSONObject(grid.toMap)).toString()))
+    map.put("grid", grid.asJava)
+    val mapper = new ObjectMapper()
+    s"${mapper.writeValueAsString(map)}"
+  }
 
   override def equals(that: Any): Boolean = that match {
     case that: MCCNode => that.frameNum == this.frameNum && that.cloudElemNum == this.cloudElemNum

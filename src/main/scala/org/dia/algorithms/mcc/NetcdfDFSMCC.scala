@@ -2,6 +2,7 @@ package org.dia.algorithms.mcc
 
 import java.io._
 import java.text.SimpleDateFormat
+import com.fasterxml.jackson.module.scala.JacksonModule
 import org.apache.spark.rdd.RDD
 import org.dia.Parsers
 import org.dia.core.{SciSparkContext, SciTensor}
@@ -9,6 +10,7 @@ import org.slf4j.Logger
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+import scala.util.parsing.json.JSONObject
 
 
 object NetcdfDFSMCC {
@@ -336,7 +338,7 @@ object NetcdfDFSMCC {
       .map(p => (p(0), p(1)))
 
     val MCCEdgeList = new mutable.MutableList[MCCEdge]
-    val MCCNodeMap = new mutable.HashMap[String, MCCNode]()
+    val MCCNodeMap = new mutable.HashMap[String, Any]()
 
     val componentFrameRDD = consecFrames.flatMap({
       case (t1, t2) => {
@@ -396,13 +398,13 @@ object NetcdfDFSMCC {
             var rowMin = Double.MaxValue
             var colMin = Double.MaxValue
 
-            var grid = new mutable.HashMap[(Int, Int), Double]()
+            var grid = new mutable.HashMap[String, Double]()
             var currentProperties = new mutable.HashMap[String, Double]()
             var metadata = new mutable.HashMap[String, Any]()
             if (areaMinMaxTable.contains(frame + ":" + label)) {
               metadata = areaMinMaxTable.get(frame + ":" + label).get
               currentProperties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-              grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[(Int, Int), Double]]
+              grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
               area = currentProperties.get("area").get
               max = currentProperties.get("maxTemp").get
               min = currentProperties.get("minTemp").get
@@ -439,7 +441,7 @@ object NetcdfDFSMCC {
             currentProperties += (("centerLon", ((lon(colMax.toInt)+lon(colMin.toInt))/2)))
 
 
-            grid += (((row,col), value))
+            grid += ((s"($row, $col)", value))
             metadata += (("properties", currentProperties))
             metadata += (("grid", grid))
             areaMinMaxTable += ((frame + ":" + label, metadata))
@@ -537,16 +539,17 @@ object NetcdfDFSMCC {
 
         //println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
         //println(s"filtered Map ${filtered.size}")
-
         MCCEdgeList
       }
     })
 
-    var fos = new FileOutputStream("MCCNodes.txt")
-    var oos = new ObjectOutputStream(fos)
-    oos.writeObject(MCCNodeMap)
-    oos.close()
-    fos.close()
+    val json = new JSONObject(MCCNodeMap.toMap)
+    val pw = new PrintWriter("MCCNodesLines.json")
+    MCCNodeMap.foreach{ case (key, value) => {
+      pw.write(value.toString)
+      pw.write("\n")
+    }}
+    pw.close()
 
     val fw = new FileWriter("MCCEdges.txt")
     fw.write(MCCEdgeList.toString())
