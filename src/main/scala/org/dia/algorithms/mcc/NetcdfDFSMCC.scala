@@ -20,6 +20,16 @@ object NetcdfDFSMCC {
   val minAreaOverlapThreshold = 0.50
   val minArea = 10000
 
+  def create2DTempGrid(node: MCCNode, rowMax: Int, colMax: Int): Array[Array[Double]] = {
+    val tempGrid = Array.ofDim[Double](rowMax, colMax)
+    val gridMap: mutable.HashMap[String, Double] = node.getMetadata().
+      get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+    gridMap.foreach{case(k,v) => {
+      val indices = k.replace("(", "").replace(")","").replace(" ", "").split(",")
+      tempGrid(indices(0).toInt)(indices(1).toInt) = v
+    }}
+    return tempGrid
+  }
 
   def removeOverlappingEdges(t1: SciTensor, t2: SciTensor) = {
     val (components1, _) = MCCOps.labelConnectedComponents(t1.tensor)
@@ -328,7 +338,7 @@ object NetcdfDFSMCC {
     val lon = collected(0).variables("longitude").data
     val lat = collected(0).variables("latitude").data
     val collected_filtered = collected.map(p => p(variable) <= 241.0)
-    //    val filtered = labeled.map(p => p(variable) <= 241.0)
+//    val filtered = labeled.map(p => p(variable) <= 241.0)
     val consecFrames = collected_filtered.flatMap(p => {
       List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
     }).groupBy(_._1)
@@ -548,7 +558,7 @@ object NetcdfDFSMCC {
       }
     })
 
-    val json = new JSONObject(MCCNodeMap.toMap)
+//    val json = new JSONObject(MCCNodeMap.toMap)
     val pw = new PrintWriter("MCCNodesLines.json")
     MCCNodeMap.foreach{ case (key, value) => {
       pw.write(value.toString)
