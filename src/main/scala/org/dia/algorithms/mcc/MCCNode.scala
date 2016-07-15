@@ -61,6 +61,10 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable
     metadata = _metadata
   }
 
+  def getMetadata():mutable.HashMap[String, Any] = {
+    return metadata
+  }
+
   def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)
     addOutgoingEdge(edge)
