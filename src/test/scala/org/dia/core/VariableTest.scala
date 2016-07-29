@@ -29,11 +29,9 @@ class VariableTest extends FunSuite {
 
   val (array, shape) = NetCDFUtils.netCDFArrayAndShape(netcdfDataset, name)
   val dataVar = netcdfDataset.findVariable(name)
-  val dataType = dataVar.getDataType.toString
-  val attributes = dataVar.getAttributes
 
   val tensor = new Nd4jTensor(array, shape)
-  val variable = new Variable(name, dataType, tensor, attributes)
+  val variable = new Variable(dataVar)
 
 
   test("testCopy") {
