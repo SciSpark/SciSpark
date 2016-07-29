@@ -32,14 +32,14 @@ import scala.language.implicitConversions
  *
  * @param variables A hashmap of variable name to the tensor of variable values.
  */
-class SciTensor(val variables: mutable.HashMap[String, AbstractTensor]) extends Serializable {
+class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
   val metaData = new mutable.HashMap[String, String]
   var varInUse = variables.toArray.apply(0)._1
 
   def this(variableName: String, array: AbstractTensor) {
-    this(new mutable.HashMap[String, AbstractTensor] += ((variableName, array)))
+    this(new mutable.LinkedHashMap[String, AbstractTensor] += ((variableName, array)))
   }
 
   def this(variableName: String, array: AbstractTensor, metaDataVar: (String, String)*) {

@@ -42,12 +42,12 @@ object MainDistGraphMCC {
 
   val bins: Int = 8
   val frames: Int = 40
-  val frameChunkSize: Float = frames / bins
+  val frameBucketSize: Float = frames / bins
   val minAcceptableFeatureLength = 3
   val maxIterations = scala.math.ceil(scala.math.log(bins)/scala.math.log(2)) + 1
   /*
   This is the function which recursively creates subgraphs and merges partitions
-  untill we are left with one partition or no edges to process.
+  until we are left with one partition or no edges to process.
    */
   def getSubgraphs(graph: RDD[(Integer, Iterable[MCCEdge])], iter: Int): Unit = {
     logger.info(s"Current iteration : $iter, Max iterations : $maxIterations")
@@ -60,7 +60,6 @@ object MainDistGraphMCC {
       })
       return
     }
-
     logger.info(s"Graph count ${graph.count()}")
     val newGraph = graph.map(x => createPartialGraphs(x._1, x._2, iter))
       .filter(x => x._1 != -1)
@@ -74,6 +73,7 @@ object MainDistGraphMCC {
     //      if(graph.count() == 1){e
     //        return graph
     //      }
+    println(graph.toDebugString)
     getSubgraphs(newGraph, iter+1)
 
   }
@@ -117,7 +117,7 @@ object MainDistGraphMCC {
     logger.info(s"Processing partial graph for bucket:$bucket iteration:$iteration")
     val edgeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
     val nodeMap = new mutable.HashMap[String, MCCNode]() // for faster lookups for nodes
-    val currentFrameChunkSize = frameChunkSize*iteration
+    val currentFrameChunkSize = frameBucketSize*iteration
     val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 //The first frame number in the bucket
     val bucketEndFrame = bucket * currentFrameChunkSize // last frame in bucket
     var minFrame = Integer.MAX_VALUE
@@ -271,7 +271,7 @@ object MainDistGraphMCC {
     val destNode = nodeMap.get(destKey).get
 
     for (i <- 1 to bins) {
-      if (sourceFrameNum <= frameChunkSize * i) {
+      if (sourceFrameNum <= frameBucketSize * i) {
         val bucket: Int = i
         return (bucket,
           new MCCEdge(sourceNode, destNode))
@@ -280,6 +280,34 @@ object MainDistGraphMCC {
     return (bins,
       new MCCEdge(sourceNode, destNode)
       )
+  }
+
+  def mapEdgesToBuckets(edge: MCCEdge): (Integer, MCCEdge) = {
+    val sourceFrameNum = edge.srcNode.frameNum
+    val bucket = scala.math.ceil(sourceFrameNum/frameBucketSize).toInt
+    return (bucket, edge)
+  }
+
+  def mapEdgesToBuckets(edge: ((String, Double), (String, Double), Int)): (Integer, MCCEdge) = {
+    val sourceNode = new MCCNode(edge._1._1.toInt, edge._1._2)
+    val destNode = new MCCNode(edge._2._1.toInt, edge._2._2)
+    val mccEdge = new MCCEdge(sourceNode, destNode, edge._3)
+    val sourceFrameNum = mccEdge.srcNode.frameNum
+    val bucket = scala.math.ceil(sourceFrameNum/frameBucketSize).toInt
+    return (bucket, mccEdge)
+  }
+
+//   def performMCCfromRDD(edgelist : RDD[MCCEdge]):Unit = {
+//     val graph = edgelist.map(mapEdgesToBuckets)
+//       .groupByKey()
+//     getSubgraphs(graph, 1)
+//   }
+
+  def performMCCfromRDD(edgelist : RDD[((String, Double), (String, Double), Int)]):Unit = {
+    val graph = edgelist.map(mapEdgesToBuckets)
+      .groupByKey()
+      .collect()
+//    getSubgraphs(graph, 1)
   }
 
   def main(args: Array[String]) {
@@ -306,6 +334,7 @@ object MainDistGraphMCC {
     val count = RDD.flatMap(line => line.split(", "))
       .map(mapFrames)
       .groupByKey()
+    println(count.toDebugString)
     getSubgraphs(count, 1)
     logger.info("MCC Graph computation complete")
   }

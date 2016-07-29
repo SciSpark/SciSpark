@@ -17,11 +17,30 @@
  */
 package org.dia.algorithms.mcc
 
+import java.util
+
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import scala.collection.mutable
+import scala.collection.JavaConverters._
+import scala.util.parsing.json.JSONObject
 
-class MCCNode(var frameNum :Int, var cloudElemNum : Float) extends Serializable {
+class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable {
 
-  override def toString = s"($frameNum,$cloudElemNum)"
+  override def toString = {
+    val map = new util.HashMap[String, Any]()
+    map.put("frameNum", frameNum)
+    map.put("coudElemNum", cloudElemNum)
+    val properties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+//    map += (("properties", (new JSONObject(properties.toMap)).toString()))
+    map.put("properties", properties.asJava)
+
+    val grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
+//    map += (("grid", (new JSONObject(grid.toMap)).toString()))
+    map.put("grid", grid.asJava)
+    val mapper = new ObjectMapper()
+    s"${mapper.writeValueAsString(map)}"
+  }
 
   override def equals(that: Any): Boolean = that match {
     case that: MCCNode => that.frameNum == this.frameNum && that.cloudElemNum == this.cloudElemNum
@@ -36,14 +55,23 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Float) extends Serializable 
 
   var inEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var outEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var metadata : mutable.HashMap[String, Any] = new mutable.HashMap[String, Any]()
 
-  def connectTo(destNode: MCCNode, weight: Float): MCCEdge = {
+  def setMetadata(_metadata: mutable.HashMap[String, Any]): Unit = {
+    metadata = _metadata
+  }
+
+  def getMetadata():mutable.HashMap[String, Any] = {
+    return metadata
+  }
+
+  def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)
     addOutgoingEdge(edge)
     return edge
   }
 
-  def connectFrom(srcNode: MCCNode, weight: Float): MCCEdge = {
+  def connectFrom(srcNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, srcNode, weight)
     addIncomingEdge(edge)
     return edge
@@ -61,7 +89,7 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Float) extends Serializable 
     frameNum
   }
 
-  def getCloudElemNum : Float = {
+  def getCloudElemNum : Double = {
     cloudElemNum
   }
 
