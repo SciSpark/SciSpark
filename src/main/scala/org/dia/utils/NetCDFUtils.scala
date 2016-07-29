@@ -20,7 +20,8 @@ package org.dia.utils
 import org.slf4j.Logger
 import org.dia.HDFSRandomAccessFile
 import ucar.ma2
-import ucar.nc2.NetcdfFile
+import ucar.ma2.DataType
+import ucar.nc2.{Attribute, NetcdfFile}
 import ucar.nc2.dataset.NetcdfDataset
 import scala.language.implicitConversions
 
@@ -29,7 +30,7 @@ import scala.language.implicitConversions
  *
  * Note that we use -9999.0 instead of NaN to indicate missing values.
  */
-object NetCDFUtils {
+object NetCDFUtils extends Serializable {
 
   // Class logger
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -161,6 +162,25 @@ object NetCDFUtils {
     if (dimSize < 0)
       throw new IllegalStateException("Dimension does not exist!!!")
     dimSize
+  }
+
+  /**
+   * Given an attribute, converts it into a
+   * key value String pair.
+   * The attribute data type is checked.
+   * If it is not a string then it is number and
+   * is converted to a String.
+   *
+   * @param attribute the netCDF attribute
+   * @return (attribute name, attribute value)
+   */
+  def convertAttribute(attribute: Attribute) : (String, String) = {
+    val key = attribute.getFullName
+    val value = attribute.getDataType match {
+      case DataType.STRING => attribute.getStringValue
+      case _               => attribute.getNumericValue().toString
+    }
+    (key, value)
   }
 
 }
