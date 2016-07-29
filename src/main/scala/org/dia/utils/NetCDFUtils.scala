@@ -21,7 +21,7 @@ import org.slf4j.Logger
 import org.dia.HDFSRandomAccessFile
 import ucar.ma2
 import ucar.ma2.DataType
-import ucar.nc2.{Attribute, NetcdfFile}
+import ucar.nc2.{Variable, Attribute, NetcdfFile}
 import ucar.nc2.dataset.NetcdfDataset
 import scala.language.implicitConversions
 
@@ -181,6 +181,25 @@ object NetCDFUtils extends Serializable {
       case _               => attribute.getNumericValue().toString
     }
     (key, value)
+  }
+
+  /**
+   * Extracts the flattened double array from a netCDF Variable
+   * @param variable the netCDF variable
+   * @return the flattened Double Array
+   */
+  def getArrayFromVariable(variable: Variable): Array[Double] = {
+    var searchVariable : ma2.Array = null
+    if (variable == null) throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
+    try {
+      searchVariable = variable.read()
+    } catch {
+      case ex: Exception =>
+        LOG.error("Variable '%s' not found when reading source %s.".format(variable))
+        LOG.info("Variables available: " + variable)
+        LOG.error(ex.getMessage)
+    }
+    convertMa2Arrayto1DJavaArray(searchVariable)
   }
 
 }

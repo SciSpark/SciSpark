@@ -18,28 +18,36 @@
 package org.dia.core
 
 import java.io.Serializable
-import org.dia.tensors.AbstractTensor
+import org.dia.tensors.{Nd4jTensor, AbstractTensor}
 import org.dia.utils.NetCDFUtils
 import ucar.nc2.Attribute
 import scala.collection.{TraversableOnce, mutable}
 
 class Variable(val name : String,
-               val numericType : String,
+               val dataType : String,
                val array : AbstractTensor,
                val attributes : mutable.HashMap[String, String]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  def this(name: String, numericType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]){
-    this(name, numericType, array, new mutable.HashMap[String, String] ++= attr)
+  def this(name: String, dataType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]){
+    this(name, dataType, array, new mutable.HashMap[String, String] ++= attr)
   }
 
-  def this(name: String, numericType: String, array : AbstractTensor, attr : Array[Attribute]){
-    this(name, numericType, array, attr.map(p => NetCDFUtils.convertAttribute(p)))
+  def this(name: String, dataType: String, array : AbstractTensor, attr : Array[Attribute]){
+    this(name, dataType, array, attr.map(p => NetCDFUtils.convertAttribute(p)))
   }
 
-  def this(name: String, numericType: String, array : AbstractTensor, attr : java.util.List[Attribute]){
-    this(name, numericType, array, attr.toArray.map(p => p.asInstanceOf[Attribute]))
+  def this(name: String, daaType: String, array : AbstractTensor, attr : java.util.List[Attribute]){
+    this(name, daaType, array, attr.toArray.map(p => p.asInstanceOf[Attribute]))
+  }
+
+  def this(name: String, dataType: String, array : Array[Double], shape : Array[Int], attr : java.util.List[Attribute]){
+    this(name, dataType, new Nd4jTensor(array, shape), attr)
+  }
+
+  def this(nvar: ucar.nc2.Variable) {
+    this(nvar.getFullName, nvar.getDataType.toString, NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
   }
 
   def this(name: String, array : AbstractTensor){
@@ -90,7 +98,7 @@ class Variable(val name : String,
    * Creates a copy of the variable
    * @return
    */
-  def copy() : Variable = new Variable(name, numericType, array.copy, attributes.clone())
+  def copy() : Variable = new Variable(name, dataType, array.copy, attributes.clone())
 
   /**
    * It should print just the same or similar to how
@@ -110,7 +118,7 @@ class Variable(val name : String,
    *
    */
   override def toString: String = {
-    val header = numericType + " " + name + "\n"
+    val header = dataType + " " + name + "\n"
     val footer = "current shape = " + shape().toList + "\n"
     val body = new StringBuilder()
     body.append(header)
@@ -124,7 +132,7 @@ class Variable(val name : String,
   override def equals(any: Any) : Boolean = {
     val variable = any.asInstanceOf[Variable]
     this.name == variable.name &&
-      this.numericType == variable.numericType &&
+      this.dataType == variable.dataType &&
       this.array == variable.array &&
       this.attributes == variable.attributes
   }
