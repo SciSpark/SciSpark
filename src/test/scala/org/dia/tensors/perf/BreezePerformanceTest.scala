@@ -27,7 +27,7 @@ import org.scalatest.FunSuite
  *
  * Source : https://github.com/apache/climate/blob/master/ocw/metrics.py
  */
-class MainMemoryBreezePerformanceTest extends FunSuite {
+class BreezePerformanceTest extends FunSuite {
 
   /** Files URL */
   val FILE_URL = "http://zipper.jpl.nasa.gov/dist/"
@@ -36,7 +36,8 @@ class MainMemoryBreezePerformanceTest extends FunSuite {
   val FILE_2 = "AFRICA_UC-WRF311_CTL_ERAINT_MM_50km-rg_1989-2008_tasmax.nc"
   val NANO_SECS = 1000000000.0
 
-  test("Breeze.element.wise.test") {
+  // Turn on this test if you want to test the performance of elementwise ops
+  ignore ("Breeze.element.wise.test") {
     println("Breeze.element.wise.test")
     (1 to 20).foreach { i =>
       val m1 = DenseMatrix.ones[Double](i * 1000, i * 1000)
@@ -51,8 +52,8 @@ class MainMemoryBreezePerformanceTest extends FunSuite {
     }
     assert(true)
   }
-
-  test("Breeze.vector.wise.test") {
+  // Turn on this test if you want to test the performance of vector ops
+  ignore("Breeze.vector.wise.test") {
     println("Breeze.vector.wise.test")
     (1 to 20).foreach { i =>
       val m1 = DenseMatrix.ones[Double](i * 1000, i * 1000)

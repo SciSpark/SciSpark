@@ -24,7 +24,7 @@ import org.scalatest.{ FunSuite, Ignore }
 /**
  * Nd4j Performance Tests
  */
-class MainMemoryNd4JPerformanceTest extends FunSuite {
+class Nd4JPerformanceTest extends FunSuite {
 
   test("ND4J.element.wise.test") {
     println("ND4J.element.wise.test")
