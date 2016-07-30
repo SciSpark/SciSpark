@@ -22,12 +22,17 @@ import org.dia.tensors.BreezeTensor
 import org.scalatest.FunSuite
 
 /**
- * Tests whether the creation of Breeze tensors works.
- */
+  * Tests whether the creation of BreezeTensors works.
+  * Note that a likely reason for these tests to fail
+  * Is if a filename has changed on the OpenDap server where these
+  * files are being pulled from.
+  *
+  * To check, simply visit the url corresponding to the failed test.
+  */
 class BreezeIntegrationTest extends FunSuite {
 
   val dailyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_L3/TRMM_3B42_daily/1997/365/3B42_daily.1998.01.01.7.bin"
-  val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF.Z"
+  val hourlyTrmmUrl = "http://disc2.nascom.nasa.gov:80/opendap/TRMM_3Hourly_3B42/1997/365/3B42.19980101.00.7.HDF"
   val knmiUrl = "http://zipper.jpl.nasa.gov/dist/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
 
   val KMNI_BNDS_DIMENSION = "bnds"

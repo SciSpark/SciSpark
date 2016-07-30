@@ -118,10 +118,10 @@ object NetCDFUtils {
     } catch {
       case e: java.io.IOException =>
         LOG.error("Couldn't open dataset %s".format(url))
-        null
+        throw e
       case ex: Exception =>
         LOG.error("Something went wrong while reading %s".format(url))
-        null
+        throw ex
     }
   }
 
