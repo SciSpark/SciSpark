@@ -60,26 +60,36 @@ class MCCOpsTest extends FunSuite {
     val ccArray = Nd4j.create(cc)
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
-    val (labelledTensor, numComponents) = MCCOps.labelConnectedComponents(t)
+    val (labelledTensor, numComponent) = MCCOps.labelConnectedComponents(t)
+    assert(numComponent == 4)
     assert(labelledTensor == cct)
   }
 
   test("reduceResRectangle") {
 
-    val m = Array(
+    val array = Array(
       Array(1.0, 1.0, 0.0, 2.0),
       Array(1.0, 1.0, 0.0, 2.0),
       Array(1.0, 1.0, 1.0, 0.0),
       Array(0.0, 0.0, 0.0, 0.0),
       Array(3.0, 0.0, 4.0, 0.0))
 
-    val k = m.flatMap(p => p)
-    val ndArray = new DenseMatrix(5, 4, k, 0, 4, true)
-    val t: AbstractTensor = new BreezeTensor(ndArray)
-    println()
-    println(MCCOps.reduceResolution(t, 5, 1))
-    val reduced = MCCOps.reduceRectangleResolution(t, 3, 3, 99999999)
-    println(reduced)
+    val flattened = array.flatMap(p => p)
+    val tensor: AbstractTensor = new Nd4jTensor(flattened, Array(5, 4))
+    val averageColumnsolution = new Nd4jTensor(Array(1.2, 0.6, 1.0, 0.8), Array(1,4))
+    val averageDoubleColumnsSolution = new Nd4jTensor(Array(0.9, 0.9), Array(1,2))
+    val averageRowSolution = new Nd4jTensor(Array(1.0, 1.0, 0.75, 0.0, 1.75), Array(5, 1))
+    val mismatchedDimensionSolution = new Nd4jTensor(Array(0.78), Array(1,1))
+
+    val averageColumns = MCCOps.reduceRectangleResolution(tensor, 5, 1, 9999999)
+    val averageDoubleColums = MCCOps.reduceRectangleResolution(tensor, 5, 2, 9999999)
+    val averageRows = MCCOps.reduceRectangleResolution(tensor, 1, 4, 999999)
+    val mismatchedDimension = MCCOps.reduceRectangleResolution(tensor, 3, 3, 99999999)
+
+    assert(averageColumns == averageColumnsolution)
+    assert(averageDoubleColums == averageDoubleColumnsSolution)
+    assert(averageRows == averageRowSolution)
+    assert(mismatchedDimension == mismatchedDimensionSolution)
   }
 
   test("findComponents") {
