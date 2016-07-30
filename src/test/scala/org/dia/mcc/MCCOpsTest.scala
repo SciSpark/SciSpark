@@ -33,27 +33,12 @@ class MCCOpsTest extends FunSuite {
    * Note that Nd4s slicing is broken at the moment
    */
   test("reduceResolutionTest") {
-    val dense = new DenseMatrix[Double](4, 2, (0d to 8d by 1d).toArray, 0, 2, true)
-    val nd = Nd4j.create((0d to 8d by 1d).toArray, Array(4, 2))
     val breeze = new BreezeTensor((0d to 8d by 1d).toArray, Array(4, 2))
-    val nd4j = new Nd4jTensor(nd)
-    println("breeze")
+    val nd4j = new Nd4jTensor(((0d to 8d by 1d).toArray, Array(4, 2)))
     val breezeReduced = MCCOps.reduceResolution(breeze, 2, 999999)
-    println("nd4j")
     val nd4jReduced = MCCOps.reduceResolution(nd4j, 2, 999999)
-
-    println(breeze)
-    println(nd4j)
-
-    if (breeze == nd4j) println("THESE ARE TRUE TRUE TRUE")
-
-    println(breezeReduced)
-    println(nd4jReduced)
-
-    println(breezeReduced.data.toList)
-    println(nd4jReduced.data.toList)
-
     assert(breezeReduced == nd4jReduced)
+    assert(breezeReduced.data.toList == List(1.5, 5.5))
   }
 
   test("testFindConnectedComponents") {
