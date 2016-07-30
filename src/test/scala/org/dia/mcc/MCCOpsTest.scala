@@ -60,9 +60,8 @@ class MCCOpsTest extends FunSuite {
     val ccArray = Nd4j.create(cc)
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
-    val labelled = MCCOps.labelConnectedComponents(t)
-    println(labelled)
-    assert(labelled._1.equals(cct))
+    val (labelledTensor, numComponents) = MCCOps.labelConnectedComponents(t)
+    assert(labelledTensor == cct)
   }
 
   test("reduceResRectangle") {
