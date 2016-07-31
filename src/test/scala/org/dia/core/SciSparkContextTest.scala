@@ -56,11 +56,9 @@ class SciSparkContextTest extends FunSuite {
   test("NetcdfDFSFile.Local") {
     val variable = "data"
     val rdd = sc.NetcdfDFSFile("src/test/resources/Netcdf", List(variable))
-    rdd.collect.map(p => {
-      println(p)
-      println(p.tensor)
-    })
-    assert(true)
+    val collected = rdd.collect
+
+    assert(collected.length == 2)
   }
 
 }
