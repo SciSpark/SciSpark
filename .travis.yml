@@ -36,8 +36,10 @@ cache:
 notifications:
   email: false
 
-# 5. Run maven sbt compile and sbt test
+# 5. Run maven sbt compile, check style, and test
 install:
   - sbt compile
+  - sbt scalastyle
+  - sbt test:scalastyle
   - sbt test
 
