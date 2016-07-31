@@ -78,7 +78,7 @@ class BreezeIntegrationTest extends FunSuite {
    * This test is ignored due to the massive size of the data set.
    * It is a 7k x 3k x 60 array.
    */
-  test("ReadingKNMIDimensions") {
+  ignore("ReadingKNMIDimensions") {
     val arrayTuple = NetCDFReader.loadNetCDFNDVar(knmiUrl, KNMI_TASMAX_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
     val expectedShape = arrayTuple._2

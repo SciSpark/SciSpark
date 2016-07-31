@@ -83,9 +83,21 @@ class Nd4jIntegrationTest extends FunSuite {
   }
 
   /**
-   * Testing creation of N-d array from KNMI compData
+   * Testing creation of N-d array from AIRS compData
    */
-  test("ReadingKNMIDimensions") {
+  test("ReadingAIRSDimensions") {
+    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(airslvl3, TOTALCOUNTS_A))
+    assert(realTensor.tensor.rows() == 180)
+    assert(realTensor.tensor.columns() == 360)
+  }
+
+
+  /**
+    * Testing creation of N-d array from KNMI compData
+    * This test is being ignored due to the massive size of the dataset
+    * It is a 7k x 3k x 60 array
+    */
+  ignore("ReadingKNMIDimensions") {
     /** creating expected */
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)
     val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, KNMI_TASMAX_VAR)
@@ -96,14 +108,4 @@ class Nd4jIntegrationTest extends FunSuite {
     assert(realTensor.tensor.getClass.equals(expectedType.getClass))
     assert(realTensor.shape.toList == expectedType.shape.toList)
   }
-
-  /**
-   * Testing creation of N-d array from AIRS compData
-   */
-  test("ReadingAIRSDimensions") {
-    val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(airslvl3, TOTALCOUNTS_A))
-    assert(realTensor.tensor.rows() == 180)
-    assert(realTensor.tensor.columns() == 360)
-  }
-
 }
