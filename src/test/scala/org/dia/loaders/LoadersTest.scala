@@ -54,11 +54,11 @@ class LoadersTest extends FunSuite {
    * Tests SRDD creation if NetCDFs are the files within a provided local directory.
    */
   test("LoadPathGrouping") {
-    val dataUrls = List("/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/")
+    val dataUrls = List("src/test/resources/Netcdf")
     val sc = SparkTestConstants.sc.sparkContext
     sc.getConf.set("log4j.configuration", "resources/log4j-defaults.properties")
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val sBreezeRdd = new SRDD[SciTensor](sc, dataUrls, List("precipitation"), loadNetCDFNDVar, mapSubFoldersToFolders)
+    val sBreezeRdd = new SRDD[SciTensor](sc, dataUrls, List("data"), loadNetCDFNDVar, mapSubFoldersToFolders)
     sBreezeRdd.collect()
     assert(true)
   }
@@ -70,9 +70,9 @@ class LoadersTest extends FunSuite {
   test("OpenLocalPath") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-    val path = "/Users/marroqui/Documents/projects/scipark/compData/TRMM_3Hourly_3B42_1998/"
-    val pathRDD: SRDD[SciTensor] = sc.OpenPath(path, List("precipitation"))
-    println(pathRDD.collect()(0).variables("precipitation").data.length)
+    val path = "src/test/resources/Netcdf"
+    val pathRDD: SRDD[SciTensor] = sc.OpenPath(path, List("data"))
+    println(pathRDD.collect()(0).variables("data").data.length)
     assert(true)
   }
 
@@ -83,8 +83,8 @@ class LoadersTest extends FunSuite {
   test("LoadMultiVariable") {
     val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
-    val path = "TestLinks2"
-    val pathRDD = sc.NetcdfFile(path)
+    val path = SparkTestConstants.datasetPath
+    val pathRDD = sc.NetcdfFile(path, List("data"))
     val tensors = pathRDD.collect().toList
     println("Number of tensors loaded " + tensors.length)
     println(tensors.toString())
