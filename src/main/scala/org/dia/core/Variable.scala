@@ -26,12 +26,12 @@ import scala.collection.{TraversableOnce, mutable}
 class Variable(val name : String,
                val dataType : String,
                val array : AbstractTensor,
-               val attributes : mutable.HashMap[String, String]) extends Serializable {
+               val attributes : mutable.LinkedHashMap[String, String]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def this(name: String, dataType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]){
-    this(name, dataType, array, new mutable.HashMap[String, String] ++= attr)
+    this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr)
   }
 
   def this(name: String, dataType: String, array : AbstractTensor, attr : Array[Attribute]){

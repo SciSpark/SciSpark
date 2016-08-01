@@ -24,8 +24,8 @@ import org.scalatest.FunSuite
 class VariableTest extends FunSuite {
 
 
-  val netcdfDataset = NetCDFUtils.loadNetCDFDataSet("resources/merg/merg_2006091100_4km-pixel.nc")
-  val name = "ch4"
+  val netcdfDataset = NetCDFUtils.loadNetCDFDataSet("src/test/resources/CSSM/sresa1b_ncar_ccsm3-example.nc")
+  val name = "tas"
 
   val (array, shape) = NetCDFUtils.netCDFArrayAndShape(netcdfDataset, name)
   val dataVar = netcdfDataset.findVariable(name)
@@ -40,25 +40,26 @@ class VariableTest extends FunSuite {
   }
 
   test("testAttributesApply") {
-    val gridTypeAttribute = variable("grid_type")
-    assert(gridTypeAttribute == "linear")
+    val gridTypeAttribute = variable("history")
+    assert(gridTypeAttribute == "Added height coordinate")
   }
 
   test("testApply") {
     val tensorCopy = tensor.copy
     val origTensor = variable()
-    assert(tensor == origTensor)
+    assert(tensorCopy == origTensor)
   }
 
   test("testInsertAttributes") {
-    variable.insertAttributes(("random_attribute", "value1"))
-    val insertedAttribute = variable("random_attribute")
+    val copy = variable.copy()
+    copy.insertAttributes(("random_attribute", "value1"))
+    val insertedAttribute = copy("random_attribute")
     assert(insertedAttribute == "value1")
   }
 
   test("testShape") {
     val shape = variable.shape()
-    assert(shape.toList == List(1238, 4125))
+    assert(shape.toList == List(1, 128, 256))
   }
 
   test("testData") {
@@ -69,17 +70,21 @@ class VariableTest extends FunSuite {
   }
 
   test("testToString") {
-    val string = "float ch4\n" +
-                "\trandom_attribute: value1\n" +
-                "\tlevel_description: Earth surface\n" +
-                "\tgrid_type: linear\n" +
-                "\tmissing_value: 330.0\n" +
-                "\tunits: \n" +
-                "\tlong_name: IR BT (add 75 to this value)\n" +
-                "\tgrid_name: grid01\n" +
-                "\tcomments: Unknown1 variable comment\n" +
-                "\ttime_statistic: instantaneous\n" +
-                "current shape = (1238, 4125)\n"
+    val string = "float tas\n" +
+                "\tcomment: Created using NCL code CCSM_atmm_2cf.ncl on\n" +
+                " machine eagle163s\n" +
+                "\tmissing_value: 1.0E20\n" +
+                "\t_FillValue: 1.0E20\n" +
+                "\tcell_methods: time: mean (interval: 1 month)\n" +
+                "\thistory: Added height coordinate\n" +
+                "\tcoordinates: height\n" +
+                "\toriginal_units: K\n" +
+                "\toriginal_name: TREFHT\n" +
+                "\tstandard_name: air_temperature\n" +
+                "\tunits: K\n" +
+                "\tlong_name: air_temperature\n" +
+                "\tcell_method: time: mean\n" +
+                "current shape = (1, 128, 256)\n"
     assert(variable.toString == string)
   }
 
