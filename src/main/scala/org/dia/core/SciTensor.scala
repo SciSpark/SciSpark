@@ -77,6 +77,15 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   }
 
   /**
+   * Returns the array corresponding to the variable in use.
+   * This is to mimic the numpy like syntax of nc['var'][:]
+   * Example usage: val absT = sciT('var')()
+   * @return AbstractTensor corresponding to variable in use
+   */
+  def apply(): AbstractTensor = variables(varInUse)
+
+
+  /**
    * Slices the head variable array given the list of ranges per dimension.
    */
   def apply(ranges: (Int, Int)*): SciTensor = {
