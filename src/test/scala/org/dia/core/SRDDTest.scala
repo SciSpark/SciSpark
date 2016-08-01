@@ -17,12 +17,14 @@
  */
 package org.dia.core
 
+import org.dia.Constants._
 import org.dia.loaders.TestMatrixReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.testenv.SparkTestConstants
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.STrmmPartitioner._
-import org.dia.urlgenerators.HourlyTrmmURLGenerator;
+import org.dia.urlgenerators.HourlyTrmmURLGenerator
+import org.nd4j.linalg.api.buffer.FloatBuffer
 import org.scalatest.FunSuite
 
 /**
@@ -35,133 +37,110 @@ class SRDDTest extends FunSuite {
   val fakeURI = List("0000010100")
   val varName = List("randVar", "randVar_1")
   val sc = SparkTestConstants.sc.sparkContext
+  sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB) // Nd4j has issues with kryo serialization
   val sRDD = new SRDD[SciTensor](sc, fakeURI, varName, loadTestArray, mapOneUrl)
-  val fakeURIs = List("0000010100","0000010101", "0000010102", "0000010103", "0000010104" ,"0000010105")
+  val fakeURIs = List("0000010100", "0000010101", "0000010102", "0000010103", "0000010104", "0000010105")
   val uSRDD = new SRDD[SciTensor](sc, fakeURIs, varName, loadTestUniformArray, mapOneUrl)
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   test("filterGreaterThan") {
     logger.info("In filterGreaterThan test ...")
-    val t = sRDD.map(p => p("randVar") > 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble != 0.0).length
+    val t = sRDD.map(p => p("randVar") > 241.0).collect().toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are greater than 241.0")
 
-    if (count == 8){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 8)
   }
 
   test("filterGreaterThanEquals") {
     logger.info("In filterGreaterThanEquals test ...")
-    val t = sRDD.map(p => p("randVar") >= 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble != 0.0).length
+    val t = sRDD.map(p => p("randVar") >= 241.0).collect.toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are greater than or equals to 241.0")
 
-    if (count == 18){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 18)
   }
 
   test("filterEquals") {
     logger.info("In filterLessThan test ...")
-    val t = sRDD.map(p => p("randVar") := 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble != 0.0).length
+    val t = sRDD.map(p => p("randVar") := 241.0).collect.toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are equal to 241.0")
 
-    if (count == 10){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 10)
   }
 
   test("filterNotEquals") {
     logger.info("In filterNotEquals test ...")
-    val t = sRDD.map(p => p("randVar") != 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble  != 0.0).length
+    val t = sRDD.map(p => p("randVar") != 241.0).collect.toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are not equals to 241.0")
 
-    if (count == 20){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 20)
   }
 
   test("filterLessThan") {
     logger.info("In filterLessThan test ...")
-    val t = sRDD.map(p => p("randVar") < 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble < 241.0).length - tVals.filter(_.toDouble == 0.0).length
+    val t = sRDD.map(p => p("randVar") < 241.0).collect.toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are less than 241.0")
 
-    if (count == 12){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 12)
   }
 
   test("filterLessThanEquals") {
     logger.info("In filterLessThanEquals test ...")
-    val t = sRDD.map(p => p("randVar") <= 241.0)
-    logger.info("The sciTensor is: "+ t.collect().toList)
-    logger.info("The values are: "+ t.collect().toList(0).variables.values.toList)
-    val tVals = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    val count = tVals.filter(_.toDouble != 0.0).length //- tVals.filter(_.toDouble == 0.0).length
+    val t = sRDD.map(p => p("randVar") <= 241.0).collect.toList
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
+    val tVals = t(0).variables.values.toList(0).data
+    val count = tVals.count(p => p != 0.0)
     logger.info(count + " are less than or equals to 241.0")
 
-    if (count == 22){
-      assert(true)
-    }else{
-      assert(false)
-    }
+    assert(count == 22)
   }
 
   /**
     * Test matrix artihmetic
     **/
-  test("matrixAddition"){
+  test("inplacematrixAddition") {
     logger.info("In inPlaceMatrixAddition test ...")
-    logger.info("The sciTensor is: "+ uSRDD.collect().toList)
-    logger.info("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
+    logger.info("The sciTensor is: " + uSRDD.collect().toList)
+    logger.info("The values are: " + uSRDD.collect().toList(0).variables.values.toList)
     // test scalar addition
-    val s = uSRDD.map(p => p("randVar") + 2.0)
-    logger.info("Addition: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    if (y.filter(_.toDouble  != 3.0).length == 0){
-      assert(true)
-    } else{
-      assert(false)
-    }
+    val s = uSRDD.map(p => p("randVar") + 2.0).collect().toList
+    logger.info("Addition: " + s(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
+    val sVals = s(0).variables.values.toList(0).data
+    val count = sVals.count(p => p != 3.0)
+    assert(count == 0)
+  }
+
+  test("outofplaceMatrixAddition") {
     // test scalar addition
-    val t = uSRDD.map(p => p("randVar") :+ 2.0)
-    logger.info("Addition: " + t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    if (y1.filter(_.toDouble  != 3.0).length == 0){
-      assert(true)
-    } else{
-      assert(false)
-    }
+    val t = uSRDD.map(p => p("randVar") :+ 2.0).collect.toList
+    logger.info("Addition: " + t(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
+    val y1 = t(0).variables.values.toList(0).data
+    val count = y1.count(p => p!= 3.0)
+    assert(count == 0)
+  }
+
+  test("orderedPairWiseInplaceMatrixAddition") {
     // test matrix addition
     // order the fakeURLs then sum pairs
     val ordered = uSRDD.flatMap(p => {
@@ -171,52 +150,58 @@ class SRDDTest extends FunSuite {
       .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("SOURCE").toInt))
       .map(p => (p(0), p(1)))
+
     val c = ordered.collect.toList
     for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
 
     val ew = ordered.map(p => p._1("randVar") + p._2("randVar"))
     val ewList = ew.collect().toList
     logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
-    for (eachArray <- ewList){
-      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30){
-        assert(true)
-      }else{
-        assert(false)
-      }
-    }
-    val ew1 = ordered.map(p => p._1("randVar") :+ p._2("randVar"))
-    val ewList1 = ew1.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
-    for (eachArray <- ewList1){
-      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30){
-        assert(true)
-      }else{
-        assert(false)
-      }
+    for (eachArray <- ewList) {
+      assert(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30)
     }
   }
 
-  test("matrixSubtraction"){
-    logger.info("In inPlaceMatrixSubtraction test ...")
-    logger.info("The sciTensor is: "+ uSRDD.collect().toList)
-    logger.info("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
-    // test scalar subtraction
-    val s = uSRDD.map(p => p("randVar") - 2.0)
-    logger.info("Subtraction: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    if (y.filter(_.toDouble  != -1.0).length == 0){
-      assert(true)
-    } else{
-      assert(false)
+  test("orderedPairWiseOutofplaceMatrixAddition") {
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+    }).groupBy(_._1)
+      .map(p => p._2.map(e => e._2).toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+      .map(p => (p(0), p(1)))
+
+    val c = ordered.collect.toList
+
+    val ew1 = ordered.map(p => p._1("randVar") :+ p._2("randVar"))
+    val ewList1 = ew1.collect().toList
+    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
+    for (eachArray <- ewList1) {
+      assert(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30)
     }
+  }
+
+  test("inPlaceMatrixSubtraction") {
+    val t = uSRDD.collect.toList
+    logger.info("The sciTensor is: " + t.toList)
+    logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar subtraction
-    val t = uSRDD.map(p => p("randVar") :- 2.0)
-    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
-    if (y1.filter(_.toDouble  != -1.0).length == 0){
-      assert(true)
-    } else{
-      assert(false)
-    }
+    val s = uSRDD.map(p => p("randVar") - 2.0).collect.toList
+    logger.info("Subtraction: " + s(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
+    val y = s(0).variables.values.toList(0).data
+    val count = y.count(p => p != -1.0)
+    assert(count == 0)
+  }
+
+  test("OutofplaceMatrixSubtraction") {
+    // test scalar subtraction
+    val t = uSRDD.map(p => p("randVar") :- 2.0).collect.toList
+    val y1 = t(0).variables.values.toList(0).data
+    val count = y1.count(p => p != -1.0)
+    assert(count == 0)
+  }
+
+  test("orderedPairWiseOutofplaceMatrixSubtraction") {
     // test matrix subtraction
     // order the fakeURLs then subtract pairs
     val ordered = uSRDD.flatMap(p => {
@@ -232,13 +217,20 @@ class SRDDTest extends FunSuite {
     val ew = ordered.map(p => p._2("randVar") - p._1("randVar"))
     val ewList = ew.collect().toList
     logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
-    for (eachArray <- ewList){
-      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=0.0).length == 30){
-        assert(true)
-      }else{
-        assert(false)
-      }
+    for (eachArray <- ewList) {
+      assert(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").filter(_ != 0.0).length == 30)
     }
+  }
+
+  test("orderedPairWiseInplaceMatrixSubtraction"){
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+    }).groupBy(_._1)
+      .map(p => p._2.map(e => e._2).toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+      .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
 
     val ew1 = ordered.map(p => p._2("randVar") :- p._1("randVar"))
     val ewList1 = ew1.collect().toList

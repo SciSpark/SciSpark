@@ -48,7 +48,7 @@ object MCCOps {
       for (col <- 0 to (reducedMatrix.cols - 1)) {
         val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
         val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
-        val block = tensor(rowRange, columnRange)
+        val block = tensor(rowRange, columnRange).copy
         val numValid = block.data.count(_ != invalid)
         val avg = if (numValid > 0) block.cumsum / numValid else 0.0
         reducedMatrix.put(avg, row, col)
@@ -73,7 +73,7 @@ object MCCOps {
       for (col <- 0 to (reducedMatrix.cols - 1)) {
         val rowRange = (row * rowblockSize) -> ((row + 1) * rowblockSize)
         val columnRange = (col * columnblockSize) -> ((col + 1) * columnblockSize)
-        val block = tensor(rowRange, columnRange)
+        val block = tensor(rowRange, columnRange).copy
         val numValid = block.data.count(_ != invalid)
         val avg = if (numValid > 0) block.cumsum / numValid else 0.0
         reducedMatrix.put(avg, row, col)

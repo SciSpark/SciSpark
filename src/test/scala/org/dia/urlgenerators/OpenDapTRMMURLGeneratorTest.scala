@@ -18,7 +18,9 @@
 package org.dia.urlgenerators
 
 import org.dia.urlgenerators.OpenDapTRMMURLGenerator
-import org.scalatest.FunSuite 
+import org.scalatest.FunSuite
+import org.scalatest.Ignore
+import org.scalatest.BeforeAndAfter
 import java.nio.file.{ Paths, Files }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -27,11 +29,18 @@ import org.apache.hadoop.fs.Path
 /**
  * Tests whether the OpenDapTRMM URLs creator works. NB the parameter hdfsURL is passed on the command line via -DhdfsURL=hdfs://<hostname>:<port>
  */
-class OpenDapTRMMURLGeneratorTest extends FunSuite {
-  val hdfsURL = sys.props("hdfsURL")
+@Ignore
+class OpenDapTRMMURLGeneratorTest extends FunSuite with BeforeAndAfter {
+  var hdfsURL : String = null
   val hadoopConf = new Configuration()
-  hadoopConf.set("fs.defaultFS", hdfsURL)    
-  val hdfs = FileSystem.get(hadoopConf)
+  var hdfs : FileSystem = null
+
+  before {
+    hdfsURL = sys.props("hdfsURL")
+    hadoopConf.set("fs.defaultFS", hdfsURL)
+    hdfs = FileSystem.get(hadoopConf)
+  }
+
 
   test("testLinkGenerationDaily") {
     val checkLink = false   

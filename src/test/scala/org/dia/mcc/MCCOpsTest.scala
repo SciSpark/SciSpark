@@ -33,27 +33,12 @@ class MCCOpsTest extends FunSuite {
    * Note that Nd4s slicing is broken at the moment
    */
   test("reduceResolutionTest") {
-    val dense = new DenseMatrix[Double](4, 2, (0d to 8d by 1d).toArray, 0, 2, true)
-    val nd = Nd4j.create((0d to 8d by 1d).toArray, Array(4, 2))
     val breeze = new BreezeTensor((0d to 8d by 1d).toArray, Array(4, 2))
-    val nd4j = new Nd4jTensor(nd)
-    println("breeze")
+    val nd4j = new Nd4jTensor(((0d to 8d by 1d).toArray, Array(4, 2)))
     val breezeReduced = MCCOps.reduceResolution(breeze, 2, 999999)
-    println("nd4j")
     val nd4jReduced = MCCOps.reduceResolution(nd4j, 2, 999999)
-
-    println(breeze)
-    println(nd4j)
-
-    if (breeze == nd4j) println("THESE ARE TRUE TRUE TRUE")
-
-    println(breezeReduced)
-    println(nd4jReduced)
-
-    println(breezeReduced.data.toList)
-    println(nd4jReduced.data.toList)
-
     assert(breezeReduced == nd4jReduced)
+    assert(breezeReduced.data.toList == List(1.5, 5.5))
   }
 
   test("testFindConnectedComponents") {
@@ -75,27 +60,36 @@ class MCCOpsTest extends FunSuite {
     val ccArray = Nd4j.create(cc)
     val t = new Nd4jTensor(ndArray)
     val cct = new Nd4jTensor(ccArray)
-    val labelled = MCCOps.labelConnectedComponents(t)
-    println(labelled)
-    assert(labelled._1.equals(cct))
+    val (labelledTensor, numComponent) = MCCOps.labelConnectedComponents(t)
+    assert(numComponent == 4)
+    assert(labelledTensor == cct)
   }
 
   test("reduceResRectangle") {
 
-    val m = Array(
+    val array = Array(
       Array(1.0, 1.0, 0.0, 2.0),
       Array(1.0, 1.0, 0.0, 2.0),
       Array(1.0, 1.0, 1.0, 0.0),
       Array(0.0, 0.0, 0.0, 0.0),
       Array(3.0, 0.0, 4.0, 0.0))
 
-    val k = m.flatMap(p => p)
-    val ndArray = new DenseMatrix(5, 4, k, 0, 4, true)
-    val t: AbstractTensor = new BreezeTensor(ndArray)
-    println()
-    println(MCCOps.reduceResolution(t, 5, 1))
-    val reduced = MCCOps.reduceRectangleResolution(t, 3, 3, 99999999)
-    println(reduced)
+    val flattened = array.flatMap(p => p)
+    val tensor: AbstractTensor = new Nd4jTensor(flattened, Array(5, 4))
+    val averageColumnsolution = new Nd4jTensor(Array(1.2, 0.6, 1.0, 0.8), Array(1,4))
+    val averageDoubleColumnsSolution = new Nd4jTensor(Array(0.9, 0.9), Array(1,2))
+    val averageRowSolution = new Nd4jTensor(Array(1.0, 1.0, 0.75, 0.0, 1.75), Array(5, 1))
+    val mismatchedDimensionSolution = new Nd4jTensor(Array(0.78), Array(1,1))
+
+    val averageColumns = MCCOps.reduceRectangleResolution(tensor, 5, 1, 9999999)
+    val averageDoubleColums = MCCOps.reduceRectangleResolution(tensor, 5, 2, 9999999)
+    val averageRows = MCCOps.reduceRectangleResolution(tensor, 1, 4, 999999)
+    val mismatchedDimension = MCCOps.reduceRectangleResolution(tensor, 3, 3, 99999999)
+
+    assert(averageColumns == averageColumnsolution)
+    assert(averageDoubleColums == averageDoubleColumnsSolution)
+    assert(averageRows == averageRowSolution)
+    assert(mismatchedDimension == mismatchedDimensionSolution)
   }
 
   test("findComponents") {

@@ -24,9 +24,9 @@ import org.scalatest.{ FunSuite, Ignore }
 /**
  * Nd4j Performance Tests
  */
-class MainMemoryNd4JPerformanceTest extends FunSuite {
+class Nd4JPerformanceTest extends FunSuite {
 
-  test("ND4J.element.wise.test") {
+  ignore("ND4J.element.wise.test") {
     println("ND4J.element.wise.test")
     (1 to 20).foreach { i =>
       val m1 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)
@@ -42,7 +42,7 @@ class MainMemoryNd4JPerformanceTest extends FunSuite {
     assert(true)
   }
 
-  test("ND4J.vector.wise.test") {
+  ignore("ND4J.vector.wise.test") {
     println("ND4J.vector.wise.test")
     (1 to 20).foreach { i =>
       val m1 = Nd4j.create(i * 1000 * i * 1000).reshape(i * 1000, i * 1000)

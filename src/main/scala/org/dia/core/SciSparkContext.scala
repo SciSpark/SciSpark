@@ -91,9 +91,9 @@ class SciSparkContext(val sparkContext: SparkContext) {
     val URIsFile = sparkContext.textFile(path, minPartitions)
     
     val rdd = URIsFile.map(p => {
-      
       val variableHashTable = new mutable.HashMap[String, AbstractTensor]
-      var uriVars = p.split("\\?").drop(1).mkString.split(",")
+      // note that split, if it doesn't find the token, will result in just an empty string
+      var uriVars = p.split("\\?").drop(1).mkString.split(",").filter(p => p != "")
       val mainURL = p.split("\\?").take(1).mkString+"?"
       var varDapPart = ""
       

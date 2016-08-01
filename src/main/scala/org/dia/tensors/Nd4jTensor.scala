@@ -30,7 +30,7 @@ import scala.language.implicitConversions
 class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   override type T = Nd4jTensor
   val name: String = "nd4j"
-  val shape = tensor.shape.filter(p => p != 0 && p != 1)
+  val shape = tensor.shape
   var mask = 0.0
   def this(shapePair: (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
