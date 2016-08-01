@@ -54,7 +54,7 @@ object NetCDFUtils extends Serializable {
       return (Array(0.0), Array(1, 1))
     }
     val nativeArray = convertMa2Arrayto1DJavaArray(searchVariableArray)
-    val shape = searchVariableArray.getShape.toList.filter(_ != 1).toArray
+    val shape = searchVariableArray.getShape
     (nativeArray, shape)
   }
 
