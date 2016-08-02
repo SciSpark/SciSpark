@@ -70,7 +70,7 @@ object MainDistGraphMCC {
     Letting the graph.isEmpty condition to take care of the exit from this loop.
     Keeping the code here, if the above does not work as expected
      */
-    //      if(graph.count() == 1){e
+    //      if(graph.count() == 1) {e
     //        return graph
     //      }
     println(graph.toDebugString)
@@ -80,7 +80,7 @@ object MainDistGraphMCC {
 
   def reduceEdgeListsByKey(edge1: Iterable[MCCEdge], edge2: Iterable[MCCEdge]): Iterable[MCCEdge] = {
     val mergedEdgelists = new mutable.HashSet[MCCEdge]();
-    for(edge <- edge1){
+    for(edge <- edge1) {
       mergedEdgelists += edge
     }
     for(edge <- edge2) {
@@ -168,7 +168,7 @@ object MainDistGraphMCC {
     // Finding all source nodes from the node set
     val sourceNodeSet = new mutable.HashSet[MCCNode]()
     nodeSet.foreach(node => {
-      if(node.inEdges.size<1){
+      if(node.inEdges.size < 1) {
         sourceNodeSet += node
       }
     })

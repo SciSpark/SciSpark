@@ -119,22 +119,22 @@ object PDFClusteringAnomalies {
     val latdataOut = new ArrayDouble.D1(latarr.length)
     val londataOut = new ArrayDouble.D1(lonarr.length)
     assert(std.length == skw.length && skw.length == prd.length)
-    for(i <- 0 until std.length){
+    for(i <- 0 until std.length) {
       stddataOut.set(i, std(i))
       skwdataOut.set(i, skw(i))
       prdDataOut.set(i, prd(i))
     }
 
-    for(i <- 0 until centers.length){
+    for(i <- 0 until centers.length) {
       cnt_stdDataOut.set(i, centers(i)(0))
       cnt_skwDataOut.set(i, centers(i)(1))
     }
 
-    for(i <- 0 until latarr.length){
+    for(i <- 0 until latarr.length) {
       latdataOut.set(i, latarr(i))
     }
 
-    for(i <- 0 until lonarr.length){
+    for(i <- 0 until lonarr.length) {
       londataOut.set(i, lonarr(i))
     }
     writer.write(std_var, stddataOut)

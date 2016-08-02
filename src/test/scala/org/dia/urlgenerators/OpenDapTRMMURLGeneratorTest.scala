@@ -21,7 +21,7 @@ import org.dia.urlgenerators.OpenDapTRMMURLGenerator
 import org.scalatest.FunSuite
 import org.scalatest.Ignore
 import org.scalatest.BeforeAndAfter
-import java.nio.file.{ Paths, Files }
+import java.nio.file.{Paths, Files}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -32,9 +32,9 @@ import org.apache.hadoop.fs.Path
  */
 @Ignore
 class OpenDapTRMMURLGeneratorTest extends FunSuite with BeforeAndAfter {
-  var hdfsURL : String = null
+  var hdfsURL: String = null
   val hadoopConf = new Configuration()
-  var hdfs : FileSystem = null
+  var hdfs: FileSystem = null
 
   before {
     hdfsURL = sys.props("hdfsURL")
@@ -46,10 +46,10 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite with BeforeAndAfter {
   test("testLinkGenerationDaily") {
     val checkLink = false
     val vars = List("precipitation")
-    OpenDapTRMMURLGenerator.run(checkLink,hdfsURL, "testLinkfileD.txt", "200101010000", "200101310000", 1, vars)
-    if (hdfs.exists(new Path("testLinkfileD.txt"))){
+    OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileD.txt", "200101010000", "200101310000", 1, vars)
+    if (hdfs.exists(new Path("testLinkfileD.txt"))) {
       assert(true)
-    }else {
+    } else {
       assert(false)
     }
   }
@@ -57,10 +57,10 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite with BeforeAndAfter {
   test("testLinkGeneration3Hrly") {
     val checkLink = false
     val vars = List("precipitation")
-    OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileH.txt",  "201001010000",   "201001031500", 2, vars)
-    if (hdfs.exists(new Path("testLinkfileH.txt"))){
+    OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileH.txt", "201001010000", "201001031500", 2, vars)
+    if (hdfs.exists(new Path("testLinkfileH.txt"))) {
       assert(true)
-    }else {
+    } else {
       assert(false)
     }
   }
@@ -68,21 +68,21 @@ class OpenDapTRMMURLGeneratorTest extends FunSuite with BeforeAndAfter {
   test("testLinkGenerationDailyWithSelection") {
     val checkLink = false
     val vardims = List("data,1,399,1,1439")
-    OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileDsub.txt", "200103010000", "200103310000", 1 , vardims)
-    if (hdfs.exists(new Path("testLinkfileDsub.txt"))){
+    OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileDsub.txt", "200103010000", "200103310000", 1, vardims)
+    if (hdfs.exists(new Path("testLinkfileDsub.txt"))) {
       assert(true)
-    }else {
+    } else {
       assert(false)
     }
   }
 
   test("testLinkGeneration3HrlyWithSelection") {
     val checkLink = true
-    val vardims = List("precipitation,1,1439,1,399","nlon,1,1439","nlat,1,399")
+    val vardims = List("precipitation,1,1439,1,399", "nlon,1,1439", "nlat,1,399")
     OpenDapTRMMURLGenerator.run(checkLink, hdfsURL, "testLinkfileHsub.txt", "201006150000", "201006161500", 2, vardims)
-    if (hdfs.exists(new Path("testLinkfileHsub.txt"))){
+    if (hdfs.exists(new Path("testLinkfileHsub.txt"))) {
       assert(true)
-    }else {
+    } else {
       assert(false)
     }
   }

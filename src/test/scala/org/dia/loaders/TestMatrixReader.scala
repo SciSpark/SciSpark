@@ -43,9 +43,9 @@ object TestMatrixReader {
 
   def loadTestArray(uri: String, varname: String) = {
     var sample : Array[Array[Double]] = Array()
-    if (varname == "randVar"){
+    if (varname == "randVar") {
       sample = randVar
-      }else if (varname == "randVar_1"){
+      }else if (varname == "randVar_1") {
         sample = randVar_1
       }
 

@@ -565,7 +565,7 @@ object NetcdfDFSMCC {
         val edgeList = new mutable.MutableList[((String, Double), (String, Double), Int, Any)]()
         filtered.foreach(edge => {
           val key = (edge._1._2, edge._2._2)
-          if(overlappedMap.contains(key)){
+          if(overlappedMap.contains(key)) {
             val gridMap = areaMinMaxTable(edge._1._1 + ":" + edge._1._2)
             edgeList += ((edge._1, edge._2, overlappedMap.get(key).get, gridMap("grid")))
           }

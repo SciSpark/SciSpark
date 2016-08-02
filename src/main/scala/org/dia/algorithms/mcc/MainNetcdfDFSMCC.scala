@@ -246,7 +246,7 @@ object MainNetcdfDFSMCC {
         val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
         filtered.foreach(edge => {
           val key = (edge._1._2, edge._2._2)
-          if(overlappedMap.contains(key)){
+          if(overlappedMap.contains(key)) {
             edgeList += ((edge._1, edge._2, overlappedMap.get(key).get))
           }
         })

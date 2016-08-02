@@ -30,19 +30,23 @@ class Variable(val name : String,
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  def this(name: String, dataType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]){
+  def this(name: String, dataType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]) {
     this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr)
   }
 
-  def this(name: String, dataType: String, array : AbstractTensor, attr : Array[Attribute]){
+  def this(name: String, dataType: String, array : AbstractTensor, attr : Array[Attribute]) {
     this(name, dataType, array, attr.map(p => NetCDFUtils.convertAttribute(p)))
   }
 
-  def this(name: String, daaType: String, array : AbstractTensor, attr : java.util.List[Attribute]){
+  def this(name: String, daaType: String, array : AbstractTensor, attr : java.util.List[Attribute]) {
     this(name, daaType, array, attr.toArray.map(p => p.asInstanceOf[Attribute]))
   }
 
-  def this(name: String, dataType: String, array : Array[Double], shape : Array[Int], attr : java.util.List[Attribute]){
+  def this(name: String,
+           dataType: String,
+           array : Array[Double],
+           shape : Array[Int],
+           attr : java.util.List[Attribute]) {
     this(name, dataType, new Nd4jTensor(array, shape), attr)
   }
 
@@ -51,7 +55,7 @@ class Variable(val name : String,
       NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
   }
 
-  def this(name: String, array : AbstractTensor){
+  def this(name: String, array : AbstractTensor) {
     this(name, "Double64", array, new mutable.HashMap[String, String])
   }
 
@@ -123,7 +127,7 @@ class Variable(val name : String,
     val footer = "current shape = " + shape().toList + "\n"
     val body = new StringBuilder()
     body.append(header)
-    for((k,v) <- attributes){
+    for((k,v) <- attributes) {
       body.append("\t" + k + ": " + v + "\n" )
     }
     body.append(footer.replace("List", ""))

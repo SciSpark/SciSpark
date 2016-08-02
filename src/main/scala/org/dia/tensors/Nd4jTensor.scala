@@ -47,7 +47,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     val extraDims = shape diff this.shape
     val totalExtraCopies = extraDims.reduce((A, B) => A * B)
     var rawLinearArray = this.data
-    for (i <- 0 to totalExtraCopies by 1){
+    for (i <- 0 to totalExtraCopies by 1) {
       rawLinearArray = rawLinearArray ++ rawLinearArray
     }
     new Nd4jTensor((rawLinearArray, shape))
@@ -200,7 +200,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     meanAlongAxis = meanAlongAxis.reshape(shapeMatch: _*)
     val copy = tensor.dup()
     val std = tensor.std(axis: _*).reshape(shapeMatch: _*)
-    for(i <- 0 until this.shape(axis(0))){
+    for(i <- 0 until this.shape(axis(0))) {
       val diffOversd = (copy((i, i+1)).subi(meanAlongAxis)).divi(std)
       val cubed = Transforms.pow(diffOversd, 3, false)
     }

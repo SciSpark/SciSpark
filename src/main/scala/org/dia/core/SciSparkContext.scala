@@ -90,7 +90,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * @param username
    * @param password
    */
-  def addHTTPCredential(uri: String, username: String, password: String): Unit ={
+  def addHTTPCredential(uri: String, username: String, password: String): Unit = {
     HTTPCredentials = HTTPCredentials.+:((uri, username, password))
   }
 
@@ -116,23 +116,23 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
       val mainURL = p.split("\\?").take(1).mkString+"?"
       var varDapPart = ""
       
-      if (uriVars.length > 0){   
+      if (uriVars.length > 0) {
         varName.foreach(y => {
           uriVars.foreach(i => {
-            if(i.contains(y)){ varDapPart = i }
+            if(i.contains(y)) varDapPart = i
             })
-          if (varDapPart != ""){
+          if (varDapPart != "") {
             //We forced Thread to be serializable when the sparkContext was initalized
             // but this isnt working. So need to find another way to do this. 
             //Thread.sleep((r.nextFloat * 10.0).toLong)
             val arrayandShape = loadNetCDFNDVar(mainURL+varDapPart, y)
             val absT = new Nd4jTensor(arrayandShape)
             variableHashTable += ((y, absT))
-          }else{
+          } else {
             println(y +" is not available from the URL")
           }        
         })
-      }else{
+      } else {
         varName.foreach(y => {
           val arrayandShape = loadNetCDFNDVar(p, y)
           val absT = new Nd4jTensor(arrayandShape)

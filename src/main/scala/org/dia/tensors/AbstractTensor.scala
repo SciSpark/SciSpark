@@ -128,10 +128,10 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
     val thisData = this.data
     val otherData = array.data
-    for(index <- 0 to thisData.length - 1){
+    for(index <- 0 to thisData.length - 1) {
       val left = thisData(index)
       val right = otherData(index)
-      if(left != 0.0 && right == 0.0){
+      if(left != 0.0 && right == 0.0) {
         return false
       } else if (right == 0.0 && left != 0.0) {
         return false
