@@ -20,16 +20,18 @@ package org.dia.core
 import org.apache.log4j.LogManager
 import org.slf4j.Logger
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{ SparkConf, SparkContext }
+import org.apache.spark.{SparkConf, SparkContext}
 import org.dia.Constants._
 import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
-import org.dia.tensors.{ AbstractTensor, BreezeTensor, TensorFactory }
+import org.dia.tensors.{AbstractTensor, BreezeTensor, TensorFactory}
+
 import scala.io.Source
 import scala.collection.mutable
 import org.dia.tensors.Nd4jTensor
+import org.dia.utils.NetCDFUtils
 
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
@@ -38,7 +40,7 @@ import org.dia.tensors.Nd4jTensor
  * that are useful for catching unwanted calls. Such as
  * executing one of the functions after the SparkContext has been stopped.
  */
-class SciSparkContext(val sparkContext: SparkContext) {
+class SciSparkContext(@transient val sparkContext: SparkContext) {
 
   /**
    * Log4j Setup
@@ -48,6 +50,7 @@ class SciSparkContext(val sparkContext: SparkContext) {
   val ParserLevel = org.apache.log4j.Level.OFF
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
   val r = scala.util.Random
+  var HTTPCredentials : mutable.Seq[(String, String, String)] = mutable.Seq()
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
 
   /**
@@ -78,6 +81,21 @@ class SciSparkContext(val sparkContext: SparkContext) {
   def getConf: SparkConf = sparkContext.getConf
 
   /**
+   * Adds http credentials which is then registered by any function
+   * using ucar's httpservices. Namely, if you are reading any opendap file
+   * that requires you to enter authentication credentials in the browser.
+   * Some datasets (like those hosted by gesdisc) require http credentials
+   * for authentiation and access.
+   * @param uri
+   * @param username
+   * @param password
+   */
+  def addHTTPCredential(uri: String, username: String, password: String): Unit ={
+    HTTPCredentials = HTTPCredentials.+:((uri, username, password))
+  }
+
+
+  /**
    * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
    * If no names are provided then all variable arrays in the file are loaded.
    * The URI could be an OpenDapURL or a filesystem path.
@@ -89,8 +107,9 @@ class SciSparkContext(val sparkContext: SparkContext) {
     minPartitions: Int = 2): RDD[SciTensor] = {
 
     val URIsFile = sparkContext.textFile(path, minPartitions)
-    
+    val creds = HTTPCredentials.clone()
     val rdd = URIsFile.map(p => {
+      for((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
       val variableHashTable = new mutable.HashMap[String, AbstractTensor]
       // note that split, if it doesn't find the token, will result in just an empty string
       var uriVars = p.split("\\?").drop(1).mkString.split(",").filter(p => p != "")
