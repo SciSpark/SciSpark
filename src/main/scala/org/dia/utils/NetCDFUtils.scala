@@ -40,12 +40,23 @@ object NetCDFUtils extends Serializable {
   // Class logger
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
+  /**
+   * Adds http credentials which is then registered by any function
+   * using ucar's httpservices. Namely, if you are reading any opendap file
+   * that requires you to enter authentication credentials in the browser.
+   * Some datasets (like those hosted by gesdisc) require http credentials
+   * for authentiation and access.
+   * @param url
+   * @param username
+   * @param password
+   */
   def setHTTPAuthentication(url : String, username : String, password : String): Unit = {
       val urlobj = new URL(url)
       val authscope = new AuthScope(urlobj.getHost, urlobj.getPort)
       val credentials = new UsernamePasswordCredentials(username, password)
       ucar.httpservices.HTTPSession.setGlobalCredentials(authscope, credentials)
   }
+
   /**
    * Extracts a variable's data from a NetCDF.
    *
