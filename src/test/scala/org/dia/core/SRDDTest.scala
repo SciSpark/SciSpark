@@ -24,13 +24,19 @@ import org.dia.testenv.SparkTestConstants
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.STrmmPartitioner._
 import org.dia.urlgenerators.HourlyTrmmURLGenerator
+import org.dia.utils.NetCDFUtils
 import org.nd4j.linalg.api.buffer.FloatBuffer
-import org.scalatest.FunSuite
+import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
  * Tests for proper construction of SRDD's from URIs.
  */
-class SRDDTest extends FunSuite {
+class SRDDTest extends FunSuite with BeforeAndAfter {
+
+  val gesdiscUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80"
+  before {
+    NetCDFUtils.setHTTPAuthentication(gesdiscUrl, "scispark", "SciSpark1")
+  }
 
   val testLinks = SparkTestConstants.datasetPath
 

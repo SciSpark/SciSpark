@@ -36,9 +36,9 @@ object Constants extends Serializable {
   val DEFAULT_TRMM_COL_SIZE = 1440
 
   /** TRMMHourly tensors URL */
-  val TRMM_HOURLY_URL = "http://disc2.nascom.nasa.gov/opendap/TRMM_3Hourly_3B42/"
+  val TRMM_HOURLY_URL = "http://disc2.gesdisc.eosdis.nasa.gov/opendap/hyrax/TRMM_L3/TRMM_3B42/"
   val TRMM_HOURLY_DATA_PREFFIX = "3B42"
-  val TRMM_HOURLY_DATA_SUFFIX = ".7.HDF"
+  val TRMM_HOURLY_DATA_SUFFIX = "7.HDF"
 
   val ARRAY_LIB = "array-lib"
   val BREEZE_LIB = "breeze"

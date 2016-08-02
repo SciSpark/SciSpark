@@ -18,17 +18,24 @@
 package org.dia.loaders
 
 import java.io.File
+
 import org.dia.Constants._
 import org.dia.testenv.SparkTestConstants
-import org.dia.core.{ SRDD, SciTensor }
+import org.dia.core.{SRDD, SciTensor}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.SPartitioner._
-import org.scalatest.FunSuite
+import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
  * Tests NetCDF loaders from URIs, from local FS.
  */
-class LoadersTest extends FunSuite {
+class LoadersTest extends FunSuite with BeforeAndAfter {
+
+  val sc = SparkTestConstants.sc
+
+  before {
+    sc.addHTTPCredential("http://disc2.gesdisc.eosdis.nasa.gov:80/", "scispark", "SciSpark1")
+  }
 
   /**
    * Tests whether recursiveListFiles lists all files in all sub-directories.
@@ -81,10 +88,10 @@ class LoadersTest extends FunSuite {
    * This test here is in fact not loading any variables.
    */
   test("LoadMultiVariable") {
-    val sc = SparkTestConstants.sc
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = SparkTestConstants.datasetPath
-    val pathRDD = sc.NetcdfFile(path, List("data"))
+    val variable = SparkTestConstants.datasetVariable
+    val pathRDD = sc.NetcdfFile(path, List(variable))
     val tensors = pathRDD.collect().toList
     println("Number of tensors loaded " + tensors.length)
     println(tensors.toString())
