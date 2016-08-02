@@ -37,7 +37,8 @@ import scala.reflect.ClassTag
  * The internal API of the SRDD (specifically the constructors) may change in the future.
  *
  */
-class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+class SRDD[T: ClassTag](@transient var sc: SparkContext,
+                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
   var datasets: List[String] = null
   var varName: Seq[String] = Nil

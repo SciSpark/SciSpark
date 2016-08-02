@@ -45,8 +45,8 @@ class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
   /** URLs */
   val gesdiscUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80"
   val airsUrl = "http://acdisc-ts1.gesdisc.eosdis.nasa.gov:80"
-  val dailyTrmmUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80/opendap/hyrax/TRMM_L3/TRMM_3B42_Daily.7/1998/01/3B42_Daily.19980101.7.nc4"
-  val hourlyTrmmUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80/opendap/hyrax/TRMM_L3/TRMM_3B42/1997/365/3B42.19980101.00.7.HDF"
+  val dailyTrmmUrl = gesdiscUrl + "/opendap/hyrax/TRMM_L3/TRMM_3B42_Daily.7/1998/01/3B42_Daily.19980101.7.nc4"
+  val hourlyTrmmUrl = gesdiscUrl + "/opendap/hyrax/TRMM_L3/TRMM_3B42/1997/365/3B42.19980101.00.7.HDF"
   val knmiUrl = "http://zipper.jpl.nasa.gov/dist/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
 
   val KMNI_BNDS_DIMENSION = "bnds"

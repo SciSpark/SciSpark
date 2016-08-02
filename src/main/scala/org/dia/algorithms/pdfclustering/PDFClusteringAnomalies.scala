@@ -39,8 +39,10 @@ object PDFClusteringAnomalies {
     val lat = 181
     val lon = 286
     val masterURL = "local[2]"
+    val ncfile = "resources/PDFClustering/tas_MERRA_NA_daily_January_1979-2011.nc"
+    val ncvariables = List("tasjan", "lat", "lon")
     val sc = new SciSparkContext(masterURL, "PDF clustering")
-    val tasjan = sc.NetcdfDFSFile("resources/PDFClustering/tas_MERRA_NA_daily_January_1979-2011.nc", List("tasjan", "lat", "lon"))
+    val tasjan = sc.NetcdfDFSFile(ncfile, ncvariables)
 
     /**
      * Detrend daily data
@@ -53,7 +55,7 @@ object PDFClusteringAnomalies {
       // broadcast subtract
       // Since subtraction is now done in place by default
       // The results are in the 'data' array
-      for(i <- 0 until nyears){
+      for(i <- 0 until nyears) {
         data(i -> (i + 1)) - clim
       }
       data = data.reshape(Array(nyears*mdays, lat, lon))

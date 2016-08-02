@@ -52,7 +52,13 @@ object OpenDapTRMMURLGenerator {
    * @param endTime endtime in the format YYYYMMDDHHmm
    * @param tRes temporal resolution for the files. Options are 1-daily or 2-3hrly
    */
-  def run(checkLink: Boolean, hdfsURL:String, fName: String, starttime: String, endtime: String, tres:Int, varNames:List[String]): Unit = {
+  def run(checkLink: Boolean,
+          hdfsURL:String,
+          fName: String,
+          starttime: String,
+          endtime: String,
+          tres:Int,
+          varNames:List[String]): Unit = {
     /** initializing variables */
     checkUrl = checkLink
     val fileName = new Path(fName)
@@ -112,7 +118,7 @@ object OpenDapTRMMURLGenerator {
    * @param currYear An Int representing the current year
    * @param startTime A 12- character String in the format YYYYMMDDHHmm representing the startTime
    * @param endTime A 12- character String in the format YYYYMMDDHHmm representing the endTime
-   * @return (startday, days, currTime) A tuple of startday of the yr, num of days as an Int and the current date as a joda.time DateTime object
+   * @return (startday, days, currTime) A tuple of startday of the yr, num of days, and the current date
    */
   def numOfDaysAndDate(currYear:Int, startTime:String, endTime:String) = {
     val sTime = sectionTime(startTime)
@@ -125,8 +131,11 @@ object OpenDapTRMMURLGenerator {
     // determine the number of days for this yr
     if (currYear == startTime.substring(0,4).toInt){
       currTime = new DateTime(sTime._1, sTime._2, sTime._3, sTime._4, sTime._5)
-      newYear = if (currYear == endTime.substring(0,4).toInt) new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
-        else new DateTime(currYear+1, 1, 1, 0, 0) 
+      newYear = if (currYear == endTime.substring(0,4).toInt){
+        new DateTime(eTime._1, eTime._2, eTime._3, eTime._4, eTime._5)
+      } else {
+        new DateTime(currYear+1, 1, 1, 0, 0)
+      }
       startday = if (currTime.getDayOfYear() != 1) currTime.getDayOfYear() - 1 else 1
       days =  Days.daysBetween(currTime, newYear).getDays + 1
     }else if (currYear == endTime.substring(0,4).toInt){
@@ -162,7 +171,8 @@ object OpenDapTRMMURLGenerator {
    * @param endTime A 12- character String in the format YYYYMMDDHHmm representing the endTime
    * @param varNames a list of strings entered for the variable and the dimensions to extract from opendap. 
    *        The dim order of the string is "varname, lonminindex, lonmaxindex, latminindex, latmaxindex" 
-   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values. Using -1 indicates not to subset the dataset.
+   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values.
+   *        Using -1 indicates not to subset the dataset.
    * @return URLs List of URLs from the OPeNDaP server for the period
    */
   def generateDailyLinks(startTime:String, endTime:String, varNames:List[String]): util.ArrayList[String] = { 
@@ -244,7 +254,8 @@ object OpenDapTRMMURLGenerator {
    * @param endTime A 12- character String in the format YYYYMMDDHHmm representing the endTime
    * @param varNames a list of strings entered for the variable and the dimensions to extract from opendap. 
    *        The dim order of the string is "varname, lonminindex, lonmaxindex, latminindex, latmaxindex" 
-   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values. Using -1 indicates not to subset the dataset.
+   *        lonminindex, lonmaxindex, latminindex, latmaxindex are all int values.
+   *        Using -1 indicates not to subset the dataset.
    * @return URLs List of URLs from the OPeNDaP server for the period
    */
   def generate3HrlyLinks(startTime:String, endTime:String, varNames:List[String]): util.ArrayList[String] = { 
@@ -266,10 +277,18 @@ object OpenDapTRMMURLGenerator {
           startday = 0
         }
         
-        if (currYear == endTime.substring(0,4).toInt && currTime.getMonthOfYear == endTime.substring(4,6).toInt && currTime.getDayOfMonth == endTime.substring(6,8).toInt){   
-          numHrs = if (currYear == startTime.substring(0,4).toInt && currTime.getMonthOfYear == startTime.substring(4,6).toInt && currTime.getDayOfMonth == startTime.substring(6,8).toInt)
-            (startTime.substring(8,10).toInt to endTime.substring(8,10).toInt by 3).toList else (0 to endTime.substring(8,10).toInt by 3).toList        
-        }else if (currYear == startTime.substring(0,4).toInt && currTime.getMonthOfYear == startTime.substring(4,6).toInt && currTime.getDayOfMonth == startTime.substring(6,8).toInt){
+        if (currYear == endTime.substring(0,4).toInt && currTime.getMonthOfYear == endTime.substring(4,6).toInt &&
+          currTime.getDayOfMonth == endTime.substring(6,8).toInt) {
+          numHrs = if (currYear == startTime.substring(0,4).toInt &&
+            currTime.getMonthOfYear == startTime.substring(4,6).toInt &&
+            currTime.getDayOfMonth == startTime.substring(6,8).toInt){
+            (startTime.substring(8,10).toInt to endTime.substring(8,10).toInt by 3).toList
+          } else {
+            (0 to endTime.substring(8,10).toInt by 3).toList
+          }
+        } else if (currYear == startTime.substring(0,4).toInt &&
+          currTime.getMonthOfYear == startTime.substring(4,6).toInt &&
+          currTime.getDayOfMonth == startTime.substring(6,8).toInt){
           numHrs = (startTime.substring(8,10).toInt to 21 by 3).toList
         }
 

@@ -48,7 +48,9 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     collect.foreach(t => {
       for (i <- 0 to t.tensor.rows - 1) {
         for (j <- 0 to t.tensor.cols - 1) {
-          if (t.tensor(i, j) > 241.0) assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
+          if (t.tensor(i, j) > 241.0) {
+            assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
+          }
         }
       }
     })

@@ -118,7 +118,7 @@ object MainDistGraphMCC {
     val edgeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
     val nodeMap = new mutable.HashMap[String, MCCNode]() // for faster lookups for nodes
     val currentFrameChunkSize = frameBucketSize*iteration
-    val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 //The first frame number in the bucket
+    val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 // The first frame in the bucket
     val bucketEndFrame = bucket * currentFrameChunkSize // last frame in bucket
     var minFrame = Integer.MAX_VALUE
     var maxFrame = 0
@@ -180,7 +180,7 @@ object MainDistGraphMCC {
     if (!sourceNodeSet.isEmpty) {
       for (node <- sourceNodeSet) {
         val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], nodeMap, false, bucket, borderNodes)
-        //If the source node is a border node, add its entire subgraph as it needs further investigation
+        // If the source node is a border node, add its entire subgraph as it needs further investigation
         if (borderNodes.contains(node)) {
           filteredEdgeList ++= result._2
         }
@@ -193,12 +193,13 @@ object MainDistGraphMCC {
         */
         else if (result._1 > minAcceptableFeatureLength && !result._3) {
           subgraphList += result._2
-          printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Subgraph discovered", result._2, iteration, bucket)
-
+          val label = s"Iteration $iteration from BID: $bucket Subgraph discovered"
+          printGraphForMatplotLob(label, result._2, iteration, bucket)
         }
         else {
           discardedEdges ++= result._2
-          printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Discarded edges", result._2, iteration, bucket)
+          val label = s"Iteration $iteration from BID: $bucket Discarded edges"
+          printGraphForMatplotLob(label, result._2, iteration, bucket)
         }
 
       }

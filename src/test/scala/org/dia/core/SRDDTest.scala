@@ -163,8 +163,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val ew = ordered.map(p => p._1("randVar") + p._2("randVar"))
     val ewList = ew.collect().toList
     logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
-    for (eachArray <- ewList) {
-      assert(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30)
+    for (sciT <- ewList) {
+      assert(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=2.0).length == 30)
     }
   }
 
@@ -223,8 +223,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val ew = ordered.map(p => p._2("randVar") - p._1("randVar"))
     val ewList = ew.collect().toList
     logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
-    for (eachArray <- ewList) {
-      assert(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").filter(_ != 0.0).length == 30)
+    for (sciT <- ewList) {
+      assert(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").filter(_ != 0.0).length == 30)
     }
   }
 
@@ -241,8 +241,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val ew1 = ordered.map(p => p._2("randVar") :- p._1("randVar"))
     val ewList1 = ew1.collect().toList
     logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
-    for (eachArray <- ewList1){
-      if(eachArray.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=0.0).length == 30){
+    for (sciT <- ewList1){
+      if(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_!="").filter(_!=0.0).length == 30){
         assert(true)
       }else{
         assert(false)
@@ -255,17 +255,17 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     logger.info("The sciTensor is: "+ uSRDD.collect().toList)
     logger.info("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
     // test scalar division
-    val s = uSRDD.map(p => p("randVar") / 2.0)
-    logger.info("Division: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    val s = uSRDD.map(p => p("randVar") / 2.0).collect().toList(0)
+    logger.info("Division: " + s.variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.variables.values.toList(0).toString.split("  ").toList.filter(_!="")
     if (y.filter(_.toDouble  != 0.5).length == 0){
       assert(true)
     } else{
       assert(false)
     }
-    val t = uSRDD.map(p => p("randVar") :/ 2.0)
-    logger.info("Division: " + t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    val t = uSRDD.map(p => p("randVar") :/ 2.0).collect.toList(0)
+    logger.info("Division: " + t.variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y1 = t.variables.values.toList(0).toString.split("  ").toList.filter(_!="")
     if (y1.filter(_.toDouble  != 0.5).length == 0){
       assert(true)
     } else{
@@ -311,9 +311,9 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     logger.info("The sciTensor is: "+ uSRDD.collect().toList)
     logger.info("The values are: "+ uSRDD.collect().toList(0).variables.values.toList)
     // test scalar multiplication
-    val s = uSRDD.map(p => p("randVar") * 2.0)
-    logger.info("Multiplication: " + s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
-    val y = s.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_!="")
+    val s = uSRDD.map(p => p("randVar") * 2.0).collect.toList(0)
+    logger.info("Multiplication: " + s.variables.values.toList(0).toString.split("  ").toList.filter(_!=""))
+    val y = s.variables.values.toList(0).toString.split("  ").toList.filter(_!="")
     if (y.filter(_.toDouble  != 2.0).length == 0){
       assert(true)
     } else{
@@ -392,7 +392,10 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
     val tdefault = sRDD.map(p => (p.data, p.shape))
     val varDataDef = tdefault.collect()(0)
-    logger.info("The varInUse default data is: "+ varDataDef._1.mkString(" ") + "\nShape: (" + varDataDef._2.mkString(" , ")+")")
+    logger.info("The varInUse default data is: "+
+      varDataDef._1.mkString(" ") +
+      "\nShape: (" +
+      varDataDef._2.mkString(" , ")+")")
 
     if (!(varData._1.sameElements(varData1._1)) && (varData1._1.sameElements(varDataDef._1))){
       assert(true)

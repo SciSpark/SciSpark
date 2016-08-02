@@ -77,7 +77,8 @@ object MainPorted {
     /**
      *  Compare to Fig. 6 in the paper.
      */
-    val dateMappedRDDs = dateMap.map({ case (id, _) => (id, criteriaRDD.filter(_.metaData("FRAME") == id.toString)) }).toList.sortBy(_._1)
+    val dateMappedRDDs = dateMap.map({ case (id, _) =>
+      (id, criteriaRDD.filter(_.metaData("FRAME") == id.toString)) }).toList.sortBy(_._1)
     println(dateMappedRDDs)
     val hash = new mutable.HashMap() ++ dateMappedRDDs
 
@@ -91,7 +92,11 @@ object MainPorted {
       val nextTimeRDD = hash(index + 1)
       val cartesianPair = currentTimeRDD.cartesian(nextTimeRDD)
       val findEdges = cartesianPair.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
-      val edgePair = findEdges.map({ case (t1, t2) => (vertices(t1.metaData("FRAME"), t1.metaData("COMPONENT")), vertices(t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
+      val edgePair = findEdges.map({ case (t1, t2) =>
+            val vertex1 = vertices(t1.metaData("FRAME"), t1.metaData("COMPONENT"))
+            val vertex2 = vertices(t2.metaData("FRAME"), t2.metaData("COMPONENT"))
+            (vertex1, vertex2)
+        })
       if (edgeRDD == null) {
         edgeRDD = edgePair
       } else {

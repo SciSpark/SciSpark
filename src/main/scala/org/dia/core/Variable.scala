@@ -47,7 +47,8 @@ class Variable(val name : String,
   }
 
   def this(nvar: ucar.nc2.Variable) {
-    this(nvar.getFullName, nvar.getDataType.toString, NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
+    this(nvar.getFullName, nvar.getDataType.toString,
+      NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
   }
 
   def this(name: String, array : AbstractTensor){

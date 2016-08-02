@@ -63,16 +63,16 @@ object MCCOps {
    *
    * Similar to above method reduceResolution.
    */
-  def reduceRectangleResolution(tensor: AbstractTensor, rowblockSize: Int, columnblockSize: Int, invalid: Int): AbstractTensor = {
+  def reduceRectangleResolution(tensor: AbstractTensor, rowSize: Int, colSize: Int, invalid: Int): AbstractTensor = {
     val largeArray = tensor
     val numRows = largeArray.rows
     val numCols = largeArray.cols
-    val reducedMatrix = tensor.zeros(numRows / rowblockSize, numCols / columnblockSize)
+    val reducedMatrix = tensor.zeros(numRows / rowSize, numCols / colSize)
 
     for (row <- 0 to (reducedMatrix.rows - 1)) {
       for (col <- 0 to (reducedMatrix.cols - 1)) {
-        val rowRange = (row * rowblockSize) -> ((row + 1) * rowblockSize)
-        val columnRange = (col * columnblockSize) -> ((col + 1) * columnblockSize)
+        val rowRange = (row * rowSize) -> ((row + 1) * rowSize)
+        val columnRange = (col * colSize) -> ((col + 1) * colSize)
         val block = tensor(rowRange, columnRange).copy
         val numValid = block.data.count(_ != invalid)
         val avg = if (numValid > 0) block.cumsum / numValid else 0.0
@@ -100,7 +100,10 @@ object MCCOps {
       val area = areaTuple._1
       val max = areaTuple._2
       val min = areaTuple._3
-      val metadata = tensor.metaData += (("AREA", "" + area)) += (("CONVECTIVE_FRACTION", "" + (min/max))) += (("COMPONENT", "" + p))
+      val metadata = tensor.metaData +=
+        (("AREA", "" + area)) +=
+        (("CONVECTIVE_FRACTION", "" + (min/max))) +=
+        (("COMPONENT", "" + p))
       new SciTensor(tensor.varInUse, masked, metadata)
     })
     comps.toList

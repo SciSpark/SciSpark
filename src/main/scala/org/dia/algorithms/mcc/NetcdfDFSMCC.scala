@@ -518,10 +518,12 @@ object NetcdfDFSMCC {
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
             case ((frameId1, compId1), (frameId2, compId2)) => {
-              val cloud1 = areaMinMaxTable(frameId1 + ":" + compId1)("properties").asInstanceOf[mutable.HashMap[String, Double]]
+              val frame_component1 = frameId1 + ":" + compId1
+              val cloud1 = areaMinMaxTable(frame_component1)("properties").asInstanceOf[mutable.HashMap[String, Double]]
               val (area1, min1, max1) = (cloud1("area"), cloud1("minTemp"), cloud1("maxTemp"))
               val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
-              val cloud2 = areaMinMaxTable(frameId2 + ":" + compId2)("properties").asInstanceOf[mutable.HashMap[String, Double]]
+              val frame_component2 = frameId2 + ":" + compId2
+              val cloud2 = areaMinMaxTable(frame_component2)("properties").asInstanceOf[mutable.HashMap[String, Double]]
               val (area2, max2, min2) = (cloud2("area"), cloud2("minTemp"), cloud2("maxTemp"))
               val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) < 0.9)))
               var meetsCriteria = true

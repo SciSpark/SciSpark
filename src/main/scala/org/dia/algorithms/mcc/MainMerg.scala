@@ -116,7 +116,11 @@ object MainMerg {
       val comps2 = compsUnfiltered2.filter(MCCOps.checkCriteria)
       val compsPairs = for (x <- comps1; y <- comps2) yield (x, y)
       val overlaps = compsPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
-      overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
+      overlaps.map({ case (t1, t2) =>
+        val (frame1, component1) = (t1.metaData("FRAME"), t1.metaData("COMPONENT"))
+        val (frame2, component2) = (t2.metaData("FRAME"), t2.metaData("COMPONENT"))
+        ((frame1, component1), (frame2, component2))
+      })
     })
 
     /**
