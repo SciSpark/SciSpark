@@ -17,10 +17,11 @@
  */
 package org.dia.mcc
 
-import org.dia.algorithms.mcc.MCCOps
-import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
+
+import org.dia.algorithms.mcc.MCCOps
+import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 
 /**
  * Tests functionality in MCCOpsTest including:

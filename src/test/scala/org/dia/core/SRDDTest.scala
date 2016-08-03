@@ -17,6 +17,8 @@
  */
 package org.dia.core
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.Constants._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.TestMatrixReader._
@@ -25,7 +27,6 @@ import org.dia.partitioners.STrmmPartitioner._
 import org.dia.testenv.SparkTestConstants
 import org.dia.urlgenerators.HourlyTrmmURLGenerator
 import org.dia.utils.NetCDFUtils
-import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
  * Tests for proper construction of SRDD's from URIs.

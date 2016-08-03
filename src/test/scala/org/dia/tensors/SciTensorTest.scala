@@ -17,9 +17,10 @@
  */
 package org.dia.tensors
 
-import org.dia.core.SciTensor
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
+
+import org.dia.core.SciTensor
 
 class SciTensorTest extends FunSuite {
 

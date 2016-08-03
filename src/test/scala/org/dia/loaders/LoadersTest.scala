@@ -19,12 +19,13 @@ package org.dia.loaders
 
 import java.io.File
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.Constants._
-import org.dia.core.{SRDD, SciTensor}
+import org.dia.core.{SciTensor, SRDD}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.testenv.SparkTestConstants
-import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
  * Tests NetCDF loaders from URIs, from local FS.

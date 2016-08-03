@@ -17,9 +17,10 @@
  */
 package org.dia.core
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.Constants._
 import org.dia.testenv.SparkTestConstants
-import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
  * Tests for creating SRDDs from different sources.

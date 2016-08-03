@@ -17,12 +17,12 @@
  */
 package org.dia.integration
 
-import org.dia.loaders.NetCDFReader
-import org.dia.tensors.Nd4jTensor
-import org.dia.utils.NetCDFUtils
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
+import org.dia.loaders.NetCDFReader
+import org.dia.tensors.Nd4jTensor
+import org.dia.utils.NetCDFUtils
 
 /**
  * Tests whether the creation of Nd4jTensors works.
