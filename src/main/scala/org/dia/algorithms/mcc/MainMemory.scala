@@ -17,11 +17,10 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.Constants._
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
-import org.slf4j.Logger
-import scala.collection.mutable
 import scala.language.implicitConversions
+
+import org.dia.Constants._
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with Cartesian product + Cartesian product.

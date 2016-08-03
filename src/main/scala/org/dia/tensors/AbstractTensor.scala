@@ -17,8 +17,6 @@
  */
 package org.dia.tensors
 
-import org.slf4j.Logger
-
 /**
  * An abstract tensor
  */
@@ -47,7 +45,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def +(array: AbstractTensor): T
   def +(scalar: Double): T
 
-  def -(array: AbstractTensor): T 
+  def -(array: AbstractTensor): T
   def -(scalar: Double): T
 
   def *(array: AbstractTensor): T
@@ -59,7 +57,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def :+(array: AbstractTensor): T
   def :+(scalar: Double): T
 
-  def :-(array: AbstractTensor): T 
+  def :-(array: AbstractTensor): T
   def :-(scalar: Double): T
 
   def :*(array: AbstractTensor): T
@@ -73,7 +71,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
 
   def **(array: AbstractTensor): T
-  
+
   def div(num: Double): T
 
   /**
@@ -87,7 +85,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def >=(num: Double): T
   def :=(num: Double): T
   def !=(num: Double): T
-  
+
   /**
    * Returns the data as a flattened array
    *
@@ -99,7 +97,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    *
    */
   def shape: Array[Int]
-  
+
   /**
    * Utility Methods
    */

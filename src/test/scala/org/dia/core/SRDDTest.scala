@@ -18,14 +18,13 @@
 package org.dia.core
 
 import org.dia.Constants._
+import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.TestMatrixReader._
 import org.dia.partitioners.SPartitioner._
-import org.dia.testenv.SparkTestConstants
-import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.STrmmPartitioner._
+import org.dia.testenv.SparkTestConstants
 import org.dia.urlgenerators.HourlyTrmmURLGenerator
 import org.dia.utils.NetCDFUtils
-import org.nd4j.linalg.api.buffer.FloatBuffer
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**

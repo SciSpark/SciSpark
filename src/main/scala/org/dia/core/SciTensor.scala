@@ -18,11 +18,12 @@
 package org.dia.core
 
 import java.io.Serializable
-import org.dia.algorithms.mcc.MCCOps
-import org.dia.tensors.AbstractTensor
-import org.slf4j.Logger
+
 import scala.collection.mutable
 import scala.language.implicitConversions
+
+import org.dia.algorithms.mcc.MCCOps
+import org.dia.tensors.AbstractTensor
 
 /**
  * The SciTensor is a self-documented array object. It stores N number of variable arrays.
@@ -52,10 +53,11 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    * If a new name is not specified then the variable in use is used by default.
    * The AbstractTensor which corresponds to the variable in use is replaced by
    * the reshaped one.
+   *
    * @param reshapedVarName The new variable name. Default is the current variable in use.
-   * @param shape The array specifying dimensions of the new shape
+   * @param shape           The array specifying dimensions of the new shape
    */
-  def reshape(shape : Array[Int], reshapedVarName : String = varInUse) : SciTensor = {
+  def reshape(shape: Array[Int], reshapedVarName: String = varInUse): SciTensor = {
     insertVar(reshapedVarName, variables(varInUse).reshape(shape))
     this
   }
@@ -66,11 +68,11 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   def insertDictionary(metaDataVar: (String, String)*): Unit = {
     for (variable <- metaDataVar) metaData += variable
   }
-  
-  /** 
-   *  Insert a variable with its values into the SciTensor.
-   *  
-   *  Note that this overwrites the variable in case it already exists.
+
+  /**
+   * Insert a variable with its values into the SciTensor.
+   *
+   * Note that this overwrites the variable in case it already exists.
    */
   def insertVar(varName: String, varTensor: AbstractTensor): Unit = {
     variables.put(varName, varTensor)
@@ -80,6 +82,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    * Returns the array corresponding to the variable in use.
    * This is to mimic the numpy like syntax of nc['var'][:]
    * Example usage: val absT = sciT('var')()
+   *
    * @return AbstractTensor corresponding to variable in use
    */
   def apply(): AbstractTensor = variables(varInUse)
@@ -115,37 +118,45 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    */
   def **(other: SciTensor): SciTensor = this.tensor ** other.tensor
 
-  //in-place operators
+  // in-place operators
   def +(other: SciTensor): SciTensor = this.tensor + other.tensor
+
   def +(scalar: Double): SciTensor = this.tensor + scalar
-  
+
   def -(other: SciTensor): SciTensor = this.tensor - other.tensor
+
   def -(scalar: Double): SciTensor = this.tensor - scalar
 
   def /(other: SciTensor): SciTensor = this.tensor / other.tensor
+
   def /(scalar: Double): SciTensor = this.tensor / scalar
 
   def *(other: SciTensor): SciTensor = this.tensor * other.tensor
+
   def *(scalar: Double): SciTensor = this.tensor * scalar
 
-  //copy operators
+  // copy operators
   def :+(other: SciTensor): SciTensor = this.tensor :+ other.tensor
+
   def :+(scalar: Double): SciTensor = this.tensor :+ scalar
-  
+
   def :-(other: SciTensor): SciTensor = this.tensor :- other.tensor
+
   def :-(scalar: Double): SciTensor = this.tensor :- scalar
 
   def :/(other: SciTensor): SciTensor = this.tensor :/ other.tensor
+
   def :/(scalar: Double): SciTensor = this.tensor :/ scalar
 
   def :*(other: SciTensor): SciTensor = this.tensor :* other.tensor
+
   def :*(scalar: Double): SciTensor = this.tensor :* scalar
 
 
   /**
    * Applies a masking function on the current variable array
    */
-  def mask(f: Double => Boolean, maskVal: Double = 0.0) : SciTensor = variables(varInUse).mask(f, maskVal)
+  def mask(f: Double => Boolean, maskVal: Double = 0.0): SciTensor = variables(varInUse).mask(f, maskVal)
 
   /**
    * Sets the default mask value for the particular array being used.
@@ -158,31 +169,31 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    */
   def <=(num: Double): SciTensor = variables(varInUse) <= num
 
-/**
+  /**
    * Masks the current variable array by preserving values
    * greater than or equal to num.
    */
   def >=(num: Double): SciTensor = variables(varInUse) >= num
 
-/**
+  /**
    * Masks the current variable array by preserving values
    * less than to num.
    */
   def <(num: Double): SciTensor = variables(varInUse) < num
 
-/**
+  /**
    * Masks the current variable array by preserving values
    * greater than num.
    */
   def >(num: Double): SciTensor = variables(varInUse) > num
 
-/**
+  /**
    * Masks the current variable array by preserving values
    * not equal to num.
    */
   def !=(num: Double): SciTensor = variables(varInUse) != num
 
-/**
+  /**
    * Masks the current variable array by preserving values
    * equal to num.
    */
@@ -193,13 +204,15 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    *
    */
   def shape: Array[Int] = variables(varInUse).shape
-  def data : Array[Double] = variables(varInUse).data
+
+  def data: Array[Double] = variables(varInUse).data
 
   /**
    * Creates a copy of the variable in use
+   *
    * @return
    */
-  def copy : SciTensor = variables(varInUse).copy
+  def copy: SciTensor = variables(varInUse).copy
 
   /**
    * Statistical operations
@@ -207,6 +220,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
 
   /**
    * Computes the mean along the given axis of the variable in use.
+   *
    * @param axis
    * @return
    */
@@ -217,6 +231,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   /**
    * Computes and returns the array broadcasted to
    * the specified shape requirements.
+   *
    * @param shape
    * @return
    */
@@ -233,8 +248,9 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   }
 
   def skew(axis: Array[Int]): SciTensor = {
-    variables(varInUse).skew(axis:_ *)
+    variables(varInUse).skew(axis: _ *)
   }
+
   /**
    * Returns a block averaged tensor where the blocks are squares with
    * dimensions blockInt.

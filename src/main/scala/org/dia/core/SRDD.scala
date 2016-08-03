@@ -17,11 +17,13 @@
  */
 package org.dia.core
 
-import org.apache.spark._
-import org.apache.spark.rdd.RDD
-import org.dia.tensors.{ AbstractTensor, TensorFactory }
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
+import org.apache.spark._
+import org.apache.spark.rdd.RDD
+
+import org.dia.tensors.{AbstractTensor, TensorFactory}
 
 /**
  * Scientific RDD. There are few differences between an SRDD and a normal RDD.

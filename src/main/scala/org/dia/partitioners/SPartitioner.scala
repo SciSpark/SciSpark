@@ -18,8 +18,10 @@
 package org.dia.partitioners
 
 import java.io.File
-import org.dia.loaders.PathReader.recursiveListFiles
+
 import scala.language.implicitConversions
+
+import org.dia.loaders.PathReader.recursiveListFiles
 
 /**
  * Functions needed to split input paths into groups.

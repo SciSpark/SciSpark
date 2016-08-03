@@ -18,13 +18,16 @@
 package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
-import org.apache.spark.rdd.RDD
-import org.dia.Constants._
-import org.dia.Parsers
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.apache.spark.rdd.RDD
+
+import org.dia.Constants._
+import org.dia.Parsers
+import org.dia.core.{SciSparkContext, SciTensor, SRDD}
 
 /**
  * This is doing the "naive port of GTG" (see paper).

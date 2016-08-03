@@ -17,14 +17,9 @@
  */
 package org.dia.urlgenerators
 
-import org.dia.urlgenerators.OpenDapTRMMURLGenerator
-import org.scalatest.FunSuite
-import org.scalatest.Ignore
-import org.scalatest.BeforeAndAfter
-import java.nio.file.{Paths, Files}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.scalatest.{BeforeAndAfter, FunSuite, Ignore}
 
 /**
  * Tests whether the OpenDapTRMM URLs creator works.

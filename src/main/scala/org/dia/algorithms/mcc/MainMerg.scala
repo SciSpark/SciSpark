@@ -17,12 +17,11 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.dia.tensors.BreezeTensor
-import org.slf4j.Logger
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + Cartesian product.

@@ -18,12 +18,13 @@
 package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
+
 import org.dia.Parsers
-import org.dia.utils.{ FileUtils, JsonUtils }
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
+import org.dia.core.SciSparkContext
+import org.dia.utils.{FileUtils, JsonUtils}
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
-import org.slf4j.Logger
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions

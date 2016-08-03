@@ -17,17 +17,10 @@
  */
 package org.dia.tensors
 
-import org.nd4j.linalg.factory.Nd4j
-import org.nd4j.linalg.inverse
-import breeze.linalg._
-import breeze.stats.regression.leastSquares
-import org.scalatest.FunSuite
-import org.nd4s.Implicits._
-import org.slf4j.Logger
 import org.dia.loaders.TestMatrixReader._
-import org.dia.partitioners.SPartitioner._
-import org.dia.testenv.SparkTestConstants
-import org.dia.core.{ SRDD, SciTensor }
+import org.nd4j.linalg.factory.Nd4j
+import org.nd4s.Implicits._
+import org.scalatest.FunSuite
 
 /**
  * Tests basic tensor functionality.

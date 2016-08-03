@@ -20,10 +20,10 @@ package org.dia.loaders
 import java.io.File
 
 import org.dia.Constants._
-import org.dia.testenv.SparkTestConstants
 import org.dia.core.{SRDD, SciTensor}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.SPartitioner._
+import org.dia.testenv.SparkTestConstants
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**

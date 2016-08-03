@@ -19,11 +19,14 @@ package org.dia.algorithms.pdfclustering
 
 import java.util
 
-import org.dia.core.SciSparkContext
+import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
+import ucar.nc2.{Dimension, NetcdfFileWriter}
+
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.Vectors
-import ucar.ma2.{ArrayInt, ArrayDouble, DataType}
-import ucar.nc2.{Dimension, NetcdfFileWriter}
+
+import org.dia.core.SciSparkContext
+
 object PDFClusteringAnomalies {
 
   def whiten(input: Array[Double]): Array[Double] = {

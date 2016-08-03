@@ -18,10 +18,13 @@
 package org.dia.core
 
 import java.io.Serializable
-import org.dia.tensors.{Nd4jTensor, AbstractTensor}
-import org.dia.utils.NetCDFUtils
+
+import scala.collection.{mutable, TraversableOnce}
+
 import ucar.nc2.Attribute
-import scala.collection.{TraversableOnce, mutable}
+
+import org.dia.tensors.{AbstractTensor, Nd4jTensor}
+import org.dia.utils.NetCDFUtils
 
 class Variable(val name : String,
                val dataType : String,

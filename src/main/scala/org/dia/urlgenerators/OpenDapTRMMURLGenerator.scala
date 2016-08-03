@@ -17,17 +17,15 @@
  */
 package org.dia.urlgenerators
 
-import java.io.{File, PrintWriter}
 import java.net.{HttpURLConnection, URL}
 import java.util
-import scala.collection.JavaConversions._
-import org.joda.time.DateTime
-import org.joda.time.Days
-import org.joda.time.format.DateTimeFormat
-import scala.util.control.Breaks._
+
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.joda.time.{DateTime, Days}
+
+import scala.collection.JavaConversions._
+import scala.util.control.Breaks._
 
 /**
  * Generates a list of links for the TRMM URLs.

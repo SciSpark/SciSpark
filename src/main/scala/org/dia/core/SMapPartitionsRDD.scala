@@ -17,8 +17,9 @@
  */
 package org.dia.core
 
-import org.apache.spark.{ Partition, TaskContext }
 import scala.reflect.ClassTag
+
+import org.apache.spark.{Partition, TaskContext}
 
 /**
  * The map partition used by SRDD to perform the Map operation.

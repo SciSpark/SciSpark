@@ -19,7 +19,7 @@ package org.dia.tensors.perf
 
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4s.Implicits._
-import org.scalatest.{ FunSuite, Ignore }
+import org.scalatest.FunSuite
 
 /**
  * Nd4j Performance Tests

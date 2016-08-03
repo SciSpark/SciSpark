@@ -17,15 +17,13 @@
  */
 package org.dia.tensors
 
-import org.dia.Constants
 import org.dia.Constants.{BREEZE_LIB, ND4J_LIB}
-import scala.collection.mutable
 
 /**
  * Factory to create tensors.
  */
 object TensorFactory {
-  
+
   /**
    * Creates specific tensor
    * @param arrayLib

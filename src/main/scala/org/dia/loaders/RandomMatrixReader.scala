@@ -18,6 +18,7 @@
 package org.dia.loaders
 
 import java.util.Random
+
 import org.nd4j.linalg.factory.Nd4j
 
 /**
@@ -25,7 +26,7 @@ import org.nd4j.linalg.factory.Nd4j
  */
 object RandomMatrixReader {
 
-  def dist(x: Double, y: Double) = Math.pow(x - y, 2)
+  def dist(x: Double, y: Double): Double = Math.pow(x - y, 2)
 
   def loadRandomArray(uri: String, varname: String): (Array[Double], Array[Int]) = {
     val random = new Random()

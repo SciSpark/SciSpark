@@ -17,15 +17,10 @@
  */
 package org.dia.algorithms.mcc
 
-import java.util.Random
-import org.dia.Constants._
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.dia.tensors.AbstractTensor
-import org.json4s.JsonAST.JObject
-import org.json4s.JsonDSL._
-import org.slf4j.Logger
-import scala.collection.mutable
 import scala.language.implicitConversions
+
+import org.dia.Constants._
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with Cartesian + [neither Cartesian nor in-place approach].

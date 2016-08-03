@@ -17,7 +17,6 @@
  */
 package org.dia.loaders
 
-import java.util.Random
 import org.nd4j.linalg.factory.Nd4j
 
 /**
@@ -41,7 +40,7 @@ object TestMatrixReader {
     Array(242.0, 242.0, 242.0, 241.0, 242.0),
     Array(241.0, 240.0, 241.0, 243.0, 241.0))
 
-  def loadTestArray(uri: String, varname: String) = {
+  def loadTestArray(uri: String, varname: String): (Array[Double], Array[Int]) = {
     var sample : Array[Array[Double]] = Array()
     if (varname == "randVar") {
       sample = randVar
@@ -54,7 +53,7 @@ object TestMatrixReader {
     (sampleArray.data.asDouble, sampleArray.shape)
   }
 
-def loadTestUniformArray(uri: String, varname: String) = {
+def loadTestUniformArray(uri: String, varname: String): (Array[Double], Array[Int]) = {
     val sampleArray = Nd4j.ones(6,5)
     (sampleArray.data.asDouble, sampleArray.shape)
   }

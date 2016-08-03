@@ -19,7 +19,6 @@ package org.dia.tensors
 
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
-import org.nd4s.Implicits._
 
 /**
  * Checks that for 2D arrays, using Breeze or Nd4j

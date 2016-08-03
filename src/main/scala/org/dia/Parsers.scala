@@ -17,7 +17,8 @@
  */
 package org.dia
 
-import java.util.{ Calendar, Date }
+import java.util.{Calendar, Date}
+
 import com.joestelmach.natty.Parser
 
 /**

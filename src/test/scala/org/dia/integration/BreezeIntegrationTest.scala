@@ -20,8 +20,7 @@ package org.dia.integration
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.BreezeTensor
 import org.dia.utils.NetCDFUtils
-import org.scalatest.FunSuite
-import org.scalatest.BeforeAndAfter
+import org.scalatest.{BeforeAndAfter, FunSuite}
 
 /**
   * Tests whether the creation of BreezeTensors works.

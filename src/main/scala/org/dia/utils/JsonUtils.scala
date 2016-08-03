@@ -17,11 +17,9 @@
  */
 package org.dia.utils
 
-import java.util.Random
-import org.dia.Parsers
-import org.joda.time.{ DateTime, Days, MutableDateTime }
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
+
 import scala.collection.mutable
 
 /**

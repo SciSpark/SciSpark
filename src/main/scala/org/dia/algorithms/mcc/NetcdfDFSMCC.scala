@@ -18,17 +18,13 @@
 package org.dia.algorithms.mcc
 
 import java.io._
-import java.text.SimpleDateFormat
-import com.fasterxml.jackson.module.scala.JacksonModule
-import org.apache.spark.rdd.RDD
-import org.dia.Parsers
-import org.dia.core.{SciSparkContext, SciTensor}
-import org.slf4j.Logger
-import scala.collection.mutable
-import scala.io.Source
-import scala.language.implicitConversions
-import scala.util.parsing.json.JSONObject
 
+import scala.collection.mutable
+import scala.language.implicitConversions
+
+import org.apache.spark.rdd.RDD
+
+import org.dia.core.{SciSparkContext, SciTensor}
 
 object NetcdfDFSMCC {
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -48,7 +44,7 @@ object NetcdfDFSMCC {
     return tempGrid
   }
 
-  def removeOverlappingEdges(t1: SciTensor, t2: SciTensor) = {
+  def removeOverlappingEdges(t1: SciTensor, t2: SciTensor): Unit = {
     val (components1, _) = MCCOps.labelConnectedComponents(t1.tensor)
     val (components2, _) = MCCOps.labelConnectedComponents(t2.tensor)
     val product = components1 * components2

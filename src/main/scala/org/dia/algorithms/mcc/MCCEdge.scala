@@ -19,7 +19,7 @@ package org.dia.algorithms.mcc
 
 class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
-  override def toString = {
+  override def toString : String = {
     s"((${srcNode.frameNum},${srcNode.cloudElemNum}) , (${destNode.frameNum},${destNode.cloudElemNum}))"
   }
 
@@ -32,7 +32,7 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
     this(srcNode, destNode, 0f)
   }
 
-  def setSourceNode(node: MCCNode) = {
+  def setSourceNode(node: MCCNode): Unit = {
     this.srcNode = node
   }
 }

@@ -17,25 +17,18 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{BufferedWriter, OutputStreamWriter}
-import breeze.io.TextWriter.FileWriter
-import org.apache.hadoop.conf._
-import org.apache.hadoop.fs._
-import org.apache.hadoop.io._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.core.SciSparkContext
-import org.slf4j.Logger
-
 import scala.collection.mutable
 
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
+
 /**
-  * Implements MCC via a distributed graph approach.
-  *
-  * Currently, the input data is a file in the form
-  * of an Edgelist generated is an output by
-  * MainNetcdfDFSMCC
-  */
+ * Implements MCC via a distributed graph approach.
+ *
+ * Currently, the input data is a file in the form
+ * of an Edgelist generated is an output by
+ * MainNetcdfDFSMCC
+ */
 object MainDistGraphMCC {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -249,7 +242,7 @@ object MainDistGraphMCC {
   /*
   For debugging purposes
    */
-  def printGraphForMatplotLob(label:String, edges: mutable.HashSet[MCCEdge],iteration:Int, bucket:Int) = {
+  def printGraphForMatplotLob(label:String, edges: mutable.HashSet[MCCEdge],iteration:Int, bucket:Int): Unit = {
     println(s"Matplotlib: $label ##$edges")
   }
 

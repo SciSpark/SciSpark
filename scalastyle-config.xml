@@ -143,7 +143,8 @@ This file is divided into 3 sections:
   </check>
 
   <!-- As of SPARK-7977 all printlns need to be wrapped in '// scalastyle:off/on println' -->
-  <check customId="println" level="error" class="org.scalastyle.scalariform.TokenChecker" enabled="true">
+  <!-- SCISPARK will accept println's. Right now it prints out a few algorithm resutls -->
+  <check customId="println" level="error" class="org.scalastyle.scalariform.TokenChecker" enabled="false">
     <parameters><parameter name="regex">^println$</parameter></parameters>
     <customMessage><![CDATA[Are you sure you want to println? If yes, wrap the code block with
       // scalastyle:off println
@@ -219,11 +220,12 @@ This file is divided into 3 sections:
 
   <check level="error" class="org.scalastyle.scalariform.ImportOrderChecker" enabled="true">
     <parameters>
-      <parameter name="groups">java,scala,3rdParty,spark</parameter>
+      <parameter name="groups">java,scala,3rdParty,spark,dia</parameter>
       <parameter name="group.java">javax?\..*</parameter>
       <parameter name="group.scala">scala\..*</parameter>
-      <parameter name="group.3rdParty">(?!org\.apache\.spark\.).*</parameter>
+      <parameter name="group.3rdParty">(?!org\.).*</parameter>
       <parameter name="group.spark">org\.apache\.spark\..*</parameter>
+      <parameter name="group.dia">org\.dia\..*</parameter>
     </parameters>
   </check>
 

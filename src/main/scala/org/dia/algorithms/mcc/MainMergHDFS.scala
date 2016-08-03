@@ -17,12 +17,13 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{ File, PrintWriter }
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.slf4j.Logger
+import java.io.{File, PrintWriter}
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + in-place iteration.
