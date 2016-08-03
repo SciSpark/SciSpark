@@ -47,7 +47,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def broadcast(shape: Array[Int]): Nd4jTensor = {
     // new Nd4jTensor(tensor.broadcast(shape: _*))
     val extraDims = shape diff this.shape
-    val totalExtraCopies = extraDims.reduce((A, B) => A * B)
+    val totalExtraCopies = extraDims.product
     var rawLinearArray = this.data
     for (i <- 0 to totalExtraCopies by 1) {
       rawLinearArray = rawLinearArray ++ rawLinearArray
@@ -59,7 +59,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def map(f: Double => Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => f(p)))
 
-  def put(value: Double, shape: Int*): Nd4jTensor = tensor.putScalar(shape.toArray, value)
+  def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
   def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
 
@@ -166,7 +166,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     val Nreg = bp.length - 1
     val rank = dshape.length
     val newdims = Array(axis) ++ (0 until axis) ++ ((axis + 1) until rank)
-    val prod = dshape.reduce((A, B) => A * B)
+    val prod = dshape.product
     // The complete scipy conversion would be cube.transpose(newdims)).reshape(N, prod/N)
     // however, we cannot transpose and permute by the axis yet. The backend libraries
     // do not support it
@@ -212,7 +212,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     val copy = tensor.dup()
     val std = tensor.std(axis: _*).reshape(shapeMatch: _*)
     for (i <- 0 until this.shape(axis(0))) {
-      val diffOversd = (copy((i, i + 1)).subi(meanAlongAxis)).divi(std)
+      val diffOversd = copy((i, i + 1)).subi(meanAlongAxis).divi(std)
       val cubed = Transforms.pow(diffOversd, 3, false)
     }
 
@@ -223,7 +223,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   /**
    * Copies over the data in a new tensor to the current tensor
    *
-   * @param newTensor
+   * @param newTensor tensor to assign from
    * @return
    */
   def assign(newTensor: AbstractTensor): Nd4jTensor = {

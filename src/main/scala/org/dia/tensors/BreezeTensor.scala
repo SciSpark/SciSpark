@@ -68,7 +68,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def map(f: Double => Double): BreezeTensor = tensor.map(f)
 
-  def put(value: Double, shape: Int*): BreezeTensor = tensor.update(shape(0), shape(1), value)
+  def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
 
   def +(array: AbstractTensor): BreezeTensor = tensor :+= array.tensor
 
@@ -144,7 +144,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def apply: BreezeTensor = this
 
   def apply(ranges: (Int, Int)*): BreezeTensor = {
-    tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
+    tensor(ranges(0)._1 until ranges(0)._2, ranges(1)._1 until ranges(1)._2)
   }
 
   def apply(indexes: Int*): Double = {
@@ -160,7 +160,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * TODO :: Implement the mean along axis function for BreezeTensor
    *
-   * @param axis
+   * @param axis dimension to take mean along
    * @return
    */
   def mean(axis: Int*): BreezeTensor = {
@@ -170,7 +170,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * TODO :: Implement detrend along axis
    *
-   * @param axis
+   * @param axis dimension to detrend along
    * @return
    */
   def detrend(axis: Int): BreezeTensor = {
@@ -188,7 +188,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   /**
    * Copies over the data in a new tensor to the current tensor
    *
-   * @param newTensor
+   * @param newTensor tensor to assign values from
    * @return
    */
   def assign(newTensor: AbstractTensor): BreezeTensor = {

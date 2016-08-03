@@ -17,7 +17,7 @@
  */
 package org.dia.utils
 
-import java.io.{FileWriter, PrintWriter}
+import java.io.{FileWriter, PrintWriter, Writer}
 
 import scala.language.reflectiveCalls
 
@@ -30,7 +30,7 @@ object FileUtils {
    * Used for reading/writing to a database, files, etc.
    * Code from the book "Beginning Scala" from David Pollak.
    */
-  def using[A <: closeable, B](param: A)(f: A => B): B =
+  def using[A <: Writer, B](param: A)(f: A => B): B =
     try {
       f(param)
     } finally {
@@ -49,9 +49,5 @@ object FileUtils {
           printWriter => printWriter.println(textData)
         }
     }
-
-  trait closeable {
-    def close(): Unit
-  }
 
 }
