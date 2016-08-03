@@ -65,7 +65,7 @@ object HourlyTrmmURLGenerator {
       sb.append(TRMM_HOURLY_DATA_PREFFIX).append(".")
       if (reading != 24) {
         sb.append("%s".format(realDate.toString("yyyyMMdd"))).append(".")
-        sb.append("%02d".format(reading))
+        sb.append("%02d".format(reading)).append(".")
       } else {
         sb.append("%s".format(realDate.plusDays(1).toString("yyyyMMdd"))).append(".")
         sb.append("00")

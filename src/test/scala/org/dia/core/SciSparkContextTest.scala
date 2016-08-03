@@ -20,14 +20,19 @@ package org.dia.core
 import org.dia.Constants._
 import org.dia.testenv.SparkTestConstants
 import org.scalatest.FunSuite
+import org.scalatest.BeforeAndAfter
 
 /**
  * Tests for creating SRDDs from different sources.
  */
-class SciSparkContextTest extends FunSuite {
+class SciSparkContextTest extends FunSuite with BeforeAndAfter {
 
   val sc = SparkTestConstants.sc
   val testLinks = SparkTestConstants.datasetPath
+
+  before {
+    sc.addHTTPCredential("http://disc2.gesdisc.eosdis.nasa.gov:80", "scispark", "SciSpark1")
+  }
 
   /**
    * Creates SRDD from a file of URIs.
