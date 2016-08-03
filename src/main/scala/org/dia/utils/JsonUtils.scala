@@ -17,10 +17,10 @@
  */
 package org.dia.utils
 
+import scala.collection.mutable
+
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
-
-import scala.collection.mutable
 
 /**
  * Utilities to write JSONs.

@@ -17,10 +17,11 @@
  */
 package org.dia.urlgenerators
 
-import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
+import scala.collection.mutable.ListBuffer
+
 import org.joda.time.DateTime
 
-import scala.collection.mutable.ListBuffer
+import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
 
 /**
  * Generates hourly TRMM URL's.

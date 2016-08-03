@@ -306,19 +306,19 @@ object MainDistGraphMCC {
 
   def main(args: Array[String]) {
     /**
-      * Input arguments to the program :
-      * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
-      * args(1) - the number of desired partitions. Default : 2
-      * args(3) - local path to files
-      *
-      */
+     * Input arguments to the program :
+     * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
+     * args(1) - the number of desired partitions. Default : 2
+     * args(3) - local path to files
+     *
+     */
     val masterURL = if (args.length < 1) "local[2]" else args(0)
     val partCount = if (args.length < 2) 2 else args(1).toInt
     val hdfspath = if (args.length < 3) "resources/graph/graphEdges" else args(2)
 
     /**
-      * Initialize the spark context to point to the master URL
-      */
+     * Initialize the spark context to point to the master URL
+     */
     val sparkConf = new SparkConf()
       .setMaster(masterURL)
       .setAppName("DGTG : Distributed MCC Search")

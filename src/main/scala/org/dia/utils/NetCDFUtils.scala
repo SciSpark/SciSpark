@@ -19,15 +19,15 @@ package org.dia.utils
 
 import java.net.URL
 
-import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
-import org.dia.HDFSRandomAccessFile
-import ucar.ma2
-import ucar.ma2.DataType
-import ucar.nc2.dataset.NetcdfDataset
-import ucar.nc2.{Attribute, NetcdfFile, Variable}
-
 import scala.language.implicitConversions
 
+import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
+import ucar.ma2
+import ucar.ma2.DataType
+import ucar.nc2.{Attribute, NetcdfFile, Variable}
+import ucar.nc2.dataset.NetcdfDataset
+
+import org.dia.HDFSRandomAccessFile
 /**
  * Utilities to read a NetCDF by URL or from HDFS.
  *

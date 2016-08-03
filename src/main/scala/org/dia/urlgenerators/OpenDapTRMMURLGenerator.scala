@@ -20,12 +20,12 @@ package org.dia.urlgenerators
 import java.net.{HttpURLConnection, URL}
 import java.util
 
+import scala.collection.JavaConverters._
+import scala.util.control.Breaks._
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.joda.time.{DateTime, Days}
-
-import scala.collection.JavaConversions._
-import scala.util.control.Breaks._
 
 /**
  * Generates a list of links for the TRMM URLs.
@@ -100,7 +100,7 @@ object OpenDapTRMMURLGenerator {
         endTime = endTime.substring(0, 10) + "00"
         totalUrls.addAll(generate3HrlyLinks(startTime, endTime, varNames))
       }
-      totalUrls.foreach { e => pw.write((e.toString + "\n").getBytes) }
+      totalUrls.asScala.foreach { e => pw.write((e.toString + "\n").getBytes) }
     } catch {
       case ex: Exception =>
         println("Exception")

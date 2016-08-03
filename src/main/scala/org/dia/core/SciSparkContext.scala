@@ -17,9 +17,14 @@
  */
 package org.dia.core
 
+import scala.collection.mutable
+import scala.io.Source
+
 import org.apache.log4j.LogManager
-import org.apache.spark.rdd.RDD
+
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
+
 import org.dia.Constants._
 import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
@@ -27,9 +32,6 @@ import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
-
-import scala.collection.mutable
-import scala.io.Source
 
 /**
  * A SciSparkContext is a wrapper for the SparkContext.

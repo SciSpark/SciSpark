@@ -71,32 +71,40 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
   def put(value: Double, shape: Int*): BreezeTensor = tensor.update(shape(0), shape(1), value)
 
   def +(array: AbstractTensor): BreezeTensor = tensor :+= array.tensor
+
   def +(scalar: Double): BreezeTensor = tensor :+= scalar
 
   def -(array: AbstractTensor): BreezeTensor = tensor :-= array.tensor
+
   def -(scalar: Double): BreezeTensor = tensor :-= scalar
 
   def /(array: AbstractTensor): BreezeTensor = tensor :/= array.tensor
+
   def /(scalar: Double): BreezeTensor = tensor :/= scalar
 
   def *(array: AbstractTensor): BreezeTensor = tensor *= array.tensor
+
   def *(scalar: Double): BreezeTensor = tensor :*= scalar
 
   def :+(array: AbstractTensor): BreezeTensor = tensor + array.tensor
+
   def :+(scalar: Double): BreezeTensor = tensor + scalar
 
   def :-(array: AbstractTensor): BreezeTensor = tensor - array.tensor
+
   def :-(scalar: Double): BreezeTensor = tensor - scalar
 
   def :/(array: AbstractTensor): BreezeTensor = tensor / array.tensor
+
   def :/(scalar: Double): BreezeTensor = tensor / scalar
 
   def :*(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
+
   def :*(scalar: Double): BreezeTensor = tensor :* scalar
 
   /**
-    * Masking operations
-    */
+   * Masking operations
+   */
   def mask(f: Double => Boolean, mask: Double = 0.0): BreezeTensor = tensor.map(v => if (f(v)) v else mask)
 
   def setMask(num: Double): BreezeTensor = {
@@ -123,17 +131,17 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def div(num: Double): BreezeTensor = tensor / num
 
-  def data : Array[Double] = tensor.t.toArray
+  def data: Array[Double] = tensor.t.toArray
 
   /**
    * SlicableArray operations
    */
 
-  def rows : Int = tensor.rows
+  def rows: Int = tensor.rows
 
-  def cols : Int = tensor.cols
+  def cols: Int = tensor.cols
 
-  def apply : BreezeTensor = this
+  def apply: BreezeTensor = this
 
   def apply(ranges: (Int, Int)*): BreezeTensor = {
     tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
@@ -147,27 +155,29 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    * Utility Operations
    */
 
-  def cumsum : Double = sum(tensor)
+  def cumsum: Double = sum(tensor)
 
   /**
    * TODO :: Implement the mean along axis function for BreezeTensor
+   *
    * @param axis
    * @return
    */
-  def mean(axis : Int*): BreezeTensor = {
-      throw new Exception("BreezeTensor does not support the mean along axis operation yet")
+  def mean(axis: Int*): BreezeTensor = {
+    throw new Exception("BreezeTensor does not support the mean along axis operation yet")
   }
 
   /**
-    * TODO :: Implement detrend along axis
-    * @param axis
-    * @return
-    */
-  def detrend(axis : Int): BreezeTensor = {
+   * TODO :: Implement detrend along axis
+   *
+   * @param axis
+   * @return
+   */
+  def detrend(axis: Int): BreezeTensor = {
     throw new Exception("BreezeTensor does not yet support detrending")
   }
 
-  def std(axis : Int*): BreezeTensor = {
+  def std(axis: Int*): BreezeTensor = {
     throw new Exception("BreezeTensor does not yet support standard deviation along axis")
   }
 
@@ -177,24 +187,25 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   /**
    * Copies over the data in a new tensor to the current tensor
+   *
    * @param newTensor
    * @return
    */
-  def assign(newTensor: AbstractTensor) : BreezeTensor = {
+  def assign(newTensor: AbstractTensor): BreezeTensor = {
     this.tensor := newTensor.tensor
   }
 
-  def isZero : Boolean = sum(tensor :* tensor) <= 1E-9
+  def isZero: Boolean = sum(tensor :* tensor) <= 1E-9
 
-  def isZeroShortcut : Boolean = sum(tensor) <= 1E-9
+  def isZeroShortcut: Boolean = sum(tensor) <= 1E-9
 
   override def toString: String = if (tensor != null) tensor.toString() else null
 
-  def max : Double = breeze.linalg.max(tensor)
+  def max: Double = breeze.linalg.max(tensor)
 
-  def min : Double = breeze.linalg.min(tensor)
+  def min: Double = breeze.linalg.min(tensor)
 
-  def copy : BreezeTensor = tensor.copy
+  def copy: BreezeTensor = tensor.copy
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

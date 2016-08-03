@@ -19,15 +19,16 @@ package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
 
-import org.dia.Parsers
-import org.dia.core.SciSparkContext
-import org.dia.utils.{FileUtils, JsonUtils}
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
-
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
+
+import org.dia.Parsers
+import org.dia.core.SciSparkContext
+import org.dia.utils.{FileUtils, JsonUtils}
 
 /**
  * Implements MCC with GroupBy + Cartesian product.

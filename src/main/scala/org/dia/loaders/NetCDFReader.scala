@@ -17,10 +17,11 @@
  */
 package org.dia.loaders
 
-import org.dia.utils.NetCDFUtils
 import org.slf4j.Logger
 import ucar.nc2.NetcdfFile
 import ucar.nc2.dataset.NetcdfDataset
+
+import org.dia.utils.NetCDFUtils
 
 /**
  * Utility functions to create a multi-dimensional array from a NetCDF,

@@ -191,21 +191,21 @@ object MainNetcdfDFSMCC {
         }
 
         /**
-          * This code essetially computes the number of times the same tuple occurred in the list,
-          * a repeat occurrance would indicate that the components overlapped for more than one cell
-          * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
-          * they overlapped for and since each cell is of a fixed area we can compute the area overlap
-          * between those two components.
-          */
+         * This code essetially computes the number of times the same tuple occurred in the list,
+         * a repeat occurrance would indicate that the components overlapped for more than one cell
+         * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
+         * they overlapped for and since each cell is of a fixed area we can compute the area overlap
+         * between those two components.
+         */
         var overlappedMap = overlappedPairsList.groupBy(identity).mapValues(_.size)
         println(s"Overlap Map ${overlappedMap.size}")
 
         /**
-          * Once the overlapped pairs have been computed, eliminate all duplicates
-          * by converting the collection to a set. The component edges are then
-          * mapped to the respective frames, so the global space of edges (outside of this task)
-          * consists of unique tuples.
-          */
+         * Once the overlapped pairs have been computed, eliminate all duplicates
+         * by converting the collection to a set. The component edges are then
+         * mapped to the respective frames, so the global space of edges (outside of this task)
+         * consists of unique tuples.
+         */
         val edgesSet = overlappedPairsList.toSet
         println(s"Overlap SEt ${edgesSet.size}  : ") // for debugging
 

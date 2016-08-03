@@ -17,13 +17,13 @@
  */
 package org.dia.tensors
 
+import scala.language.implicitConversions
+
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.inverse
 import org.nd4j.linalg.ops.transforms.Transforms
 import org.nd4s.Implicits._
-
-import scala.language.implicitConversions
 
 /**
  * Wrapper around Nd4j INDArray.

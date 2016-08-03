@@ -151,11 +151,4 @@ object PDFClusteringAnomalies {
     writer.close()
   }
 
-
-  /**
-    * (1 to 1000d).toArray.reduce((A, B) => (
-    *
-    *
-    *
-    */
 }
