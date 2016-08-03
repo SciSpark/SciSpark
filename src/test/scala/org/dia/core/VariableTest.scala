@@ -17,9 +17,10 @@
  */
 package org.dia.core
 
+import org.scalatest.FunSuite
+
 import org.dia.tensors.Nd4jTensor
 import org.dia.utils.NetCDFUtils
-import org.scalatest.FunSuite
 
 class VariableTest extends FunSuite {
 

@@ -18,43 +18,51 @@
 package org.dia.core
 
 import java.io.Serializable
-import org.dia.tensors.{Nd4jTensor, AbstractTensor}
-import org.dia.utils.NetCDFUtils
-import ucar.nc2.Attribute
-import scala.collection.{TraversableOnce, mutable}
 
-class Variable(val name : String,
-               val dataType : String,
-               val array : AbstractTensor,
-               val attributes : mutable.LinkedHashMap[String, String]) extends Serializable {
+import scala.collection.{mutable, TraversableOnce}
+
+import ucar.nc2.Attribute
+
+import org.dia.tensors.{AbstractTensor, Nd4jTensor}
+import org.dia.utils.NetCDFUtils
+
+class Variable(val name: String,
+               val dataType: String,
+               val array: AbstractTensor,
+               val attributes: mutable.LinkedHashMap[String, String]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  def this(name: String, dataType: String, array : AbstractTensor, attr : TraversableOnce[(String, String)]){
+  def this(name: String, dataType: String, array: AbstractTensor, attr: TraversableOnce[(String, String)]) {
     this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr)
   }
 
-  def this(name: String, dataType: String, array : AbstractTensor, attr : Array[Attribute]){
+  def this(name: String, dataType: String, array: AbstractTensor, attr: Array[Attribute]) {
     this(name, dataType, array, attr.map(p => NetCDFUtils.convertAttribute(p)))
   }
 
-  def this(name: String, daaType: String, array : AbstractTensor, attr : java.util.List[Attribute]){
+  def this(name: String, daaType: String, array: AbstractTensor, attr: java.util.List[Attribute]) {
     this(name, daaType, array, attr.toArray.map(p => p.asInstanceOf[Attribute]))
   }
 
-  def this(name: String, dataType: String, array : Array[Double], shape : Array[Int], attr : java.util.List[Attribute]){
+  def this(name: String,
+           dataType: String,
+           array: Array[Double],
+           shape: Array[Int],
+           attr: java.util.List[Attribute]) {
     this(name, dataType, new Nd4jTensor(array, shape), attr)
   }
 
   def this(nvar: ucar.nc2.Variable) {
-    this(nvar.getFullName, nvar.getDataType.toString, NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
+    this(nvar.getFullName, nvar.getDataType.toString,
+      NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
   }
 
-  def this(name: String, array : AbstractTensor){
+  def this(name: String, array: AbstractTensor) {
     this(name, "Double64", array, new mutable.HashMap[String, String])
   }
 
-  def this(array : AbstractTensor) {
+  def this(array: AbstractTensor) {
     this("unnamed", array)
   }
 
@@ -73,6 +81,7 @@ class Variable(val name : String,
    * Returns the array corresponding to the variable in use.
    * This is to mimic the numpy like syntax of var[:]
    * Example usage: val absT = var()
+   *
    * @return AbstractTensor corresponding to variable in use
    */
   def apply(): AbstractTensor = array
@@ -84,21 +93,23 @@ class Variable(val name : String,
    *    variable.attribute1
    * In scala we can't do that so we access attributes with the
    * apply function like so:
-   *    variable("attribute")
+   * variable("attribute")
    *
    * @param key the attribute name
    * @return the attribute value
    */
-  def apply(key : String) : String = attributes(key)
+  def apply(key: String): String = attributes(key)
 
   def shape(): Array[Int] = array.shape
-  def data() : Array[Double] = array.data
+
+  def data(): Array[Double] = array.data
 
   /**
    * Creates a copy of the variable
+   *
    * @return
    */
-  def copy() : Variable = new Variable(name, dataType, array.copy, attributes.clone())
+  def copy(): Variable = new Variable(name, dataType, array.copy, attributes.clone())
 
   /**
    * It should print just the same or similar to how
@@ -106,14 +117,14 @@ class Variable(val name : String,
    * e.g.
    *
    * float32 ch4(time, latitude, longitude)
-   *    comments: Unknown1 variable comment
-   *    long_name: IR BT (add 75 to this value)
-   *    units:
-   *    grid_name: grid01
-   *    grid_type: linear
-   *    level_description: Earth surface
-   *    time_statistic: instantaneous
-   *    missing_value: 330.0
+   * comments: Unknown1 variable comment
+   * long_name: IR BT (add 75 to this value)
+   * units:
+   * grid_name: grid01
+   * grid_type: linear
+   * level_description: Earth surface
+   * time_statistic: instantaneous
+   * missing_value: 330.0
    * current shape = (1238, 4125)
    *
    */
@@ -122,14 +133,14 @@ class Variable(val name : String,
     val footer = "current shape = " + shape().toList + "\n"
     val body = new StringBuilder()
     body.append(header)
-    for((k,v) <- attributes){
-      body.append("\t" + k + ": " + v + "\n" )
+    for ((k, v) <- attributes) {
+      body.append("\t" + k + ": " + v + "\n")
     }
     body.append(footer.replace("List", ""))
     body.toString()
   }
 
-  override def equals(any: Any) : Boolean = {
+  override def equals(any: Any): Boolean = {
     val variable = any.asInstanceOf[Variable]
     this.name == variable.name &&
       this.dataType == variable.dataType &&
@@ -137,5 +148,6 @@ class Variable(val name : String,
       this.attributes == variable.attributes
   }
 
+  override def hashCode(): Int = super.hashCode()
 }
 

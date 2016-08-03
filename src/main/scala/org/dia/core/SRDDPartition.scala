@@ -29,7 +29,7 @@ class SRDDPartition[T](val index: Int, val uriList: List[String]) extends Partit
    * To string method
    * @return String
    */
-  override def toString = {
+  override def toString : String = {
     val sb = new StringBuilder
     sb.append("{idx:").append(index).append(",")
     sb.append("uris:").append(uriList).append("}")

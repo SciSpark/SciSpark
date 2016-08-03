@@ -17,14 +17,12 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{ File, PrintWriter }
-import java.text.SimpleDateFormat
-import org.dia.Parsers
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.slf4j.Logger
+import java.io.{File, PrintWriter}
+
 import scala.collection.mutable
-import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + In-place iteration.
@@ -110,7 +108,7 @@ object MainNetcdfDFSMCC {
      * If not output a new edge pairing of the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -193,28 +191,28 @@ object MainNetcdfDFSMCC {
         }
 
         /**
-          * This code essetially computes the number of times the same tuple occurred in the list,
-          * a repeat occurrance would indicate that the components overlapped for more than one cell
-          * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
-          * they overlapped for and since each cell is of a fixed area we can compute the area overlap
-          * between those two components.
-          */
+         * This code essetially computes the number of times the same tuple occurred in the list,
+         * a repeat occurrance would indicate that the components overlapped for more than one cell
+         * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
+         * they overlapped for and since each cell is of a fixed area we can compute the area overlap
+         * between those two components.
+         */
         var overlappedMap = overlappedPairsList.groupBy(identity).mapValues(_.size)
         println(s"Overlap Map ${overlappedMap.size}")
 
         /**
-          * Once the overlapped pairs have been computed, eliminate all duplicates
-          * by converting the collection to a set. The component edges are then
-          * mapped to the respective frames, so the global space of edges (outside of this task)
-          * consists of unique tuples.
-          */
+         * Once the overlapped pairs have been computed, eliminate all duplicates
+         * by converting the collection to a set. The component edges are then
+         * mapped to the respective frames, so the global space of edges (outside of this task)
+         * consists of unique tuples.
+         */
         val edgesSet = overlappedPairsList.toSet
         println(s"Overlap SEt ${edgesSet.size}  : ") // for debugging
 
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
@@ -240,20 +238,18 @@ object MainNetcdfDFSMCC {
               overlappedMap += (((compId1, compId2), 1))
             }
             isCloud1 && isCloud2 && meetsCriteria
-          }
         })
 
         val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
         filtered.foreach(edge => {
           val key = (edge._1._2, edge._2._2)
-          if(overlappedMap.contains(key)){
+          if(overlappedMap.contains(key)) {
             edgeList += ((edge._1, edge._2, overlappedMap.get(key).get))
           }
         })
         println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
         println(s"filtered Map ${filtered.size}")
         edgeList
-      }
     })
 
     /**

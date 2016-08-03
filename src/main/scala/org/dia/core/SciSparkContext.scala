@@ -17,20 +17,20 @@
  */
 package org.dia.core
 
+import scala.collection.mutable
+import scala.io.Source
+
 import org.apache.log4j.LogManager
-import org.slf4j.Logger
-import org.apache.spark.rdd.RDD
+
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
+
 import org.dia.Constants._
 import org.dia.loaders.MergReader._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
-import org.dia.tensors.{AbstractTensor, BreezeTensor, TensorFactory}
-
-import scala.io.Source
-import scala.collection.mutable
-import org.dia.tensors.Nd4jTensor
+import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
 /**
@@ -46,11 +46,13 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * Log4j Setup
    * By default the natty Parser log4j messages are turned OFF.
    */
+  // scalastyle:off classforname
   val DateParserClass = Class.forName("com.joestelmach.natty.Parser")
+  // scalastyle:on classforname
   val ParserLevel = org.apache.log4j.Level.OFF
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
   val r = scala.util.Random
-  var HTTPCredentials : mutable.Seq[(String, String, String)] = mutable.Seq()
+  var HTTPCredentials: mutable.Seq[(String, String, String)] = mutable.Seq()
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
 
   /**
@@ -63,7 +65,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   def this(conf: SparkConf) {
     this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.classesToRegister", "java.lang.Thread")
-    .set("spark.kryoserializer.buffer.max", "256MB")))
+      .set("spark.kryoserializer.buffer.max", "256MB")))
   }
 
   def this(uri: String, name: String) {
@@ -86,11 +88,12 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * that requires you to enter authentication credentials in the browser.
    * Some datasets (like those hosted by gesdisc) require http credentials
    * for authentiation and access.
+   *
    * @param uri
    * @param username
    * @param password
    */
-  def addHTTPCredential(uri: String, username: String, password: String): Unit ={
+  def addHTTPCredential(uri: String, username: String, password: String): Unit = {
     HTTPCredentials = HTTPCredentials.+:((uri, username, password))
   }
 
@@ -103,36 +106,36 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * For reading from HDFS check NetcdfDFSFile.
    */
   def NetcdfFile(path: String,
-    varName: List[String] = Nil,
-    minPartitions: Int = 2): RDD[SciTensor] = {
+                 varName: List[String] = Nil,
+                 minPartitions: Int = 2): RDD[SciTensor] = {
 
     val URIsFile = sparkContext.textFile(path, minPartitions)
     val creds = HTTPCredentials.clone()
     val rdd = URIsFile.map(p => {
-      for((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
+      for ((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
       val variableHashTable = new mutable.HashMap[String, AbstractTensor]
       // note that split, if it doesn't find the token, will result in just an empty string
       var uriVars = p.split("\\?").drop(1).mkString.split(",").filter(p => p != "")
-      val mainURL = p.split("\\?").take(1).mkString+"?"
+      val mainURL = p.split("\\?").take(1).mkString + "?"
       var varDapPart = ""
-      
-      if (uriVars.length > 0){   
+
+      if (uriVars.length > 0) {
         varName.foreach(y => {
           uriVars.foreach(i => {
-            if(i.contains(y)){ varDapPart = i }
-            })
-          if (varDapPart != ""){
-            //We forced Thread to be serializable when the sparkContext was initalized
-            // but this isnt working. So need to find another way to do this. 
-            //Thread.sleep((r.nextFloat * 10.0).toLong)
-            val arrayandShape = loadNetCDFNDVar(mainURL+varDapPart, y)
+            if (i.contains(y)) varDapPart = i
+          })
+          if (varDapPart != "") {
+            // We forced Thread to be serializable when the sparkContext was initalized
+            // but this isnt working. So need to find another way to do this.
+            // Thread.sleep((r.nextFloat * 10.0).toLong)
+            val arrayandShape = loadNetCDFNDVar(mainURL + varDapPart, y)
             val absT = new Nd4jTensor(arrayandShape)
             variableHashTable += ((y, absT))
-          }else{
-            println(y +" is not available from the URL")
-          }        
+          } else {
+            println(y + " is not available from the URL")
+          }
         })
-      }else{
+      } else {
         varName.foreach(y => {
           val arrayandShape = loadNetCDFNDVar(p, y)
           val absT = new Nd4jTensor(arrayandShape)
@@ -154,8 +157,8 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * TODO :: Create an SRDD instead of a normal RDD
    */
   def NetcdfDFSFile(path: String,
-    varName: List[String] = Nil,
-    minPartitions: Int = 2): RDD[SciTensor] = {
+                    varName: List[String] = Nil,
+                    minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {
@@ -175,16 +178,16 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
     rdd
   }
 
-  
+
   /**
    * Constructs a random SRDD from a file of URI's, a list of variable names, and matrix dimensions.
    * The seed for matrix values is the path values, so the same input set will yield the same data.
    *
    */
   def randomMatrices(path: String,
-    varName: List[String] = Nil,
-    matrixSize: (Int, Int),
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+                     varName: List[String] = Nil,
+                     matrixSize: (Int, Int),
+                     minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
@@ -199,10 +202,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * and the value offset is 75.
    */
   def mergeFile(path: String,
-    varName: List[String] = List("TMP"),
-    shape: Array[Int] = Array(9896, 3298),
-    offset: Double = 75,
-    minPartitions: Int = 2): SRDD[SciTensor] = {
+                varName: List[String] = List("TMP"),
+                shape: Array[Int] = Array(9896, 3298),
+                offset: Double = 75,
+                minPartitions: Int = 2): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
@@ -221,10 +224,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * TODO :: Create an SRDD instead of a normal RDD
    */
   def mergDFSFile(path: String,
-    varName: List[String] = List("TMP"),
-    offset: Double = 75,
-    shape: Array[Int] = Array(9896, 3298),
-    minPartitions: Int = 2): RDD[SciTensor] = {
+                  varName: List[String] = List("TMP"),
+                  offset: Double = 75,
+                  shape: Array[Int] = Array(9896, 3298),
+                  minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {

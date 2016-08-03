@@ -17,7 +17,8 @@
  */
 package org.dia.utils
 
-import java.io.{ FileWriter, PrintWriter }
+import java.io.{FileWriter, PrintWriter, Writer}
+
 import scala.language.reflectiveCalls
 
 /**
@@ -29,15 +30,19 @@ object FileUtils {
    * Used for reading/writing to a database, files, etc.
    * Code from the book "Beginning Scala" from David Pollak.
    */
-  def using[A <: { def close(): Unit }, B](param: A)(f: A => B): B =
-    try { f(param) } finally { param.close() }
+  def using[A <: Writer, B](param: A)(f: A => B): B =
+    try {
+      f(param)
+    } finally {
+      param.close()
+    }
 
-  def writeToFile(fileName: String, data: String) =
+  def writeToFile(fileName: String, data: String): Unit =
     using(new FileWriter(fileName)) {
       fileWriter => fileWriter.write(data)
     }
 
-  def appendToFile(fileName: String, textData: String) =
+  def appendToFile(fileName: String, textData: String): Unit =
     using(new FileWriter(fileName, true)) {
       fileWriter =>
         using(new PrintWriter(fileWriter)) {

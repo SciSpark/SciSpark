@@ -17,22 +17,15 @@
  */
 package org.dia.algorithms.pdfclustering
 
-import org.dia.loaders.NetCDFReader
-import org.dia.utils.NetCDFUtils
-import ucar.nc2.dataset.NetcdfDataset
-import org.dia.core.SciSparkContext
-import java.text.SimpleDateFormat
-import org.dia.Parsers
-import org.dia.core.SciTensor
-import org.dia.tensors.{ Nd4jTensor, AbstractTensor }
-import org.nd4j.linalg.factory.Nd4j
-import scala.collection.mutable.Set
-import scala.math
-import scala.collection.mutable.{ AbstractBuffer, ArrayBuffer, HashMap }
-import scala.collection.mutable.ArraySeq
-import org.apache.spark.mllib.clustering.{ KMeans, KMeansModel }
-import org.apache.spark.mllib.linalg.{ Vector, DenseVector }
+import scala.collection.mutable.{ArrayBuffer, HashMap, Set}
 
+import org.nd4j.linalg.factory.Nd4j
+
+import org.apache.spark.mllib.clustering.KMeans
+import org.apache.spark.mllib.linalg.{DenseVector, Vector}
+
+import org.dia.core.{SciSparkContext, SciTensor}
+import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 /**
  *
  */
@@ -195,8 +188,9 @@ object MainCompute {
         def getBinNo(prec: Double): Option[Int] = {
           var idx = 0
           while (idx < numBins) {
-            if (minPrec + idx * binSize <= prec && prec <= minPrec + (idx + 1) * binSize)
+            if (minPrec + idx * binSize <= prec && prec <= minPrec + (idx + 1) * binSize) {
               return Some(idx)
+            }
             idx += 1
           }
           return None
@@ -232,7 +226,5 @@ object MainCompute {
         val clusterId = clusteringOut.predict(bcs)
         (pos, clusterId)
     })
-
   }
-
 }

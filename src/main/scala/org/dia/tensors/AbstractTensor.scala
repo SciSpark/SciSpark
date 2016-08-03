@@ -17,8 +17,6 @@
  */
 package org.dia.tensors
 
-import org.slf4j.Logger
-
 /**
  * An abstract tensor
  */
@@ -47,7 +45,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def +(array: AbstractTensor): T
   def +(scalar: Double): T
 
-  def -(array: AbstractTensor): T 
+  def -(array: AbstractTensor): T
   def -(scalar: Double): T
 
   def *(array: AbstractTensor): T
@@ -59,7 +57,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def :+(array: AbstractTensor): T
   def :+(scalar: Double): T
 
-  def :-(array: AbstractTensor): T 
+  def :-(array: AbstractTensor): T
   def :-(scalar: Double): T
 
   def :*(array: AbstractTensor): T
@@ -73,7 +71,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
 
   def **(array: AbstractTensor): T
-  
+
   def div(num: Double): T
 
   /**
@@ -87,7 +85,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def >=(num: Double): T
   def :=(num: Double): T
   def !=(num: Double): T
-  
+
   /**
    * Returns the data as a flattened array
    *
@@ -99,7 +97,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    *
    */
   def shape: Array[Int]
-  
+
   /**
    * Utility Methods
    */
@@ -128,10 +126,10 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
     val thisData = this.data
     val otherData = array.data
-    for(index <- 0 to thisData.length - 1){
+    for(index <- 0 to thisData.length - 1) {
       val left = thisData(index)
       val right = otherData(index)
-      if(left != 0.0 && right == 0.0){
+      if(left != 0.0 && right == 0.0) {
         return false
       } else if (right == 0.0 && left != 0.0) {
         return false
@@ -146,6 +144,8 @@ trait AbstractTensor extends Serializable with SliceableArray {
     }
     true
   }
+
+  override def hashCode(): Int = super.hashCode()
 
   def copy: T
 

@@ -17,12 +17,13 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{ File, PrintWriter }
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.slf4j.Logger
+import java.io.{File, PrintWriter}
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + in-place iteration.
@@ -59,7 +60,7 @@ object MainMergHDFS {
     val uris = Source.fromFile(inputFile).mkString.split("\n").toList
 
     val orderedDateList = uris.map(p => {
-      p.split("/").last.split("_")(1) //replaceAllLiterally(".", "/")
+      p.split("/").last.split("_")(1)
     }).sorted
 
     for (i <- orderedDateList.indices) {
@@ -127,7 +128,8 @@ object MainMergHDFS {
      * If not output a new edge pairing in the form ((frameId, componentId), (frameId, componentId))
      */
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
+
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -214,16 +216,14 @@ object MainMergHDFS {
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
 
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
-            val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) > 0.9)))
+            val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1 / max1) > 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
-            val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) > 0.9)))
+            val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2 / max2) > 0.9)))
             isCloud1 && isCloud2
-          }
         })
         filtered
-      }
     })
 
     /**

@@ -17,11 +17,10 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.Constants._
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
-import org.slf4j.Logger
-import scala.collection.mutable
 import scala.language.implicitConversions
+
+import org.dia.Constants._
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with Cartesian product + Cartesian product.
@@ -58,13 +57,15 @@ object MainMemory {
       filter({ case (t1, t2) => t1.metaData("FRAME").toInt == t2.metaData("FRAME").toInt - 1 })
 
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         val comps1 = MCCOps.findCloudComponents(t1).filter(MCCOps.checkCriteria)
         val comps2 = MCCOps.findCloudComponents(t2).filter(MCCOps.checkCriteria)
         val compsPairs = for (x <- comps1; y <- comps2) yield (x, y)
         val overlaps = compsPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
-        overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
-      }
+        overlaps.map({
+          case (t1, t2) =>
+          ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT")))
+        })
     })
 
     val collectedEdges = componentFrameRDD.collect()

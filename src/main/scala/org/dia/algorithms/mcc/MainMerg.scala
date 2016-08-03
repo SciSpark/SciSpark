@@ -17,12 +17,11 @@
  */
 package org.dia.algorithms.mcc
 
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.dia.tensors.BreezeTensor
-import org.slf4j.Logger
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + Cartesian product.
@@ -56,7 +55,7 @@ object MainMerg {
     val dateIndexTable = new mutable.HashMap[String, Int]()
     val uris = Source.fromFile(inputFile).mkString.split("\n").toList
     val orderedDateList = uris.map(p => {
-      p.split("/").last.split("_")(1) //replaceAllLiterally(".", "/")
+      p.split("/").last.split("_")(1)
     }).sorted
 
     for (i <- orderedDateList.indices) {
@@ -116,7 +115,11 @@ object MainMerg {
       val comps2 = compsUnfiltered2.filter(MCCOps.checkCriteria)
       val compsPairs = for (x <- comps1; y <- comps2) yield (x, y)
       val overlaps = compsPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
-      overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
+      overlaps.map({ case (t1, t2) =>
+        val (frame1, component1) = (t1.metaData("FRAME"), t1.metaData("COMPONENT"))
+        val (frame2, component2) = (t2.metaData("FRAME"), t2.metaData("COMPONENT"))
+        ((frame1, component1), (frame2, component2))
+      })
     })
 
     /**

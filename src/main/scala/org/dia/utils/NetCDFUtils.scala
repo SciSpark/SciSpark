@@ -19,16 +19,15 @@ package org.dia.utils
 
 import java.net.URL
 
+import scala.language.implicitConversions
+
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
-import org.slf4j.Logger
-import org.dia.HDFSRandomAccessFile
 import ucar.ma2
 import ucar.ma2.DataType
 import ucar.nc2.{Attribute, NetcdfFile, Variable}
 import ucar.nc2.dataset.NetcdfDataset
-import ucar.nc2.stream.CdmRemote
 
-import scala.language.implicitConversions
+import org.dia.HDFSRandomAccessFile
 
 /**
  * Utilities to read a NetCDF by URL or from HDFS.
@@ -46,15 +45,16 @@ object NetCDFUtils extends Serializable {
    * that requires you to enter authentication credentials in the browser.
    * Some datasets (like those hosted by gesdisc) require http credentials
    * for authentiation and access.
+   *
    * @param url
    * @param username
    * @param password
    */
-  def setHTTPAuthentication(url : String, username : String, password : String): Unit = {
-      val urlobj = new URL(url)
-      val authscope = new AuthScope(urlobj.getHost, urlobj.getPort)
-      val credentials = new UsernamePasswordCredentials(username, password)
-      ucar.httpservices.HTTPSession.setGlobalCredentials(authscope, credentials)
+  def setHTTPAuthentication(url: String, username: String, password: String): Unit = {
+    val urlobj = new URL(url)
+    val authscope = new AuthScope(urlobj.getHost, urlobj.getPort)
+    val credentials = new UsernamePasswordCredentials(username, password)
+    ucar.httpservices.HTTPSession.setGlobalCredentials(authscope, credentials)
   }
 
   /**
@@ -66,7 +66,7 @@ object NetCDFUtils extends Serializable {
    * only ranges over a single value.
    *
    * @param netcdfFile The NetCDF file.
-   * @param variable The variable whose data we want to extract.
+   * @param variable   The variable whose data we want to extract.
    * @return Data and shape arrays.
    */
   def netCDFArrayAndShape(netcdfFile: NetcdfDataset, variable: String): (Array[Double], Array[Int]) = {
@@ -112,7 +112,7 @@ object NetCDFUtils extends Serializable {
    * Extracts a variable's data from a NetCDF file as an M2 array.
    *
    * @param netcdfFile the NetcdfDataSet to read from
-   * @param variable the variable whose array we want to extract
+   * @param variable   the variable whose array we want to extract
    * @todo Ask why OCW hardcodes the latitude and longitude names
    */
   def getNetCDFVariableArray(netcdfFile: NetcdfDataset, variable: String): ma2.Array = {
@@ -152,8 +152,8 @@ object NetCDFUtils extends Serializable {
   /**
    * Loads a NetCDF Dataset from HDFS.
    *
-   * @param dfsUri HDFS URI(eg. hdfs://master:9000/)
-   * @param location File path on HDFS
+   * @param dfsUri     HDFS URI(eg. hdfs://master:9000/)
+   * @param location   File path on HDFS
    * @param bufferSize The size of the buffer to be used
    */
   def loadDFSNetCDFDataSet(dfsUri: String, location: String, bufferSize: Int): NetcdfDataset = {
@@ -179,11 +179,9 @@ object NetCDFUtils extends Serializable {
     val it = netcdfFile.getDimensions.iterator()
     while (it.hasNext) {
       val d = it.next()
-      if (d.getShortName.equals(rowDim))
-        dimSize = d.getLength
+      if (d.getShortName.equals(rowDim)) dimSize = d.getLength
     }
-    if (dimSize < 0)
-      throw new IllegalStateException("Dimension does not exist!!!")
+    if (dimSize < 0) throw new IllegalStateException("Dimension does not exist!!!")
     dimSize
   }
 
@@ -197,22 +195,23 @@ object NetCDFUtils extends Serializable {
    * @param attribute the netCDF attribute
    * @return (attribute name, attribute value)
    */
-  def convertAttribute(attribute: Attribute) : (String, String) = {
+  def convertAttribute(attribute: Attribute): (String, String) = {
     val key = attribute.getFullName
     val value = attribute.getDataType match {
       case DataType.STRING => attribute.getStringValue
-      case _               => attribute.getNumericValue().toString
+      case _ => attribute.getNumericValue().toString
     }
     (key, value)
   }
 
   /**
    * Extracts the flattened double array from a netCDF Variable
+   *
    * @param variable the netCDF variable
    * @return the flattened Double Array
    */
   def getArrayFromVariable(variable: Variable): Array[Double] = {
-    var searchVariable : ma2.Array = null
+    var searchVariable: ma2.Array = null
     if (variable == null) throw new IllegalStateException("Variable '%s' was not loaded".format(variable))
     try {
       searchVariable = variable.read()

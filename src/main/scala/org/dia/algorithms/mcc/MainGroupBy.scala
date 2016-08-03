@@ -17,14 +17,15 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{ File, PrintWriter }
+import java.io.{File, PrintWriter}
 import java.text.SimpleDateFormat
-import org.dia.Parsers
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
-import org.slf4j.Logger
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.dia.Parsers
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with GroupBy + In-place iteration.
@@ -138,10 +139,8 @@ object MainGroupBy {
               area1 = compMetrics.get._1
               max1 = compMetrics.get._2
               min1 = compMetrics.get._3
-              if (p._1.tensor(row, col) < min1)
-                min1 = p._1.tensor(row, col)
-              if (p._1.tensor(row, col) > max1)
-                max1 = p._1.tensor(row, col)
+              if (p._1.tensor(row, col) < min1) min1 = p._1.tensor(row, col)
+              if (p._1.tensor(row, col) > max1) max1 = p._1.tensor(row, col)
             } else {
               min1 = p._1.tensor(row, col)
               max1 = p._1.tensor(row, col)
@@ -160,10 +159,8 @@ object MainGroupBy {
               area2 = compMetrics.get._1
               max2 = compMetrics.get._2
               min2 = compMetrics.get._3
-              if (p._2.tensor(row, col) < min2)
-                min2 = p._2.tensor(row, col)
-              if (p._2.tensor(row, col) > max2)
-                max2 = p._2.tensor(row, col)
+              if (p._2.tensor(row, col) < min2) min2 = p._2.tensor(row, col)
+              if (p._2.tensor(row, col) > max2) max2 = p._2.tensor(row, col)
             } else {
               min2 = p._2.tensor(row, col)
               max2 = p._2.tensor(row, col)
@@ -183,7 +180,7 @@ object MainGroupBy {
        * clouds according to some criterion.
        */
       val overlaps = edges.filter({
-        case (n1, n2) => {
+        case (n1, n2) =>
           val frameId1 = n1._1
           val compId1 = n1._2
           val (area1, max1, min1) = hashComps(frameId1 + ":" + compId1)
@@ -194,7 +191,6 @@ object MainGroupBy {
           val (area2, max2, min2) = hashComps(frameId2 + ":" + compId2)
           val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) > 0.9)))
           isCloud1 && isCloud2
-        }
       })
       overlaps
     })
@@ -217,5 +213,6 @@ object MainGroupBy {
   }
 
 }
+
 
 

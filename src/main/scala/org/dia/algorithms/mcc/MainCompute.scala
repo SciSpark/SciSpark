@@ -17,15 +17,10 @@
  */
 package org.dia.algorithms.mcc
 
-import java.util.Random
-import org.dia.Constants._
-import org.dia.core.{ SciSparkContext, SciTensor }
-import org.dia.tensors.AbstractTensor
-import org.json4s.JsonAST.JObject
-import org.json4s.JsonDSL._
-import org.slf4j.Logger
-import scala.collection.mutable
 import scala.language.implicitConversions
+
+import org.dia.Constants._
+import org.dia.core.SciSparkContext
 
 /**
  * Implements MCC with Cartesian + [neither Cartesian nor in-place approach].
@@ -62,18 +57,15 @@ object MainCompute {
 
     val consecFrames = filtered.cartesian(filtered)
       .filter({
-        case (t1, t2) => {
+        case (t1, t2) =>
           val d1 = Integer.parseInt(t1.metaData("FRAME"))
           val d2 = Integer.parseInt(t2.metaData("FRAME"))
           (d1 + 1) == d2
-        }
       })
     logger.info("Pairing consecutive frames is done.")
 
     val edgesRdd = consecFrames.map({
-      case (t1, t2) => {
-        MCCOps.checkComponentsOverlap(t1, t2)
-      }
+      case (t1, t2) => MCCOps.checkComponentsOverlap(t1, t2)
     })
     logger.info("Checked edges and overlap.")
 

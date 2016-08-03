@@ -17,36 +17,36 @@
  */
 package org.dia.integration
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.BreezeTensor
 import org.dia.utils.NetCDFUtils
-import org.scalatest.FunSuite
-import org.scalatest.BeforeAndAfter
 
 /**
-  * Tests whether the creation of BreezeTensors works.
-  * Note that a likely reason for these tests to fail
-  * Is if a filename has changed on the OpenDap server where these
-  * files are being pulled from.
-  *
-  * To check, simply visit the url corresponding to the failed test.
-  */
+ * Tests whether the creation of BreezeTensors works.
+ * Note that a likely reason for these tests to fail
+ * Is if a filename has changed on the OpenDap server where these
+ * files are being pulled from.
+ *
+ * To check, simply visit the url corresponding to the failed test.
+ */
 class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
 
   /**
-    * Earth Data login for GESDISC : Authentication
-    * https://urs.earthdata.nasa.gov/home
-    * You can log in with the following credentials:
-    * Username : scispark
-    * Password : SciSpark1
-    * */
+   * Earth Data login for GESDISC : Authentication
+   * https://urs.earthdata.nasa.gov/home
+   * You can log in with the following credentials:
+   * Username : scispark
+   * Password : SciSpark1
+   */
   val username = "scispark"
   val password = "SciSpark1"
   /** URLs */
   val gesdiscUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80"
   val airsUrl = "http://acdisc-ts1.gesdisc.eosdis.nasa.gov:80"
-  val dailyTrmmUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80/opendap/hyrax/TRMM_L3/TRMM_3B42_Daily.7/1998/01/3B42_Daily.19980101.7.nc4"
-  val hourlyTrmmUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80/opendap/hyrax/TRMM_L3/TRMM_3B42/1997/365/3B42.19980101.00.7.HDF"
+  val dailyTrmmUrl = gesdiscUrl + "/opendap/hyrax/TRMM_L3/TRMM_3B42_Daily.7/1998/01/3B42_Daily.19980101.7.nc4"
+  val hourlyTrmmUrl = gesdiscUrl + "/opendap/hyrax/TRMM_L3/TRMM_3B42/1997/365/3B42.19980101.00.7.HDF"
   val knmiUrl = "http://zipper.jpl.nasa.gov/dist/AFRICA_KNMI-RACMO2.2b_CTL_ERAINT_MM_50km_1989-2008_tasmax.nc"
 
   val KMNI_BNDS_DIMENSION = "bnds"

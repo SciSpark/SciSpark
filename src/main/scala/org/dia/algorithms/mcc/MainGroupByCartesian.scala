@@ -18,15 +18,17 @@
 package org.dia.algorithms.mcc
 
 import java.text.SimpleDateFormat
-import org.dia.Parsers
-import org.dia.utils.{ FileUtils, JsonUtils }
-import org.dia.core.{ SciSparkContext, SRDD, SciTensor }
-import org.json4s.JsonDSL._
-import org.json4s.native.JsonMethods._
-import org.slf4j.Logger
+
 import scala.collection.mutable
 import scala.io.Source
 import scala.language.implicitConversions
+
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
+
+import org.dia.Parsers
+import org.dia.core.SciSparkContext
+import org.dia.utils.{FileUtils, JsonUtils}
 
 /**
  * Implements MCC with GroupBy + Cartesian product.
@@ -115,7 +117,10 @@ object MainGroupByCartesian {
       val comps2 = compsUnfiltered2.filter(MCCOps.checkCriteria)
       val compPairs = for (x <- comps1; y <- comps2) yield (x, y)
       val overlaps = compPairs.filter({ case (t1, t2) => !(t1.tensor * t2.tensor).isZeroShortcut })
-      overlaps.map({ case (t1, t2) => ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT"))) })
+      overlaps.map({
+        case (t1, t2) =>
+        ((t1.metaData("FRAME"), t1.metaData("COMPONENT")), (t2.metaData("FRAME"), t2.metaData("COMPONENT")))
+      })
     })
 
     /**
@@ -139,5 +144,4 @@ object MainGroupByCartesian {
       FileUtils.writeToFile(jsonOut, pretty(render(json)))
     }
   }
-
 }

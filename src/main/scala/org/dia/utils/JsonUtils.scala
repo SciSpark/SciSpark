@@ -17,12 +17,10 @@
  */
 package org.dia.utils
 
-import java.util.Random
-import org.dia.Parsers
-import org.joda.time.{ DateTime, Days, MutableDateTime }
+import scala.collection.mutable
+
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
-import scala.collection.mutable
 
 /**
  * Utilities to write JSONs.
@@ -50,12 +48,14 @@ object JsonUtils {
       val sourceNode = edge._1
       if (!setNodes.contains(sourceNode)) {
         setNodes += sourceNode
-        jsonNodes += ("id" -> sourceNode.toString) ~ ("label" -> (dd.get(sourceNode._1.toInt).get + ":" + sourceNode._2))
+        val (label, edgeString) = ("label" -> (dd.get(sourceNode._1.toInt).get + ":" + sourceNode._2))
+        jsonNodes += ("id" -> sourceNode.toString) ~ (label, edgeString)
       }
       val targetNode = edge._2
       if (!setNodes.contains(targetNode)) {
         setNodes += targetNode
-        jsonNodes += ("id" -> targetNode.toString) ~ ("label" -> (dd.get(targetNode._1.toInt).get + ":" + targetNode._2))
+        val (label, edgeString) = ("label" -> (dd.get(targetNode._1.toInt).get + ":" + targetNode._2))
+        jsonNodes += ("id" -> targetNode.toString) ~ (label, edgeString)
       }
       jsonEdges += ("id" -> totEdges) ~ ("source" -> sourceNode.toString) ~ ("target" -> targetNode.toString)
       totEdges += 1

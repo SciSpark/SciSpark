@@ -17,8 +17,10 @@
  */
 package org.dia.partitioners
 
-import org.dia.Constants
 import scala.language.implicitConversions
+
+import org.dia.Constants
+
 
 /**
  * Functions needed to map keys to values

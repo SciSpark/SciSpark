@@ -17,9 +17,11 @@
  */
 package org.dia.urlgenerators
 
-import org.dia.Constants.{ TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL }
-import org.joda.time.DateTime
 import scala.collection.mutable.ListBuffer
+
+import org.joda.time.DateTime
+
+import org.dia.Constants.{TRMM_HOURLY_DATA_PREFFIX, TRMM_HOURLY_DATA_SUFFIX, TRMM_HOURLY_URL}
 
 /**
  * Generates hourly TRMM URL's.
@@ -32,7 +34,7 @@ object HourlyTrmmURLGenerator {
   /**
    * Generates the readings between two years.
    */
-  def generateTrmmDaily(iniYear: Int, finalYear: Int = 0) = {
+  def generateTrmmDaily(iniYear: Int, finalYear: Int = 0): ListBuffer[String] = {
     val yearReadings = new ListBuffer[String]()
     val maxDays = 2
     /** only a single year */
@@ -56,7 +58,7 @@ object HourlyTrmmURLGenerator {
   /**
    * Generating readings for a specific day.
    */
-  def generateDayReadings(realDate: DateTime) = {
+  def generateDayReadings(realDate: DateTime): ListBuffer[String] = {
     var dailyReadings = new ListBuffer[String]()
     val sb = new StringBuilder
     for (reading <- 3 to 24 by 3) {

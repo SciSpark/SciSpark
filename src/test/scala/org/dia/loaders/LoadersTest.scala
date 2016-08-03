@@ -19,12 +19,13 @@ package org.dia.loaders
 
 import java.io.File
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.Constants._
-import org.dia.testenv.SparkTestConstants
-import org.dia.core.{SRDD, SciTensor}
+import org.dia.core.{SciTensor, SRDD}
 import org.dia.loaders.NetCDFReader._
 import org.dia.partitioners.SPartitioner._
-import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.dia.testenv.SparkTestConstants
 
 /**
  * Tests NetCDF loaders from URIs, from local FS.
@@ -45,14 +46,13 @@ class LoadersTest extends FunSuite with BeforeAndAfter {
     val dirsWithFiles = PathReader.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(dirsWithFiles.size))
     dirsWithFiles.foreach({
-      case (dir, files) => {
+      case (dir, files) =>
         if (files.length > 0) {
           files.foreach(println)
           println()
         } else {
           println("Empty")
         }
-      }
     })
     assert(true)
   }

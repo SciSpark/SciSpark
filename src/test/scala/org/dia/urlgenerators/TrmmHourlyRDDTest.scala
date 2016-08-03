@@ -18,12 +18,14 @@
 package org.dia.urlgenerators
 
 import java.text.SimpleDateFormat
-import org.dia.Parsers
-import org.dia.urlgenerators.HourlyTrmmURLGenerator;
-import org.joda.time.DateTime
-import org.scalatest.Ignore
+
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
+
+import org.joda.time.DateTime
+import org.scalatest.Ignore
+
+import org.dia.Parsers
 
 /**
  * Tests whether the TrmmHourly URLs creator works.
@@ -58,5 +60,4 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     })
     assert(true)
   }
-
 }

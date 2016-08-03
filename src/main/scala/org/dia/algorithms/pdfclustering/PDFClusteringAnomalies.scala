@@ -19,11 +19,14 @@ package org.dia.algorithms.pdfclustering
 
 import java.util
 
-import org.dia.core.SciSparkContext
+import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
+import ucar.nc2.{Dimension, NetcdfFileWriter}
+
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.Vectors
-import ucar.ma2.{ArrayInt, ArrayDouble, DataType}
-import ucar.nc2.{Dimension, NetcdfFileWriter}
+
+import org.dia.core.SciSparkContext
+
 object PDFClusteringAnomalies {
 
   def whiten(input: Array[Double]): Array[Double] = {
@@ -39,8 +42,10 @@ object PDFClusteringAnomalies {
     val lat = 181
     val lon = 286
     val masterURL = "local[2]"
+    val ncfile = "resources/PDFClustering/tas_MERRA_NA_daily_January_1979-2011.nc"
+    val ncvariables = List("tasjan", "lat", "lon")
     val sc = new SciSparkContext(masterURL, "PDF clustering")
-    val tasjan = sc.NetcdfDFSFile("resources/PDFClustering/tas_MERRA_NA_daily_January_1979-2011.nc", List("tasjan", "lat", "lon"))
+    val tasjan = sc.NetcdfDFSFile(ncfile, ncvariables)
 
     /**
      * Detrend daily data
@@ -53,7 +58,7 @@ object PDFClusteringAnomalies {
       // broadcast subtract
       // Since subtraction is now done in place by default
       // The results are in the 'data' array
-      for(i <- 0 until nyears){
+      for(i <- 0 until nyears) {
         data(i -> (i + 1)) - clim
       }
       data = data.reshape(Array(nyears*mdays, lat, lon))
@@ -117,22 +122,22 @@ object PDFClusteringAnomalies {
     val latdataOut = new ArrayDouble.D1(latarr.length)
     val londataOut = new ArrayDouble.D1(lonarr.length)
     assert(std.length == skw.length && skw.length == prd.length)
-    for(i <- 0 until std.length){
+    for(i <- 0 until std.length) {
       stddataOut.set(i, std(i))
       skwdataOut.set(i, skw(i))
       prdDataOut.set(i, prd(i))
     }
 
-    for(i <- 0 until centers.length){
+    for(i <- 0 until centers.length) {
       cnt_stdDataOut.set(i, centers(i)(0))
       cnt_skwDataOut.set(i, centers(i)(1))
     }
 
-    for(i <- 0 until latarr.length){
+    for(i <- 0 until latarr.length) {
       latdataOut.set(i, latarr(i))
     }
 
-    for(i <- 0 until lonarr.length){
+    for(i <- 0 until lonarr.length) {
       londataOut.set(i, lonarr(i))
     }
     writer.write(std_var, stddataOut)
@@ -146,11 +151,4 @@ object PDFClusteringAnomalies {
     writer.close()
   }
 
-
-  /**
-    * (1 to 1000d).toArray.reduce((A, B) => (
-    *
-    *
-    *
-    */
 }

@@ -17,10 +17,10 @@
  */
 package org.dia.core
 
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import org.dia.Constants._
 import org.dia.testenv.SparkTestConstants
-import org.scalatest.FunSuite
-import org.scalatest.BeforeAndAfter
 
 /**
  * Tests for creating SRDDs from different sources.
@@ -48,7 +48,9 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     collect.foreach(t => {
       for (i <- 0 to t.tensor.rows - 1) {
         for (j <- 0 to t.tensor.cols - 1) {
-          if (t.tensor(i, j) > 241.0) assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
+          if (t.tensor(i, j) > 241.0) {
+            assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
+          }
         }
       }
     })
@@ -65,5 +67,4 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
 
     assert(collected.length == 2)
   }
-
 }

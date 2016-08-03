@@ -17,25 +17,18 @@
  */
 package org.dia.algorithms.mcc
 
-import java.io.{BufferedWriter, OutputStreamWriter}
-import breeze.io.TextWriter.FileWriter
-import org.apache.hadoop.conf._
-import org.apache.hadoop.fs._
-import org.apache.hadoop.io._
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
-import org.dia.core.SciSparkContext
-import org.slf4j.Logger
-
 import scala.collection.mutable
 
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
+
 /**
-  * Implements MCC via a distributed graph approach.
-  *
-  * Currently, the input data is a file in the form
-  * of an Edgelist generated is an output by
-  * MainNetcdfDFSMCC
-  */
+ * Implements MCC via a distributed graph approach.
+ *
+ * Currently, the input data is a file in the form
+ * of an Edgelist generated is an output by
+ * MainNetcdfDFSMCC
+ */
 object MainDistGraphMCC {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -44,7 +37,8 @@ object MainDistGraphMCC {
   val frames: Int = 40
   val frameBucketSize: Float = frames / bins
   val minAcceptableFeatureLength = 3
-  val maxIterations = scala.math.ceil(scala.math.log(bins)/scala.math.log(2)) + 1
+  val maxIterations = scala.math.ceil(scala.math.log(bins) / scala.math.log(2)) + 1
+
   /*
   This is the function which recursively creates subgraphs and merges partitions
   until we are left with one partition or no edges to process.
@@ -52,7 +46,7 @@ object MainDistGraphMCC {
   def getSubgraphs(graph: RDD[(Integer, Iterable[MCCEdge])], iter: Int): Unit = {
     logger.info(s"Current iteration : $iter, Max iterations : $maxIterations")
     logger.info(s"Graph: $graph")
-    if (graph.isEmpty() || graph.count() <=1) {
+    if (graph.isEmpty() || graph.count() <= 1) {
       logger.info("Graph empty exiting")
       logger.info(s"Graph count ${graph.count()}")
       graph.foreach(x => {
@@ -63,27 +57,27 @@ object MainDistGraphMCC {
     logger.info(s"Graph count ${graph.count()}")
     val newGraph = graph.map(x => createPartialGraphs(x._1, x._2, iter))
       .filter(x => x._1 != -1)
-        .reduceByKey((x,y) => reduceEdgeListsByKey(x, y))
+      .reduceByKey((x, y) => reduceEdgeListsByKey(x, y))
 
     /*
     Performing a count everytime would be expensive.
     Letting the graph.isEmpty condition to take care of the exit from this loop.
     Keeping the code here, if the above does not work as expected
      */
-    //      if(graph.count() == 1){e
+    //      if(graph.count() == 1) {e
     //        return graph
     //      }
     println(graph.toDebugString)
-    getSubgraphs(newGraph, iter+1)
+    getSubgraphs(newGraph, iter + 1)
 
   }
 
   def reduceEdgeListsByKey(edge1: Iterable[MCCEdge], edge2: Iterable[MCCEdge]): Iterable[MCCEdge] = {
     val mergedEdgelists = new mutable.HashSet[MCCEdge]();
-    for(edge <- edge1){
+    for (edge <- edge1) {
       mergedEdgelists += edge
     }
-    for(edge <- edge2) {
+    for (edge <- edge2) {
       mergedEdgelists += edge
     }
     return mergedEdgelists
@@ -117,8 +111,8 @@ object MainDistGraphMCC {
     logger.info(s"Processing partial graph for bucket:$bucket iteration:$iteration")
     val edgeMap = new mutable.HashMap[String, mutable.Set[MCCEdge]] with mutable.MultiMap[String, MCCEdge]
     val nodeMap = new mutable.HashMap[String, MCCNode]() // for faster lookups for nodes
-    val currentFrameChunkSize = frameBucketSize*iteration
-    val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 //The first frame number in the bucket
+    val currentFrameChunkSize = frameBucketSize * iteration
+    val bucketStartFrame = bucket * currentFrameChunkSize - currentFrameChunkSize + 1 // The first frame in the bucket
     val bucketEndFrame = bucket * currentFrameChunkSize // last frame in bucket
     var minFrame = Integer.MAX_VALUE
     var maxFrame = 0
@@ -168,7 +162,7 @@ object MainDistGraphMCC {
     // Finding all source nodes from the node set
     val sourceNodeSet = new mutable.HashSet[MCCNode]()
     nodeSet.foreach(node => {
-      if(node.inEdges.size<1){
+      if (node.inEdges.size < 1) {
         sourceNodeSet += node
       }
     })
@@ -180,7 +174,7 @@ object MainDistGraphMCC {
     if (!sourceNodeSet.isEmpty) {
       for (node <- sourceNodeSet) {
         val result = getSubgraphLenth(node, 0, new mutable.HashSet[MCCEdge], nodeMap, false, bucket, borderNodes)
-        //If the source node is a border node, add its entire subgraph as it needs further investigation
+        // If the source node is a border node, add its entire subgraph as it needs further investigation
         if (borderNodes.contains(node)) {
           filteredEdgeList ++= result._2
         }
@@ -193,22 +187,23 @@ object MainDistGraphMCC {
         */
         else if (result._1 > minAcceptableFeatureLength && !result._3) {
           subgraphList += result._2
-          printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Subgraph discovered", result._2, iteration, bucket)
-
+          val label = s"Iteration $iteration from BID: $bucket Subgraph discovered"
+          printGraphForMatplotLob(label, result._2, iteration, bucket)
         }
         else {
           discardedEdges ++= result._2
-          printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Discarded edges", result._2, iteration, bucket)
+          val label = s"Iteration $iteration from BID: $bucket Discarded edges"
+          printGraphForMatplotLob(label, result._2, iteration, bucket)
         }
 
       }
     }
 
-    printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Next Round",filteredEdgeList, iteration, bucket)
+    printGraphForMatplotLob(s"Iteration $iteration from BID: $bucket Next Round", filteredEdgeList, iteration, bucket)
     if (filteredEdgeList.isEmpty) {
       return (-1, filteredEdgeList)
     }
-    val newBucket = if(bucket%2==0) bucket/2 else (1 + bucket/2)
+    val newBucket = if (bucket % 2 == 0) bucket / 2 else (1 + bucket / 2)
     logger.info(s"Sending to new bucket:$newBucket from BID:$bucket iteration:$iteration")
     return (newBucket, filteredEdgeList)
   }
@@ -227,9 +222,9 @@ object MainDistGraphMCC {
   (Int, mutable.HashSet[MCCEdge], Boolean) = {
     var maxLength = length
     var hasBorderEdge = containsBorderEdge
-    if (source == Nil)
+    if (source == Nil) {
       return (maxLength, edges, hasBorderEdge)
-    else {
+    } else {
       for (outEdge: MCCEdge <- source.outEdges) {
         edges += outEdge
         hasBorderEdge = if (hasBorderEdge) hasBorderEdge else borderNodes.contains(source)
@@ -239,7 +234,7 @@ object MainDistGraphMCC {
         if (maxLength < l._1) {
           maxLength = l._1
         }
-        hasBorderEdge = if(containsBorderEdge) containsBorderEdge else l._3
+        hasBorderEdge = if (containsBorderEdge) containsBorderEdge else l._3
       }
     }
     return (maxLength, edges, hasBorderEdge)
@@ -248,7 +243,7 @@ object MainDistGraphMCC {
   /*
   For debugging purposes
    */
-  def printGraphForMatplotLob(label:String, edges: mutable.HashSet[MCCEdge],iteration:Int, bucket:Int) = {
+  def printGraphForMatplotLob(label: String, edges: mutable.HashSet[MCCEdge], iteration: Int, bucket: Int): Unit = {
     println(s"Matplotlib: $label ##$edges")
   }
 
@@ -284,7 +279,7 @@ object MainDistGraphMCC {
 
   def mapEdgesToBuckets(edge: MCCEdge): (Integer, MCCEdge) = {
     val sourceFrameNum = edge.srcNode.frameNum
-    val bucket = scala.math.ceil(sourceFrameNum/frameBucketSize).toInt
+    val bucket = scala.math.ceil(sourceFrameNum / frameBucketSize).toInt
     return (bucket, edge)
   }
 
@@ -293,38 +288,37 @@ object MainDistGraphMCC {
     val destNode = new MCCNode(edge._2._1.toInt, edge._2._2)
     val mccEdge = new MCCEdge(sourceNode, destNode, edge._3)
     val sourceFrameNum = mccEdge.srcNode.frameNum
-    val bucket = scala.math.ceil(sourceFrameNum/frameBucketSize).toInt
+    val bucket = scala.math.ceil(sourceFrameNum / frameBucketSize).toInt
     return (bucket, mccEdge)
   }
 
-//   def performMCCfromRDD(edgelist : RDD[MCCEdge]):Unit = {
-//     val graph = edgelist.map(mapEdgesToBuckets)
-//       .groupByKey()
-//     getSubgraphs(graph, 1)
-//   }
+  //   def performMCCfromRDD(edgelist : RDD[MCCEdge]):Unit = {
+  //     val graph = edgelist.map(mapEdgesToBuckets)
+  //       .groupByKey()
+  //     getSubgraphs(graph, 1)
+  //   }
 
-  def performMCCfromRDD(edgelist : RDD[((String, Double), (String, Double), Int)]):Unit = {
+  def performMCCfromRDD(edgelist: RDD[((String, Double), (String, Double), Int)]): Unit = {
     val graph = edgelist.map(mapEdgesToBuckets)
       .groupByKey()
       .collect()
-//    getSubgraphs(graph, 1)
   }
 
   def main(args: Array[String]) {
     /**
-      * Input arguments to the program :
-      * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
-      * args(1) - the number of desired partitions. Default : 2
-      * args(3) - local path to files
-      *
-      */
+     * Input arguments to the program :
+     * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
+     * args(1) - the number of desired partitions. Default : 2
+     * args(3) - local path to files
+     *
+     */
     val masterURL = if (args.length < 1) "local[2]" else args(0)
     val partCount = if (args.length < 2) 2 else args(1).toInt
     val hdfspath = if (args.length < 3) "resources/graph/graphEdges" else args(2)
 
     /**
-      * Initialize the spark context to point to the master URL
-      */
+     * Initialize the spark context to point to the master URL
+     */
     val sparkConf = new SparkConf()
       .setMaster(masterURL)
       .setAppName("DGTG : Distributed MCC Search")

@@ -17,14 +17,15 @@
  */
 package org.dia.tensors
 
-import org.dia.core.SciTensor
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
+
+import org.dia.core.SciTensor
 
 class SciTensorTest extends FunSuite {
 
   test("ApplyNullary") {
-    val square = Nd4j.create((0 to 9).toArray, Array(3,3))
+    val square = Nd4j.create((0 to 9).toArray, Array(3, 3))
     val absT = new Nd4jTensor(square)
     val absTCopy = absT.copy
     val sciT = new SciTensor("sample", absT)

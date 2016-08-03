@@ -19,24 +19,23 @@ package org.dia.algorithms.mcc
 
 import java.util
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable
+
 import com.fasterxml.jackson.databind.ObjectMapper
 
-import scala.collection.mutable
-import scala.collection.JavaConverters._
-import scala.util.parsing.json.JSONObject
+class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable {
 
-class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable {
-
-  override def toString = {
+  override def toString(): String = {
     val map = new util.HashMap[String, Any]()
     map.put("frameNum", frameNum)
     map.put("coudElemNum", cloudElemNum)
     val properties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-//    map += (("properties", (new JSONObject(properties.toMap)).toString()))
+    //    map += (("properties", (new JSONObject(properties.toMap)).toString()))
     map.put("properties", properties.asJava)
 
     val grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-//    map += (("grid", (new JSONObject(grid.toMap)).toString()))
+    //    map += (("grid", (new JSONObject(grid.toMap)).toString()))
     map.put("grid", grid.asJava)
     val mapper = new ObjectMapper()
     s"${mapper.writeValueAsString(map)}"
@@ -47,21 +46,22 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable
     case _ => false
   }
 
+  override def hashCode(): Int = super.hashCode()
   //  object NodeType extends Enumeration {
   //    type NodeType = Value
   //    val source = Value("Source")
   //    val dest = Value("Destination")
   //  }
 
-  var inEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
-  var outEdges : mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
-  var metadata : mutable.HashMap[String, Any] = new mutable.HashMap[String, Any]()
+  var inEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var outEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var metadata: mutable.HashMap[String, Any] = new mutable.HashMap[String, Any]()
 
   def setMetadata(_metadata: mutable.HashMap[String, Any]): Unit = {
     metadata = _metadata
   }
 
-  def getMetadata():mutable.HashMap[String, Any] = {
+  def getMetadata(): mutable.HashMap[String, Any] = {
     return metadata
   }
 
@@ -77,27 +77,27 @@ class MCCNode(var frameNum :Int, var cloudElemNum : Double) extends Serializable
     return edge
   }
 
-  def addIncomingEdge(edge: MCCEdge) = {
+  def addIncomingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
     inEdges += edge
   }
 
-  def addOutgoingEdge(edge: MCCEdge) = {
+  def addOutgoingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
     outEdges += edge
   }
 
-  def getFrameNum : Int = {
+  def getFrameNum: Int = {
     frameNum
   }
 
-  def getCloudElemNum : Double = {
+  def getCloudElemNum: Double = {
     cloudElemNum
   }
 
-  def setFrameNum (f : Int) = {
+  def setFrameNum(f: Int): Unit = {
     frameNum = f
   }
 
-  def setCloudElemNum (c : Float) = {
+  def setCloudElemNum(c: Float): Unit = {
     cloudElemNum = c
   }
 }

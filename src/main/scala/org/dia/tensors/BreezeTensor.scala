@@ -17,8 +17,9 @@
  */
 package org.dia.tensors
 
-import breeze.linalg.{ DenseMatrix, sum, Axis}
 import scala.language.implicitConversions
+
+import breeze.linalg.{sum, DenseMatrix}
 
 /**
  * Functions needed to perform operations with Breeze
@@ -47,11 +48,11 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     this(loadFunc())
   }
 
-  def reshape(shape: Array[Int]) = {
+  def reshape(shape: Array[Int]): BreezeTensor = {
     new BreezeTensor((this.data, shape))
   }
 
-  def broadcast(shape: Array[Int]) = {
+  def broadcast(shape: Array[Int]): BreezeTensor = {
     throw new Exception("BreezeTensor does not support the broadcast operation yet")
   }
 
@@ -60,85 +61,93 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    *
    * @param shape shape the BreezeTensor of zeros should have.
    */
-  def zeros(shape: Int*) = {
+  def zeros(shape: Int*): BreezeTensor = {
     val array = (0d to (shape(0) * shape(1)) by 1d).map(p => 0.0).toArray
     new DenseMatrix[Double](shape(0), shape(1), array, 0, shape(1), true)
   }
 
-  def map(f: Double => Double) = tensor.map(f)
+  def map(f: Double => Double): BreezeTensor = tensor.map(f)
 
-  def put(value: Double, shape: Int*) = tensor.update(shape(0), shape(1), value)
+  def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
 
-  def +(array: AbstractTensor) = tensor :+= array.tensor
-  def +(scalar: Double) = tensor :+= scalar
+  def +(array: AbstractTensor): BreezeTensor = tensor :+= array.tensor
 
-  def -(array: AbstractTensor) = tensor :-= array.tensor
-  def -(scalar: Double) = tensor :-= scalar
+  def +(scalar: Double): BreezeTensor = tensor :+= scalar
 
-  def /(array: AbstractTensor) = tensor :/= array.tensor
-  def /(scalar: Double) = tensor :/= scalar
+  def -(array: AbstractTensor): BreezeTensor = tensor :-= array.tensor
 
-  def *(array: AbstractTensor) = tensor *= array.tensor
-  def *(scalar: Double) = tensor :*= scalar
+  def -(scalar: Double): BreezeTensor = tensor :-= scalar
 
-  def :+(array: AbstractTensor) = tensor + array.tensor
-  def :+(scalar: Double) = tensor + scalar
+  def /(array: AbstractTensor): BreezeTensor = tensor :/= array.tensor
 
-  def :-(array: AbstractTensor) = tensor - array.tensor
-  def :-(scalar: Double) = tensor - scalar
+  def /(scalar: Double): BreezeTensor = tensor :/= scalar
 
-  def :/(array: AbstractTensor) = tensor / array.tensor
-  def :/(scalar: Double) = tensor / scalar
+  def *(array: AbstractTensor): BreezeTensor = tensor *= array.tensor
 
-  def :*(array: AbstractTensor) = tensor :* array.tensor
-  def :*(scalar: Double) = tensor :* scalar
+  def *(scalar: Double): BreezeTensor = tensor :*= scalar
+
+  def :+(array: AbstractTensor): BreezeTensor = tensor + array.tensor
+
+  def :+(scalar: Double): BreezeTensor = tensor + scalar
+
+  def :-(array: AbstractTensor): BreezeTensor = tensor - array.tensor
+
+  def :-(scalar: Double): BreezeTensor = tensor - scalar
+
+  def :/(array: AbstractTensor): BreezeTensor = tensor / array.tensor
+
+  def :/(scalar: Double): BreezeTensor = tensor / scalar
+
+  def :*(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
+
+  def :*(scalar: Double): BreezeTensor = tensor :* scalar
 
   /**
-    * Masking operations
-    */
-  def mask(f: Double => Boolean, mask: Double = 0.0) = tensor.map(v => if (f(v)) v else mask)
+   * Masking operations
+   */
+  def mask(f: Double => Boolean, mask: Double = 0.0): BreezeTensor = tensor.map(v => if (f(v)) v else mask)
 
   def setMask(num: Double): BreezeTensor = {
     this.maskVal = num
     this
   }
 
-  def <(num: Double) = tensor.map(v => if (v < num) v else maskVal)
+  def <(num: Double): BreezeTensor = tensor.map(v => if (v < num) v else maskVal)
 
-  def >(num: Double) = tensor.map(v => if (v > num) v else maskVal)
+  def >(num: Double): BreezeTensor = tensor.map(v => if (v > num) v else maskVal)
 
-  def <=(num: Double) = tensor.map(v => if (v <= num) v else maskVal)
+  def <=(num: Double): BreezeTensor = tensor.map(v => if (v <= num) v else maskVal)
 
-  def >=(num: Double) = tensor.map(v => if (v >= num) v else maskVal)
+  def >=(num: Double): BreezeTensor = tensor.map(v => if (v >= num) v else maskVal)
 
-  def :=(num: Double) = tensor.map(v => if (v == num) v else maskVal)
+  def :=(num: Double): BreezeTensor = tensor.map(v => if (v == num) v else maskVal)
 
-  def !=(num: Double) = tensor.map(v => if (v != num) v else maskVal)
+  def !=(num: Double): BreezeTensor = tensor.map(v => if (v != num) v else maskVal)
 
   /**
    * Linear Algebra Operations
    */
-  def **(array: AbstractTensor) = tensor * array.tensor
+  def **(array: AbstractTensor): BreezeTensor = tensor * array.tensor
 
   def div(num: Double): BreezeTensor = tensor / num
 
-  def data : Array[Double] = tensor.t.toArray
+  def data: Array[Double] = tensor.t.toArray
 
   /**
    * SlicableArray operations
    */
 
-  def rows = tensor.rows
+  def rows: Int = tensor.rows
 
-  def cols = tensor.cols
+  def cols: Int = tensor.cols
 
-  def apply = this
+  def apply: BreezeTensor = this
 
   def apply(ranges: (Int, Int)*): BreezeTensor = {
-    tensor(ranges(0)._1 to (ranges(0)._2 - 1), ranges(1)._1 to (ranges(1)._2 - 1))
+    tensor(ranges(0)._1 until ranges(0)._2, ranges(1)._1 until ranges(1)._2)
   }
 
-  def apply(indexes: Int*) = {
+  def apply(indexes: Int*): Double = {
     tensor(indexes(0), indexes(1))
   }
 
@@ -146,53 +155,57 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
    * Utility Operations
    */
 
-  def cumsum = sum(tensor)
+  def cumsum: Double = sum(tensor)
 
   /**
    * TODO :: Implement the mean along axis function for BreezeTensor
-   * @param axis
+   *
+   * @param axis dimension to take mean along
    * @return
    */
-  def mean(axis : Int*) = {
-      throw new Exception("BreezeTensor does not support the mean along axis operation yet")
+  def mean(axis: Int*): BreezeTensor = {
+    throw new Exception("BreezeTensor does not support the mean along axis operation yet")
   }
 
   /**
-    * TODO :: Implement detrend along axis
-    * @param axis
-    * @return
-    */
-  def detrend(axis : Int) = {
+   * TODO :: Implement detrend along axis
+   *
+   * @param axis dimension to detrend along
+   * @return
+   */
+  def detrend(axis: Int): BreezeTensor = {
     throw new Exception("BreezeTensor does not yet support detrending")
   }
 
-  def std(axis : Int*) = {
+  def std(axis: Int*): BreezeTensor = {
     throw new Exception("BreezeTensor does not yet support standard deviation along axis")
   }
 
-  def skew(axis: Int*) = {
+  def skew(axis: Int*): BreezeTensor = {
     throw new Exception("BreezeTensor does not yet support skewness along an axis")
   }
+
   /**
    * Copies over the data in a new tensor to the current tensor
-   * @param newTensor
+   *
+   * @param newTensor tensor to assign values from
    * @return
    */
-  def assign(newTensor: AbstractTensor) : BreezeTensor = {
+  def assign(newTensor: AbstractTensor): BreezeTensor = {
     this.tensor := newTensor.tensor
   }
 
-  def isZero = sum(tensor :* tensor) <= 1E-9
+  def isZero: Boolean = sum(tensor :* tensor) <= 1E-9
 
-  def isZeroShortcut = sum(tensor) <= 1E-9
+  def isZeroShortcut: Boolean = sum(tensor) <= 1E-9
 
   override def toString: String = if (tensor != null) tensor.toString() else null
 
-  def max = breeze.linalg.max(tensor)
+  def max: Double = breeze.linalg.max(tensor)
 
-  def min = breeze.linalg.min(tensor)
+  def min: Double = breeze.linalg.min(tensor)
 
-  def copy = tensor.copy
+  def copy: BreezeTensor = tensor.copy
 
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix

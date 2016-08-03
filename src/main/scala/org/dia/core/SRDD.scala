@@ -1,12 +1,13 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +17,13 @@
  */
 package org.dia.core
 
-import org.apache.spark._
-import org.apache.spark.rdd.RDD
-import org.dia.tensors.{ AbstractTensor, TensorFactory }
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
+import org.apache.spark._
+import org.apache.spark.rdd.RDD
+
+import org.dia.tensors.{AbstractTensor, TensorFactory}
 
 /**
  * Scientific RDD. There are few differences between an SRDD and a normal RDD.
@@ -36,7 +39,8 @@ import scala.reflect.ClassTag
  * The internal API of the SRDD (specifically the constructors) may change in the future.
  *
  */
-class SRDD[T: ClassTag](@transient var sc: SparkContext, @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+class SRDD[T: ClassTag](@transient var sc: SparkContext,
+                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
   var datasets: List[String] = null
   var varName: Seq[String] = Nil
