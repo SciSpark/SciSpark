@@ -35,12 +35,12 @@ import org.dia.utils.NetCDFUtils
 class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
 
   /**
-    * Earth Data login for GESDISC : Authentication
-    * https://urs.earthdata.nasa.gov/home
-    * You can log in with the following credentials:
-    * Username : scispark
-    * Password : SciSpark1
-    * */
+   * Earth Data login for GESDISC : Authentication
+   * https://urs.earthdata.nasa.gov/home
+   * You can log in with the following credentials:
+   * Username : scispark
+   * Password : SciSpark1
+   */
   val username = "scispark"
   val password = "SciSpark1"
   /** URLs */
@@ -111,10 +111,10 @@ class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
 
 
   /**
-    * Testing creation of N-d array from KNMI compData
-    * This test is being ignored due to the massive size of the dataset
-    * It is a 7k x 3k x 60 array
-    */
+   * Testing creation of N-d array from KNMI compData
+   * This test is being ignored due to the massive size of the dataset
+   * It is a 7k x 3k x 60 array
+   */
   ignore("ReadingKNMIDimensions") {
     /** creating expected */
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(knmiUrl)

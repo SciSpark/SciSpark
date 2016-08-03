@@ -24,22 +24,22 @@ import org.dia.tensors.BreezeTensor
 import org.dia.utils.NetCDFUtils
 
 /**
-  * Tests whether the creation of BreezeTensors works.
-  * Note that a likely reason for these tests to fail
-  * Is if a filename has changed on the OpenDap server where these
-  * files are being pulled from.
-  *
-  * To check, simply visit the url corresponding to the failed test.
-  */
+ * Tests whether the creation of BreezeTensors works.
+ * Note that a likely reason for these tests to fail
+ * Is if a filename has changed on the OpenDap server where these
+ * files are being pulled from.
+ *
+ * To check, simply visit the url corresponding to the failed test.
+ */
 class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
 
   /**
-    * Earth Data login for GESDISC : Authentication
-    * https://urs.earthdata.nasa.gov/home
-    * You can log in with the following credentials:
-    * Username : scispark
-    * Password : SciSpark1
-    * */
+   * Earth Data login for GESDISC : Authentication
+   * https://urs.earthdata.nasa.gov/home
+   * You can log in with the following credentials:
+   * Username : scispark
+   * Password : SciSpark1
+   */
   val username = "scispark"
   val password = "SciSpark1"
   /** URLs */
