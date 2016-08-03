@@ -144,5 +144,4 @@ object MainGroupByCartesian {
       FileUtils.writeToFile(jsonOut, pretty(render(json)))
     }
   }
-
 }

@@ -57,18 +57,15 @@ object MainCompute {
 
     val consecFrames = filtered.cartesian(filtered)
       .filter({
-        case (t1, t2) => {
+        case (t1, t2) =>
           val d1 = Integer.parseInt(t1.metaData("FRAME"))
           val d2 = Integer.parseInt(t2.metaData("FRAME"))
           (d1 + 1) == d2
-        }
       })
     logger.info("Pairing consecutive frames is done.")
 
     val edgesRdd = consecFrames.map({
-      case (t1, t2) => {
-        MCCOps.checkComponentsOverlap(t1, t2)
-      }
+      case (t1, t2) => MCCOps.checkComponentsOverlap(t1, t2)
     })
     logger.info("Checked edges and overlap.")
 

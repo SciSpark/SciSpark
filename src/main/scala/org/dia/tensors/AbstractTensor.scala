@@ -145,6 +145,8 @@ trait AbstractTensor extends Serializable with SliceableArray {
     true
   }
 
+  override def hashCode(): Int = super.hashCode()
+
   def copy: T
 
   def isZero: Boolean

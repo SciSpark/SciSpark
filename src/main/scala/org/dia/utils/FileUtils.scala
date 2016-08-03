@@ -30,8 +30,12 @@ object FileUtils {
    * Used for reading/writing to a database, files, etc.
    * Code from the book "Beginning Scala" from David Pollak.
    */
-  def using[A <: { def close(): Unit }, B](param: A)(f: A => B): B =
-    try { f(param) } finally { param.close() }
+  def using[A <: closeable, B](param: A)(f: A => B): B =
+    try {
+      f(param)
+    } finally {
+      param.close()
+    }
 
   def writeToFile(fileName: String, data: String): Unit =
     using(new FileWriter(fileName)) {
@@ -45,5 +49,9 @@ object FileUtils {
           printWriter => printWriter.println(textData)
         }
     }
+
+  trait closeable {
+    def close(): Unit
+  }
 
 }

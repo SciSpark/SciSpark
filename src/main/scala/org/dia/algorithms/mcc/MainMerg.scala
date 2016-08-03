@@ -55,7 +55,7 @@ object MainMerg {
     val dateIndexTable = new mutable.HashMap[String, Int]()
     val uris = Source.fromFile(inputFile).mkString.split("\n").toList
     val orderedDateList = uris.map(p => {
-      p.split("/").last.split("_")(1) //replaceAllLiterally(".", "/")
+      p.split("/").last.split("_")(1)
     }).sorted
 
     for (i <- orderedDateList.indices) {

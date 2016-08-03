@@ -76,10 +76,10 @@ class MCCOpsTest extends FunSuite {
 
     val flattened = array.flatMap(p => p)
     val tensor: AbstractTensor = new Nd4jTensor(flattened, Array(5, 4))
-    val averageColumnsolution = new Nd4jTensor(Array(1.2, 0.6, 1.0, 0.8), Array(1,4))
-    val averageDoubleColumnsSolution = new Nd4jTensor(Array(0.9, 0.9), Array(1,2))
+    val averageColumnsolution = new Nd4jTensor(Array(1.2, 0.6, 1.0, 0.8), Array(1, 4))
+    val averageDoubleColumnsSolution = new Nd4jTensor(Array(0.9, 0.9), Array(1, 2))
     val averageRowSolution = new Nd4jTensor(Array(1.0, 1.0, 0.75, 0.0, 1.75), Array(5, 1))
-    val mismatchedDimensionSolution = new Nd4jTensor(Array(0.78), Array(1,1))
+    val mismatchedDimensionSolution = new Nd4jTensor(Array(0.78), Array(1, 1))
 
     val averageColumns = MCCOps.reduceRectangleResolution(tensor, 5, 1, 9999999)
     val averageDoubleColums = MCCOps.reduceRectangleResolution(tensor, 5, 2, 9999999)

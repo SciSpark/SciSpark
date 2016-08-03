@@ -60,5 +60,4 @@ class TrmmHourlyRDDTest extends org.scalatest.FunSuite {
     })
     assert(true)
   }
-
 }

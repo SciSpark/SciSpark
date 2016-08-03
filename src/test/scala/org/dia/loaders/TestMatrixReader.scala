@@ -44,7 +44,7 @@ object TestMatrixReader {
     var sample : Array[Array[Double]] = Array()
     if (varname == "randVar") {
       sample = randVar
-      }else if (varname == "randVar_1") {
+      } else if (varname == "randVar_1") {
         sample = randVar_1
       }
 
@@ -54,7 +54,7 @@ object TestMatrixReader {
   }
 
 def loadTestUniformArray(uri: String, varname: String): (Array[Double], Array[Int]) = {
-    val sampleArray = Nd4j.ones(6,5)
+    val sampleArray = Nd4j.ones(6, 5)
     (sampleArray.data.asDouble, sampleArray.shape)
   }
 }

@@ -32,10 +32,8 @@ object RandomDatesGenerator {
   var sb = new StringBuilder
 
   def main(args: Array[String]) {
-    if (args.length >= 1)
-      numDates = args(0).toInt
-    if (args.length >= 2)
-      fileName = args(1)
+    if (args.length >= 1) numDates = args(0).toInt
+    if (args.length >= 2) fileName = args(1)
 
     val c = Calendar.getInstance()
     val sdf = new SimpleDateFormat("yyyy-MM-dd")

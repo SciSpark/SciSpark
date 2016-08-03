@@ -46,14 +46,13 @@ class LoadersTest extends FunSuite with BeforeAndAfter {
     val dirsWithFiles = PathReader.recursiveListFiles(new File(path))
     println("Found: %d sub-directories.".format(dirsWithFiles.size))
     dirsWithFiles.foreach({
-      case (dir, files) => {
+      case (dir, files) =>
         if (files.length > 0) {
           files.foreach(println)
           println()
         } else {
           println("Empty")
         }
-      }
     })
     assert(true)
   }

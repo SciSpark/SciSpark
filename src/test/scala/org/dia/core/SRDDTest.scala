@@ -124,8 +124,10 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   }
 
   /**
-    * Test matrix artihmetic
-    **/
+   *
+   */
+   * Test matrix artihmetic
+   **/
   test("inplacematrixAddition") {
     logger.info("In inPlaceMatrixAddition test ...")
     logger.info("The sciTensor is: " + uSRDD.collect().toList)
@@ -362,6 +364,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   }
 
   /**
+   *
+   */
    * Test data retrieval - values,shape
    **/
   test("getVarData") {
@@ -379,7 +383,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   }
 
   /**
-   * Test varInUse
+   */
+   *  Test varInUse
    **/
   test("varInUse") {
     println("varInUse test ...")

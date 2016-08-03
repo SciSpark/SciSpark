@@ -28,6 +28,8 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
     case that: MCCEdge => that.srcNode == this.srcNode && that.destNode == this.destNode
   }
 
+  override def hashCode(): Int = super.hashCode()
+
   def this(srcNode : MCCNode, destNode: MCCNode) {
     this(srcNode, destNode, 0f)
   }

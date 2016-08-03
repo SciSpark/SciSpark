@@ -46,6 +46,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
     case _ => false
   }
 
+  override def hashCode(): Int = super.hashCode()
   //  object NodeType extends Enumeration {
   //    type NodeType = Value
   //    val source = Value("Source")

@@ -188,8 +188,9 @@ object MainCompute {
         def getBinNo(prec: Double): Option[Int] = {
           var idx = 0
           while (idx < numBins) {
-            if (minPrec + idx * binSize <= prec && prec <= minPrec + (idx + 1) * binSize)
+            if (minPrec + idx * binSize <= prec && prec <= minPrec + (idx + 1) * binSize) {
               return Some(idx)
+            }
             idx += 1
           }
           return None
@@ -225,7 +226,5 @@ object MainCompute {
         val clusterId = clusteringOut.predict(bcs)
         (pos, clusterId)
     })
-
   }
-
 }

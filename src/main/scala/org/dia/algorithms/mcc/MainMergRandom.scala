@@ -128,7 +128,7 @@ object MainMergRandom {
      * If not output a new edge pairing in the form ((frameId, componentId), (frameId, componentId))
      */
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -220,16 +220,14 @@ object MainMergRandom {
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
 
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) > 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
             val isCloud2 = ((area2 >= 2400.0) || ((area2 < 2400.0) && ((min2/max2) > 0.9)))
             isCloud1 && isCloud2
-          }
         })
         filtered
-      }
     })
 
     /**

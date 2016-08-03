@@ -37,10 +37,9 @@ object NetcdfDFSMCC {
     val tempGrid = Array.ofDim[Double](rowMax, colMax)
     val gridMap: mutable.HashMap[String, Double] = node.getMetadata().
       get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-    gridMap.foreach { case (k, v) => {
+    gridMap.foreach { case (k, v) =>
       val indices = k.replace("(", "").replace(")", "").replace(" ", "").split(",")
       tempGrid(indices(0).toInt)(indices(1).toInt) = v
-    }
     }
     return tempGrid
   }
@@ -126,7 +125,7 @@ object NetcdfDFSMCC {
 
   def findEdges(consecFrames: RDD[(SciTensor, SciTensor)]): RDD[((String, Double), (String, Double), Int)] = {
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -230,7 +229,7 @@ object NetcdfDFSMCC {
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1 / max1) < 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
@@ -256,7 +255,6 @@ object NetcdfDFSMCC {
               overlappedMap += (((compId1, compId2), 1))
             }
             isCloud1 && isCloud2 && meetsCriteria
-          }
         })
 
         val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
@@ -269,7 +267,6 @@ object NetcdfDFSMCC {
         println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
         println(s"filtered Map ${filtered.size}")
         edgeList
-      }
     })
     return componentFrameRDD
   }
@@ -365,7 +362,7 @@ object NetcdfDFSMCC {
     val MCCNodeMap = new mutable.HashMap[String, Any]()
 
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -514,7 +511,7 @@ object NetcdfDFSMCC {
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val frame_component1 = frameId1 + ":" + compId1
             val cloud1 = areaMinMaxTable(frame_component1)("properties").asInstanceOf[mutable.HashMap[String, Double]]
             val (area1, min1, max1) = (cloud1("area"), cloud1("minTemp"), cloud1("maxTemp"))
@@ -556,7 +553,6 @@ object NetcdfDFSMCC {
               }
             }
             isCloud1 && isCloud2 && meetsCriteria
-          }
         })
 
         val edgeList = new mutable.MutableList[((String, Double), (String, Double), Int, Any)]()
@@ -568,18 +564,16 @@ object NetcdfDFSMCC {
           }
         })
 
-        //println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
-        //println(s"filtered Map ${filtered.size}")
+        // println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
+        // println(s"filtered Map ${filtered.size}")
         MCCEdgeList
-      }
     })
 
     //    val json = new JSONObject(MCCNodeMap.toMap)
     val pw = new PrintWriter("MCCNodesLines.json")
-    MCCNodeMap.foreach { case (key, value) => {
+    MCCNodeMap.foreach { case (key, value) =>
       pw.write(value.toString)
       pw.write("\n")
-    }
     }
     pw.close()
 

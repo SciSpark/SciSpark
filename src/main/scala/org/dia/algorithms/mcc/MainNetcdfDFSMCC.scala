@@ -108,7 +108,7 @@ object MainNetcdfDFSMCC {
      * If not output a new edge pairing of the form ((Frame, Component), (Frame, Component))
      */
     val componentFrameRDD = consecFrames.flatMap({
-      case (t1, t2) => {
+      case (t1, t2) =>
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -212,7 +212,7 @@ object MainNetcdfDFSMCC {
         val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
         println(s"Edges ${edges.size} ") // for debugging
         val filtered = edges.filter({
-          case ((frameId1, compId1), (frameId2, compId2)) => {
+          case ((frameId1, compId1), (frameId2, compId2)) =>
             val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
             val isCloud1 = ((area1 >= 2400.0) || ((area1 < 2400.0) && ((min1/max1) < 0.9)))
             val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
@@ -238,7 +238,6 @@ object MainNetcdfDFSMCC {
               overlappedMap += (((compId1, compId2), 1))
             }
             isCloud1 && isCloud2 && meetsCriteria
-          }
         })
 
         val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
@@ -251,7 +250,6 @@ object MainNetcdfDFSMCC {
         println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
         println(s"filtered Map ${filtered.size}")
         edgeList
-      }
     })
 
     /**

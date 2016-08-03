@@ -33,6 +33,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   val name: String = "nd4j"
   val shape = tensor.shape
   var mask = 0.0
+
   def this(shapePair: (Array[Double], Array[Int])) {
     this(Nd4j.create(shapePair._1, shapePair._2))
   }
@@ -61,27 +62,35 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def put(value: Double, shape: Int*): Nd4jTensor = tensor.putScalar(shape.toArray, value)
 
   def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
+
   def +(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.addi(scalar))
 
   def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.subi(array.tensor))
+
   def -(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.subi(scalar))
 
   def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.divi(array.tensor))
+
   def /(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.divi(scalar))
 
   def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.muli(array.tensor))
+
   def *(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.muli(scalar))
 
   def :+(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
+
   def :+(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.add(scalar))
 
   def :-(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
+
   def :-(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.sub(scalar))
 
   def :/(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+
   def :/(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.div(scalar))
 
   def :*(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
+
   def :*(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.mul(scalar))
 
   /**
@@ -140,14 +149,14 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def apply(indexes: Int*): Double = tensor.get(indexes.toArray)
 
-  def data : Array[Double] = tensor.data.asDouble()
+  def data: Array[Double] = tensor.data.asDouble()
 
   /**
    * Utility Functions
    */
-  def cumsum : Double = tensor.sumNumber.asInstanceOf[Double]
+  def cumsum: Double = tensor.sumNumber.asInstanceOf[Double]
 
-  def mean(axis : Int*): Nd4jTensor = new Nd4jTensor(tensor.mean(axis: _*))
+  def mean(axis: Int*): Nd4jTensor = new Nd4jTensor(tensor.mean(axis: _*))
 
   def detrend(axis: Int): Nd4jTensor = {
     val cube = tensor
@@ -156,13 +165,13 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     val bp = Array(0, N)
     val Nreg = bp.length - 1
     val rank = dshape.length
-    val newdims = Array(axis) ++ (0 until axis) ++  ((axis + 1) until rank)
+    val newdims = Array(axis) ++ (0 until axis) ++ ((axis + 1) until rank)
     val prod = dshape.reduce((A, B) => A * B)
     // The complete scipy conversion would be cube.transpose(newdims)).reshape(N, prod/N)
     // however, we cannot transpose and permute by the axis yet. The backend libraries
     // do not support it
     val newdata = cube.reshape(N, prod / N)
-    for(m <- 0 until Nreg) {
+    for (m <- 0 until Nreg) {
       val Npts = bp(m + 1) - bp(m)
       val A = Nd4j.ones(Npts, 2)
       val normalizedRange = Nd4j.create((1 until Npts + 1).map(p => p * 1.0 / Npts).toArray)
@@ -192,7 +201,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     new Nd4jTensor(ret)
   }
 
-  def std(axis : Int*): Nd4jTensor = {
+  def std(axis: Int*): Nd4jTensor = {
     new Nd4jTensor(tensor.std(axis: _*))
   }
 
@@ -202,8 +211,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     meanAlongAxis = meanAlongAxis.reshape(shapeMatch: _*)
     val copy = tensor.dup()
     val std = tensor.std(axis: _*).reshape(shapeMatch: _*)
-    for(i <- 0 until this.shape(axis(0))) {
-      val diffOversd = (copy((i, i+1)).subi(meanAlongAxis)).divi(std)
+    for (i <- 0 until this.shape(axis(0))) {
+      val diffOversd = (copy((i, i + 1)).subi(meanAlongAxis)).divi(std)
       val cubed = Transforms.pow(diffOversd, 3, false)
     }
 
@@ -213,25 +222,26 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   /**
    * Copies over the data in a new tensor to the current tensor
+   *
    * @param newTensor
    * @return
    */
-  def assign(newTensor: AbstractTensor) : Nd4jTensor = {
+  def assign(newTensor: AbstractTensor): Nd4jTensor = {
     this.tensor.assign(newTensor.tensor)
     this
   }
 
   override def toString: String = tensor.toString
 
-  def isZero : Boolean = tensor.mul(tensor).sumNumber.asInstanceOf[Double] <= 1E-9
+  def isZero: Boolean = tensor.mul(tensor).sumNumber.asInstanceOf[Double] <= 1E-9
 
-  def isZeroShortcut : Boolean = tensor.sumNumber().asInstanceOf[Double] <= 1E-9
+  def isZeroShortcut: Boolean = tensor.sumNumber().asInstanceOf[Double] <= 1E-9
 
-  def max : Double = tensor.maxNumber.asInstanceOf[Double]
+  def max: Double = tensor.maxNumber.asInstanceOf[Double]
 
-  def min : Double = tensor.minNumber.asInstanceOf[Double]
+  def min: Double = tensor.minNumber.asInstanceOf[Double]
 
-  def copy : Nd4jTensor = new Nd4jTensor(this.tensor.dup())
+  def copy: Nd4jTensor = new Nd4jTensor(this.tensor.dup())
 
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
 }

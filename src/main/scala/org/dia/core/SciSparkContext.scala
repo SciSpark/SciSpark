@@ -46,7 +46,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * Log4j Setup
    * By default the natty Parser log4j messages are turned OFF.
    */
+  // scalastyle:off classforname
   val DateParserClass = Class.forName("com.joestelmach.natty.Parser")
+  // scalastyle:on classforname
   val ParserLevel = org.apache.log4j.Level.OFF
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
   val r = scala.util.Random

@@ -67,5 +67,4 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
 
     assert(collected.length == 2)
   }
-
 }
