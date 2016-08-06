@@ -21,9 +21,9 @@ import scala.language.implicitConversions
 
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
+import org.nd4j.linalg.indexing.NDArrayIndex
 import org.nd4j.linalg.inverse
 import org.nd4j.linalg.ops.transforms.Transforms
-import org.nd4s.Implicits._
 
 /**
  * Wrapper around Nd4j INDArray.
@@ -57,11 +57,21 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def zeros(shape: Int*): Nd4jTensor = new Nd4jTensor(Nd4j.create(shape: _*))
 
-  def map(f: Double => Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => f(p)))
+  def map(f: Double => Double): Nd4jTensor = {
+    val newT = tensor.dup()
+    val linearView = newT.linearView()
+    for(i <- 0 until newT.length()) {
+      val value = linearView.getDouble(i)
+      linearView.putScalar(i, f(value))
+    }
+    new Nd4jTensor(linearView)
+  }
 
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
   def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
+
+  def +=(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
 
   def +(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.addi(scalar))
 
@@ -97,7 +107,14 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * Masking operations
    */
   def mask(f: Double => Boolean, mask: Double = 0.0): Nd4jTensor = {
-    new Nd4jTensor(tensor.map(v => if (f(v)) v else mask))
+    val newT = tensor.dup()
+    val linearView = newT.linearView()
+    for(i <- 0 until newT.length()) {
+      val value = linearView.getDouble(i)
+      val newValue = if (f(value)) value else mask
+      linearView.putScalar(i, newValue)
+    }
+    new Nd4jTensor(linearView)
   }
 
   def setMask(num: Double): Nd4jTensor = {
@@ -105,23 +122,23 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     this
   }
 
-  def <(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p < num) p else mask))
+  def <(num: Double): Nd4jTensor = mask(v => v < num, mask)
 
-  def >(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p > num) p else mask))
+  def >(num: Double): Nd4jTensor = mask(v => v > num, mask)
 
-  def <=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p <= num) p else mask))
+  def <=(num: Double): Nd4jTensor = mask(v => v <= num, mask)
 
-  def >=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p >= num) p else mask))
+  def >=(num: Double): Nd4jTensor = mask(v => v >= num, mask)
 
-  def :=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p == num) p else mask))
+  def :=(num: Double): Nd4jTensor = mask(v => v == num, mask)
 
-  def !=(num: Double): Nd4jTensor = new Nd4jTensor(tensor.map(p => if (p != num) p else mask))
+  def !=(num: Double): Nd4jTensor = mask(v => v != num, mask)
 
 
   /**
    * Linear Algebra Operations
    */
-  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.dot(array.tensor))
+  def **(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mmul(array.tensor))
 
   def div(num: Double): Nd4jTensor = new Nd4jTensor(tensor.div(num))
 
@@ -129,25 +146,25 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
    * SliceableArray operations
    */
 
-  def rows(): Int = tensor.rows
+  def rows(): Int = tensor.rows()
 
-  def cols(): Int = tensor.columns
+  def cols(): Int = tensor.columns()
 
-  def apply: Nd4jTensor = this
+  def apply(): Nd4jTensor = this
 
   def apply(ranges: (Int, Int)*): Nd4jTensor = {
-    val rangeMap = ranges.map(p => TupleRange(p))
-    val IndArray = tensor(rangeMap: _*)
-    new Nd4jTensor(IndArray)
+    val NDArrayIndexSequence = ranges.map({case (a, b) => NDArrayIndex.interval(a, b)})
+    val tensorSliceView = tensor.get(NDArrayIndexSequence: _*)
+    new Nd4jTensor(tensorSliceView)
   }
 
   def slice(ranges: (Int, Int)*): Nd4jTensor = {
-    val rangeMap = ranges.map(p => TupleRange(p))
-    val IndArray = tensor(rangeMap: _*)
-    new Nd4jTensor(IndArray)
+    val NDArrayIndexSequence = ranges.map({case (a, b) => NDArrayIndex.interval(a, b)})
+    val tensorSliceView = tensor.get(NDArrayIndexSequence: _*)
+    new Nd4jTensor(tensorSliceView)
   }
 
-  def apply(indexes: Int*): Double = tensor.get(indexes.toArray)
+  def apply(indexes: Int*): Double = tensor.getDouble(indexes: _*)
 
   def data: Array[Double] = tensor.data.asDouble()
 
@@ -189,10 +206,12 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
       // So the algorithm wasn't needed
       // however it would be nice to use the lapack gelsd operator
       // The operation isn't yet suppored by nd4j
-      val coef = inverse.InvertMatrix.invert(A.transpose().dot(A), true).dot(A.transpose()).dot(newdata(sl))
-      val dot = A.dot(coef)
-
-      newdata(sl).subi(dot)
+      val A_T = A.transpose()
+      val A_TdotA = A_T.mmul(A)
+      val sliceView = newdata.get(NDArrayIndex.interval(sl._1, sl._2))
+      val coef = inverse.InvertMatrix.invert(A_TdotA, true).mmul(A_T).mmul(sliceView)
+      val dot = A.mmul(coef)
+      sliceView.subi(dot)
     }
 
     val tdshape = newdims.map(p => dshape(p))
@@ -212,7 +231,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
     val copy = tensor.dup()
     val std = tensor.std(axis: _*).reshape(shapeMatch: _*)
     for (i <- 0 until this.shape(axis(0))) {
-      val diffOversd = copy((i, i + 1)).subi(meanAlongAxis).divi(std)
+      val diffOversd = copy.get(NDArrayIndex.interval(i, i + 1)).subi(meanAlongAxis).divi(std)
       val cubed = Transforms.pow(diffOversd, 3, false)
     }
 

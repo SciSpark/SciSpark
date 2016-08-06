@@ -62,9 +62,16 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   sparkContext.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
 
 
+  /**
+   * We use kryo serialization.
+   * As of nd4j 0.5.0 we need to add the Nd4jRegistrar to avoid nd4j serialization errors.
+   * These errors come in the form of NullPointerErrors.
+   * @param conf Configuration for a spark application
+   */
   def this(conf: SparkConf) {
     this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.classesToRegister", "java.lang.Thread")
+      .set("spark.kryo.registrator", "org.nd4j.Nd4jRegistrator")
       .set("spark.kryoserializer.buffer.max", "256MB")))
   }
 
@@ -89,9 +96,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * Some datasets (like those hosted by gesdisc) require http credentials
    * for authentiation and access.
    *
-   * @param uri
-   * @param username
-   * @param password
+   * @param uri webpage url
+   * @param username the username used for authentication
+   * @param password the password used for authentication
    */
   def addHTTPCredential(uri: String, username: String, password: String): Unit = {
     HTTPCredentials = HTTPCredentials.+:((uri, username, password))

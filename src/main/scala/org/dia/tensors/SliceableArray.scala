@@ -24,9 +24,9 @@ trait SliceableArray {
 
   type T <: SliceableArray
 
-  def rows: Int
+  def rows(): Int
 
-  def cols: Int
+  def cols(): Int
 
   def shape: Array[Int]
 

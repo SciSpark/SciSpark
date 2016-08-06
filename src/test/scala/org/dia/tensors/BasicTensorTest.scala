@@ -18,7 +18,6 @@
 package org.dia.tensors
 
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4s.Implicits._
 import org.scalatest.FunSuite
 
 import org.dia.loaders.TestMatrixReader._
@@ -65,28 +64,85 @@ class BasicTensorTest extends FunSuite {
     val reshapedcubeTensor = cubeTensor.reshape(Array(4, 4))
     assert(reshapedcubeTensor == squareTensor)
   }
+
   test("filter") {
     logger.info("In filter test ...")
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = dense.map(p => if (p < 241.0) p else 0.0)
+    val t = Nd4j.create(Array[Double](1, 0, 0, 0), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense).map(p => if (p < 241) p else 0)
     logger.info(t.toString)
-    assert(true)
+    assert(Nd4jt1 == Nd4jt2)
+  }
+
+  test("lessThanMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 242), Array(2, 2))
+    val t = Nd4j.create(Array[Double](1, 0, 0, 0), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 < 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
+  test("lessThanOrEqualToMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 242, 1), Array(2, 2))
+    val t = Nd4j.create(Array[Double](1, 241, 0, 1), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 <= 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
+  test("greaterThanMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 242), Array(2, 2))
+    val t = Nd4j.create(Array[Double](0, 0, 0, 242), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 > 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
+  test("greaterThanOrEqualToMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 242), Array(2, 2))
+    val t = Nd4j.create(Array[Double](0, 241, 241, 242), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 >= 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
+  test("equalsMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 242), Array(2, 2))
+    val t = Nd4j.create(Array[Double](0, 241, 241, 0), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 := 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
+  }
+
+  test("notEqualsMask") {
+    val dense = Nd4j.create(Array[Double](1, 241, 241, 242), Array(2, 2))
+    val t = Nd4j.create(Array[Double](1, 0, 0, 242), Array(2, 2))
+    val Nd4jt1 = new Nd4jTensor(t)
+    val Nd4jt2 = new Nd4jTensor(dense)
+    val filteredNd4jt2 = Nd4jt2 != 241.0
+    assert(Nd4jt1 == filteredNd4jt2)
   }
 
   test("mask") {
     logger.info("In mask test ...")
-    val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = dense.map(p => if (p < 241.0) p else 100)
+    val dense = Nd4j.create(Array[Double](1, 241, 500, 1), Array(2, 2))
+    val t = Nd4j.create(Array[Double](1, 100, 500, 1), Array(2, 2))
     val Nd4jt1 = new Nd4jTensor(t)
     val Nd4jt2 = new Nd4jTensor(dense)
-    val filteredNd4jt2 = Nd4jt2.mask(p => p < 241.0, 100)
+    val filteredNd4jt2 = Nd4jt2.mask(p => p < 241.0 || p == 500, 100)
     assert(Nd4jt1 == filteredNd4jt2)
   }
 
   test("setMask") {
     logger.info("In setMask test ...")
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = dense.map(p => if (p < 241.0) p else 100)
+    val t = Nd4j.create(Array[Double](1, 100, 100, 1), Array(2, 2))
     val Nd4jt1 = new Nd4jTensor(t)
     val Nd4jt2 = new Nd4jTensor(dense)
     val filteredNd4jt2 = Nd4jt2.setMask(100) < 241.0
@@ -105,10 +161,10 @@ class BasicTensorTest extends FunSuite {
    */
   test("Nd4sSlice") {
     logger.info("In Nd4sSlice test ...")
-    val nd = Nd4j.create((0d to 8d by 1d).toArray, Array(4, 2))
+    val nd = new Nd4jTensor((0d to 8d by 1d).toArray, Array(4, 2))
     logger.info(nd.toString)
     logger.info("slicing")
-    logger.info(nd(0 -> 1, org.nd4s.Implicits. -> ).toString)
+    logger.info(nd((0, 1)).toString)
     assert(true)
   }
 

@@ -47,16 +47,17 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "3.0.0-M15",
   "org.apache.spark" % "spark-core_2.10" % "1.6.0" exclude("org.slf4j", "slf4j-api"),
   "org.apache.spark" % "spark-mllib_2.10" % "1.6.0",
-  //Math Libraries
-  //"org.jblas" % "jblas" % "1.2.3",
+  // Math Libraries
+  // "org.jblas" % "jblas" % "1.2.3",
   // other dependencies here
   "org.scalanlp" %% "breeze" % "0.11.2",
   "org.json4s" %% "json4s-native" % "3.2.11",
   // native libraries greatly improve performance, but increase jar sizes.
   "org.scalanlp" %% "breeze-natives" % "0.11.2",
   // Nd4j scala api with netlib-blas backend
-  "org.nd4j" % "nd4s_2.10" % "0.4-rc3.8",
-  "org.nd4j" % "nd4j-x86" % "0.4-rc3.8",
+  // "org.nd4j" % "nd4s_2.10" % "0.5.0",
+  "org.nd4j" % "nd4j-native" % "0.5.0" classifier "" classifier "linux-x86_64",
+  "org.nd4j" % "nd4j-kryo_2.10" % "0.5.0",
   "edu.ucar" % "opendap" % "4.6.0",
   "joda-time" % "joda-time" % "2.8.1",
   "org.joda" % "joda-convert" % "1.8.1",

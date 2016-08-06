@@ -18,7 +18,6 @@
 package org.dia.tensors.perf
 
 import org.nd4j.linalg.factory.Nd4j
-import org.nd4s.Implicits._
 import org.scalatest.FunSuite
 
 /**
@@ -35,9 +34,9 @@ class Nd4JPerformanceTest extends FunSuite {
        * subtraction
        */
       val start = System.nanoTime()
-      val m3 = m1 - m2
+      val m3 = m1.sub(m2)
       val stop = System.nanoTime()
-      println((stop - start))
+      println(stop - start)
     }
     assert(true)
   }
@@ -51,7 +50,7 @@ class Nd4JPerformanceTest extends FunSuite {
        * element-wise multiplication
        */
       val start = System.nanoTime()
-      val m3 = m1 * m2
+      val m3 = m1.mul(m2)
       val stop = System.nanoTime()
       println(stop - start)
     }
