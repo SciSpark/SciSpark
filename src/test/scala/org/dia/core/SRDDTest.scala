@@ -19,11 +19,11 @@ package org.dia.core
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
-import org.dia.Constants._
 import org.dia.loaders.NetCDFReader._
 import org.dia.loaders.TestMatrixReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.partitioners.STrmmPartitioner._
+import org.dia.tensors.Nd4jTensor
 import org.dia.testenv.SparkTestConstants
 import org.dia.urlgenerators.HourlyTrmmURLGenerator
 import org.dia.utils.NetCDFUtils
@@ -43,11 +43,9 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
   val fakeURI = List("0000010100")
   val varName = List("randVar", "randVar_1")
-  val sc = SparkTestConstants.sc.sparkContext
-  sc.setLocalProperty(ARRAY_LIB, BREEZE_LIB)
-  // Nd4j has issues with kryo serialization
-  val sRDD = new SRDD[SciTensor](sc, fakeURI, varName, loadTestArray, mapOneUrl)
   val fakeURIs = List("0000010100", "0000010101", "0000010102", "0000010103", "0000010104", "0000010105")
+  val sc = SparkTestConstants.sc.sparkContext
+  val sRDD = new SRDD[SciTensor](sc, fakeURI, varName, loadTestArray, mapOneUrl)
   val uSRDD = new SRDD[SciTensor](sc, fakeURIs, varName, loadTestUniformArray, mapOneUrl)
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -69,7 +67,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val t = sRDD.map(p => p("randVar") >= 241.0).collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
-    val tVals = t(0).variables.values.toList(0).data
+    val tVals = t(0).variables.values.head.data
     val count = tVals.count(p => p != 0.0)
     logger.info(count + " are greater than or equals to 241.0")
 
@@ -81,7 +79,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val t = sRDD.map(p => p("randVar") := 241.0).collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
-    val tVals = t(0).variables.values.toList(0).data
+    val tVals = t(0).variables.values.head.data
     val count = tVals.count(p => p != 0.0)
     logger.info(count + " are equal to 241.0")
 
@@ -93,7 +91,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val t = sRDD.map(p => p("randVar") != 241.0).collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
-    val tVals = t(0).variables.values.toList(0).data
+    val tVals = t(0).variables.values.head.data
     val count = tVals.count(p => p != 0.0)
     logger.info(count + " are not equals to 241.0")
 
@@ -105,7 +103,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val t = sRDD.map(p => p("randVar") < 241.0).collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
-    val tVals = t(0).variables.values.toList(0).data
+    val tVals = t(0).variables.values.head.data
     val count = tVals.count(p => p != 0.0)
     logger.info(count + " are less than 241.0")
 
@@ -117,7 +115,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val t = sRDD.map(p => p("randVar") <= 241.0).collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
-    val tVals = t(0).variables.values.toList(0).data
+    val tVals = t(0).variables.values.head.data
     val count = tVals.count(p => p != 0.0)
     logger.info(count + " are less than or equals to 241.0")
 
@@ -128,13 +126,14 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
    * Test matrix artihmetic
    */
   test("inplacematrixAddition") {
+    val t = uSRDD.collect().toList
     logger.info("In inPlaceMatrixAddition test ...")
-    logger.info("The sciTensor is: " + uSRDD.collect().toList)
-    logger.info("The values are: " + uSRDD.collect().toList(0).variables.values.toList)
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar addition
     val s = uSRDD.map(p => p("randVar") + 2.0).collect().toList
-    logger.info("Addition: " + s(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val sVals = s(0).variables.values.toList(0).data
+    logger.info("Addition: " + s(0).variables.values.head)
+    val sVals = s(0).variables.values.head.data
     val count = sVals.count(p => p != 3.0)
     assert(count == 0)
   }
@@ -142,8 +141,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   test("outofplaceMatrixAddition") {
     // test scalar addition
     val t = uSRDD.map(p => p("randVar") :+ 2.0).collect().toList
-    logger.info("Addition: " + t(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val y1 = t(0).variables.values.toList(0).data
+    logger.info("Addition: " + t(0).variables.values.head)
+    val y1 = t(0).variables.values.head.data
     val count = y1.count(p => p != 3.0)
     assert(count == 0)
   }
@@ -160,13 +159,15 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .map(p => (p(0), p(1)))
 
     val c = ordered.collect.toList
+    val clen = c.length
     for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
 
     val ew = ordered.map(p => p._1("randVar") + p._2("randVar"))
     val ewList = ew.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
+    val ewLen = ewList.length
+    logger.info("List length before is: " + clen + " and after is length " + ewLen)
     for (sciT <- ewList) {
-      assert(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 2.0) == 30)
+      assert(sciT.variables.values.head.data.count(_ == 2.0) == 30)
     }
   }
 
@@ -180,12 +181,13 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .map(p => (p(0), p(1)))
 
     val c = ordered.collect.toList
-
+    val clen = c.length
     val ew1 = ordered.map(p => p._1("randVar") :+ p._2("randVar"))
     val ewList1 = ew1.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
+    val ewLen = ewList1.length
+    logger.info("List length before is: " + clen + " and after is length " + ewLen)
     for (sciT <- ewList1) {
-      assert(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 2.0) == 30)
+      assert(sciT.variables.values.head.data.count(_ == 2.0) == 30)
     }
   }
 
@@ -195,8 +197,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar subtraction
     val s = uSRDD.map(p => p("randVar") - 2.0).collect().toList
-    logger.info("Subtraction: " + s(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val y = s(0).variables.values.toList(0).data
+    logger.info("Subtraction: " + s(0).variables.values.head)
+    val y = s(0).variables.values.head.data
     val count = y.count(p => p != -1.0)
     assert(count == 0)
   }
@@ -204,7 +206,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   test("OutofplaceMatrixSubtraction") {
     // test scalar subtraction
     val t = uSRDD.map(p => p("randVar") :- 2.0).collect().toList
-    val y1 = t(0).variables.values.toList(0).data
+    val y1 = t(0).variables.values.head.data
     val count = y1.count(p => p != -1.0)
     assert(count == 0)
   }
@@ -220,13 +222,15 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .map(p => p.sortBy(_.metaData("SOURCE").toInt))
       .map(p => (p(0), p(1)))
     val c = ordered.collect.toList
+    val clen = c.length
     for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
 
     val ew = ordered.map(p => p._2("randVar") - p._1("randVar"))
     val ewList = ew.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
+    val ewLen = ewList.length
+    logger.info("List length before is: " + clen + " and after is length " + ewLen)
     for (sciT <- ewList) {
-      assert(sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 0.0) == 30)
+      assert(sciT.variables.values.head.data.count(_ == 0.0) == 30)
     }
   }
 
@@ -239,40 +243,37 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .map(p => p.sortBy(_.metaData("SOURCE").toInt))
       .map(p => (p(0), p(1)))
     val c = ordered.collect.toList
+    val clen = c.length
 
     val ew1 = ordered.map(p => p._2("randVar") :- p._1("randVar"))
     val ewList1 = ew1.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
+    val ewLen = ewList1.length
+    logger.info("List length before is: " + clen + " and after is length " + ewLen)
     for (sciT <- ewList1) {
-      if (sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 0.0) == 30) {
-        assert(true)
-      } else {
-        assert(false)
-      }
+      assert(sciT.variables.values.head.data.count(_ == 0.0) == 30)
     }
   }
 
   test("matrixDivision") {
+    val t = uSRDD.collect().toList
     logger.info("In matrixDivision test ...")
-    logger.info("The sciTensor is: " + uSRDD.collect().toList)
-    logger.info("The values are: " + uSRDD.collect().toList(0).variables.values.toList)
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar division
-    val s = uSRDD.map(p => p("randVar") / 2.0).collect().toList(0)
-    logger.info("Division: " + s.variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val y = s.variables.values.toList(0).toString.split("  ").toList.filter(_ != "")
-    if (y.count(_.toDouble != 0.5) == 0) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    val s = uSRDD.map(p => p("randVar") / 2.0).collect().head
+    logger.info("Division: " + s.variables.values.head)
+    val y = s.variables.values.head.data
+    assert(y.count(_ == 0.5) == 30)
+  }
+
+  test("outOfPlaceMatrixDivision") {
     val t = uSRDD.map(p => p("randVar") :/ 2.0).collect().toList(0)
-    logger.info("Division: " + t.variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val y1 = t.variables.values.toList(0).toString.split("  ").toList.filter(_ != "")
-    if (y1.count(_.toDouble != 0.5) == 0) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    logger.info("Division: " + t.variables.values.head)
+    val y1 = t.variables.values.head.data
+    assert(y1.count(_ == 0.5) == 30)
+  }
+
+  test("orderedPairWiseOutOfPlaceMatrixDivision") {
     // test matrix division
     // order the fakeURLs then multiply pairs
     val ordered = uSRDD.flatMap(p => {
@@ -287,48 +288,54 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
     val ew = ordered.map(p => p._1("randVar") :/ p._2("randVar"))
     val ewList = ew.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList.length)
+    val ewlen = ewList.length
+    logger.info("List length before is: " + c.length + " and after is length " + ewlen)
     for (sciT <- ewList) {
-      if (sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 1.0) == 30) {
-        assert(true)
-      } else {
-        assert(false)
-      }
+      assert(sciT.variables.values.head.data.count(_ == 1.0) == 30)
     }
+  }
+
+  test("orderedPairWiseInPlaceMatrixDivision") {
+    val ordered = uSRDD.flatMap(p => {
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+    }).groupBy(_._1)
+      .map(p => p._2.map(e => e._2).toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+      .map(p => (p(0), p(1)))
+    val c = ordered.collect.toList
+    val clen = c.length
+    for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
 
     val ew1 = ordered.map(p => p._1("randVar") / p._2("randVar"))
     val ewList1 = ew1.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
+    val ew1len = ewList1.length
+    logger.info("List length before is: " + clen + " and after is length " + ew1len)
     for (sciT <- ewList1) {
-      if (sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 1.0) == 30) {
-        assert(true)
-      } else {
-        assert(false)
-      }
+      assert(sciT.variables.values.head.data.count(_ == 1.0) == 30)
     }
   }
 
   test("matrixMultiplication") {
+    val t = uSRDD.collect().toList
     logger.info("In matrixMultiplication test ...")
-    logger.info("The sciTensor is: " + uSRDD.collect().toList)
-    logger.info("The values are: " + uSRDD.collect().toList(0).variables.values.toList)
+    logger.info("The sciTensor is: " + t)
+    logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar multiplication
-    val s = uSRDD.map(p => p("randVar") * 2.0).collect().toList(0)
-    logger.info("Multiplication: " + s.variables.values.toList(0).toString.split("  ").toList.filter(_ != ""))
-    val y = s.variables.values.toList(0).toString.split("  ").toList.filter(_ != "")
-    if (y.count(_.toDouble != 2.0) == 0) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    val s = uSRDD.map(p => p("randVar") * 2.0).collect().toList
+    logger.info("Multiplication: " + s(0).variables.values.head)
+    val y = s(0).variables.values.head.data
+    assert(y.count(_ == 2.0) == 30)
+  }
+
+  test("outOfPlaceMatrixMultiplication") {
     // test scalar multiplication
     val t = uSRDD.map(p => p("randVar") :* 2.0)
-    val y1 = t.collect().toList(0).variables.values.toList(0).toString.split("  ").toList.filter(_ != "")
-    if (y1.count(_.toDouble != 2.0) == 0) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    val y1 = t.collect().head.data
+    assert(y1.count(_ == 2.0) == 30)
+  }
+
+  test("orderedPairWiseInPlaceMatrixMultiplication") {
     // test matrix multiplication
     // order the fakeURLs then multiply pairs
     val ordered = uSRDD.flatMap(p => {
@@ -338,27 +345,34 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .filter(p => p.size > 1)
       .map(p => p.sortBy(_.metaData("SOURCE").toInt))
       .map(p => (p(0), p(1)))
+
     val c = ordered.collect.toList
     for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
     val ew = ordered.map(p => p._1("randVar") * p._2("randVar"))
     val ewList = ew.collect().toList
     for (sciT <- ewList) {
-      if (sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 1.0) == 30) {
-        assert(true)
-      } else {
-        assert(false)
-      }
+      assert(sciT.variables.values.head.data.count(_ == 1.0) == 30)
     }
+  }
 
+  test("orderedPairWiseOutOfPlaceMatrixMultiplication") {
+    // test matrix multiplication
+    // order the fakeURLs then multiply pairs
+    val ordered = uSRDD.flatMap(p =>
+      List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
+    ).groupBy(_._1)
+      .map(p => p._2.map(e => e._2).toList)
+      .filter(p => p.size > 1)
+      .map(p => p.sortBy(_.metaData("SOURCE").toInt))
+      .map(p => (p(0), p(1)))
+
+    val c = ordered.count()
     val ew1 = ordered.map(p => p._1("randVar") :* p._2("randVar"))
-    val ewList1 = ew.collect().toList
-    logger.info("List length before is: " + c.length + " and after is length " + ewList1.length)
+    val ewList1 = ew1.collect().toList
+    val ewLen = ewList1.length
+    logger.info("List length before is: " + c + " and after is length " + ewLen)
     for (sciT <- ewList1) {
-      if (sciT.variables.values.toList(0).toString.split("  ").toList.filter(_ != "").count(_ != 1.0) == 30) {
-        assert(true)
-      } else {
-        assert(false)
-      }
+      assert(sciT.variables.values.head.data.count(_ == 1.0) == 30)
     }
   }
 
@@ -367,17 +381,17 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
    * Test data retrieval - values,shape
    */
   test("getVarData") {
-    println("getVarData test ...")
-    val x = Array(240.0, 241.0, 240.0, 241.0, 241.0, 230.0, 231.0, 240.0, 222.0, 241.0, 242.0, 243.0, 244.0, 241.0,
-      232.0, 240.0, 241.0, 230.0, 231.0, 241.0, 240.0, 241.0, 240.0, 242.0, 241.0, 242.0, 243.0, 244.0, 241.0, 242.0)
-    val t = sRDD.map(p => (p("randVar").data, p("randVar").shape))
-    val varData = t.collect()(0)
-    logger.info("The data is: " + varData._1.mkString(" ") + "\nShape: (" + varData._2.mkString(" , ") + ")")
-    if (varData._2(0) == 6 && varData._2(1) == 5 && varData._1.length == 30 && varData._1.sameElements(x)) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    val x = Array(240.0, 241.0, 240.0, 241.0, 241.0, 230.0,
+                  231.0, 240.0, 222.0, 241.0, 242.0, 243.0,
+                  244.0, 241.0, 232.0, 240.0, 241.0, 230.0,
+                  231.0, 241.0, 240.0, 241.0, 240.0, 242.0,
+                  241.0, 242.0, 243.0, 244.0, 241.0, 242.0)
+
+    val assertionTensor = new Nd4jTensor(x, Array(6, 5))
+    val t = sRDD.map(p => p("randVar").tensor).collect()
+    val varData = t(0)
+    logger.info("The data is: " + varData + "\nShape: " + varData.shape.toList + "\n")
+    assert(assertionTensor == varData)
   }
 
   /**
@@ -385,36 +399,24 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
    * Test varInUse
    */
   test("varInUse") {
-    println("varInUse test ...")
-    val t = sRDD.map(p => (p("randVar").data, p("randVar").shape))
-    val varData = t.collect()(0)
-    logger.info("The randVar data is: " + varData._1.mkString(" ") + "\nShape: (" + varData._2.mkString(" , ") + ")")
+    val t = sRDD.map(p => p("randVar").tensor).collect()
+    logger.info("The randVar data is: " + t(0) + "\nShape: " + t(0).shape.toList + "\n")
 
-    val t1 = sRDD.map(p => (p("randVar_1").data, p("randVar_1").shape))
-    val varData1 = t1.collect()(0)
-    logger.info("The randVar_1 data is: " +
-      varData1._1.mkString(" ") +
-      "\nShape: (" +
-      varData1._2.mkString(" , ") + ")")
+    val t1 = sRDD.map(p => p("randVar_1").tensor).collect()
+    logger.info("The randVar_1 data is: " + t1(0) + "\nShape: " + t1(0).shape.toList + "\n")
 
-    val tdefault = sRDD.map(p => (p.data, p.shape))
-    val varDataDef = tdefault.collect()(0)
-    logger.info("The varInUse default data is: " +
-      varDataDef._1.mkString(" ") +
-      "\nShape: (" +
-      varDataDef._2.mkString(" , ") + ")")
+    val td = sRDD.map(p => p.tensor).collect()
+    logger.info("The default data is: " + td(0) + "\nShape: " + td(0).shape.toList + "\n")
 
-    if (!(varData._1.sameElements(varData1._1)) && (varData1._1.sameElements(varDataDef._1))) {
-      assert(true)
-    } else {
-      assert(false)
-    }
+    assert(t(0) != t1(0))
+    assert(t1(0) == td(0))
   }
 
   test("GroupingByYearPartitioning") {
     val urls = HourlyTrmmURLGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
-    val sRDD = new SRDD[SciTensor](sc, urls, List("precipitation"), loadNetCDFNDVar, mapOneYearToManyTensorTRMM)
+    val varList = List("precipitation")
+    val sRDD = new SRDD[SciTensor](sc, urls, varList, loadNetCDFNDVar, mapOneYearToManyTensorTRMM)
     val Tensor = sRDD.collect()(0)
     assert(true)
   }
@@ -422,7 +424,8 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   test("GroupingByDayPartitioning") {
     val urls = HourlyTrmmURLGenerator.generateTrmmDaily(1999, 2000).toList.slice(0, 2)
     sc.setLocalProperty("log4j.configuration", "resources/log4j-defaults.properties")
-    val sRDD = new SRDD[SciTensor](sc, urls, List("precipitation"), loadNetCDFNDVar, mapOneDayToManyTensorTRMM)
+    val varList = List("precipitation")
+    val sRDD = new SRDD[SciTensor](sc, urls, varList, loadNetCDFNDVar, mapOneDayToManyTensorTRMM)
     val Tensor = sRDD.collect()(0)
     assert(true)
   }

@@ -20,12 +20,21 @@ package org.dia.core
 import java.io.Serializable
 
 import scala.collection.{mutable, TraversableOnce}
+import scala.collection.JavaConverters._
 
 import ucar.nc2.Attribute
 
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
+/**
+ * A Variable is a logical container for data.
+ * It has a dataType, a shape, and a set of Attributes.
+ *
+ * The data is a multidimensional array.
+ * Data access is done through the apply() method,
+ * which returns the multidimensional array as an AbstractTensor.
+ */
 class Variable(val name: String,
                val dataType: String,
                val array: AbstractTensor,
@@ -37,12 +46,8 @@ class Variable(val name: String,
     this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr)
   }
 
-  def this(name: String, dataType: String, array: AbstractTensor, attr: Array[Attribute]) {
-    this(name, dataType, array, attr.map(p => NetCDFUtils.convertAttribute(p)))
-  }
-
   def this(name: String, daaType: String, array: AbstractTensor, attr: java.util.List[Attribute]) {
-    this(name, daaType, array, attr.toArray.map(p => p.asInstanceOf[Attribute]))
+    this(name, daaType, array, attr.asScala.map(p => NetCDFUtils.convertAttribute(p)))
   }
 
   def this(name: String,
@@ -50,11 +55,16 @@ class Variable(val name: String,
            array: Array[Double],
            shape: Array[Int],
            attr: java.util.List[Attribute]) {
-    this(name, dataType, new Nd4jTensor(array, shape), attr)
+    this(name, dataType, new Nd4jTensor(array, if (shape.length > 1) shape else Array(1) ++ shape), attr)
   }
 
   def this(nvar: ucar.nc2.Variable) {
     this(nvar.getFullName, nvar.getDataType.toString,
+      NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
+  }
+
+  def this(name: String, nvar: ucar.nc2.Variable) {
+    this(name, nvar.getDataType.toString,
       NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
   }
 
@@ -110,6 +120,8 @@ class Variable(val name: String,
    * @return
    */
   def copy(): Variable = new Variable(name, dataType, array.copy, attributes.clone())
+
+  override def clone(): AnyRef = this.copy()
 
   /**
    * It should print just the same or similar to how
