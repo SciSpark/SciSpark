@@ -69,10 +69,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * @param conf Configuration for a spark application
    */
   def this(conf: SparkConf) {
-    this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .set("spark.kryo.classesToRegister", "java.lang.Thread")
-      .set("spark.kryo.registrator", "org.nd4j.Nd4jRegistrator")
-      .set("spark.kryoserializer.buffer.max", "256MB")))
+    this(new SparkContext(conf))
   }
 
   def this(uri: String, name: String) {

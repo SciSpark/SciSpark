@@ -25,7 +25,7 @@ import org.dia.core.SciTensor
 class SciTensorTest extends FunSuite {
 
   test("ApplyNullary") {
-    val square = Nd4j.create((0d to 9d by 1d).toArray, Array(3, 3))
+    val square = Nd4j.create((0d to 8d by 1d).toArray, Array(3, 3))
     val absT = new Nd4jTensor(square)
     val absTCopy = absT.copy
     val sciT = new SciTensor("sample", absT)
