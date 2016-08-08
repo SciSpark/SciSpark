@@ -76,7 +76,6 @@ libraryDependencies ++= Seq(
   // Nd4j scala api with netlib-blas backend
   // "org.nd4j" % "nd4s_2.10" % "0.5.0",
   "org.nd4j" % "nd4j-x86" % "0.4-rc3.8",
-  "org.nd4j" % "nd4j-kryo_2.10" % "0.5.0",
   "edu.ucar" % "opendap" % "4.6.0",
   "joda-time" % "joda-time" % "2.8.1",
   "org.joda" % "joda-convert" % "1.8.1",
