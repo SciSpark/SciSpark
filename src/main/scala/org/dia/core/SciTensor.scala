@@ -136,21 +136,22 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   def *(scalar: Double): SciTensor = this.tensor * scalar
 
   // copy operators
-  def :+(other: SciTensor): SciTensor = this.tensor :+ other.tensor
+  def +=(other: SciTensor): SciTensor = this.tensor += other.tensor
 
-  def :+(scalar: Double): SciTensor = this.tensor :+ scalar
+  def +=(scalar: Double): SciTensor = this.tensor += scalar
 
-  def :-(other: SciTensor): SciTensor = this.tensor :- other.tensor
+  def -=(other: SciTensor): SciTensor = this.tensor -= other.tensor
 
-  def :-(scalar: Double): SciTensor = this.tensor :- scalar
+  def -=(scalar: Double): SciTensor = this.tensor -= scalar
 
-  def :/(other: SciTensor): SciTensor = this.tensor :/ other.tensor
+  def /=(other: SciTensor): SciTensor = this.tensor /= other.tensor
 
-  def :/(scalar: Double): SciTensor = this.tensor :/ scalar
+  def /=(scalar: Double): SciTensor = this.tensor /= scalar
 
-  def :*(other: SciTensor): SciTensor = this.tensor :* other.tensor
+  def *=
+  (other: SciTensor): SciTensor = this.tensor *= other.tensor
 
-  def :*(scalar: Double): SciTensor = this.tensor :* scalar
+  def *=(scalar: Double): SciTensor = this.tensor *= scalar
 
 
   /**
