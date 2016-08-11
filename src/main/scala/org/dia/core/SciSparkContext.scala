@@ -20,6 +20,9 @@ package org.dia.core
 import scala.collection.mutable
 import scala.io.Source
 
+import org.apache.hadoop.conf._
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.apache.log4j.LogManager
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -71,6 +74,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   def this(conf: SparkConf) {
     this(new SparkContext(conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .set("spark.kryo.classesToRegister", "java.lang.Thread")
+      .set("spark.kryo.classesToRegister", "scala.collection.mutable.LinkedHashMap")
       .set("spark.kryo.registrator", "org.nd4j.Nd4jRegistrator")
       .set("spark.kryoserializer.buffer.max", "256MB")))
   }
@@ -154,6 +158,31 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
       sciT
     })
     rdd
+  }
+
+  /**
+   * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
+   * If no names are provided then all variable arrays in the file are loaded.
+   * The URI could be an OpenDapURL or a filesystem path.
+   *
+   * For reading from HDFS check NetcdfDFSFile.
+   */
+  def NetcdfRandomAccessDatasets(path: String,
+                                 varName: List[String] = Nil,
+                                 minPartitions: Int = 2): RDD[SciDataset] = {
+
+    val fs = FileSystem.get(new Configuration())
+    val FileStatuses = fs.listStatus(new Path(path))
+    val fileNames = FileStatuses.map(p => p.getPath.getName)
+    val nameRDD = sparkContext.parallelize(fileNames)
+
+    nameRDD.map(fileName => {
+      val k = NetCDFUtils.loadDFSNetCDFDataSet(path, path + fileName, 4000)
+      varName match {
+        case Nil => new SciDataset (k)
+        case s : List[String] => new SciDataset(k, s)
+      }
+    })
   }
 
   /**

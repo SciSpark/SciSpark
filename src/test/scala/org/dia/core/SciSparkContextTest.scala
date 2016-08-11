@@ -46,8 +46,8 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     val collect = smoothedSRDD.map(_ <= 241.0).collect()
 
     collect.foreach(t => {
-      for (i <- 0 to t.tensor.rows - 1) {
-        for (j <- 0 to t.tensor.cols - 1) {
+      for (i <- 0 until t.tensor.rows) {
+        for (j <- 0 until t.tensor.cols) {
           if (t.tensor(i, j) > 241.0) {
             assert(false, "Indices : (" + i + "," + j + ") has value " + t.tensor(i, j) + "which is greater than 241.0")
           }
@@ -62,9 +62,20 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
    */
   test("NetcdfDFSFile.Local") {
     val variable = "data"
-    val rdd = sc.NetcdfDFSFile("src/test/resources/Netcdf", List(variable))
+    val rdd = sc.NetcdfDFSFile("src/test/resources/Netcdf/", List(variable))
     val collected = rdd.collect
 
     assert(collected.length == 2)
+  }
+
+  /**
+   * Creates SRDD from a directory with NetCDF files in it.
+   */
+  test("NetcdfRandomAccessFile") {
+    val variable = "data"
+    val rdd = sc.NetcdfRandomAccessDatasets("src/test/resources/Netcdf/", List(variable))
+    val count = rdd.count()
+
+    assert(count == 2)
   }
 }

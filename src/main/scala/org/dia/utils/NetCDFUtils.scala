@@ -46,9 +46,9 @@ object NetCDFUtils extends Serializable {
    * Some datasets (like those hosted by gesdisc) require http credentials
    * for authentiation and access.
    *
-   * @param url
-   * @param username
-   * @param password
+   * @param url the http url to connect to
+   * @param username the username field
+   * @param password the password field
    */
   def setHTTPAuthentication(url: String, username: String, password: String): Unit = {
     val urlobj = new URL(url)
@@ -164,10 +164,10 @@ object NetCDFUtils extends Serializable {
     } catch {
       case e: java.io.IOException =>
         LOG.error("Couldn't open dataset %s%s".format(dfsUri, location))
-        null
+        throw e
       case ex: Exception =>
         LOG.error("Something went wrong while reading %s%s".format(dfsUri, location))
-        null
+        throw ex
     }
   }
 

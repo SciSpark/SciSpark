@@ -30,8 +30,8 @@ import org.dia.utils.NetCDFUtils
  * A NetcdfDataset wraps a LinkedHashMap of variables and
  * a LinkedHashMap of attributes.
  */
-class Dataset(val variables: mutable.LinkedHashMap[String, Variable],
-              val attributes: mutable.LinkedHashMap[String, String]) extends Serializable{
+class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
+                 val attributes: mutable.LinkedHashMap[String, String]) extends Serializable{
 
   def this(vars : Traversable[(String, Variable)], attr : Traversable[(String, String)]) {
     this(new mutable.LinkedHashMap[String, Variable] ++= vars,
@@ -44,6 +44,10 @@ class Dataset(val variables: mutable.LinkedHashMap[String, Variable],
 
   def this(nvar: dataset.NetcdfDataset) {
     this(nvar.getVariables.asScala, nvar.getGlobalAttributes.asScala)
+  }
+
+  def this(nvar: dataset.NetcdfDataset, vars: List[String]) {
+    this(vars.map(vr => nvar.findVariable(vr)), nvar.getGlobalAttributes.asScala)
   }
 
   /**
@@ -97,7 +101,7 @@ class Dataset(val variables: mutable.LinkedHashMap[String, Variable],
    *
    * @return
    */
-  def copy(): Dataset = new Dataset(variables.clone(), attributes.clone())
+  def copy(): SciDataset = new SciDataset(variables.clone(), attributes.clone())
 
   override def toString: String = {
     val header = "root group ...\n"
@@ -113,7 +117,7 @@ class Dataset(val variables: mutable.LinkedHashMap[String, Variable],
   }
 
   override def equals(any: Any): Boolean = {
-    val dataset = any.asInstanceOf[Dataset]
+    val dataset = any.asInstanceOf[SciDataset]
     dataset.attributes == this.attributes &&
     dataset.variables == this.variables
   }
