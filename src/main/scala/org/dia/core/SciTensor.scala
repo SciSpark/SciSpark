@@ -37,7 +37,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
   val metaData = new mutable.HashMap[String, String]
-  var varInUse = variables.toArray.apply(0)._1
+  var varInUse = variables.head._1
 
   def this(variableName: String, array: AbstractTensor) {
     this(new mutable.LinkedHashMap[String, AbstractTensor] += ((variableName, array)))
@@ -221,8 +221,8 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   /**
    * Computes the mean along the given axis of the variable in use.
    *
-   * @param axis
-   * @return
+   * @param axis the axis to take the mean along (can be more than one axis)
+   * @return the reduced array with means taken along the specified dimension(s)
    */
   def mean(axis: Int*): SciTensor = {
     variables(varInUse).mean(axis: _*)
@@ -232,7 +232,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    * Computes and returns the array broadcasted to
    * the specified shape requirements.
    *
-   * @param shape
+   * @param shape the new shape to be broadcasted to
    * @return
    */
   def broadcast(shape: Array[Int]): SciTensor = {
