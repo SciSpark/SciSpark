@@ -140,7 +140,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
   test("outofplaceMatrixAddition") {
     // test scalar addition
-    val t = uSRDD.map(p => p("randVar") :+ 2.0).collect().toList
+    val t = uSRDD.map(p => p("randVar") += 2.0).collect().toList
     logger.info("Addition: " + t(0).variables.values.head)
     val y1 = t(0).variables.values.head.data
     val count = y1.count(p => p != 3.0)
@@ -182,7 +182,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
     val c = ordered.collect.toList
     val clen = c.length
-    val ew1 = ordered.map(p => p._1("randVar") :+ p._2("randVar"))
+    val ew1 = ordered.map(p => p._1("randVar") += p._2("randVar"))
     val ewList1 = ew1.collect().toList
     val ewLen = ewList1.length
     logger.info("List length before is: " + clen + " and after is length " + ewLen)
@@ -205,7 +205,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
   test("OutofplaceMatrixSubtraction") {
     // test scalar subtraction
-    val t = uSRDD.map(p => p("randVar") :- 2.0).collect().toList
+    val t = uSRDD.map(p => p("randVar") -= 2.0).collect().toList
     val y1 = t(0).variables.values.head.data
     val count = y1.count(p => p != -1.0)
     assert(count == 0)
@@ -245,7 +245,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val c = ordered.collect.toList
     val clen = c.length
 
-    val ew1 = ordered.map(p => p._2("randVar") :- p._1("randVar"))
+    val ew1 = ordered.map(p => p._2("randVar") -= p._1("randVar"))
     val ewList1 = ew1.collect().toList
     val ewLen = ewList1.length
     logger.info("List length before is: " + clen + " and after is length " + ewLen)
@@ -267,7 +267,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   }
 
   test("outOfPlaceMatrixDivision") {
-    val t = uSRDD.map(p => p("randVar") :/ 2.0).collect().toList(0)
+    val t = uSRDD.map(p => p("randVar") /= 2.0).collect().toList(0)
     logger.info("Division: " + t.variables.values.head)
     val y1 = t.variables.values.head.data
     assert(y1.count(_ == 0.5) == 30)
@@ -286,7 +286,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     val c = ordered.collect.toList
     for (i <- c) logger.info(i._1.metaData + " connected to " + i._2.metaData)
 
-    val ew = ordered.map(p => p._1("randVar") :/ p._2("randVar"))
+    val ew = ordered.map(p => p._1("randVar") /= p._2("randVar"))
     val ewList = ew.collect().toList
     val ewlen = ewList.length
     logger.info("List length before is: " + c.length + " and after is length " + ewlen)
@@ -330,7 +330,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
 
   test("outOfPlaceMatrixMultiplication") {
     // test scalar multiplication
-    val t = uSRDD.map(p => p("randVar") :* 2.0)
+    val t = uSRDD.map(p => p("randVar") *= 2.0)
     val y1 = t.collect().head.data
     assert(y1.count(_ == 2.0) == 30)
   }
@@ -367,7 +367,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
       .map(p => (p(0), p(1)))
 
     val c = ordered.count()
-    val ew1 = ordered.map(p => p._1("randVar") :* p._2("randVar"))
+    val ew1 = ordered.map(p => p._1("randVar") *= p._2("randVar"))
     val ewList1 = ew1.collect().toList
     val ewLen = ewList1.length
     logger.info("List length before is: " + c + " and after is length " + ewLen)
