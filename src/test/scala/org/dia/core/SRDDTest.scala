@@ -125,9 +125,9 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
   /**
    * Test matrix artihmetic
    */
-  test("inplacematrixAddition") {
+  test("outofplacematrixAddition") {
     val t = uSRDD.collect().toList
-    logger.info("In inPlaceMatrixAddition test ...")
+    logger.info("In outofPlaceMatrixAddition test ...")
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
     // test scalar addition
@@ -138,7 +138,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(count == 0)
   }
 
-  test("outofplaceMatrixAddition") {
+  test("inplaceMatrixAddition") {
     // test scalar addition
     val t = uSRDD.map(p => p("randVar") += 2.0).collect().toList
     logger.info("Addition: " + t(0).variables.values.head)
@@ -147,7 +147,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(count == 0)
   }
 
-  test("orderedPairWiseInplaceMatrixAddition") {
+  test("orderedPairWiseOutplaceMatrixAddition") {
     // test matrix addition
     // order the fakeURLs then sum pairs
     val ordered = uSRDD.flatMap(p => {
@@ -171,7 +171,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("orderedPairWiseOutofplaceMatrixAddition") {
+  test("orderedPairWiseInplaceMatrixAddition") {
     val ordered = uSRDD.flatMap(p => {
       List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
     }).groupBy(_._1)
@@ -191,7 +191,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("inPlaceMatrixSubtraction") {
+  test("OutPlaceMatrixSubtraction") {
     val t = uSRDD.collect().toList
     logger.info("The sciTensor is: " + t)
     logger.info("The values are: " + t(0).variables.values.toList)
@@ -203,7 +203,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(count == 0)
   }
 
-  test("OutofplaceMatrixSubtraction") {
+  test("InofplaceMatrixSubtraction") {
     // test scalar subtraction
     val t = uSRDD.map(p => p("randVar") -= 2.0).collect().toList
     val y1 = t(0).variables.values.head.data
@@ -211,7 +211,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(count == 0)
   }
 
-  test("orderedPairWiseOutofplaceMatrixSubtraction") {
+  test("orderedPairWiseOutplaceMatrixSubtraction") {
     // test matrix subtraction
     // order the fakeURLs then subtract pairs
     val ordered = uSRDD.flatMap(p => {
@@ -254,7 +254,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("matrixDivision") {
+  test("OutPlaceMatrixDivision") {
     val t = uSRDD.collect().toList
     logger.info("In matrixDivision test ...")
     logger.info("The sciTensor is: " + t)
@@ -266,14 +266,14 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(y.count(_ == 0.5) == 30)
   }
 
-  test("outOfPlaceMatrixDivision") {
+  test("InPlaceMatrixDivision") {
     val t = uSRDD.map(p => p("randVar") /= 2.0).collect().toList(0)
     logger.info("Division: " + t.variables.values.head)
     val y1 = t.variables.values.head.data
     assert(y1.count(_ == 0.5) == 30)
   }
 
-  test("orderedPairWiseOutOfPlaceMatrixDivision") {
+  test("orderedPairWiseInPlaceMatrixDivision") {
     // test matrix division
     // order the fakeURLs then multiply pairs
     val ordered = uSRDD.flatMap(p => {
@@ -295,7 +295,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("orderedPairWiseInPlaceMatrixDivision") {
+  test("orderedPairWiseOutPlaceMatrixDivision") {
     val ordered = uSRDD.flatMap(p => {
       List((p.metaData("SOURCE").toInt, p), (p.metaData("SOURCE").toInt + 1, p))
     }).groupBy(_._1)
@@ -316,7 +316,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("matrixMultiplication") {
+  test("outPlaceMatrixMultiplication") {
     val t = uSRDD.collect().toList
     logger.info("In matrixMultiplication test ...")
     logger.info("The sciTensor is: " + t)
@@ -328,14 +328,14 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(y.count(_ == 2.0) == 30)
   }
 
-  test("outOfPlaceMatrixMultiplication") {
+  test("InPlaceMatrixMultiplication") {
     // test scalar multiplication
     val t = uSRDD.map(p => p("randVar") *= 2.0)
     val y1 = t.collect().head.data
     assert(y1.count(_ == 2.0) == 30)
   }
 
-  test("orderedPairWiseInPlaceMatrixMultiplication") {
+  test("orderedPairWiseOutPlaceMatrixMultiplication") {
     // test matrix multiplication
     // order the fakeURLs then multiply pairs
     val ordered = uSRDD.flatMap(p => {
@@ -355,7 +355,7 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("orderedPairWiseOutOfPlaceMatrixMultiplication") {
+  test("orderedPairWiseInPlaceMatrixMultiplication") {
     // test matrix multiplication
     // order the fakeURLs then multiply pairs
     val ordered = uSRDD.flatMap(p =>
