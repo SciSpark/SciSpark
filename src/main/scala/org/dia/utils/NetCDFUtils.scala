@@ -84,12 +84,18 @@ object NetCDFUtils extends Serializable {
    * Converts the native ma2.Array from the NetCDF library
    * to a one dimensional Java Array of Doubles.
    * Extracts the 1d Java array and converts the elements to a Double Type.
+   *
+   * TODO:: The array libraries need to be able to accept different types of numerics.
+   * Nd4j only accepts Floats and Doubles.
+   * Breeze accepts Ints, Floats, and Doubles.
    */
   def convertMa2Arrayto1DJavaArray(ma2Array: ma2.Array): Array[Double] = {
     ma2Array.getDataType match {
       case DataType.INT => ma2Array.copyTo1DJavaArray.asInstanceOf[Array[Int]].map(_.toDouble)
+      case DataType.SHORT => ma2Array.copyTo1DJavaArray().asInstanceOf[Array[Short]].map(_.toDouble)
       case DataType.FLOAT => ma2Array.copyTo1DJavaArray.asInstanceOf[Array[Float]].map(_.toDouble)
       case DataType.DOUBLE => ma2Array.copyTo1DJavaArray.asInstanceOf[Array[Double]]
+      case DataType.LONG => ma2Array.copyTo1DJavaArray().asInstanceOf[Array[Long]].map(_.toDouble)
       case badType => throw new Exception("Can't convert ma2.Array[" + badType + "] to numeric array.")
     }
   }
