@@ -17,14 +17,19 @@
  */
 package org.dia.core
 
+import org.scalatest.BeforeAndAfter
 import org.scalatest.FunSuite
 
 import org.dia.utils.NetCDFUtils
 
-class SciDatasetTest extends FunSuite {
+class SciDatasetTest extends FunSuite with BeforeAndAfter{
 
   val netcdfDataset = NetCDFUtils.loadNetCDFDataSet("src/test/resources/Netcdf/nc_3B42_daily.2008.01.02.7.bin.nc")
-  val Dataset = new SciDataset(netcdfDataset)
+  var Dataset : SciDataset = _
+
+  before {
+    Dataset = new SciDataset(netcdfDataset)
+  }
 
   test("testCopy") {
     val copy = Dataset.copy()
@@ -32,7 +37,7 @@ class SciDatasetTest extends FunSuite {
   }
 
   test("testAttributes") {
-    val aerosolAttr = Dataset.attr("FF_GLOBAL\\.Server")
+    val aerosolAttr = Dataset.attr("FF_GLOBAL.Server")
     assert(aerosolAttr == "DODS FreeFrom based on FFND release 4.2.3")
   }
 
@@ -56,11 +61,20 @@ class SciDatasetTest extends FunSuite {
   }
 
   test("testToString") {
-    val string = "root group ...\n" +
-                 "\tFF_GLOBAL\\.Server: DODS FreeFrom based on FFND release 4.2.3\n" +
+    val string = "nc_3B42_daily.2008.01.02.7.bin.nc\n" +
+                 "root group ...\n" +
+                 "\tFF_GLOBAL.Server: DODS FreeFrom based on FFND release 4.2.3\n" +
                  "\t_CoordSysBuilder: ucar.nc2.dataset.conv.DefaultConvention\n" +
-                 "\tGreeting: Hi Five!\n" +
-                 "\tvariables: float data\n"
+                 "\tdimensions(sizes): (rows(400), cols(1440))\n" +
+                 "\tvariables: (float data(rows, cols))\n"
     assert(Dataset.toString == string)
   }
+
+  test("writeDataset") {
+    val name = Dataset.datasetName
+    Dataset.write()
+    val newDataset = new SciDataset(NetCDFUtils.loadNetCDFDataSet(name))
+    assert(newDataset == Dataset)
+  }
+
 }
