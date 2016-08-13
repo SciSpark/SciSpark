@@ -119,9 +119,17 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
    */
   def attr(key: String): String = attributes(key)
 
-  def write(name: String = datasetName): Unit = {
-
-    val writer = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, name, null)
+  /**
+   * Writes the contents of SciDataset to a NetcdfFile.
+   *
+   * @param name Optional : The name of the netcdf file. If no name is specified, then
+   *             the current datasetName is used. Note that the function does not
+   *             append ".nc" by default and so must be included in the name.
+   * @param path Optional : The directory where this file will be written to.
+   *             By default it is written to the current directory.
+   */
+  def write(name: String = datasetName, path: String = ""): Unit = {
+    val writer = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, path + name, null)
     val netcdfKeyValue = variables.map {
       case (key, variable) =>
         val dims = new util.ArrayList[ucar.nc2.Dimension]()
