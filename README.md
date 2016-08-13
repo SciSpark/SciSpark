@@ -2,8 +2,8 @@ SciSpark
 ====
 
 [![Join the chat at https://gitter.im/scientificspark](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scientificspark/Lobby)
-
 [![Build Status](https://travis-ci.org/SciSpark/SciSpark.svg?branch=master)](https://travis-ci.org/SciSpark/SciSpark)
+[![Coverage Status](https://coveralls.io/repos/github/SciSpark/SciSpark/badge.svg?branch=master)](https://coveralls.io/github/SciSpark/SciSpark?branch=master)
 
 ![picture alt](http://image.slidesharecdn.com/jljkdhlxtlgwcyboil6n-signature-c9af2d5a7f730d5a4779821a7bd1f0333657fd7c0430ac7965a5576c08924b8a-poli-150624001008-lva1-app6891/95/spark-at-nasajplchris-mattmann-nasajpl-29-638.jpg?cb=1435104721)
 #Update
