@@ -21,10 +21,10 @@ import org.scalatest.FunSuite
 
 import org.dia.utils.NetCDFUtils
 
-class DatasetTest extends FunSuite {
+class SciDatasetTest extends FunSuite {
 
   val netcdfDataset = NetCDFUtils.loadNetCDFDataSet("src/test/resources/Netcdf/nc_3B42_daily.2008.01.02.7.bin.nc")
-  val Dataset = new Dataset(netcdfDataset)
+  val Dataset = new SciDataset(netcdfDataset)
 
   test("testCopy") {
     val copy = Dataset.copy()
