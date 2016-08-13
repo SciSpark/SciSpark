@@ -38,8 +38,16 @@ notifications:
 
 # 5. Run maven sbt compile, check style, and test
 install:
-  - sbt compile
   - sbt scalastyle
   - sbt test:scalastyle
-  - sbt test
+
+# 6. Run maven sbt compile, test, and generate coverage reports
+script:
+  - sbt clean
+  - sbt compile
+  - sbt coverage test
+
+# 7. Generate the coverageReport for coveralls
+after_success:
+  - sbt coverageReport coveralls
 
