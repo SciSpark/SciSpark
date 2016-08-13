@@ -69,39 +69,37 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def put(value: Double, shape: Int*): Unit = tensor.putScalar(shape.toArray, value)
 
-  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
+  def +(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
+
+  def +(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.add(scalar))
+
+  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
+
+  def -(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.sub(scalar))
+
+  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
+
+  def /(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.div(scalar))
+
+  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
+
+  def *(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.mul(scalar))
 
   def +=(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.addi(array.tensor))
 
-  def +(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.addi(scalar))
+  def +=(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.addi(scalar))
 
-  def -(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.subi(array.tensor))
+  def -=(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.subi(array.tensor))
 
-  def -(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.subi(scalar))
+  def -=(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.subi(scalar))
 
-  def /(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.divi(array.tensor))
+  def /=(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.divi(array.tensor))
 
-  def /(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.divi(scalar))
+  def /=(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.divi(scalar))
 
-  def *(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.muli(array.tensor))
+  def *=(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.muli(array.tensor))
 
-  def *(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.muli(scalar))
-
-  def :+(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.add(array.tensor))
-
-  def :+(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.add(scalar))
-
-  def :-(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.sub(array.tensor))
-
-  def :-(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.sub(scalar))
-
-  def :/(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.div(array.tensor))
-
-  def :/(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.div(scalar))
-
-  def :*(array: AbstractTensor): Nd4jTensor = new Nd4jTensor(tensor.mul(array.tensor))
-
-  def :*(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.mul(scalar))
+  def *=(scalar: Double): Nd4jTensor = new Nd4jTensor(tensor.muli(scalar))
 
   /**
    * Masking operations

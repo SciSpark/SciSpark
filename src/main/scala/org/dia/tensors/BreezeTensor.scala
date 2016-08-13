@@ -70,37 +70,38 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def put(value: Double, shape: Int*): Unit = tensor.update(shape(0), shape(1), value)
 
-  def +(array: AbstractTensor): BreezeTensor = tensor :+= array.tensor
+  def +(array: AbstractTensor): BreezeTensor = tensor + array.tensor
 
-  def +(scalar: Double): BreezeTensor = tensor :+= scalar
+  def +(scalar: Double): BreezeTensor = tensor + scalar
 
-  def -(array: AbstractTensor): BreezeTensor = tensor :-= array.tensor
+  def -(array: AbstractTensor): BreezeTensor = tensor - array.tensor
 
-  def -(scalar: Double): BreezeTensor = tensor :-= scalar
+  def -(scalar: Double): BreezeTensor = tensor - scalar
 
-  def /(array: AbstractTensor): BreezeTensor = tensor :/= array.tensor
+  def /(array: AbstractTensor): BreezeTensor = tensor / array.tensor
 
-  def /(scalar: Double): BreezeTensor = tensor :/= scalar
+  def /(scalar: Double): BreezeTensor = tensor / scalar
 
-  def *(array: AbstractTensor): BreezeTensor = tensor *= array.tensor
+  def *(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
 
-  def *(scalar: Double): BreezeTensor = tensor :*= scalar
+  def *(scalar: Double): BreezeTensor = tensor :* scalar
 
-  def :+(array: AbstractTensor): BreezeTensor = tensor + array.tensor
+  def +=(array: AbstractTensor): BreezeTensor = tensor :+= array.tensor
 
-  def :+(scalar: Double): BreezeTensor = tensor + scalar
+  def +=(scalar: Double): BreezeTensor = tensor :+= scalar
 
-  def :-(array: AbstractTensor): BreezeTensor = tensor - array.tensor
+  def -=(array: AbstractTensor): BreezeTensor = tensor :-= array.tensor
 
-  def :-(scalar: Double): BreezeTensor = tensor - scalar
+  def -=(scalar: Double): BreezeTensor = tensor :-= scalar
 
-  def :/(array: AbstractTensor): BreezeTensor = tensor / array.tensor
+  def /=(array: AbstractTensor): BreezeTensor = tensor :/= array.tensor
 
-  def :/(scalar: Double): BreezeTensor = tensor / scalar
+  def /=(scalar: Double): BreezeTensor = tensor :/= scalar
 
-  def :*(array: AbstractTensor): BreezeTensor = tensor :* array.tensor
+  def *=(array: AbstractTensor): BreezeTensor = tensor :*= array.tensor
 
-  def :*(scalar: Double): BreezeTensor = tensor :* scalar
+  def *=(scalar: Double): BreezeTensor = tensor :*= scalar
+
 
   /**
    * Masking operations
