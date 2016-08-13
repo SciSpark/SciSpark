@@ -22,6 +22,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 
 import org.dia.loaders.NetCDFReader
 import org.dia.tensors.Nd4jTensor
+import org.dia.testenv.SparkTestConstants
 import org.dia.utils.NetCDFUtils
 
 /**
@@ -38,11 +39,9 @@ class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
    * Earth Data login for GESDISC : Authentication
    * https://urs.earthdata.nasa.gov/home
    * You can log in with the following credentials:
-   * Username : scispark
-   * Password : SciSpark1
    */
-  val username = "scispark"
-  val password = "SciSpark1"
+  val username = SparkTestConstants.testHTTPCredentials("username")
+  val password = SparkTestConstants.testHTTPCredentials("password")
   /** URLs */
   val gesdiscUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80"
   val airsUrl = "http://acdisc-ts1.gesdisc.eosdis.nasa.gov:80"

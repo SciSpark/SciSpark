@@ -33,9 +33,11 @@ import org.dia.testenv.SparkTestConstants
 class LoadersTest extends FunSuite with BeforeAndAfter {
 
   val sc = SparkTestConstants.sc
+  val username = SparkTestConstants.testHTTPCredentials("username")
+  val password = SparkTestConstants.testHTTPCredentials("password")
 
   before {
-    sc.addHTTPCredential("http://disc2.gesdisc.eosdis.nasa.gov:80/", "scispark", "SciSpark1")
+    sc.addHTTPCredential("http://disc2.gesdisc.eosdis.nasa.gov:80/", username, password)
   }
 
   /**

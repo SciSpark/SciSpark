@@ -17,10 +17,23 @@
  */
 package org.dia.testenv
 
+import scala.collection.mutable
+import scala.io.Source
+
 import org.dia.core.SciSparkContext
 
 object SparkTestConstants {
   val sc = new SciSparkContext("local[4]", "test")
   val datasetPath = "src/test/resources/TestLinks2"
   val datasetVariable = "precipitation"
+
+  val credentialsFilePath = "src/test/resources/TestHTTPCredentials"
+  val credentialList = Source.fromFile(credentialsFilePath)
+    .getLines()
+    .map(p => {
+      val split = p.split("\\s+")
+      (split(0), split(1))
+    })
+  val testHTTPCredentials = new mutable.LinkedHashMap[String, String] ++= credentialList
+
 }
