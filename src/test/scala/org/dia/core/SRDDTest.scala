@@ -35,8 +35,10 @@ import org.dia.utils.NetCDFUtils
 class SRDDTest extends FunSuite with BeforeAndAfter {
 
   val gesdiscUrl = "http://disc2.gesdisc.eosdis.nasa.gov:80"
+  val username = SparkTestConstants.testHTTPCredentials("username")
+  val password = SparkTestConstants.testHTTPCredentials("password")
   before {
-    NetCDFUtils.setHTTPAuthentication(gesdiscUrl, "scispark", "SciSpark1")
+    NetCDFUtils.setHTTPAuthentication(gesdiscUrl, username, password)
   }
 
   val testLinks = SparkTestConstants.datasetPath
