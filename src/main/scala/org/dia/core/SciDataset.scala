@@ -64,14 +64,16 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
    *
    * row(400), cols(1440)
    *
-   * Flatten all the dimensions amongst the variables
-   * find the distinct dimensions
+   * Flattens all the dimensions amongst the variables
+   * and keep the distinct dimensions.
    */
-  val globalDimensions = variables.valuesIterator.map(variable =>
+  def globalDimensions() : List[String] = {
+    variables.valuesIterator.map(variable =>
       variable.dims.map({
         case(dimName, length) => dimName + "(" + length + ")"
       })
-  ).flatten.toList.distinct
+    ).flatten.toList.distinct
+  }
 
   /**
    * Writes attribute in the form of key-value pairs

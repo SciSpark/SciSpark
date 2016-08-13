@@ -70,6 +70,12 @@ class SciDatasetTest extends FunSuite with BeforeAndAfter{
     assert(Dataset.toString == string)
   }
 
+  test("globalDimensions") {
+    val dimensions = Dataset.globalDimensions()
+    val dimensionsCheck = List("rows(400)", "cols(1440)")
+    assert(dimensions == dimensionsCheck)
+  }
+
   test("writeDataset") {
     val name = Dataset.datasetName
     Dataset.write()
