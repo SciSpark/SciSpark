@@ -36,7 +36,7 @@ import org.dia.utils.NetCDFUtils
  */
 class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
                  val attributes: mutable.LinkedHashMap[String, String],
-                 val datasetName: String) extends Serializable{
+                 var datasetName: String) extends Serializable{
 
   def this(vars : Traversable[(String, Variable)], attr : Traversable[(String, String)], datasetName : String) {
     this(new mutable.LinkedHashMap[String, Variable] ++= vars,
@@ -93,6 +93,10 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
     for (v <- variables) this.variables += ((v.name, v))
   }
 
+  def setName(newName : String): SciDataset = {
+    datasetName = newName
+    this
+  }
   /**
    * Access variables.
    * In Python's netcdf Dataset, variables can be accessed as
@@ -162,7 +166,7 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
 
   override def toString: String = {
     val header = datasetName + "\nroot group ...\n"
-    val dimensionString = "\tdimensions(sizes): " + globalDimensions.toString + "\n"
+    val dimensionString = "\tdimensions(sizes): " + globalDimensions().toString + "\n"
     val variableString = variables.map({case (str, varb) => varb.dataType + " " + str + varb.dims.keys.toList})
     val footer = "\tvariables: " + variableString + "\n"
     val body = new StringBuilder()
