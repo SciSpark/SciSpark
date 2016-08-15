@@ -18,9 +18,14 @@
 package org.dia.core
 
 import java.io.Serializable
+import java.util
 
 import scala.collection.mutable
 import scala.language.implicitConversions
+
+import ucar.ma2
+import ucar.nc2.Attribute
+import ucar.nc2.NetcdfFileWriter
 
 import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.AbstractTensor
@@ -269,6 +274,39 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
   def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): SciTensor = {
     MCCOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
   }
+
+  def writeToNetCDF(name: String, path: String = ""): Unit = {
+    val writer = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, path + name, null)
+    val netcdfKeyValue = variables.map {
+      case (key, variable) =>
+        val dims = new util.ArrayList[ucar.nc2.Dimension]()
+        val shape = variable.shape
+        for (i <- shape.indices) {
+          val newDim = writer.addDimension(null, i.toString, shape(i))
+          dims.add(newDim)
+        }
+        val varT = writer.addVariable(null, key, ma2.DataType.FLOAT, dims)
+
+        val dataOut = ma2.Array.factory(ma2.DataType.DOUBLE, variable.shape, variable.data)
+        (varT, dataOut)
+    }
+
+    for ((key, attribute) <- metaData) {
+      writer.addGroupAttribute(null, new Attribute(key, attribute))
+    }
+
+    writer.create()
+    for ((variable, array) <- netcdfKeyValue) writer.write(variable, array)
+    writer.close()
+  }
+
+  override def equals(any: Any): Boolean = {
+    val otherSciT = any.asInstanceOf[SciTensor]
+    variables == otherSciT.variables &&
+    metaData == otherSciT.metaData
+  }
+
+  override def hashCode(): Int = super.hashCode()
 
   override def toString: String = {
     var string = "Variable in use = " + varInUse + "\n" + variables.keys.toString + "\n"
