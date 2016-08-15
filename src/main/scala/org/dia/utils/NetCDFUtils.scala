@@ -135,9 +135,8 @@ object NetCDFUtils extends Serializable {
    * Loads a NetCDF Dataset from a URL.
    */
   def loadNetCDFDataSet(url: String): NetcdfDataset = {
-
     NetcdfDataset.setUseNaNs(false)
-    try {
+    val dataset = try {
       NetcdfDataset.openDataset(url)
     } catch {
       case e: java.io.IOException =>
@@ -147,6 +146,8 @@ object NetCDFUtils extends Serializable {
         LOG.error("Something went wrong while reading %s".format(url))
         throw ex
     }
+    LOG.info("Succesfully downloaded netcdf file from :" + url)
+    dataset
   }
 
   /**
