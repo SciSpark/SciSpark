@@ -123,7 +123,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   def sciDatasets(path : String, vars : List[String] = Nil, partitionCount : Int = 2): RDD[SciDataset] = {
     val uri = new URI(path)
     if (uri.getPath.endsWith(".txt")) {
-      NetcdfDataset(path, vars, partitionCount)
+      NetcdfDatasetList(path, vars, partitionCount)
     } else {
       NetcdfRandomAccessDatasets(path, vars, partitionCount)
     }
@@ -136,9 +136,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfRandomAccessDatasets
    */
-  def NetcdfDataset(path: String,
-                     vars: List[String] = Nil,
-                     partCount: Int = 2): RDD[SciDataset] = {
+  def NetcdfDatasetList(path: String,
+                        vars: List[String] = Nil,
+                        partCount: Int = 2): RDD[SciDataset] = {
     val creds = HTTPCredentials.clone()
     val URIsFile = sparkContext.textFile(path, partCount)
     val rdd = URIsFile.map(p => {
@@ -160,9 +160,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def NetcdfFile(path: String,
-                 varName: List[String] = Nil,
-                 minPartitions: Int = 2): RDD[SciTensor] = {
+  def NetcdfFileList(path: String,
+                     varName: List[String] = Nil,
+                     minPartitions: Int = 2): RDD[SciTensor] = {
 
     val URIsFile = sparkContext.textFile(path, minPartitions)
     val creds = HTTPCredentials.clone()

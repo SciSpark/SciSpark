@@ -40,7 +40,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
   test("NetcdfFile.Local") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = SparkTestConstants.datasetVariable
-    val sRDD = sc.NetcdfFile(testLinks, List(variable))
+    val sRDD = sc.NetcdfFileList(testLinks, List(variable))
 
     val smoothedSRDD = sRDD.map(p => p(variable).reduceResolution(5, -9999))
     val collect = smoothedSRDD.map(_ <= 241.0).collect()
