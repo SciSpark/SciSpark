@@ -18,16 +18,8 @@
 # check build and test results for their pull requests
 
 # 1. Choose OS (Ubuntu 14.04.3 LTS Server Edition 64bit)
-#              (OS X 10.11)
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      sudo: required
-    - os: osx
-      osx_image: xcode8
-      sudo: required
-
+sudo: required
+dist: trusty
 
 # 2. Choose language and target JDKs for parallel  builds
 language: scala
