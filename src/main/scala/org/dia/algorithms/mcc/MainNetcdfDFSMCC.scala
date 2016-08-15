@@ -68,7 +68,7 @@ object MainNetcdfDFSMCC {
      * Note if no HDFS path is given, then randomly generated matrices are used.
      *
      */
-    val sRDD = sc.NetcdfDFSFile(hdfspath, List("ch4"), partCount)
+    val sRDD = sc.NetcdfDFSFiles(hdfspath, List("ch4"), partCount)
 
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
