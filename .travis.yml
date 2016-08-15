@@ -18,13 +18,10 @@
 # check build and test results for their pull requests
 
 # 1. Choose language and target JDKs for parallel  builds
+language: scala
+scala:
+  - 2.10.6
 
-os: osx
-osx_image: xcode8
-sudo: required
-language: java
-
-env: SCALA_VERSION=2.10.6
 # 2. Choose OS (Ubuntu 14.04.3 LTS Server Edition 64bit)
 #              (OS X 10.11)
 matrix:
@@ -32,8 +29,9 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      language: scala
-      scala: 2.10.6
+    - os: osx
+      osx_image: xcode8
+      sudo: required
 
 # 3. Setup cache directory for SBT
 cache:
