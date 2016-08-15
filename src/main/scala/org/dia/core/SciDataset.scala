@@ -134,7 +134,7 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
    * @param path Optional : The directory where this file will be written to.
    *             By default it is written to the current directory.
    */
-  def write(name: String = datasetName, path: String = ""): Unit = {
+  def writeToNetCDF(name: String = datasetName, path: String = ""): Unit = {
     val writer = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, path + name, null)
     val netcdfKeyValue = variables.map {
       case (key, variable) =>
