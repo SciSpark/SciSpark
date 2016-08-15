@@ -78,7 +78,7 @@ class SciDatasetTest extends FunSuite with BeforeAndAfter{
 
   test("writeDataset") {
     val name = Dataset.datasetName
-    Dataset.write()
+    Dataset.writeToNetCDF()
     val newDataset = new SciDataset(NetCDFUtils.loadNetCDFDataSet(name))
     assert(newDataset == Dataset)
   }

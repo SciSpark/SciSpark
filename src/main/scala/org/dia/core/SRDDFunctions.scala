@@ -47,7 +47,7 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    */
   def writeSRDD(directoryPath : String): Unit = {
     self.foreach(p => {
-      p.write(p.datasetName, "/tmp/")
+      p.writeToNetCDF(p.datasetName, "/tmp/")
       val conf = new Configuration()
       val fs = FileSystem.get(new URI(directoryPath), conf)
       FileUtil.copy(new File("/tmp/" + p.datasetName), fs, new Path(directoryPath), true, conf)
