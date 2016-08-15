@@ -29,9 +29,12 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
+      language: scala
+      scala: 2.10.6
     - os: osx
       osx_image: xcode8
       sudo: required
+      language: java
 
 # 3. Setup cache directory for SBT
 cache:
