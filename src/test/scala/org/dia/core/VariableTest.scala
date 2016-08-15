@@ -71,7 +71,7 @@ class VariableTest extends FunSuite {
   }
 
   test("testToString") {
-    val string = "float tas\n" +
+    val string = "float tas(time, lat, lon)\n" +
                 "\tcomment: Created using NCL code CCSM_atmm_2cf.ncl on\n" +
                 " machine eagle163s\n" +
                 "\tmissing_value: 1.0E20\n" +
