@@ -17,8 +17,7 @@
  */
 package org.dia.core
 
-import org.scalatest.BeforeAndAfter
-import org.scalatest.FunSuite
+import org.scalatest.{BeforeAndAfter, FunSuite}
 
 import org.dia.utils.NetCDFUtils
 
