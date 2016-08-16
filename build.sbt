@@ -29,7 +29,7 @@ scalaVersion := "2.10.6"
 
 scalacOptions := Seq("-feature", "-deprecation")
 
-mainClass in Compile := Some("org.dia.algorithms.pdfclustering.PDFClusteringAnomalies")
+mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
 
 resolvers ++= Seq(
   Resolver.mavenLocal,
