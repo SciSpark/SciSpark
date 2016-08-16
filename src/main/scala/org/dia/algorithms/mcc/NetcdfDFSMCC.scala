@@ -341,7 +341,7 @@ object NetcdfDFSMCC {
      * Note if no HDFS path is given, then randomly generated matrices are used.
      *
      */
-    val sRDD = sc.NetcdfDFSFile(hdfspath, List("ch4", "longitude", "latitude"), partCount)
+    val sRDD = sc.NetcdfDFSFiles(hdfspath, List("ch4", "longitude", "latitude"), partCount)
     //    val sRDD = sc.randomMatrices("/Users/sujen/Desktop/development/SciSpark/resources/testing/random.txt",
     //      List("ch4"), (20,20), 2)
     val labeled = createLabelledRDD(sRDD)

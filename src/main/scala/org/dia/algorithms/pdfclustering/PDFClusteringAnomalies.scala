@@ -45,7 +45,7 @@ object PDFClusteringAnomalies {
     val ncfile = "resources/PDFClustering/tas_MERRA_NA_daily_January_1979-2011.nc"
     val ncvariables = List("tasjan", "lat", "lon")
     val sc = new SciSparkContext(masterURL, "PDF clustering")
-    val tasjan = sc.NetcdfDFSFile(ncfile, ncvariables)
+    val tasjan = sc.NetcdfDFSFiles(ncfile, ncvariables)
 
     /**
      * Detrend daily data

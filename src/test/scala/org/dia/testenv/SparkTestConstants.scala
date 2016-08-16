@@ -24,7 +24,7 @@ import org.dia.core.SciSparkContext
 
 object SparkTestConstants {
   val sc = new SciSparkContext("local[4]", "test")
-  val datasetPath = "src/test/resources/TestLinks2"
+  val datasetPath = "src/test/resources/TestLinks2.txt"
   val datasetVariable = "precipitation"
 
   val credentialsFilePath = "src/test/resources/TestHTTPCredentials"

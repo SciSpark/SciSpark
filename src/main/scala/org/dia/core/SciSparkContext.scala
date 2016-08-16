@@ -17,6 +17,8 @@
  */
 package org.dia.core
 
+import java.net.URI
+
 import scala.collection.mutable
 import scala.io.Source
 
@@ -106,6 +108,50 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
     HTTPCredentials = HTTPCredentials.+:((uri, username, password))
   }
 
+  /**
+   * Given an URI string the relevant dataset is loaded into an RDD.
+   * If the URI string ends in a .txt and consists of line separated URI's pointing
+   * to netCDF files then NetcdfDataset is called. Otherwise NetcdfRandomAccessDatasets
+   * is called.
+   *
+   * @param path The URI string pointing to
+   *             A) a directory of netCDF files
+   *             B) a .txt file consisting of line separated OpenDAP URLs
+   * @param vars The variables to be extracted from the dataset
+   * @param partitionCount The number of partitions the data should be split into
+   */
+  def sciDatasets(path : String, vars : List[String] = Nil, partitionCount : Int = 2): RDD[SciDataset] = {
+    val uri = new URI(path)
+    if (uri.getPath.endsWith(".txt")) {
+      NetcdfDatasetList(path, vars, partitionCount)
+    } else {
+      NetcdfRandomAccessDatasets(path, vars, partitionCount)
+    }
+  }
+
+  /**
+   * Constructs an RDD of SciDatasets from a file of URI's pointing to a NetCDF dataset and a list of
+   * variable names. If no names are provided then all variable arrays in the file are loaded.
+   * The URI could be an OpenDapURL or a filesystem path.
+   *
+   * For reading from HDFS check NetcdfRandomAccessDatasets
+   */
+  def NetcdfDatasetList(path: String,
+                        vars: List[String] = Nil,
+                        partCount: Int = 2): RDD[SciDataset] = {
+    val creds = HTTPCredentials.clone()
+    val URIsFile = sparkContext.textFile(path, partCount)
+    val rdd = URIsFile.map(p => {
+      for ((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
+      val netcdfDataset = NetCDFUtils.loadNetCDFDataSet(p)
+      if(vars.nonEmpty) {
+        new SciDataset(netcdfDataset, vars)
+      } else {
+        new SciDataset(netcdfDataset)
+      }
+    })
+    rdd
+  }
 
   /**
    * Constructs an SRDD from a file of URI's pointing to NetCDF datasets and a list of variable names.
@@ -114,9 +160,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def NetcdfFile(path: String,
-                 varName: List[String] = Nil,
-                 minPartitions: Int = 2): RDD[SciTensor] = {
+  def NetcdfFileList(path: String,
+                     varName: List[String] = Nil,
+                     minPartitions: Int = 2): RDD[SciTensor] = {
 
     val URIsFile = sparkContext.textFile(path, minPartitions)
     val creds = HTTPCredentials.clone()
@@ -190,9 +236,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * TODO :: Create an SRDD instead of a normal RDD
    */
-  def NetcdfDFSFile(path: String,
-                    varName: List[String] = Nil,
-                    minPartitions: Int = 2): RDD[SciTensor] = {
+  def NetcdfDFSFiles(path: String,
+                     varName: List[String] = Nil,
+                     minPartitions: Int = 2): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, minPartitions)
     val rdd = textFiles.map(p => {

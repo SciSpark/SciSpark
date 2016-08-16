@@ -93,7 +93,7 @@ class LoadersTest extends FunSuite with BeforeAndAfter {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = SparkTestConstants.datasetPath
     val variable = SparkTestConstants.datasetVariable
-    val pathRDD = sc.NetcdfFile(path, List(variable))
+    val pathRDD = sc.NetcdfFileList(path, List(variable))
     val tensors = pathRDD.collect().toList
     println("Number of tensors loaded " + tensors.length)
     println(tensors.toString())

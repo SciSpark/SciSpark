@@ -73,7 +73,7 @@ object MainMerg {
      * The indices themselves are numbered with respect to
      * date-sorted order.
      */
-    val sRDD = sc.NetcdfFile(inputFile, List(variable), partCount)
+    val sRDD = sc.NetcdfFileList(inputFile, List(variable), partCount)
     val labeled = sRDD.map(p => {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = dateIndexTable(source)
