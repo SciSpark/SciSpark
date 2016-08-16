@@ -92,13 +92,13 @@ object MainNetcdfDFSMCC {
      * of frames.
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val consecFrames = filtered.flatMap(p => {
-      List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
-    }).groupBy(_._1)
-      .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
-      .map(p => p.sortBy(_.metaData("FRAME").toInt))
-      .map(p => (p(0), p(1)))
+    val consecFrames = filtered.sortBy(p => p.metaData("FRAME").toInt)
+                               .zipWithIndex()
+                               .flatMap({ case(sciT, indx) => List((indx, sciT), (indx + 1, sciT))})
+                               .groupByKey()
+                               .filter({case (_, sciTs) => sciTs.size == 2})
+                               .map({ case(_, sciTs) => sciTs.toList.sortBy(p => p.metaData("FRAME").toInt)})
+                               .map(sciTs => (sciTs(0), sciTs(1)))
 
     val debug = consecFrames.collect()
     /**
