@@ -43,7 +43,7 @@ object MainNetcdfDFSMCC {
      * args(4) - local path to files
      *
      */
-    val masterURL = if (args.isEmpty) "local[2]" else args(0)
+    val masterURL = if (args.isEmpty) "local[*]" else args(0)
     val partCount = if (args.length <= 1) 2 else args(1).toInt
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
@@ -94,8 +94,8 @@ object MainNetcdfDFSMCC {
     val filtered = labeled.map(p => p(variable) <= 241.0)
     val consecFrames = filtered.sortBy(p => p.metaData("FRAME").toInt)
                                .zipWithIndex()
-                               .flatMap({ case(sciT, indx) => List((indx, sciT), (indx + 1, sciT))})
-                               .groupByKey()
+                               .flatMap({ case(sciT, indx) => List((indx, List(sciT)), (indx + 1, List(sciT)))})
+                               .reduceByKey(_ ++ _)
                                .filter({case (_, sciTs) => sciTs.size == 2})
                                .map({ case(_, sciTs) => sciTs.toList.sortBy(p => p.metaData("FRAME").toInt)})
                                .map(sciTs => (sciTs(0), sciTs(1)))
