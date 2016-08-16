@@ -164,6 +164,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def apply(indexes: Int*): Double = tensor.getDouble(indexes: _*)
 
+  def apply(index: Int) : Nd4jTensor = new Nd4jTensor(tensor.get(NDArrayIndex.point(index)))
+
   def data: Array[Double] = tensor.data.asDouble()
 
   /**

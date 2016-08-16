@@ -36,4 +36,6 @@ trait SliceableArray {
 
   def apply(indexes: Int*): Double
 
+  def apply(index: Int) : T
+
 }

@@ -160,7 +160,7 @@ object MainCompute {
       while (idx < numLats) {
         jdx = 0
         while (jdx < numLongs) {
-          val elem = ((lats(idx), longs(jdx)), prec(idx, jdx))
+          val elem = ((lats(idx, 0), longs(jdx, 0)), prec(idx, jdx))
           precPerLatLon += elem
           jdx += 1
         }
