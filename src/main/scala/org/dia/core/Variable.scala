@@ -38,38 +38,59 @@ import org.dia.utils.NetCDFUtils
 class Variable(val name: String,
                val dataType: String,
                val array: AbstractTensor,
-               val attributes: mutable.LinkedHashMap[String, String]) extends Serializable {
+               val attributes: mutable.LinkedHashMap[String, String],
+               val dims: mutable.LinkedHashMap[String, Int]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  def this(name: String, dataType: String, array: AbstractTensor, attr: TraversableOnce[(String, String)]) {
-    this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr)
+  def this(name: String,
+           dataType: String,
+           array: AbstractTensor,
+           attr: TraversableOnce[(String, String)],
+           dims: mutable.LinkedHashMap[String, Int]) {
+    this(name, dataType, array, new mutable.LinkedHashMap[String, String] ++= attr, dims)
   }
 
-  def this(name: String, daaType: String, array: AbstractTensor, attr: java.util.List[Attribute]) {
-    this(name, daaType, array, attr.asScala.map(p => NetCDFUtils.convertAttribute(p)))
+  def this(name: String,
+           daaType: String,
+           array: AbstractTensor,
+           attr: java.util.List[Attribute],
+           dims: mutable.LinkedHashMap[String, Int]) {
+    this(name, daaType, array, attr.asScala.map(p => NetCDFUtils.convertAttribute(p)), dims)
   }
 
   def this(name: String,
            dataType: String,
            array: Array[Double],
            shape: Array[Int],
-           attr: java.util.List[Attribute]) {
-    this(name, dataType, new Nd4jTensor(array, if (shape.length > 1) shape else Array(1) ++ shape), attr)
+           attr: java.util.List[Attribute],
+           dims: TraversableOnce[(String, Int)]) {
+    this(name,
+         dataType,
+         new Nd4jTensor(array, if (shape.length > 1) shape else Array(1) ++ shape),
+         attr,
+         new mutable.LinkedHashMap[String, Int]() ++= dims)
   }
 
-  def this(nvar: ucar.nc2.Variable) {
-    this(nvar.getFullName, nvar.getDataType.toString,
-      NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
-  }
 
   def this(name: String, nvar: ucar.nc2.Variable) {
     this(name, nvar.getDataType.toString,
-      NetCDFUtils.getArrayFromVariable(nvar), nvar.getShape, nvar.getAttributes)
+      NetCDFUtils.getArrayFromVariable(nvar),
+      nvar.getShape,
+      nvar.getAttributes,
+      nvar.getDimensions.asScala.map(p => (p.getFullName, p.getLength)))
+  }
+
+  def this(nvar: ucar.nc2.Variable) {
+    this(nvar.getFullName, nvar)
   }
 
   def this(name: String, array: AbstractTensor) {
-    this(name, "Double64", array, new mutable.HashMap[String, String])
+    this(name,
+         "Double64",
+         array,
+         new mutable.LinkedHashMap[String, String],
+         new mutable.LinkedHashMap[String, Int])
   }
 
   def this(array: AbstractTensor) {
@@ -119,7 +140,7 @@ class Variable(val name: String,
    *
    * @return
    */
-  def copy(): Variable = new Variable(name, dataType, array.copy, attributes.clone())
+  def copy(): Variable = new Variable(name, dataType, array.copy, attributes.clone(), dims.clone())
 
   override def clone(): AnyRef = this.copy()
 
@@ -141,7 +162,8 @@ class Variable(val name: String,
    *
    */
   override def toString: String = {
-    val header = dataType + " " + name + "\n"
+    val dimensionString = dims.keys.toString.replace("Set", "")
+    val header = dataType + " " + name + dimensionString + "\n"
     val footer = "current shape = " + shape().toList + "\n"
     val body = new StringBuilder()
     body.append(header)
