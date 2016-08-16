@@ -43,7 +43,7 @@ object MainNetcdfDFSMCC {
      * args(4) - local path to files
      *
      */
-    val masterURL = if (args.isEmpty) "local[2]" else args(0)
+    val masterURL = if (args.isEmpty) "local[*]" else args(0)
     val partCount = if (args.length <= 1) 2 else args(1).toInt
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
@@ -92,13 +92,13 @@ object MainNetcdfDFSMCC {
      * of frames.
      */
     val filtered = labeled.map(p => p(variable) <= 241.0)
-    val consecFrames = filtered.flatMap(p => {
-      List((p.metaData("FRAME").toInt, p), (p.metaData("FRAME").toInt + 1, p))
-    }).groupBy(_._1)
-      .map(p => p._2.map(e => e._2).toList)
-      .filter(p => p.size > 1)
-      .map(p => p.sortBy(_.metaData("FRAME").toInt))
-      .map(p => (p(0), p(1)))
+    val consecFrames = filtered.sortBy(p => p.metaData("FRAME").toInt)
+                               .zipWithIndex()
+                               .flatMap({ case(sciT, indx) => List((indx, List(sciT)), (indx + 1, List(sciT)))})
+                               .reduceByKey(_ ++ _)
+                               .filter({case (_, sciTs) => sciTs.size == 2})
+                               .map({ case(_, sciTs) => sciTs.toList.sortBy(p => p.metaData("FRAME").toInt)})
+                               .map(sciTs => (sciTs(0), sciTs(1)))
 
     val debug = consecFrames.collect()
     /**
