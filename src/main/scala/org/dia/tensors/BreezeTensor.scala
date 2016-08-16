@@ -142,6 +142,8 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def cols: Int = tensor.cols
 
+  def apply(index: Int) : BreezeTensor = tensor(index, ::).inner.toDenseMatrix
+
   def apply: BreezeTensor = this
 
   def apply(ranges: (Int, Int)*): BreezeTensor = {

@@ -234,4 +234,18 @@ class BasicTensorTest extends FunSuite {
     val zeroSkew = new Nd4jTensor(Nd4j.zeros(3, 3))
     assert(skw == zeroSkew)
   }
+
+  test("applySingleIndex") {
+    val sample = (0d to 27d by 1d).toArray
+    val squareSample = (0d to 8d by 1d).toArray
+    val cube = Nd4j.create(sample, Array(3, 3, 3))
+    val cubeTensor = new Nd4jTensor(cube)
+    val square = Nd4j.create(squareSample, Array(3, 3))
+    val squareTensor = new Nd4jTensor(square)
+    val slicedSquare = cubeTensor(0)
+
+    val zeroSkew = new Nd4jTensor(Nd4j.zeros(3, 3))
+    assert(squareTensor == slicedSquare)
+  }
+
 }

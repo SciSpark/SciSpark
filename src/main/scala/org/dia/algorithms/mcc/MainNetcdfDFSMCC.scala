@@ -74,6 +74,7 @@ object MainNetcdfDFSMCC {
       val source = p.metaData("SOURCE").split("/").last.split("_")(1)
       val FrameID = source.toInt
       p.insertDictionary(("FRAME", FrameID.toString))
+      p.insertVar(p.varInUse, p()(0))
       p
     })
 
