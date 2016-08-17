@@ -19,11 +19,11 @@ package org.dia.core
 
 import java.io.Serializable
 
-import scala.collection.{mutable, TraversableOnce}
+import org.dia.algorithms.mcc.MCCOps
+
+import scala.collection.{TraversableOnce, mutable}
 import scala.collection.JavaConverters._
-
 import ucar.nc2.Attribute
-
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
@@ -97,6 +97,9 @@ class Variable(val name: String,
     this("unnamed", array)
   }
 
+
+
+
   /**
    * Writes attribute in the form of key-value pairs
    */
@@ -134,6 +137,164 @@ class Variable(val name: String,
   def shape(): Array[Int] = array.shape
 
   def data(): Array[Double] = array.data
+
+  /**
+   * Linear Algebra Operations
+   */
+  def **(other: Variable): Variable = this() ** other()
+
+  def +(other: Variable): Variable = this() + other()
+
+  def +(scalar: Double): Variable = this() + scalar
+
+  def -(other: Variable): Variable = this() - other()
+
+  def -(scalar: Double): Variable = this() - scalar
+
+  def /(other: Variable): Variable = this() / other()
+
+  def /(scalar: Double): Variable = this() / scalar
+
+  def *(other: Variable): Variable = this() * other()
+
+  def *(scalar: Double): Variable = this() * scalar
+
+  def +=(other: Variable): Variable = this() += other()
+
+  def +=(scalar: Double): Variable = this() += scalar
+
+  def -=(other: Variable): Variable = this() -= other()
+
+  def -=(scalar: Double): Variable = this() -= scalar
+
+  def /=(other: Variable): Variable = this() /= other()
+
+  def /=(scalar: Double): Variable = this() /= scalar
+
+  def *=(other: Variable): Variable = this() *= other()
+
+  def *=(scalar: Double): Variable = this() *= scalar
+
+
+  /**
+   * Applies a masking function on the current variable array
+   */
+  def mask(f: Double => Boolean, maskVal: Double = 0.0): Variable = variables(varInUse).mask(f, maskVal)
+
+  /**
+   * Sets the default mask value for the particular array being used.
+   */
+  def setMask(num: Double): Variable = variables(varInUse).setMask(num)
+
+  /**
+   * Masks the current variable array by preserving values
+   * less than or equal to num.
+   */
+  def <=(num: Double): Variable = variables(varInUse) <= num
+
+  /**
+   * Masks the current variable array by preserving values
+   * greater than or equal to num.
+   */
+  def >=(num: Double): Variable = variables(varInUse) >= num
+
+  /**
+   * Masks the current variable array by preserving values
+   * less than to num.
+   */
+  def <(num: Double): Variable = variables(varInUse) < num
+
+  /**
+   * Masks the current variable array by preserving values
+   * greater than num.
+   */
+  def >(num: Double): Variable = variables(varInUse) > num
+
+  /**
+   * Masks the current variable array by preserving values
+   * not equal to num.
+   */
+  def !=(num: Double): Variable = variables(varInUse) != num
+
+  /**
+   * Masks the current variable array by preserving values
+   * equal to num.
+   */
+  def :=(num: Double): Variable = variables(varInUse) := num
+
+  /**
+   * Returns the data as a flattened array and the dimensions
+   *
+   */
+  def shape: Array[Int] = variables(varInUse).shape
+
+  def data: Array[Double] = variables(varInUse).data
+
+  /**
+   * Creates a copy of the variable in use
+   *
+   * @return
+   */
+  def copy: Variable = variables(varInUse).copy
+
+  /**
+   * Statistical operations
+   */
+
+  /**
+   * Computes the mean along the given axis of the variable in use.
+   *
+   * @param axis the axis to take the mean along (can be more than one axis)
+   * @return the reduced array with means taken along the specified dimension(s)
+   */
+  def mean(axis: Int*): Variable = {
+    variables(varInUse).mean(axis: _*)
+  }
+
+  /**
+   * Computes and returns the array broadcasted to
+   * the specified shape requirements.
+   *
+   * @param shape the new shape to be broadcasted to
+   * @return
+   */
+  def broadcast(shape: Array[Int]): Variable = {
+    variables(varInUse).broadcast(shape)
+  }
+
+  def detrend(axis: Array[Int]): Variable = {
+    variables(varInUse).detrend(0)
+  }
+
+  def std(axis: Array[Int]): Variable = {
+    variables(varInUse).std(axis: _*)
+  }
+
+  def skew(axis: Array[Int]): Variable = {
+    variables(varInUse).skew(axis: _ *)
+  }
+
+  /**
+   * Returns a block averaged tensor where the blocks are squares with
+   * dimensions blockInt.
+   */
+  def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): Variable = {
+    MCCOps.reduceResolution(variables(varInUse), blockInt, invalid)
+  }
+
+  /**
+   * ------------------------------ Matrix Operations ---------------------------------
+   * The following functions are Matrix Operations specific to SciSpark and it's goals.
+   */
+
+  /**
+   * Returns a block averaged matrix where the blocks are rectangles with dimensions
+   * rowblockSize X colblockSize.
+   */
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): Variable = {
+    MCCOps.reduceRectangleResolution(variables(varInUse), rowbl
+  }
+
 
   /**
    * Creates a copy of the variable
@@ -183,5 +344,7 @@ class Variable(val name: String,
   }
 
   override def hashCode(): Int = super.hashCode()
+
+  private def convert(abstractTensor: AbstractTensor, inplace)
 }
 
