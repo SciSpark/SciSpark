@@ -269,7 +269,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
 }
 
-object Nd4jTensorUtils {
+private object Nd4jTensorUtils {
 
   def processShape(shape: Array[Int]) : Array[Int] = {
     shape.length match {
