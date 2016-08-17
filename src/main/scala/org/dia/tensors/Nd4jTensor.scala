@@ -34,8 +34,12 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   val shape = tensor.shape
   var mask = 0.0
 
+  def this(array: Array[Double], shape: Array[Int]) {
+   this(Nd4j.create(array, Nd4jTensorUtils.processShape(shape)))
+  }
+
   def this(shapePair: (Array[Double], Array[Int])) {
-    this(Nd4j.create(shapePair._1, shapePair._2))
+    this(shapePair._1, shapePair._2)
   }
 
   def this(loadFunc: () => (Array[Double], Array[Int])) {
@@ -263,4 +267,14 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def copy: Nd4jTensor = new Nd4jTensor(this.tensor.dup())
 
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
+}
+
+object Nd4jTensorUtils {
+
+  def processShape(shape: Array[Int]) : Array[Int] = {
+    shape.length match {
+      case 1 => Array(1) ++ shape
+      case _ => shape
+    }
+  }
 }

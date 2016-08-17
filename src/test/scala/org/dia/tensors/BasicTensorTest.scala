@@ -248,4 +248,9 @@ class BasicTensorTest extends FunSuite {
     assert(squareTensor == slicedSquare)
   }
 
+  test("Nd4jSingleDimension") {
+    val squareSample = (0d to 4d by 1d).toArray
+    val tensor = new Nd4jTensor(squareSample, Array(4))
+    assert(tensor.shape.toList == List(1, 4))
+  }
 }
