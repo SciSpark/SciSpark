@@ -19,11 +19,12 @@ package org.dia.core
 
 import java.io.Serializable
 
-import org.dia.algorithms.mcc.MCCOps
-
-import scala.collection.{TraversableOnce, mutable}
+import scala.collection.{mutable, TraversableOnce}
 import scala.collection.JavaConverters._
+
 import ucar.nc2.Attribute
+
+import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
@@ -34,8 +35,18 @@ import org.dia.utils.NetCDFUtils
  * The data is a multidimensional array.
  * Data access is done through the apply() method,
  * which returns the multidimensional array as an AbstractTensor.
+ *
+ * An important feature of Variable objects is that an empty apply function
+ * returns the underlying AbstractTensor i.e. the core array.
+ * This is to mimic the following python syntax :
+ *
+ *            numpyArray = netcdfVar[:]
+ *
+ * In SciSpark it is done like this:
+ *
+ *            AbstractTensor = netcdfVar()
  */
-class Variable(val name: String,
+class Variable(var name: String,
                val dataType: String,
                val array: AbstractTensor,
                val attributes: mutable.LinkedHashMap[String, String],
@@ -141,101 +152,92 @@ class Variable(val name: String,
   /**
    * Linear Algebra Operations
    */
-  def **(other: Variable): Variable = this() ** other()
+  def **(other: Variable): Variable = varOp(this() ** other(), "**", other.name)
 
-  def +(other: Variable): Variable = this() + other()
+  def +(other: Variable): Variable = varOp(this() + other(), "+", other.name)
 
-  def +(scalar: Double): Variable = this() + scalar
+  def +(scalar: Double): Variable = varOp(this() + scalar, "+", scalar.toString)
 
-  def -(other: Variable): Variable = this() - other()
+  def -(other: Variable): Variable = varOp(this() - other(), "-", other.name)
 
-  def -(scalar: Double): Variable = this() - scalar
+  def -(scalar: Double): Variable = varOp(this() - scalar, "-", scalar.toString)
 
-  def /(other: Variable): Variable = this() / other()
+  def /(other: Variable): Variable = varOp(this() / other(), "/", other.name)
 
-  def /(scalar: Double): Variable = this() / scalar
+  def /(scalar: Double): Variable = varOp(this() / scalar, "/", scalar.toString)
 
-  def *(other: Variable): Variable = this() * other()
+  def *(other: Variable): Variable = varOp(this() * other(), "*", other.name)
 
-  def *(scalar: Double): Variable = this() * scalar
+  def *(scalar: Double): Variable = varOp(this() * scalar, "*", scalar.toString)
 
-  def +=(other: Variable): Variable = this() += other()
+  def +=(other: Variable): Variable = varOp(this() += other(), "+=", other.name)
 
-  def +=(scalar: Double): Variable = this() += scalar
+  def +=(scalar: Double): Variable = varOp(this() += scalar, "+=", scalar.toString)
 
-  def -=(other: Variable): Variable = this() -= other()
+  def -=(other: Variable): Variable = varOp(this() -= other(), "-=", other.name)
 
-  def -=(scalar: Double): Variable = this() -= scalar
+  def -=(scalar: Double): Variable = varOp(this() -= scalar, "-=", scalar.toString)
 
-  def /=(other: Variable): Variable = this() /= other()
+  def /=(other: Variable): Variable = varOp(this() /= other(), "/=", other.name)
 
-  def /=(scalar: Double): Variable = this() /= scalar
+  def /=(scalar: Double): Variable = varOp(this() /= scalar, "/=", scalar.toString)
 
-  def *=(other: Variable): Variable = this() *= other()
+  def *=(other: Variable): Variable = varOp(this() *= other(), "*=", other.name)
 
-  def *=(scalar: Double): Variable = this() *= scalar
+  def *=(scalar: Double): Variable = varOp(this() *= scalar, "*=", scalar.toString)
 
 
   /**
    * Applies a masking function on the current variable array
    */
-  def mask(f: Double => Boolean, maskVal: Double = 0.0): Variable = variables(varInUse).mask(f, maskVal)
+  def mask(f: Double => Boolean, maskVal: Double = 0.0): Variable = {
+    varOp(this().mask(f, maskVal), "maskf", maskVal.toString)
+  }
 
   /**
-   * Sets the default mask value for the particular array being used.
+   * Sets the default mask value "for the particular array being used.
    */
-  def setMask(num: Double): Variable = variables(varInUse).setMask(num)
+  def setMask(num: Double): Variable = {
+    array.setMask(num)
+    this
+  }
 
   /**
    * Masks the current variable array by preserving values
    * less than or equal to num.
    */
-  def <=(num: Double): Variable = variables(varInUse) <= num
+  def <=(num: Double): Variable = varOp(this() <= num, "<=", num.toString)
 
   /**
    * Masks the current variable array by preserving values
    * greater than or equal to num.
    */
-  def >=(num: Double): Variable = variables(varInUse) >= num
+  def >=(num: Double): Variable = varOp(this() >= num, ">=", num.toString)
 
   /**
    * Masks the current variable array by preserving values
    * less than to num.
    */
-  def <(num: Double): Variable = variables(varInUse) < num
+  def <(num: Double): Variable = varOp(this() < num, "<", num.toString)
 
   /**
    * Masks the current variable array by preserving values
    * greater than num.
    */
-  def >(num: Double): Variable = variables(varInUse) > num
+  def >(num: Double): Variable = varOp(this() > num, ">", num.toString)
 
   /**
    * Masks the current variable array by preserving values
    * not equal to num.
    */
-  def !=(num: Double): Variable = variables(varInUse) != num
+  def !=(num: Double): Variable = varOp(this() != num, "!=", num.toString)
 
   /**
    * Masks the current variable array by preserving values
    * equal to num.
    */
-  def :=(num: Double): Variable = variables(varInUse) := num
+  def :=(num: Double): Variable = varOp(this() := num, ":=", num.toString)
 
-  /**
-   * Returns the data as a flattened array and the dimensions
-   *
-   */
-  def shape: Array[Int] = variables(varInUse).shape
-
-  def data: Array[Double] = variables(varInUse).data
-
-  /**
-   * Creates a copy of the variable in use
-   *
-   * @return
-   */
-  def copy: Variable = variables(varInUse).copy
 
   /**
    * Statistical operations
@@ -248,7 +250,7 @@ class Variable(val name: String,
    * @return the reduced array with means taken along the specified dimension(s)
    */
   def mean(axis: Int*): Variable = {
-    variables(varInUse).mean(axis: _*)
+    varStatOp(this().mean(axis: _*), "mean", axis.toList.toString)
   }
 
   /**
@@ -259,19 +261,19 @@ class Variable(val name: String,
    * @return
    */
   def broadcast(shape: Array[Int]): Variable = {
-    variables(varInUse).broadcast(shape)
+    varStatOp(this().broadcast(shape), "mean", shape.toList.toString)
   }
 
   def detrend(axis: Array[Int]): Variable = {
-    variables(varInUse).detrend(0)
+    varStatOp(this().detrend(0), "detrend", axis.toList.toString)
   }
 
   def std(axis: Array[Int]): Variable = {
-    variables(varInUse).std(axis: _*)
+    varStatOp(this().std(axis: _*), "std", axis.toList.toString)
   }
 
   def skew(axis: Array[Int]): Variable = {
-    variables(varInUse).skew(axis: _ *)
+    varStatOp(this().skew(axis: _ *), "skew", axis.toList.toString)
   }
 
   /**
@@ -279,7 +281,8 @@ class Variable(val name: String,
    * dimensions blockInt.
    */
   def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): Variable = {
-    MCCOps.reduceResolution(variables(varInUse), blockInt, invalid)
+    val reduced = MCCOps.reduceResolution(this(), blockInt, invalid)
+    varStatOp(reduced, "reduceResolution", (blockInt, blockInt).toString)
   }
 
   /**
@@ -292,7 +295,8 @@ class Variable(val name: String,
    * rowblockSize X colblockSize.
    */
   def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): Variable = {
-    MCCOps.reduceRectangleResolution(variables(varInUse), rowbl
+    val reduced = MCCOps.reduceRectangleResolution(this(), rowblockSize, colblockSize, invalid)
+    varStatOp(reduced, "reduceResolution", (rowblockSize, colblockSize).toString)
   }
 
 
@@ -345,6 +349,24 @@ class Variable(val name: String,
 
   override def hashCode(): Int = super.hashCode()
 
-  private def convert(abstractTensor: AbstractTensor, inplace)
+  private def varOp(abstractTensor: AbstractTensor, op: String, otherName: String): Variable = {
+    val newName = "(" + this.name + " " + op + " " + otherName + ")"
+    op match {
+      case "+" | "-" | "/" | "*" | "**" =>
+        new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+      case "<" | ">" | "<=" | ">=" | "!=" | ":=" =>
+        new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+      case "+=" | "-=" | "/=" | "*=" =>
+        this.name = newName
+        this
+      case _ => throw new Exception(op + "is not a Binary Variable Operation")
+    }
+  }
+
+  private def varStatOp(abstractTensor: AbstractTensor, op: String, param: String): Variable = {
+    val newName = op + "(" + this.name + "," + param + ")"
+    new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+  }
+
 }
 
