@@ -17,6 +17,19 @@
  */
 import sbt.Resolver
 
+val scalaVersionParameterOption = Option(System.getProperty("scala.version"))
+val sparkVersionParameterOption = Option(System.getProperty("spark.version"))
+
+val sversion = scalaVersionParameterOption match {
+  case Some(x) => x
+  case None => "2.11.2"
+}
+
+val sparkVersion = sparkVersionParameterOption match {
+  case Some(x) => x
+  case None => "2.0.0"
+}
+
 assemblyJarName in assembly := "SciSpark.jar"
 
 name := "SciSpark"
@@ -25,7 +38,8 @@ organization := "org.dia"
 
 version := "1.0"
 
-scalaVersion := "2.10.6"
+// Default is 2.10.6
+scalaVersion := sversion
 
 scalacOptions := Seq("-feature", "-deprecation")
 
@@ -63,9 +77,9 @@ test in assembly := {}
 classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.10" % "3.0.0-M15",
-  "org.apache.spark" % "spark-core_2.10" % "1.6.0" exclude("org.slf4j", "slf4j-api"),
-  "org.apache.spark" % "spark-mllib_2.10" % "1.6.0",
+  "org.scalatest" %% "scalatest" % "3.0.0",
+  "org.apache.spark" %% "spark-core" % sparkVersion,
+  "org.apache.spark" %% "spark-mllib" % sparkVersion,
   // Math Libraries
   // "org.jblas" % "jblas" % "1.2.3",
   // other dependencies here
@@ -76,7 +90,7 @@ libraryDependencies ++= Seq(
   // Nd4j scala api with netlib-blas backend
   // "org.nd4j" % "nd4s_2.10" % "0.5.0",
   "org.nd4j" % "nd4j-native-platform" % "0.5.0",
-  "org.nd4j" % "nd4j-kryo_2.10" % "0.5.0",
+  "org.nd4j" %% "nd4j-kryo" % "0.5.0",
   "edu.ucar" % "opendap" % "4.6.0",
   "joda-time" % "joda-time" % "2.8.1",
   "org.joda" % "joda-convert" % "1.8.1",

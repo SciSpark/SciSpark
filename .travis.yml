@@ -23,8 +23,19 @@ dist: trusty
 
 # 2. Choose language and target JDKs for parallel  builds
 language: scala
-scala:
-  - 2.10.6
+
+# 3. Versioning matrix.
+#    We test two versions of spark 1.6.0 and 2.0.0
+#    We test scala 2.10.6 on both and 2.11.2 on Spark 2.0.0
+matrix:
+  include:
+    - scala: 2.10.6
+      env:
+        - SPARK_VERSION=1.6.0 SCALA_VERSION=2.10.6
+        - SPARK_VERSION=2.0.0 SCALA_VERSION=2.10.6
+    - scala: 2.11.2
+      env:
+        - SPARK_VERSION=2.0.0 SCALA_VERSION=2.11.2
 
 # 3. Setup cache directory for SBT
 cache:
@@ -44,8 +55,8 @@ install:
 # 6. Run maven sbt compile, test, and generate coverage reports
 script:
   - sbt clean
-  - sbt compile
-  - sbt coverage test
+  - sbt -Dscala.version=$SCALA_VERSION -Dspark.version=$SPARK_VERSION compile
+  - sbt -Dscala.version=$SCALA_VERSION -Dspark.version=$SPARK_VERSION coverage test
 
 # 7. Generate the coverageReport for coveralls
 after_success:
