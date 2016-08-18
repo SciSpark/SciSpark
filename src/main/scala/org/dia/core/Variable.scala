@@ -108,9 +108,6 @@ class Variable(var name: String,
     this("unnamed", array)
   }
 
-
-
-
   /**
    * Writes attribute in the form of key-value pairs
    */
@@ -191,7 +188,7 @@ class Variable(var name: String,
    * Applies a masking function on the current variable array
    */
   def mask(f: Double => Boolean, maskVal: Double = 0.0): Variable = {
-    varOp(this().mask(f, maskVal), "maskf", maskVal.toString)
+    varStatOp(this().mask(f, maskVal), "maskf", maskVal.toString)
   }
 
   /**
@@ -249,7 +246,7 @@ class Variable(var name: String,
    * @param axis the axis to take the mean along (can be more than one axis)
    * @return the reduced array with means taken along the specified dimension(s)
    */
-  def mean(axis: Int*): Variable = {
+  def mean(axis: Array[Int]): Variable = {
     varStatOp(this().mean(axis: _*), "mean", axis.toList.toString)
   }
 
@@ -261,11 +258,19 @@ class Variable(var name: String,
    * @return
    */
   def broadcast(shape: Array[Int]): Variable = {
-    varStatOp(this().broadcast(shape), "mean", shape.toList.toString)
+    varStatOp(this().broadcast(shape), "broadcast", shape.toList.toString)
   }
 
+  /**
+   * Detrends along a series of axis specified.
+   * Currently only detrends along the first axis specified.
+   *
+   * TODO :: Support Detrending along multiple axis
+   * @param axis the series of axis to detrend alon
+   * @return
+   */
   def detrend(axis: Array[Int]): Variable = {
-    varStatOp(this().detrend(0), "detrend", axis.toList.toString)
+    varStatOp(this().detrend(axis(0)), "detrend", axis.toList.toString)
   }
 
   def std(axis: Array[Int]): Variable = {
@@ -294,7 +299,7 @@ class Variable(var name: String,
    * Returns a block averaged matrix where the blocks are rectangles with dimensions
    * rowblockSize X colblockSize.
    */
-  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): Variable = {
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Double = Double.NaN): Variable = {
     val reduced = MCCOps.reduceRectangleResolution(this(), rowblockSize, colblockSize, invalid)
     varStatOp(reduced, "reduceResolution", (rowblockSize, colblockSize).toString)
   }

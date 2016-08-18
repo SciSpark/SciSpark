@@ -40,12 +40,12 @@ import org.dia.tensors.{AbstractTensor, TensorFactory}
  *
  */
 class SRDD[T: ClassTag](@transient var sc: SparkContext,
-                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
-  var datasets: List[String] = null
+  var datasets: List[String] = _
   var varName: Seq[String] = Nil
-  var loadFunc: (String, String) => (Array[Double], Array[Int]) = null
-  var partitionFunc: List[String] => List[List[String]] = null
+  var loadFunc: (String, String) => (Array[Double], Array[Int]) = _
+  var partitionFunc: List[String] => List[List[String]] = _
 
   def this(@transient sc: SparkContext,
     data: List[String],
