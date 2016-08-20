@@ -142,6 +142,12 @@ class Variable(var name: String,
    */
   def apply(key: String): String = attributes(key)
 
+  def apply(index: Int): Variable = arrayOp(this()(index), index.toString)
+
+  def apply(index: (Int, Int)*): Variable = {
+    arrayOp(this()(index: _*), index.map( {case (a, b) => a + ":" + b}).reduce((a, b) => a + "," + b))
+  }
+
   def shape(): Array[Int] = array.shape
 
   def data(): Array[Double] = array.data
@@ -370,6 +376,11 @@ class Variable(var name: String,
 
   private def varStatOp(abstractTensor: AbstractTensor, op: String, param: String): Variable = {
     val newName = op + "(" + this.name + "," + param + ")"
+    new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+  }
+
+  private def arrayOp(abstractTensor: AbstractTensor, op: String) = {
+    val newName = this.name + "[" + op + "]"
     new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
   }
 

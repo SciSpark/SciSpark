@@ -73,6 +73,20 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
     assert(tensorCopy == origTensor)
   }
 
+  test("singleIndexApply") {
+    val solutionName = leftName + "[0]"
+    val indexSliceVar = leftVar(0)
+    val solution = new Variable(solutionName, leftTensor(0))
+    assert(indexSliceVar == solution)
+  }
+
+  test("multipleIndexApply") {
+    val solutionName = leftName + "[2:3,1:4]"
+    val indexSliceVar = leftVar((2, 3), (1, 4))
+    val solution = new Variable(solutionName, leftTensor((2, 3), (1, 4)))
+    assert(indexSliceVar == solution)
+  }
+
   test("testInsertAttributes") {
     val copy = variable.copy()
     copy.insertAttributes(("random_attribute", "value1"))
