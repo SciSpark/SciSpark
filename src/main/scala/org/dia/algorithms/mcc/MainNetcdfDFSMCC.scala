@@ -33,14 +33,20 @@ object MainNetcdfDFSMCC {
   def processCmd(args: Array[String]): (String, String, Int) = {
     val masterURL = if (args.isEmpty) "local[*]" else args(0)
     val partitions = if (args.length <= 1) 8 else args(1).toInt
-    val path = if (args.length <= 2) "resources/merg" else args(4)
+    val path = if (args.length <= 2) "resources/merg/" else args(4)
     (masterURL, path, partitions)
   }
 
   def main(args: Array[String]): Unit = {
 
+    /**
+     * Process cmd line arguements
+     */
     val (masterURL, path, partitions) = processCmd(args)
 
+    /**
+     * Run MCC search with GTGRunner
+     */
     val gTGRunner = new GTGRunner(masterURL, path, partitions)
     gTGRunner.run()
 
