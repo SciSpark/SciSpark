@@ -25,7 +25,7 @@ object MainNetcdfDFSMCC {
    * Input arguments to the program :
    * args(0) - the spark master URL. Example : spark://HOST_NAME:7077
    * args(1) - the number of desired partitions. Default : 2
-   * args(4) - path to files
+   * args(2) - path to files
    *
    * @param args the arguements
    * @return succesful parsing
