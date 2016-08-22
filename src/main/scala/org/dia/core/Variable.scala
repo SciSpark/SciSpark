@@ -24,6 +24,7 @@ import scala.collection.JavaConverters._
 
 import ucar.nc2.Attribute
 
+import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
@@ -34,8 +35,18 @@ import org.dia.utils.NetCDFUtils
  * The data is a multidimensional array.
  * Data access is done through the apply() method,
  * which returns the multidimensional array as an AbstractTensor.
+ *
+ * An important feature of Variable objects is that an empty apply function
+ * returns the underlying AbstractTensor i.e. the core array.
+ * This is to mimic the following python syntax :
+ *
+ *            numpyArray = netcdfVar[:]
+ *
+ * In SciSpark it is done like this:
+ *
+ *            AbstractTensor = netcdfVar()
  */
-class Variable(val name: String,
+class Variable(var name: String,
                val dataType: String,
                val array: AbstractTensor,
                val attributes: mutable.LinkedHashMap[String, String],
@@ -131,9 +142,174 @@ class Variable(val name: String,
    */
   def apply(key: String): String = attributes(key)
 
+  def apply(index: Int): Variable = arrayOp(this()(index), index.toString)
+
+  def apply(index: (Int, Int)*): Variable = {
+    arrayOp(this()(index: _*), index.map( {case (a, b) => a + ":" + b}).reduce((a, b) => a + "," + b))
+  }
+
   def shape(): Array[Int] = array.shape
 
   def data(): Array[Double] = array.data
+
+  /**
+   * Linear Algebra Operations
+   */
+  def **(other: Variable): Variable = varOp(this() ** other(), "**", other.name)
+
+  def +(other: Variable): Variable = varOp(this() + other(), "+", other.name)
+
+  def +(scalar: Double): Variable = varOp(this() + scalar, "+", scalar.toString)
+
+  def -(other: Variable): Variable = varOp(this() - other(), "-", other.name)
+
+  def -(scalar: Double): Variable = varOp(this() - scalar, "-", scalar.toString)
+
+  def /(other: Variable): Variable = varOp(this() / other(), "/", other.name)
+
+  def /(scalar: Double): Variable = varOp(this() / scalar, "/", scalar.toString)
+
+  def *(other: Variable): Variable = varOp(this() * other(), "*", other.name)
+
+  def *(scalar: Double): Variable = varOp(this() * scalar, "*", scalar.toString)
+
+  def +=(other: Variable): Variable = varOp(this() += other(), "+=", other.name)
+
+  def +=(scalar: Double): Variable = varOp(this() += scalar, "+=", scalar.toString)
+
+  def -=(other: Variable): Variable = varOp(this() -= other(), "-=", other.name)
+
+  def -=(scalar: Double): Variable = varOp(this() -= scalar, "-=", scalar.toString)
+
+  def /=(other: Variable): Variable = varOp(this() /= other(), "/=", other.name)
+
+  def /=(scalar: Double): Variable = varOp(this() /= scalar, "/=", scalar.toString)
+
+  def *=(other: Variable): Variable = varOp(this() *= other(), "*=", other.name)
+
+  def *=(scalar: Double): Variable = varOp(this() *= scalar, "*=", scalar.toString)
+
+
+  /**
+   * Applies a masking function on the current variable array
+   */
+  def mask(f: Double => Boolean, maskVal: Double = 0.0): Variable = {
+    varStatOp(this().mask(f, maskVal), "maskf", maskVal.toString)
+  }
+
+  /**
+   * Sets the default mask value "for the particular array being used.
+   */
+  def setMask(num: Double): Variable = {
+    array.setMask(num)
+    this
+  }
+
+  /**
+   * Masks the current variable array by preserving values
+   * less than or equal to num.
+   */
+  def <=(num: Double): Variable = varOp(this() <= num, "<=", num.toString)
+
+  /**
+   * Masks the current variable array by preserving values
+   * greater than or equal to num.
+   */
+  def >=(num: Double): Variable = varOp(this() >= num, ">=", num.toString)
+
+  /**
+   * Masks the current variable array by preserving values
+   * less than to num.
+   */
+  def <(num: Double): Variable = varOp(this() < num, "<", num.toString)
+
+  /**
+   * Masks the current variable array by preserving values
+   * greater than num.
+   */
+  def >(num: Double): Variable = varOp(this() > num, ">", num.toString)
+
+  /**
+   * Masks the current variable array by preserving values
+   * not equal to num.
+   */
+  def !=(num: Double): Variable = varOp(this() != num, "!=", num.toString)
+
+  /**
+   * Masks the current variable array by preserving values
+   * equal to num.
+   */
+  def :=(num: Double): Variable = varOp(this() := num, ":=", num.toString)
+
+
+  /**
+   * Statistical operations
+   */
+
+  /**
+   * Computes the mean along the given axis of the variable in use.
+   *
+   * @param axis the axis to take the mean along (can be more than one axis)
+   * @return the reduced array with means taken along the specified dimension(s)
+   */
+  def mean(axis: Array[Int]): Variable = {
+    varStatOp(this().mean(axis: _*), "mean", axis.toList.toString)
+  }
+
+  /**
+   * Computes and returns the array broadcasted to
+   * the specified shape requirements.
+   *
+   * @param shape the new shape to be broadcasted to
+   * @return
+   */
+  def broadcast(shape: Array[Int]): Variable = {
+    varStatOp(this().broadcast(shape), "broadcast", shape.toList.toString)
+  }
+
+  /**
+   * Detrends along a series of axis specified.
+   * Currently only detrends along the first axis specified.
+   *
+   * TODO :: Support Detrending along multiple axis
+   * @param axis the series of axis to detrend alon
+   * @return
+   */
+  def detrend(axis: Array[Int]): Variable = {
+    varStatOp(this().detrend(axis(0)), "detrend", axis.toList.toString)
+  }
+
+  def std(axis: Array[Int]): Variable = {
+    varStatOp(this().std(axis: _*), "std", axis.toList.toString)
+  }
+
+  def skew(axis: Array[Int]): Variable = {
+    varStatOp(this().skew(axis: _ *), "skew", axis.toList.toString)
+  }
+
+  /**
+   * Returns a block averaged tensor where the blocks are squares with
+   * dimensions blockInt.
+   */
+  def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): Variable = {
+    val reduced = MCCOps.reduceResolution(this(), blockInt, invalid)
+    varStatOp(reduced, "reduceResolution", (blockInt, blockInt).toString)
+  }
+
+  /**
+   * ------------------------------ Matrix Operations ---------------------------------
+   * The following functions are Matrix Operations specific to SciSpark and it's goals.
+   */
+
+  /**
+   * Returns a block averaged matrix where the blocks are rectangles with dimensions
+   * rowblockSize X colblockSize.
+   */
+  def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Double = Double.NaN): Variable = {
+    val reduced = MCCOps.reduceRectangleResolution(this(), rowblockSize, colblockSize, invalid)
+    varStatOp(reduced, "reduceResolution", (rowblockSize, colblockSize).toString)
+  }
+
 
   /**
    * Creates a copy of the variable
@@ -183,5 +359,30 @@ class Variable(val name: String,
   }
 
   override def hashCode(): Int = super.hashCode()
+
+  private def varOp(abstractTensor: AbstractTensor, op: String, otherName: String): Variable = {
+    val newName = "(" + this.name + " " + op + " " + otherName + ")"
+    op match {
+      case "+" | "-" | "/" | "*" | "**" =>
+        new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+      case "<" | ">" | "<=" | ">=" | "!=" | ":=" =>
+        new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+      case "+=" | "-=" | "/=" | "*=" =>
+        this.name = newName
+        this
+      case _ => throw new Exception(op + "is not a Binary Variable Operation")
+    }
+  }
+
+  private def varStatOp(abstractTensor: AbstractTensor, op: String, param: String): Variable = {
+    val newName = op + "(" + this.name + "," + param + ")"
+    new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+  }
+
+  private def arrayOp(abstractTensor: AbstractTensor, op: String) = {
+    val newName = this.name + "[" + op + "]"
+    new Variable(newName, dataType, abstractTensor, attributes.clone, dims.clone)
+  }
+
 }
 

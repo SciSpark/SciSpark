@@ -39,14 +39,14 @@ object MCCOps {
    * @return aggregated tensor obtained by taking the average of
    * values within blocks ignoring invalid values
    */
-  def reduceResolution(tensor: AbstractTensor, blockSize: Int, invalid: Double): AbstractTensor = {
+  def reduceResolution(tensor: AbstractTensor, blockSize: Int, invalid: Double = Double.NaN): AbstractTensor = {
     val largeArray = tensor
-    val numRows = largeArray.rows
-    val numCols = largeArray.cols
+    val numRows = largeArray.rows()
+    val numCols = largeArray.cols()
     val reducedMatrix = tensor.zeros(numRows / blockSize, numCols / blockSize)
 
-    for (row <- 0 to (reducedMatrix.rows - 1)) {
-      for (col <- 0 to (reducedMatrix.cols - 1)) {
+    for (row <- 0 until reducedMatrix.rows) {
+      for (col <- 0 until reducedMatrix.cols) {
         val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
         val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
         val block = tensor(rowRange, columnRange).copy
@@ -64,14 +64,17 @@ object MCCOps {
    *
    * Similar to above method reduceResolution.
    */
-  def reduceRectangleResolution(tensor: AbstractTensor, rowSize: Int, colSize: Int, invalid: Int): AbstractTensor = {
+  def reduceRectangleResolution(tensor: AbstractTensor,
+                                rowSize: Int,
+                                colSize: Int,
+                                invalid: Double = Double.NaN): AbstractTensor = {
     val largeArray = tensor
-    val numRows = largeArray.rows
-    val numCols = largeArray.cols
+    val numRows = largeArray.rows()
+    val numCols = largeArray.cols()
     val reducedMatrix = tensor.zeros(numRows / rowSize, numCols / colSize)
 
-    for (row <- 0 to (reducedMatrix.rows - 1)) {
-      for (col <- 0 to (reducedMatrix.cols - 1)) {
+    for (row <- 0 until reducedMatrix.rows) {
+      for (col <- 0 until reducedMatrix.cols) {
         val rowRange = (row * rowSize) -> ((row + 1) * rowSize)
         val columnRange = (col * colSize) -> ((col + 1) * colSize)
         val block = tensor(rowRange, columnRange).copy
@@ -146,8 +149,8 @@ object MCCOps {
    */
   def labelConnectedComponents(tensor: AbstractTensor): (AbstractTensor, Int) = {
     val fourVector = List((1, 0), (-1, 0), (0, 1), (0, -1))
-    val rows = tensor.rows
-    val cols = tensor.cols
+    val rows = tensor.rows()
+    val cols = tensor.cols()
     val labels = tensor.zeros(tensor.shape: _*)
     var label = 1
     val stack = new util.ArrayDeque[Int](tensor.rows + tensor.cols * 10)
@@ -197,8 +200,8 @@ object MCCOps {
     }
 
     /** Main loop */
-    for (row <- 0 to (rows - 1)) {
-      for (col <- 0 to (cols - 1)) {
+    for (row <- 0 until rows) {
+      for (col <- 0 until cols) {
         if (!isLabeled(row, col)) {
           stack.push(row)
           stack.push(col)

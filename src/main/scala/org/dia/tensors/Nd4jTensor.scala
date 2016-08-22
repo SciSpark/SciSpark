@@ -176,7 +176,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def mean(axis: Int*): Nd4jTensor = new Nd4jTensor(tensor.mean(axis: _*))
 
   def detrend(axis: Int): Nd4jTensor = {
-    val cube = tensor
+    val cube = tensor.dup()
     val dshape = cube.shape
     val N = dshape(axis)
     val bp = Array(0, N)
