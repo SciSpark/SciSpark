@@ -40,7 +40,7 @@ import org.dia.tensors.{AbstractTensor, TensorFactory}
  *
  */
 class SRDD[T: ClassTag](@transient var sc: SparkContext,
-                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) with Logging {
+                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) {
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
   var datasets: List[String] = null
   var varName: Seq[String] = Nil
