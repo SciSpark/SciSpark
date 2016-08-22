@@ -30,12 +30,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
     val map = new util.HashMap[String, Any]()
     map.put("frameNum", frameNum)
     map.put("coudElemNum", cloudElemNum)
-    val properties = metadata.get("properties").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-    //    map += (("properties", (new JSONObject(properties.toMap)).toString()))
-    map.put("properties", properties.asJava)
-
-    val grid = metadata.get("grid").getOrElse().asInstanceOf[mutable.HashMap[String, Double]]
-    //    map += (("grid", (new JSONObject(grid.toMap)).toString()))
+    map.put("metadata", metadata.asJava)
     map.put("grid", grid.asJava)
     val mapper = new ObjectMapper()
     s"${mapper.writeValueAsString(map)}"
@@ -55,13 +50,22 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
 
   var inEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var outEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
-  var metadata: mutable.HashMap[String, Any] = new mutable.HashMap[String, Any]()
+  var metadata: mutable.HashMap[String, String] = new mutable.HashMap[String, String]()
+  var grid: mutable.HashMap[String, Double] = new mutable.HashMap[String, Double]()
 
-  def setMetadata(_metadata: mutable.HashMap[String, Any]): Unit = {
+  def setGrid(_grid: mutable.HashMap[String, Double]): Unit = {
+    grid = _grid
+  }
+
+  def getGrid(): mutable.HashMap[String, Double] = {
+    return grid
+  }
+
+  def setMetadata(_metadata: mutable.HashMap[String, String]): Unit = {
     metadata = _metadata
   }
 
-  def getMetadata(): mutable.HashMap[String, Any] = {
+  def getMetadata(): mutable.HashMap[String, String] = {
     return metadata
   }
 
