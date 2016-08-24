@@ -209,7 +209,7 @@ object NetcdfDFSMCC {
     val partCount = if (args.length <= 1) 2 else args(1).toInt
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
-    val hdfspath = if (args.length <= 4) "paperSize/" else args(4)
+    val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
     val maxAreaOverlapThreshold = 0.65
     val minAreaOverlapThreshold = 0.50
     val minArea = 625
