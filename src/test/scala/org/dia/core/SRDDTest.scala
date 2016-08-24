@@ -432,4 +432,12 @@ class SRDDTest extends FunSuite with BeforeAndAfter {
     assert(true)
   }
 
+  test("SRDDDatasetSerializationTest") {
+    val netcdfDataset = NetCDFUtils.loadNetCDFDataSet("src/test/resources/Netcdf/nc_3B42_daily.2008.01.02.7.bin.nc")
+    var Dataset : SciDataset = new SciDataset(netcdfDataset)
+    val sRDD = sc.parallelize(0 to 5).map(p => Dataset)
+    val sRDD_Dataset = sRDD.collect()(0)
+    assert(Dataset == sRDD_Dataset)
+  }
+
 }

@@ -96,7 +96,7 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
 
   test("test Dims") {
     val dims = dataVar.getDimensions.asScala.map(p => (p.getFullName, p.getLength))
-    val varDims = variable.dims
+    val varDims = variable.dims.toMap
     for((dim, len) <- dims) assert(varDims(dim) == len)
   }
 
@@ -114,19 +114,19 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
 
   test("testToString") {
     val string = "float tas(time, lat, lon)\n" +
+      "\t_FillValue: 1.0E20\n" +
+      "\tcell_method: time: mean\n" +
+      "\tcell_methods: time: mean (interval: 1 month)\n" +
       "\tcomment: Created using NCL code CCSM_atmm_2cf.ncl on\n" +
       " machine eagle163s\n" +
-      "\tmissing_value: 1.0E20\n" +
-      "\t_FillValue: 1.0E20\n" +
-      "\tcell_methods: time: mean (interval: 1 month)\n" +
-      "\thistory: Added height coordinate\n" +
       "\tcoordinates: height\n" +
-      "\toriginal_units: K\n" +
+      "\thistory: Added height coordinate\n" +
+      "\tlong_name: air_temperature\n" +
+      "\tmissing_value: 1.0E20\n" +
       "\toriginal_name: TREFHT\n" +
+      "\toriginal_units: K\n" +
       "\tstandard_name: air_temperature\n" +
       "\tunits: K\n" +
-      "\tlong_name: air_temperature\n" +
-      "\tcell_method: time: mean\n" +
       "current shape = (1, 128, 256)\n"
     assert(variable.toString == string)
   }
