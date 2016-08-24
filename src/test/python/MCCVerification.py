@@ -41,10 +41,8 @@ def compare_num_CEs_per_frame(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 		if len(pFiles) == len(sFiles):
 			CEs.append((allTimesInts[t], len(pFiles)))
 		elif len(pFiles) > len(sFiles):
-			# print 'More CEs in Python implementation than SciSpark implementation at frame: %s - Python: %d SciSpark: %d' %(str(t), len(pFiles) , len(sFiles))
 			CEs.append((('python: F'+str(t+1),len(pFiles)), ('scispark:'+str(allTimesInts[t]),len(sFiles))))
 		elif len(pFiles) < len(sFiles):
-			# print 'Fewer CEs in Python implementation than in SciSpark implementation at frame: %s - Python: %d SciSpark: %d' %(str(t),len(pFiles) , len(sFiles))
 			CEs.append((('python: F'+str(t+1),len(pFiles)), ('scispark:'+str(allTimesInts[t]),len(sFiles))))
 
 	if len(CEs) == 0:
@@ -64,8 +62,6 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 	'''
 	# for each frame compare the content in the CEs in SciSpark implementation with the 'truth' Python implementation
 	print 'Comparing the content for the CEs at each frame ...'
-	# pyFiles = glob.glob(pyDir+'/MERGnetcdfCEs/*.nc')
-	# pyTimes = sorted(set(map(lambda x: int(x.split('/')[-1].split('cloudElements')[-1].split('F')[0].replace('-','').replace('_','').split(':')[0]), pyFiles)))
 	
 	CEs = []
 	pyTimes = sorted(set(map(lambda x: allTimesInts[int(x.split('F')[1].split('CE')[0])-1], pyNodes)))
@@ -331,13 +327,6 @@ def main(argv):
 
 		# write mappings of cloudelements in either implementation to a file
 		write_CE_mappings(workingDir, allCEs)
-
-		# print('-'*80)
-		# generate netcdfs with the difference between the nodes
-
-		# compare edges found
-		# test4 = compare_edgelists(pyMCSList, ssMCSList)
-
 
 if __name__ == '__main__':
 	main(sys.argv[1:]) 
