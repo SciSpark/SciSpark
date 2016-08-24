@@ -21,19 +21,25 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
 
   var areaOverlap: Int = 0
 
-  def incrementAreaOverlap(): Unit = {
-    areaOverlap += 1
-  }
-
-  def updateWeight(_weight: Double): Unit = {
-    weight = _weight
-  }
-
   def this(srcNode : MCCNode, destNode: MCCNode) {
     this(srcNode, destNode, 0.0)
   }
+
+  def setSourceNode(node: MCCNode): Unit = {
+    this.srcNode = node
+  }
+
+  def incrementAreaOverlap(): Unit = {
+    this.areaOverlap += 1
+  }
+
+  def updateWeight(_weight: Double): Unit = {
+    this.weight = _weight
+  }
+
   override def toString : String = {
-    s"((${srcNode.frameNum},${srcNode.cloudElemNum}) , (${destNode.frameNum},${destNode.cloudElemNum}))"
+    s"((${this.srcNode.frameNum},${this.srcNode.cloudElemNum}) ," +
+      s" (${this.destNode.frameNum},${this.destNode.cloudElemNum}))"
   }
 
   override def equals(that: Any): Boolean = that match {
@@ -42,7 +48,4 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
 
   override def hashCode(): Int = super.hashCode()
 
-  def setSourceNode(node: MCCNode): Unit = {
-    this.srcNode = node
-  }
 }
