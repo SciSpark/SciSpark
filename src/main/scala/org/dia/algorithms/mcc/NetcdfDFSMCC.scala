@@ -262,8 +262,10 @@ object NetcdfDFSMCC {
 
     val MCCEdgeList = edgesRDD.collect().toList
     val MCCNodeMap = createMapFromEdgeList(MCCEdgeList, lat, lon)
+
     println("NUM OF NODES : " + MCCNodeMap.size)
     println("NUM OF EDGES : " + MCCEdgeList.size)
+
 
     val pw = new PrintWriter("MCCNodesLines.json")
     MCCNodeMap.foreach { case (key, value) =>
