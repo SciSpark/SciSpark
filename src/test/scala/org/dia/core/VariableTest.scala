@@ -343,7 +343,7 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
   }
 
   test("test Broadcast") {
-    val axis = Array(0)
+    val axis = Array(3, 4, 4)
     val solutionName = "broadcast(" + leftName + "," + axis.toList + ")"
     val solution = new Variable(solutionName, leftTensor.broadcast(axis))
     val leftOpRight = leftVar.broadcast(axis)
