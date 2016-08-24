@@ -102,11 +102,12 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
   }
 
   /**
-    * To be used for printing purposes only,
-    * to update the grid use updateGrid() method.
-    * This methods returns a Java Map
-    * @return
-    */
+   * To be used for printing purposes only,
+   * to update the grid use updateGrid() method.
+   * This methods returns a Java Map
+   *
+   * @return
+   */
   def getGrid(): util.Map[String, Double] = {
     return grid.asJava
   }
@@ -120,11 +121,12 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
   }
 
   /**
-    * To be used for printing purposes only,
-    * to update the metadata use updateMetadata() method.
-    * This method returns a Java Map
-    * @return
-    */
+   * To be used for printing purposes only,
+   * to update the metadata use updateMetadata() method.
+   * This method returns a Java Map
+   *
+   * @return
+   */
   def getMetadata(): util.Map[String, String] = {
     return metadata.asJava
   }
@@ -169,7 +171,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
     cloudElemNum = c
   }
 
-  def update(value: Double, row: Int, col: Int ): Unit = {
+  def update(value: Double, row: Int, col: Int): Unit = {
     updateRowAndCol(row, col)
     updateTemperatures(value)
     area += 1
