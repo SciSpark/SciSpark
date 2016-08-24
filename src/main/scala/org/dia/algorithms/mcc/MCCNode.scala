@@ -19,13 +19,11 @@ package org.dia.algorithms.mcc
 
 import java.util
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-import com.fasterxml.jackson.databind.ObjectMapper
-
 class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable {
-
 
   var inEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var outEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
@@ -42,23 +40,97 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
   var lonMin: Double = 0.0
   var centerLat: Double = 0.0
   var centerLon: Double = 0.0
-  var maxTemp: Double = Double.MinPositiveValue // Since temperature is in Kelvin, there cannot be negative values
+
+  /** Since temperature is in Kelvin, we don't want to go below absolute zero */
+  var maxTemp: Double = 0.0
   var minTemp: Double = Double.MaxValue
+
+  def getRowMax(): Int = {
+    return rowMax
+  }
+
+  def getRowMin(): Int = {
+    return rowMin
+  }
+
+  def getColMax(): Int = {
+    return colMax
+  }
+
+  def getColMin(): Int = {
+    return colMin
+  }
+
+  def getLatMax(): Double = {
+    return latMax
+  }
+
+  def getLatMin(): Double = {
+    return latMin
+  }
+
+  def getLonMax(): Double = {
+    return lonMax
+  }
+
+  def getLonMin(): Double = {
+    return lonMin
+  }
+
+  def getCenterLat(): Double = {
+    return centerLat
+  }
+
+  def getCenterLon(): Double = {
+    return centerLon
+  }
+
+  def getArea(): Double = {
+    return area
+  }
+
+  def getMaxTemp(): Double = {
+    return maxTemp
+  }
+
+  def getMinTemp(): Double = {
+    return minTemp
+  }
 
   def setGrid(_grid: mutable.HashMap[String, Double]): Unit = {
     grid = _grid
   }
 
-  def getGrid(): mutable.HashMap[String, Double] = {
-    return grid
+  /**
+    * To be used for printing purposes only,
+    * to update the grid use updateGrid() method.
+    * This methods returns a Java Map
+    * @return
+    */
+  def getGrid(): util.Map[String, Double] = {
+    return grid.asJava
+  }
+
+  def updateGrid(key: String, value: Double): Unit = {
+    grid.update(key, value)
   }
 
   def setMetadata(_metadata: mutable.HashMap[String, String]): Unit = {
     metadata = _metadata
   }
 
-  def getMetadata(): mutable.HashMap[String, String] = {
-    return metadata
+  /**
+    * To be used for printing purposes only,
+    * to update the metadata use updateMetadata() method.
+    * This method returns a Java Map
+    * @return
+    */
+  def getMetadata(): util.Map[String, String] = {
+    return metadata.asJava
+  }
+
+  def updateMetadata(key: String, value: String): Unit = {
+    metadata.update(key, value)
   }
 
   def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
@@ -127,13 +199,8 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
   }
 
   override def toString(): String = {
-    val map = new util.HashMap[String, Any]()
-    map.put("frameNum", frameNum)
-    map.put("coudElemNum", cloudElemNum)
-//    map.put("metadata", metadata.asJava)
-//    map.put("grid", grid.asJava)
     val mapper = new ObjectMapper()
-    s"${mapper.writeValueAsString(map)}"
+    s"${mapper.writeValueAsString(this)}"
   }
 
   override def equals(that: Any): Boolean = that match {
