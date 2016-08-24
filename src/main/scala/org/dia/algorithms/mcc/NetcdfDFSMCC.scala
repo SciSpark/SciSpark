@@ -18,25 +18,30 @@
 package org.dia.algorithms.mcc
 
 import java.io._
+
 import scala.collection.mutable
 import scala.language.implicitConversions
+
 import org.apache.spark.rdd.RDD
+
 import org.dia.core.{SciSparkContext, SciTensor}
+
 
 object NetcdfDFSMCC {
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
-    * To create a map of Nodes from the edges found.
-    * @param edgesRDD
-    * @param lat
-    * @param lon
-    * @return
-    */
+   * To create a map of Nodes from the edges found.
+   *
+   * @param edgesRDD
+   * @param lat
+   * @param lon
+   * @return
+   */
   def createMapFromEdgeList(edgesRDD: Iterable[MCCEdge],
                             lat: Array[Double], lon: Array[Double]): mutable.HashMap[String, Any] = {
     val MCCNodeMap = new mutable.HashMap[String, Any]()
-    edgesRDD.foreach{edge => {
+    edgesRDD.foreach { edge => {
       val srcKey = s"${edge.srcNode.frameNum},${edge.srcNode.cloudElemNum}"
       val destKey = s"${edge.destNode.frameNum},${edge.destNode.cloudElemNum}"
 
@@ -48,27 +53,28 @@ object NetcdfDFSMCC {
         edge.destNode.updateLatLon(lat, lon)
         MCCNodeMap += ((destKey, edge.destNode))
       }
-    }}
+    }
+    }
     return MCCNodeMap
   }
 
   /**
-    * For each array N* where N is the frame number and N* is the array
-    * output the following pairs (N, N*), (N + 1, N*).
-    *
-    * After flat-mapping the pairs and applying additional pre-processing
-    * we have pairs (X, Y) where X is a label and Y a tensor.
-    *
-    * After grouping by X and reordering pairs we obtain pairs
-    * (N*, (N+1)*) which achieves the consecutive pairwise grouping
-    * of frames.
-    */
+   * For each array N* where N is the frame number and N* is the array
+   * output the following pairs (N, N*), (N + 1, N*).
+   *
+   * After flat-mapping the pairs and applying additional pre-processing
+   * we have pairs (X, Y) where X is a label and Y a tensor.
+   *
+   * After grouping by X and reordering pairs we obtain pairs
+   * (N*, (N+1)*) which achieves the consecutive pairwise grouping
+   * of frames.
+   */
   def groupConsecutiveFrames(sRDD: RDD[SciTensor]): RDD[(SciTensor, SciTensor)] = {
     val consecFrames = sRDD.sortBy(p => p.metaData("FRAME").toInt).zipWithIndex()
-      .flatMap({ case (sciT, indx) => List((indx, List(sciT)), (indx + 1, List(sciT)))})
+      .flatMap({ case (sciT, indx) => List((indx, List(sciT)), (indx + 1, List(sciT))) })
       .reduceByKey(_ ++ _)
-      .filter({case(_, sciTs) => sciTs.size == 2})
-      .map({case(_, sciTs) => sciTs.sortBy(p => p.metaData("FRAME").toInt)})
+      .filter({ case (_, sciTs) => sciTs.size == 2 })
+      .map({ case (_, sciTs) => sciTs.sortBy(p => p.metaData("FRAME").toInt) })
       .map(sciTs => (sciTs(0), sciTs(1)))
     return consecFrames
   }
@@ -85,43 +91,45 @@ object NetcdfDFSMCC {
   }
 
   /**
-    * Find edges matching certain filtering criteria from the consecutive
-    * frames found in the NetCDF files.
-    * @param consecFrames
-    * @param maxAreaOverlapThreshold
-    * @param minAreaOverlapThreshold
-    * @param minArea
-    * @return
-    */
+   * Find edges matching certain filtering criteria from the consecutive
+   * frames found in the NetCDF files.
+   *
+   * @param consecFrames
+   * @param maxAreaOverlapThreshold
+   * @param minAreaOverlapThreshold
+   * @param minArea
+   * @return
+   */
   def findEdges(consecFrames: RDD[(SciTensor, SciTensor)], maxAreaOverlapThreshold: Double,
                 minAreaOverlapThreshold: Double, minArea: Double): RDD[MCCEdge] = {
     val componentFrameRDD = consecFrames.flatMap({
       case (t1, t2) =>
+
         /**
-          * First label the connected components in each pair.
-          * The following example illustrates labeling.
-          *
-          * [0,1,2,0]       [0,1,1,0]
-          * [1,2,0,0]   ->  [1,1,0,0]
-          * [0,0,0,1]       [0,0,0,2]
-          *
-          * Note that a tuple of (Matrix, MaxLabel) is returned
-          * to denote the labeled elements and the highest label.
-          * This way only one traverse is necessary instead of a 2nd traverse
-          * to find the highest label.
-          */
+         * First label the connected components in each pair.
+         * The following example illustrates labeling.
+         *
+         * [0,1,2,0]       [0,1,1,0]
+         * [1,2,0,0]   ->  [1,1,0,0]
+         * [0,0,0,1]       [0,0,0,2]
+         *
+         * Note that a tuple of (Matrix, MaxLabel) is returned
+         * to denote the labeled elements and the highest label.
+         * This way only one traverse is necessary instead of a 2nd traverse
+         * to find the highest label.
+         */
         val (components1, _) = MCCOps.labelConnectedComponents(t1.tensor)
         val (components2, _) = MCCOps.labelConnectedComponents(t2.tensor)
         /**
-          * The labeled components are element-wise multiplied
-          * to find overlapping regions. Non-overlapping regions
-          * result in a 0.
-          *
-          * [0,1,1,0]       [0,1,1,0]     [0,1,1,0]
-          * [1,1,0,0]   X   [2,0,0,0]  =  [2,0,0,0]
-          * [0,0,0,2]       [0,0,0,3]     [0,0,0,6]
-          *
-          */
+         * The labeled components are element-wise multiplied
+         * to find overlapping regions. Non-overlapping regions
+         * result in a 0.
+         *
+         * [0,1,1,0]       [0,1,1,0]     [0,1,1,0]
+         * [1,1,0,0]   X   [2,0,0,0]  =  [2,0,0,0]
+         * [0,0,0,2]       [0,0,0,3]     [0,0,0,6]
+         *
+         */
         val product = components1 * components2
 
         var nodeMap = new mutable.HashMap[String, MCCNode]()
@@ -132,8 +140,8 @@ object NetcdfDFSMCC {
             val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame.toInt, label))
             node.update(value, row, col)
             nodeMap.update((frame + ":" + label), node)
-            }
           }
+        }
 
 
         for (row <- 0 to product.rows - 1) {
@@ -150,7 +158,7 @@ object NetcdfDFSMCC {
 
               val frame2 = t2.metaData("FRAME")
               val label2 = components2(row, col)
-              val node2 = nodeMap(frame2 +":" + label2)
+              val node2 = nodeMap(frame2 + ":" + label2)
 
               val edgeKey = s"$frame1:$label1,$frame2:$label2"
               val edge = if (MCCEdgeMap.contains(edgeKey)) MCCEdgeMap(edgeKey) else new MCCEdge(node1, node2)
@@ -164,15 +172,15 @@ object NetcdfDFSMCC {
           case (k, edge) =>
             val srcNode = edge.srcNode
             val (srcArea, srcMinTemp, srcMaxTemp) = (srcNode.area, srcNode.minTemp, srcNode.maxTemp)
-            val isSrcNodeACloud = (srcArea >= 2400) || (srcArea < 2400 && (srcMinTemp/srcMaxTemp) < 0.9)
+            val isSrcNodeACloud = (srcArea >= 2400) || (srcArea < 2400 && (srcMinTemp / srcMaxTemp) < 0.9)
 
             val destNode = edge.destNode
             val (destArea, destMinTemp, destMaxTemp) = (destNode.area, destNode.minTemp, destNode.maxTemp)
-            val isDestNodeACloud = (destArea >= 2400) || (destArea < 2400 && (destMinTemp/destMaxTemp) < 0.9)
+            val isDestNodeACloud = (destArea >= 2400) || (destArea < 2400 && (destMinTemp / destMaxTemp) < 0.9)
             var meetsOverlapCriteria = true
             if (isSrcNodeACloud && isDestNodeACloud) {
               val areaOverlap = edge.areaOverlap
-              val percentAreaOverlap = math.max((areaOverlap/srcArea), (areaOverlap/destArea))
+              val percentAreaOverlap = math.max((areaOverlap / srcArea), (areaOverlap / destArea))
 
               if (percentAreaOverlap >= maxAreaOverlapThreshold) {
                 edge.updateWeight(1.0)
@@ -209,7 +217,7 @@ object NetcdfDFSMCC {
     val partCount = if (args.length <= 1) 2 else args(1).toInt
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
-    val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
+    val hdfspath = if (args.length <= 4) "paperSize" else args(4)
     val maxAreaOverlapThreshold = 0.65
     val minAreaOverlapThreshold = 0.50
     val minArea = 625
