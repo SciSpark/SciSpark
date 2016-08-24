@@ -101,7 +101,8 @@ object NetcdfDFSMCC {
    * @return
    */
   def findEdges(consecFrames: RDD[(SciTensor, SciTensor)], maxAreaOverlapThreshold: Double,
-                minAreaOverlapThreshold: Double, minArea: Double): RDD[MCCEdge] = {
+                minAreaOverlapThreshold: Double, minArea: Double,
+                nodeMinArea: Int, convectiveFraction: Double): RDD[MCCEdge] = {
     val componentFrameRDD = consecFrames.flatMap({
       case (t1, t2) =>
 
@@ -172,11 +173,13 @@ object NetcdfDFSMCC {
           case (k, edge) =>
             val srcNode = edge.srcNode
             val (srcArea, srcMinTemp, srcMaxTemp) = (srcNode.area, srcNode.minTemp, srcNode.maxTemp)
-            val isSrcNodeACloud = (srcArea >= 2400) || (srcArea < 2400 && (srcMinTemp / srcMaxTemp) < 0.9)
+            val isSrcNodeACloud = (srcArea >= nodeMinArea) ||
+              (srcArea < nodeMinArea && (srcMinTemp / srcMaxTemp) < convectiveFraction)
 
             val destNode = edge.destNode
             val (destArea, destMinTemp, destMaxTemp) = (destNode.area, destNode.minTemp, destNode.maxTemp)
-            val isDestNodeACloud = (destArea >= 2400) || (destArea < 2400 && (destMinTemp / destMaxTemp) < 0.9)
+            val isDestNodeACloud = (destArea >= nodeMinArea) ||
+              (destArea < nodeMinArea && (destMinTemp / destMaxTemp) < convectiveFraction)
             var meetsOverlapCriteria = true
             if (isSrcNodeACloud && isDestNodeACloud) {
               val areaOverlap = edge.areaOverlap
@@ -217,10 +220,12 @@ object NetcdfDFSMCC {
     val partCount = if (args.length <= 1) 2 else args(1).toInt
     val dimension = if (args.length <= 2) (20, 20) else (args(2).toInt, args(2).toInt)
     val variable = if (args.length <= 3) "ch4" else args(3)
-    val hdfspath = if (args.length <= 4) "paperSize" else args(4)
+    val hdfspath = if (args.length <= 4) "resources/merg" else args(4)
     val maxAreaOverlapThreshold = 0.65
     val minAreaOverlapThreshold = 0.50
     val minArea = 625
+    val nodeMinArea = 150
+    val convectiveFraction: Double = 0.9
 
     val outerTemp = 241.0
     val innerTemp = 233.0
@@ -253,7 +258,7 @@ object NetcdfDFSMCC {
     val consecFrames = groupConsecutiveFrames(filtered)
 
     val edgesRDD = findEdges(consecFrames, maxAreaOverlapThreshold,
-      minAreaOverlapThreshold, minArea)
+      minAreaOverlapThreshold, minArea, nodeMinArea, convectiveFraction)
 
     val MCCEdgeList = edgesRDD.collect().toList
     val MCCNodeMap = createMapFromEdgeList(MCCEdgeList, lat, lon)
