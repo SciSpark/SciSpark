@@ -19,7 +19,7 @@ package org.dia.algorithms.mcc
 
 class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
-  var areaOverlap: Double = 0.0
+  var areaOverlap: Int = 0
 
   def incrementAreaOverlap(): Unit = {
     areaOverlap += 1

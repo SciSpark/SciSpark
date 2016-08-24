@@ -23,13 +23,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable {
+class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
   var inEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var outEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
   var metadata: mutable.HashMap[String, String] = new mutable.HashMap[String, String]()
   var grid: mutable.HashMap[String, Double] = new mutable.HashMap[String, Double]()
-  var area: Double = 0.0
+  var area: Int = 0
   var rowMax: Int = 0
   var rowMin: Int = 0
   var colMax: Int = 0
@@ -45,60 +45,67 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
   var maxTemp: Double = 0.0
   var minTemp: Double = Double.MaxValue
 
+  def this(frameNum: String, cloudElemNum: String) {
+    this(frameNum.toInt, cloudElemNum.toInt)
+  }
+  def this(frameNum: String, cloudElemNum: Double) {
+    this(frameNum.toInt, cloudElemNum.toInt)
+  }
+
   def getRowMax(): Int = {
-    return rowMax
+     this.rowMax
   }
 
   def getRowMin(): Int = {
-    return rowMin
+    this.rowMin
   }
 
   def getColMax(): Int = {
-    return colMax
+    this.colMax
   }
 
   def getColMin(): Int = {
-    return colMin
+    this.colMin
   }
 
   def getLatMax(): Double = {
-    return latMax
+    this.latMax
   }
 
   def getLatMin(): Double = {
-    return latMin
+    this.latMin
   }
 
   def getLonMax(): Double = {
-    return lonMax
+    this.lonMax
   }
 
   def getLonMin(): Double = {
-    return lonMin
+    this.lonMin
   }
 
   def getCenterLat(): Double = {
-    return centerLat
+    this.centerLat
   }
 
   def getCenterLon(): Double = {
-    return centerLon
+    this.centerLon
   }
 
   def getArea(): Double = {
-    return area
+    this.area
   }
 
   def getMaxTemp(): Double = {
-    return maxTemp
+    this.maxTemp
   }
 
   def getMinTemp(): Double = {
-    return minTemp
+    this.minTemp
   }
 
   def setGrid(_grid: mutable.HashMap[String, Double]): Unit = {
-    grid = _grid
+    this.grid = _grid
   }
 
   /**
@@ -109,15 +116,15 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
    * @return
    */
   def getGrid(): util.Map[String, Double] = {
-    return grid.asJava
+    this.grid.asJava
   }
 
   def updateGrid(key: String, value: Double): Unit = {
-    grid.update(key, value)
+    this.grid.update(key, value)
   }
 
   def setMetadata(_metadata: mutable.HashMap[String, String]): Unit = {
-    metadata = _metadata
+    this.metadata = _metadata
   }
 
   /**
@@ -128,76 +135,76 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Double) extends Serializable 
    * @return
    */
   def getMetadata(): util.Map[String, String] = {
-    return metadata.asJava
+     metadata.asJava
   }
 
   def updateMetadata(key: String, value: String): Unit = {
-    metadata.update(key, value)
+    this.metadata.update(key, value)
   }
 
   def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)
     addOutgoingEdge(edge)
-    return edge
+     edge
   }
 
   def connectFrom(srcNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, srcNode, weight)
     addIncomingEdge(edge)
-    return edge
+     edge
   }
 
   def addIncomingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
-    inEdges += edge
+    this.inEdges += edge
   }
 
   def addOutgoingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
-    outEdges += edge
+    this.outEdges += edge
   }
 
   def getFrameNum: Int = {
-    frameNum
+    this.frameNum
   }
 
   def getCloudElemNum: Double = {
-    cloudElemNum
+    this.cloudElemNum
   }
 
   def setFrameNum(f: Int): Unit = {
-    frameNum = f
+    this.frameNum = f
   }
 
-  def setCloudElemNum(c: Float): Unit = {
-    cloudElemNum = c
+  def setCloudElemNum(c: Int): Unit = {
+    this.cloudElemNum = c
   }
 
   def update(value: Double, row: Int, col: Int): Unit = {
     updateRowAndCol(row, col)
     updateTemperatures(value)
-    area += 1
-    grid += ((s"($row, $col)", value))
+    this.area += 1
+    this.grid += ((s"($row, $col)", value))
   }
 
   def updateRowAndCol(row: Int, col: Int): Unit = {
-    rowMax = if (row > rowMax) row else rowMax
-    colMax = if (col > colMax) col else colMax
-    rowMin = if (row < rowMin) row else rowMin
-    colMin = if (col < colMin) col else colMin
+    this.rowMax = if (row > this.rowMax) row else this.rowMax
+    this.colMax = if (col > this.colMax) col else this.colMax
+    this.rowMin = if (row < this.rowMin) row else this.rowMin
+    this.colMin = if (col < this.colMin) col else this.colMin
   }
 
   def updateTemperatures(value: Double): Unit = {
-    minTemp = if (value < minTemp) value else minTemp
-    maxTemp = if (value > maxTemp) value else maxTemp
+    this.minTemp = if (value < this.minTemp) value else this.minTemp
+    this.maxTemp = if (value > this.maxTemp) value else this.maxTemp
   }
 
   def updateLatLon(lat: Array[Double], lon: Array[Double]): Unit = {
-    latMax = lat(rowMax)
-    latMin = lat(rowMin)
-    lonMax = lon(colMax)
-    lonMin = lon(colMin)
+    this.latMax = lat(this.rowMax)
+    this.latMin = lat(this.rowMin)
+    this.lonMax = lon(this.colMax)
+    this.lonMin = lon(this.colMin)
 
-    centerLat = (latMax + latMin) / 2
-    centerLon = (lonMax + lonMin) / 2
+    this.centerLat = (this.latMax + this.latMin) / 2
+    this.centerLon = (this.lonMax + this.lonMin) / 2
   }
 
   override def toString(): String = {
