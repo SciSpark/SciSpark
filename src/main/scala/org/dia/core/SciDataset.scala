@@ -105,7 +105,7 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
    * @return the current SciDataset
    */
   def insertVariable(key: String, value: Variable): SciDataset = {
-    this.variables(key) = v
+    this.variables(key) = value
     this
   }
 
