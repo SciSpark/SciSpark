@@ -91,8 +91,21 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
   /**
    * Writes variables in the form of key-value pairs
    */
-  def insertVariable(variables: (Variable)*): SciDataset = {
-    for (v <- variables) this.variables += ((v.name, v))
+  def insertVariable(variables: (String, Variable)*): SciDataset = {
+    for ((k, v) <- variables) this.variables += ((k, v))
+    this
+  }
+
+  /**
+   * Writes a new variable to the hashmap.
+   * It is recommended to use the update function instead
+   * which enables you to use the "=" operator to insert new variables.
+   * @param key name of variable
+   * @param value the variable object ot insert
+   * @return the current SciDataset
+   */
+  def insertVariable(key: String, value: Variable): SciDataset = {
+    this.variables(key) = v
     this
   }
 
