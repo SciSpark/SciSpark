@@ -143,8 +143,16 @@ class Variable(var name: String,
     arrayOp(this()(index: _*), index.map( {case (a, b) => a + ":" + b}).reduce((a, b) => a + "," + b))
   }
 
-  def update(key: String, value: String): Variable = {
-    attributes(key) = value
+  /**
+   * Updates the attribute in the variable.
+   *
+   * Usage : v("key") = attribute
+   * @param key the attribute name
+   * @param attribute the attribute value
+   * @return
+   */
+  def update(key: String, attribute: String): Variable = {
+    attributes(key) = attribute
     this
   }
   def shape(): Array[Int] = array.shape
