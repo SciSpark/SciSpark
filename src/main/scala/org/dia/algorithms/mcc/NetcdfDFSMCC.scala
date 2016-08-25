@@ -183,7 +183,9 @@ object NetcdfDFSMCC {
             var meetsOverlapCriteria = true
             if (isSrcNodeACloud && isDestNodeACloud) {
               val areaOverlap = edge.areaOverlap
-              val percentAreaOverlap = math.max((areaOverlap / srcArea), (areaOverlap / destArea))
+              val srcAreaOverlapRation: Double = areaOverlap.toDouble / srcArea.toDouble
+              val destAreaOverlapRation: Double = areaOverlap.toDouble / destArea.toDouble
+              val percentAreaOverlap = math.max(srcAreaOverlapRation, destAreaOverlapRation)
 
               if (percentAreaOverlap >= maxAreaOverlapThreshold) {
                 edge.updateWeight(1.0)
