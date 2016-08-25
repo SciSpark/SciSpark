@@ -34,13 +34,13 @@ import org.dia.utils.NetCDFUtils
  *
  * The LinkedHashMap preserves insertion order for iteration purposes.
  */
-class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
-                 val attributes: mutable.LinkedHashMap[String, String],
+class SciDataset(val variables: mutable.HashMap[String, Variable],
+                 val attributes: mutable.HashMap[String, String],
                  var datasetName: String) extends Serializable{
 
   def this(vars : Traversable[(String, Variable)], attr : Traversable[(String, String)], datasetName : String) {
-    this(new mutable.LinkedHashMap[String, Variable] ++= vars,
-         new mutable.LinkedHashMap[String, String] ++= attr,
+    this(mutable.HashMap[String, Variable]() ++= vars,
+         mutable.HashMap[String, String]() ++= attr,
          datasetName)
   }
 
@@ -167,7 +167,7 @@ class SciDataset(val variables: mutable.LinkedHashMap[String, Variable],
   override def toString: String = {
     val header = datasetName + "\nroot group ...\n"
     val dimensionString = "\tdimensions(sizes): " + globalDimensions().toString + "\n"
-    val variableString = variables.map({case (str, varb) => varb.dataType + " " + str + varb.dims.keys.toList})
+    val variableString = variables.map({case (str, varb) => varb.dataType + " " + str + varb.dims.map(_._1)})
     val footer = "\tvariables: " + variableString + "\n"
     val body = new StringBuilder()
     body.append(header)
