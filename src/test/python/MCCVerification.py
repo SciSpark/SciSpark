@@ -4,6 +4,11 @@ from itertools import groupby
 from collections import Counter
 from datetime import date, datetime, timedelta
 
+# REAMDE: how to run these tests. 
+# 		1. Run SciSpark GTG with the MERG files on the repo at /path/
+#		2. Run the GTG release &.& with the same MERG files at input
+#		 
+#		
 def compare_times(pyNodes, ssNodes, ssDir, allTimesInts):
 	'''
 	Purpose: To check the times of files in two nodelist to determine if similar
