@@ -18,13 +18,13 @@
 
 package org.dia.algorithms.mcc
 
-import java.io.{File, PrintWriter}
+import java.io.PrintWriter
 
 import scala.collection.mutable
 
 import org.apache.spark.rdd.RDD
 
-import org.dia.core.{SciSparkContext, SciTensor}
+import org.dia.core.{SciDataset, SciSparkContext}
 
 /**
  * Runs Grab em' Tag em' Graph em'
@@ -65,12 +65,11 @@ class GTGRunner(val masterURL: String,
    * @param sRDD input RDD of SciTensors
    * @return RDD of SciTensors with Frame number recorded in metadaa table
    */
-  def recordFrameNumber(sRDD: RDD[SciTensor]): RDD[SciTensor] = {
+  def recordFrameNumber(sRDD: RDD[SciDataset]): RDD[SciDataset] = {
     sRDD.map(p => {
-      val source = p.metaData("SOURCE").split("/").last.split("_")(1)
-      val FrameID = source.toInt
-      p.insertDictionary(("FRAME", FrameID.toString))
-      p.insertVar(p.varInUse, p()(0))
+      val FrameID = p.datasetName.split("_")(1).toInt
+      p.insertAttributes(("FRAME", FrameID.toString))
+      p.insertVariable(p("ch4")(0).setName("ch4"))
       p
     })
   }
@@ -91,14 +90,14 @@ class GTGRunner(val masterURL: String,
    * @param sRDD the input RDD of SciTensors
    * @return
    */
-  def pairConsecutiveFrames(sRDD: RDD[SciTensor]): RDD[(SciTensor, SciTensor)] = {
-    sRDD.sortBy(p => p.metaData("FRAME").toInt)
+  def pairConsecutiveFrames(sRDD: RDD[SciDataset]): RDD[(SciDataset, SciDataset)] = {
+    sRDD.sortBy(p => p.attr("FRAME").toInt)
       .zipWithIndex()
-      .flatMap({ case (sciT, indx) => List((indx, List(sciT)), (indx + 1, List(sciT))) })
+      .flatMap({ case (sciD, indx) => List((indx, List(sciD)), (indx + 1, List(sciD))) })
       .reduceByKey(_ ++ _)
-      .filter({ case (_, sciTs) => sciTs.size == 2 })
-      .map({ case (_, sciTs) => sciTs.sortBy(p => p.metaData("FRAME").toInt) })
-      .map(sciTs => (sciTs(0), sciTs(1)))
+      .filter({ case (_, sciDs) => sciDs.size == 2 })
+      .map({ case (_, sciDs) => sciDs.sortBy(p => p.attr("FRAME").toInt) })
+      .map(sciDs => (sciDs(0), sciDs(1)))
   }
 
   /**
@@ -110,7 +109,7 @@ class GTGRunner(val masterURL: String,
    * @param sRDD the input RDD of SciTensors
    * @return
    */
-  def findEdges(sRDD: RDD[(SciTensor, SciTensor)],
+  def findEdges(sRDD: RDD[(SciDataset, SciDataset)],
                 maxAreaOverlapThreshold: Double,
                 minAreaOverlapThreshold: Double,
                 convectiveFraction: Double,
@@ -118,8 +117,9 @@ class GTGRunner(val masterURL: String,
                 nodeMinArea: Int): RDD[MCCEdge] = {
 
     sRDD.flatMap({
-      case (t1, t2) =>
-
+      case (sd1, sd2) =>
+        val (t1, t2) = (sd1("ch4"), sd2("ch4"))
+        val (frame1, frame2) = (sd1.attr("FRAME"), sd2.attr("FRAME"))
         /**
          * First label the connected components in each pair.
          * The following example illustrates labeling.
@@ -133,8 +133,8 @@ class GTGRunner(val masterURL: String,
          * This way only one traverse is necessary instead of a 2nd traverse
          * to find the highest label.
          */
-        val (components1, _) = MCCOps.labelConnectedComponents(t1.tensor)
-        val (components2, _) = MCCOps.labelConnectedComponents(t2.tensor)
+        val (components1, _) = MCCOps.labelConnectedComponents(t1())
+        val (components2, _) = MCCOps.labelConnectedComponents(t2())
         /**
          * The labeled components are element-wise multiplied
          * to find overlapping regions. Non-overlapping regions
@@ -161,16 +161,14 @@ class GTGRunner(val masterURL: String,
         for (row <- 0 until product.rows) {
           for (col <- 0 until product.cols) {
             /** Find non-zero points in product array */
-            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col), row, col)
-            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col), row, col)
+            updateComponent(components1(row, col), frame1, t1()(row, col), row, col)
+            updateComponent(components2(row, col), frame2, t2()(row, col), row, col)
             if (product(row, col) != 0.0) {
 
-              /** If overlap exists create and edge and update overlapped area */
-              val frame1 = t1.metaData("FRAME")
+              /** If overlap exists create an edge and update overlapped area */
               val label1 = components1(row, col)
               val node1 = nodeMap(frame1 + ":" + label1)
 
-              val frame2 = t2.metaData("FRAME")
               val label2 = components2(row, col)
               val node2 = nodeMap(frame2 + ":" + label2)
 
@@ -270,14 +268,14 @@ class GTGRunner(val masterURL: String,
      * Note if no HDFS path is given, then randomly generated matrices are used.
      *
      */
-    val sRDD = sc.NetcdfDFSFiles(paths, List("ch4", "longitude", "latitude"), partitions)
+    val sRDD = sc.sciDatasets(paths, List("ch4", "longitude", "latitude"), partitions)
 
     /**
      * Collect lat and lon arrays
      */
     val sampleDataset = sRDD.take(1)(0)
-    val lon = sampleDataset("longitude").data
-    val lat = sampleDataset("latitude").data
+    val lon = sampleDataset("longitude").data()
+    val lat = sampleDataset("latitude").data()
 
     /**
      * Record the frame Number in each SciTensor
@@ -288,7 +286,11 @@ class GTGRunner(val masterURL: String,
     /**
      * Filter for temperature values under 241.0
      */
-    val filtered = labeled.map(p => p("ch4") <= 241.0)
+    val filtered = labeled.map(p => {
+      val maskedch4 = p("ch4") <= 241.0
+      p.insertVariable(maskedch4.setName("ch4"))
+      p
+    })
 
 
     /**

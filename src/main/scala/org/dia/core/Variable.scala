@@ -105,6 +105,16 @@ class Variable(var name: String,
   }
 
   /**
+   * Sets the variable name and returns the Variable
+   * @param name new name to set
+   * @return
+   */
+  def setName(name : String) : Variable = {
+    this.name = name
+    this
+  }
+
+  /**
    * Returns the array corresponding to the variable in use.
    * This is to mimic the numpy like syntax of var[:]
    * Example usage: val absT = var()
