@@ -38,6 +38,27 @@ class GTGRunner(val masterURL: String,
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
+   * To create a map of Nodes from the edges found.
+   *
+   * @param edges sequence of MCCEdge objects
+   * @param lat the lattitude dimension array
+   * @param lon the longitude dimension array
+   * @return
+   */
+  def createNodeMapFromEdgeList(edges: Seq[MCCEdge],
+                                lat: Array[Double],
+                                lon: Array[Double]): mutable.HashMap[String, MCCNode] = {
+
+    val MCCNodes = edges.flatMap(edge => List(edge.srcNode, edge.destNode)).distinct
+    val MCCNodeKeyValuesSet = MCCNodes.map(node => {
+      val key = s"${node.frameNum},${node.cloudElemNum}"
+      node.updateLatLon(lat, lon)
+      (key, node)
+    })
+    mutable.HashMap[String, MCCNode](MCCNodeKeyValuesSet: _*)
+  }
+
+  /**
    * Records the frame number in all SciTensors stored in the RDD
    * Preconditon : The files read are are of the form merg_XX_4km-pixel.nc
    *
@@ -90,9 +111,11 @@ class GTGRunner(val masterURL: String,
    * @return
    */
   def findEdges(sRDD: RDD[(SciTensor, SciTensor)],
-                maxAreaOverlapThreshold: Double = 0.66,
-                minAreaOverlapThreshold: Double = 0.50,
-                minArea: Int = 10000): RDD[((String, Double), (String, Double), Int)] = {
+                maxAreaOverlapThreshold: Double,
+                minAreaOverlapThreshold: Double,
+                convectiveFraction: Double,
+                minArea: Int,
+                nodeMinArea: Int): RDD[MCCEdge] = {
 
     sRDD.flatMap({
       case (t1, t2) =>
@@ -123,121 +146,78 @@ class GTGRunner(val masterURL: String,
          *
          */
         val product = components1 * components2
-        /**
-         * The overlappedPairsList keeps track of all points that
-         * overlap between the labeled arrays. Note that the overlappedPairsList
-         * will have several duplicate pairs if there are large regions of overlap.
-         *
-         * This is achieved by iterating through the product array and noting
-         * all points that are not 0.
-         */
-        var overlappedPairsList = mutable.MutableList[((Double, Double))]()
-        /**
-         * The areaMinMaxTable keeps track of the area, minimum value, and maximum value
-         * of all labeled regions in both components. For this reason the hash key has the following form :
-         * 'F : C' where F = Frame Number and C = Component Number.
-         * The areaMinMaxTable is updated by the updateComponent function, which is called in the for loop.
-         *
-         * @todo Extend it to have a lat long bounds for component.
-         */
-        var areaMinMaxTable = new mutable.HashMap[String, (Double, Double, Double)]
 
-        def updateComponent(label: Double, frame: String, value: Double): Unit = {
+        val nodeMap = new mutable.HashMap[String, MCCNode]()
+        val MCCEdgeMap = new mutable.HashMap[String, MCCEdge]()
 
+        def updateComponent(label: Double, frame: String, value: Double, row: Int, col: Int): Unit = {
           if (label != 0.0) {
-            var area = 0.0
-            var max = Double.MinValue
-            var min = Double.MaxValue
-            val currentProperties = areaMinMaxTable.get(frame + ":" + label)
-            if (currentProperties != null && currentProperties.isDefined) {
-              area = currentProperties.get._1
-              max = currentProperties.get._2
-              min = currentProperties.get._3
-              if (value < min) min = value
-              if (value > max) max = value
-            } else {
-              min = value
-              max = value
-            }
-            area += 1
-            areaMinMaxTable += ((frame + ":" + label, (area, max, min)))
+            val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame, label))
+            node.update(value, row, col)
+            nodeMap.update(frame + ":" + label, node)
           }
         }
 
         for (row <- 0 until product.rows) {
           for (col <- 0 until product.cols) {
             /** Find non-zero points in product array */
+            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col), row, col)
+            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col), row, col)
             if (product(row, col) != 0.0) {
-              /** save components ids */
-              val value1 = components1(row, col)
-              val value2 = components2(row, col)
-              overlappedPairsList += ((value1, value2))
+
+              /** If overlap exists create and edge and update overlapped area */
+              val frame1 = t1.metaData("FRAME")
+              val label1 = components1(row, col)
+              val node1 = nodeMap(frame1 + ":" + label1)
+
+              val frame2 = t2.metaData("FRAME")
+              val label2 = components2(row, col)
+              val node2 = nodeMap(frame2 + ":" + label2)
+
+              val edgeKey = s"$frame1:$label1,$frame2:$label2"
+              val edge = MCCEdgeMap.getOrElse(edgeKey, new MCCEdge(node1, node2))
+              edge.incrementAreaOverlap()
+              MCCEdgeMap.update(edgeKey, edge)
             }
-            updateComponent(components1(row, col), t1.metaData("FRAME"), t1.tensor(row, col))
-            updateComponent(components2(row, col), t2.metaData("FRAME"), t2.tensor(row, col))
           }
         }
 
-        /**
-         * This code essetially computes the number of times the same tuple occurred in the list,
-         * a repeat occurrance would indicate that the components overlapped for more than one cell
-         * in the product matrix. By calculating the number of overlaps we can calculate the number of cells
-         * they overlapped for and since each cell is of a fixed area we can compute the area overlap
-         * between those two components.
-         */
-        var overlappedMap = overlappedPairsList.groupBy(identity).mapValues(_.size)
-        println(s"Overlap Map ${overlappedMap.size}")
+        val filtered = MCCEdgeMap.filter({
+          case (k, edge) =>
+            val srcNode = edge.srcNode
+            val (srcArea, srcMinTemp, srcMaxTemp) = (srcNode.area, srcNode.minTemp, srcNode.maxTemp)
+            val isSrcNodeACloud = (srcArea >= nodeMinArea) ||
+              (srcArea < nodeMinArea && (srcMinTemp / srcMaxTemp) < convectiveFraction)
 
-        /**
-         * Once the overlapped pairs have been computed, eliminate all duplicates
-         * by converting the collection to a set. The component edges are then
-         * mapped to the respective frames, so the global space of edges (outside of this task)
-         * consists of unique tuples.
-         */
-        val edgesSet = overlappedPairsList.toSet
-        println(s"Overlap SEt ${edgesSet.size}  : ") // for debugging
+            val destNode = edge.destNode
+            val (destArea, destMinTemp, destMaxTemp) = (destNode.area, destNode.minTemp, destNode.maxTemp)
+            val isDestNodeACloud = (destArea >= nodeMinArea) ||
+              (destArea < nodeMinArea && (destMinTemp / destMaxTemp) < convectiveFraction)
 
-        val edges = edgesSet.map({ case (c1, c2) => ((t1.metaData("FRAME"), c1), (t2.metaData("FRAME"), c2)) })
-        println(s"Edges ${edges.size} ") // for debugging
-      val filtered = edges.filter({
-        case ((frameId1, compId1), (frameId2, compId2)) =>
-          val (area1, max1, min1) = areaMinMaxTable(frameId1 + ":" + compId1)
-          val isCloud1 = (area1 >= 2400.0) || ((area1 < 2400.0) && ((min1 / max1) < 0.9))
-          val (area2, max2, min2) = areaMinMaxTable(frameId2 + ":" + compId2)
-          val isCloud2 = (area2 >= 2400.0) || ((area2 < 2400.0) && ((min2 / max2) < 0.9))
-          var meetsCriteria = true
-          if (isCloud1 && isCloud2) {
-            val areaOverlap = overlappedMap.get(compId1, compId2).get
-            val percentAreaOverlap = math.max(areaOverlap / area1, areaOverlap / area2)
-            var edgeWeight = 0
-            if (percentAreaOverlap >= maxAreaOverlapThreshold) {
-              edgeWeight = 1
-            }
-            else if (percentAreaOverlap < maxAreaOverlapThreshold &&
-              percentAreaOverlap >= minAreaOverlapThreshold) {
-              edgeWeight = 2
-            }
-            else if (areaOverlap >= minArea) {
-              edgeWeight = 3
-            }
-            else {
-              meetsCriteria = false
-            }
-            overlappedMap += (((compId1, compId2), 1))
-          }
-          isCloud1 && isCloud2 && meetsCriteria
-      })
+            var meetsOverlapCriteria = true
+            if (isSrcNodeACloud && isDestNodeACloud) {
+              val areaOverlap = edge.areaOverlap
+              val srcAreaOverlapRation: Double = areaOverlap.toDouble / srcArea.toDouble
+              val destAreaOverlapRation: Double = areaOverlap.toDouble / destArea.toDouble
+              val percentAreaOverlap = math.max(srcAreaOverlapRation, destAreaOverlapRation)
 
-        val edgeList = new mutable.HashSet[((String, Double), (String, Double), Int)]()
-        filtered.foreach(edge => {
-          val key = (edge._1._2, edge._2._2)
-          if (overlappedMap.contains(key)) {
-            edgeList += ((edge._1, edge._2, overlappedMap(key)))
-          }
+              if (percentAreaOverlap >= maxAreaOverlapThreshold) {
+                edge.updateWeight(1.0)
+              }
+              else if (percentAreaOverlap < maxAreaOverlapThreshold &&
+                percentAreaOverlap >= minAreaOverlapThreshold) {
+                edge.updateWeight(2.0)
+              }
+              else if (areaOverlap >= minArea) {
+                edge.updateWeight(3.0)
+              }
+              else {
+                meetsOverlapCriteria = false
+              }
+            }
+            isSrcNodeACloud && isDestNodeACloud && meetsOverlapCriteria
         })
-        println(s"edgeList Map filetered ${edgeList.size}: $edgeList")
-        println(s"filtered Map ${filtered.size}")
-        edgeList
+        filtered.values
     })
   }
 
@@ -245,32 +225,35 @@ class GTGRunner(val masterURL: String,
    * Collect the edges of the form ((String, Double), (String, Double))
    * From the edges collect all used vertices.
    * Repeated vertices are eliminated due to the set conversion.
-   *
-   * @todo Make a vertex be of the form
-   *       ((frameId, componentId), area, min, max)
-   *       to also store area, min, max at the end of MCC.
-   * @param edgeListRDD RDD of edges
+   * @param MCCEdgeList Collection of MCCEdges
    */
-  def processEdges(edgeListRDD: RDD[((String, Double), (String, Double), Int)]): Unit = {
-    val collectedEdges = edgeListRDD.collect()
-    val collectedVertices = collectedEdges.flatMap({ case (n1, n2, n3) => List(n1, n2) }).toSet
+  def processEdges(MCCEdgeList: Iterable[MCCEdge],
+                   MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
+    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
+    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
 
-    val outv = new PrintWriter(new File("VertexList.txt"))
-    outv.write(collectedVertices.toList.sortBy(_._1) + "\n")
-    outv.close()
+    val pw = new PrintWriter("MCCNodesLines.json")
+    MCCNodeMap.foreach { case (key, value) =>
+      pw.write(value.toString())
+      pw.write("\n")
+    }
+    pw.close()
 
-    val oute = new PrintWriter(new File("EdgeList.txt"))
-    oute.write(collectedEdges.toList.sorted + "\n")
-    oute.close()
-
-    //    MainDistGraphMCC.performMCCfromRDD(componentFrameRDD)
-
-    logger.info("NUM VERTICES : " + collectedVertices.size + "\n")
-    logger.info("NUM EDGES : " + collectedEdges.length + "\n")
-    logger.info(edgeListRDD.toDebugString + "\n")
+    val fw = new PrintWriter("MCCEdges.txt")
+    fw.write(MCCEdgeList.toString())
+    fw.close()
   }
 
   def run(): Unit = {
+    val maxAreaOverlapThreshold = 0.65
+    val minAreaOverlapThreshold = 0.50
+    val minArea = 625
+    val nodeMinArea = 150
+    val convectiveFraction: Double = 0.9
+
+    val outerTemp = 241.0
+    val innerTemp = 233.0
+
     logger.info("Starting MCC")
     /**
      * Initialize the spark context to point to the master URL
@@ -287,12 +270,20 @@ class GTGRunner(val masterURL: String,
      * Note if no HDFS path is given, then randomly generated matrices are used.
      *
      */
-    val sRDD = sc.NetcdfDFSFiles(paths, List("ch4"), partitions)
+    val sRDD = sc.NetcdfDFSFiles(paths, List("ch4", "longitude", "latitude"), partitions)
+
+    /**
+     * Collect lat and lon arrays
+     */
+    val sampleDataset = sRDD.take(1)(0)
+    val lon = sampleDataset("longitude").data
+    val lat = sampleDataset("latitude").data
 
     /**
      * Record the frame Number in each SciTensor
      */
     val labeled = recordFrameNumber(sRDD)
+
 
     /**
      * Filter for temperature values under 241.0
@@ -308,12 +299,28 @@ class GTGRunner(val masterURL: String,
     /**
      * Core MCC
      */
-    val componentFrameRDD = findEdges(consecFrames)
+    val edgeListRDD = findEdges(consecFrames,
+      maxAreaOverlapThreshold,
+      minAreaOverlapThreshold,
+      convectiveFraction,
+      minArea,
+      nodeMinArea)
+
+    /**
+     * Collect the edgeList and construct NodeMap
+     */
+    val MCCEdgeList = edgeListRDD.collect()
+    val MCCNodeMap = createNodeMapFromEdgeList(MCCEdgeList, lat, lon)
 
     /**
      * Process the edge list. Collect and output edges and vertices
      */
-    processEdges(componentFrameRDD)
+    processEdges(MCCEdgeList, MCCNodeMap)
+
+    /**
+     * Output RDD DAG to logger
+     */
+    logger.info(edgeListRDD.toDebugString + "\n")
   }
 
 }
