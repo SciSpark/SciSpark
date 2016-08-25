@@ -178,11 +178,12 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
     this.cloudElemNum = c
   }
 
-  def update(value: Double, row: Int, col: Int): Unit = {
+  def update(value: Double, row: Int, col: Int): MCCNode = {
     updateRowAndCol(row, col)
     updateTemperatures(value)
     this.area += 1
     this.grid += ((s"($row, $col)", value))
+    this
   }
 
   def updateRowAndCol(row: Int, col: Int): Unit = {

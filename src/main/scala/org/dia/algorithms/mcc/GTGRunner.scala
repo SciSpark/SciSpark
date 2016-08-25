@@ -152,8 +152,7 @@ class GTGRunner(val masterURL: String,
         def updateComponent(label: Double, frame: String, value: Double, row: Int, col: Int): Unit = {
           if (label != 0.0) {
             val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame, label))
-            node.update(value, row, col)
-            nodeMap.update(frame + ":" + label, node)
+            nodeMap(frame + ":" + label) = node.update(value, row, col)
           }
         }
 
@@ -174,7 +173,7 @@ class GTGRunner(val masterURL: String,
               val edgeKey = s"$frame1:$label1,$frame2:$label2"
               val edge = MCCEdgeMap.getOrElse(edgeKey, new MCCEdge(node1, node2))
               edge.incrementAreaOverlap()
-              MCCEdgeMap.update(edgeKey, edge)
+              MCCEdgeMap(edgeKey) = edge
             }
           }
         }
