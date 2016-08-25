@@ -78,19 +78,22 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
   /**
    * Writes attribute in the form of key-value pairs
    */
-  def insertAttributes(metaDataVar: (String, String)*): Unit = {
+  def insertAttributes(metaDataVar: (String, String)*): SciDataset = {
     insertAttributes(metaDataVar)
+    this
   }
 
-  def insertAttributes(metaDataVars: Traversable[(String, String)]): Unit = {
+  def insertAttributes(metaDataVars: Traversable[(String, String)]): SciDataset = {
     attributes ++= metaDataVars
+    this
   }
 
   /**
    * Writes variables in the form of key-value pairs
    */
-  def insertVariable(variables: (Variable)*): Unit = {
+  def insertVariable(variables: (Variable)*): SciDataset = {
     for (v <- variables) this.variables += ((v.name, v))
+    this
   }
 
   def setName(newName : String): SciDataset = {
