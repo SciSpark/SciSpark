@@ -114,6 +114,35 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
    */
   def apply(key: String): Variable = variables(key)
 
+
+  /**
+   * Updates the SciDataset by inserting a new Variable
+   * for the given key.
+   *
+   * Usage sciD("key") = variable
+   * @param key the variable key to rename to
+   * @param variable the variable
+   * @return the modifed SciDataset
+   */
+  def update(key: String, variable: Variable): SciDataset = {
+    variables(key) = variable
+    this
+  }
+
+  /**
+   * Updates the SciDataset by inserting a new attribute
+   * for the given key.
+   *
+   * Usage sciD("key") = attributeString
+   * @param key the variable key to rename to
+   * @param attribute the attribute name
+   * @return the modified SciDataset
+   */
+  def update(key: String, attribute: String): SciDataset = {
+    attributes(key) = attribute
+    this
+  }
+
   /**
    * Access attribute values.
    * In Python's netcdf variable, attributes can be accessed as

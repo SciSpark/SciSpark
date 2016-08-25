@@ -68,9 +68,8 @@ class GTGRunner(val masterURL: String,
   def recordFrameNumber(sRDD: RDD[SciDataset]): RDD[SciDataset] = {
     sRDD.map(p => {
       val FrameID = p.datasetName.split("_")(1).toInt
-      p.insertAttributes(("FRAME", FrameID.toString))
-      p.insertVariable(p("ch4")(0).setName("ch4"))
-      p
+      p("FRAME") = FrameID.toString
+      p("ch4") = p("ch4")(0)
     })
   }
 
@@ -118,7 +117,7 @@ class GTGRunner(val masterURL: String,
 
     sRDD.flatMap({
       case (sd1, sd2) =>
-        val (t1, t2) = (sd1("(ch4 <= 241.0)"), sd2("(ch4 <= 241.0)"))
+        val (t1, t2) = (sd1("ch4"), sd2("ch4"))
         val (frame1, frame2) = (sd1.attr("FRAME"), sd2.attr("FRAME"))
         /**
          * First label the connected components in each pair.
@@ -286,7 +285,7 @@ class GTGRunner(val masterURL: String,
     /**
      * Filter for temperature values under 241.0
      */
-    val filtered = labeled.map(p => p.insertVariable(p("ch4") <= 241.0))
+    val filtered = labeled.map(p => p("ch4") = p("ch4") <= 241.0)
 
 
     /**
