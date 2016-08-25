@@ -74,10 +74,13 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 		checkedSSCEs = []
 
 		pyFormat = str(t)[:4]+'-'+str(t)[4:6]+'-'+str(t)[6:8]+'_'+str(t)[8:10]+':00:00'
+		
 		# get files associated with what is in the nodelist only 
-
-		pFiles = glob.glob(pyDir+'/MERGnetcdfCEs/*'+pyFormat+'*.nc')
+		pC = filter(lambda x:int(x.split('F')[1].split('CE')[0]) == allTimesInts.index(t)+1, pyNodes)
+		pyAllCEs = glob.glob(pyDir+'/MERGnetcdfCEs/*'+pyFormat+'*.nc')
+		pFiles = filter(lambda x: x.split(':00:00')[1].split('.nc')[0] in pC, pyAllCEs)
 		pyCEs = map(lambda y: y.split('/')[-1], pFiles)
+		
 		sFiles = glob.glob(ssDir+'/MERGnetcdfCEs/*'+str(t)+'*.nc')
 		
 		for pyFIdx in range(len(pFiles)):
@@ -85,49 +88,50 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 			pyData.append(numpy.squeeze(f.variables['brightnesstemp'][:, :, :], axis=0))
 			f.close()
 
-		for ssF in sFiles:
-			f = Dataset(ssF, 'r')
-			# fce = f.variables['CE_brightness_temperature'][:,:]
-			fce = f.variables['ch4'][:,:]
-			ssData.append(fce)
-			f.close()
+		if pyData:
+			for ssF in sFiles:
+				f = Dataset(ssF, 'r')
+				fce = f.variables['CE_brightness_temperature'][:,:]
+				# fce = f.variables['ch4'][:,:]
+				ssData.append(fce)
+				f.close()
 
-			# compare dims
-			if pyData[pyFIdx].shape != fce.shape:
-				print '!!!Error: Data shapes are different. Aborting tests. Breaking at %s' %(pFiles[pyFIdx], ssF)
-				sys.exit(1)	
+				# compare dims
+				if pyData[pyFIdx].shape != fce.shape:
+					print '!!!Error: Data shapes are different. Aborting tests. Breaking at %s' %(pFiles[pyFIdx], ssF)
+					sys.exit(1)	
 
-		# check equality of the two files (equivalent % of similar values). Assumes Python implementation as truth
-		# TODO: these for loops over the all the CEs instead of assuming Python is true
-		for i in range(len(pyData)):
-			for y in range(len(ssData)):
-				# if ssCE is entirely in python CE, mark it as true and note how much larger the python CE is than the ssCE
-				if numpy.count_nonzero(pyData[i] - ssData[y]) == (numpy.count_nonzero(pyData) - numpy.count_nonzero(ssData[y])) and numpy.count_nonzero(pyData[i] - ssData[y]) > 0:
-					alldiff.append((pFiles[i].split('/')[-1], sFiles[y].split('/')[-1], True, numpy.count_nonzero(pyData[i] - ssData[y])))
-				# check if the pyCE is within the ssCE				
+			# check equality of the two files (equivalent % of similar values). Assumes Python implementation as truth
+			# TODO: these for loops over the all the CEs instead of assuming Python is true
+			for i in range(len(pyData)):
+				for y in range(len(ssData)):
+					# if ssCE is entirely in python CE, mark it as true and note how much larger the python CE is than the ssCE
+					if numpy.count_nonzero(pyData[i] - ssData[y]) == (numpy.count_nonzero(pyData[i]) - numpy.count_nonzero(ssData[y])) and numpy.count_nonzero(pyData[i] - ssData[y]) > 0:
+						alldiff.append((pFiles[i].split('/')[-1], sFiles[y].split('/')[-1], True, numpy.count_nonzero(pyData[i] - ssData[y])))
+					# check if pyCE is in ssCE
+					else:
+						alldiff.append((pFiles[i].split('/')[-1], sFiles[y].split('/')[-1], numpy.array_equiv(pyData[i],ssData[y]), (pyData[i] == ssData[y]).sum()*1.0/ pyData[i].flatten().size ))			
+			
+			# first place all True in maxOverlapFrame, then check for highest %
+			for pyCE in pyCEs:
+				oneCE = [i for i in alldiff if i[0] == pyCE]
+				sortOneCE = sorted(oneCE, key=lambda x:x[3], reverse=True)
+
+				checkedSSCEs = filter(lambda y: y[3] > 1.0, sortOneCE)
+
+				if checkedSSCEs == []:
+					checkedSSCEs.append(sortOneCE[0][1])
+					maxOverlapFrame.append(sortOneCE[0])
+				elif checkedSSCEs != [] and maxOverlapFrame == []:
+					[maxOverlapFrame.append(x) for x in checkedSSCEs]
 				else:
-					alldiff.append((pFiles[i].split('/')[-1], sFiles[y].split('/')[-1], numpy.array_equiv(pyData[i],ssData[y]), (pyData[i] == ssData[y]).sum()*1.0/ pyData[i].flatten().size ))			
-		
-		# first place all True in maxOverlapFrame, then check for highest %
-		for pyCE in pyCEs:
-			oneCE = [i for i in alldiff if i[0] == pyCE]
-			sortOneCE = sorted(oneCE, key=lambda x:x[3], reverse=True)
+					for c in sortOneCE:
+						if not c[1] in checkedSSCEs: 
+							maxOverlapFrame.append(c)
+							checkedSSCEs.append(c[1])
+							break
 
-			checkedSSCEs = filter(lambda y: y[3] > 1.0, sortOneCE)
-
-			if checkedSSCEs == []:
-				checkedSSCEs.append(sortOneCE[0][1])
-				maxOverlapFrame.append(sortOneCE[0])
-			elif checkedSSCEs != [] and maxOverlapFrame == []:
-				[maxOverlapFrame.append(x) for x in checkedSSCEs]
-			else:
-				for c in sortOneCE:
-					if not c[1] in checkedSSCEs: 
-						maxOverlapFrame.append(c)
-						checkedSSCEs.append(c[1])
-						break
-
-		CEs.append((t, maxOverlapFrame))
+			CEs.append((t, maxOverlapFrame))
 		
 	if len(filter(lambda y: y[0][2] == False, map(lambda x: x[1], CEs))) != 0:
 		return False, CEs
@@ -302,8 +306,8 @@ def main(argv):
 
 	with open(pyDir+'/textFiles/CEList.txt', 'r') as pF:
 		pFs = pF.readline()
-	pyNodes = sorted(pFs[1:-1].replace('\'','').split(','), key=lambda x:x.split('F')[1].split('CE')[0])
-
+	pyNodes = map(lambda y: y.lstrip(), sorted(pFs[1:-1].replace('\'','').split(','), key=lambda x:x.split('F')[1].split('CE')[0]))
+	
 	with open (workingDir+'/output.log', 'w') as of:
 		of.write('Starting MCC accuracy tests ...\n')
 		of.write('Using Python implementations results at ' + pyDir+'\n')
@@ -311,14 +315,14 @@ def main(argv):
 		of.write('Results will be stored at ' + workingDir +'/output.log'+'\n')
 		
 		# check times between implementations
-		test_1(pyDir, ssDir, allTimesInts)
-		print('-'*80)
-		of.write('-'*80)
+		# test_1(pyDir, ssDir, allTimesInts)
+		# print('-'*80)
+		# of.write('-'*80)
 		
-		# check number of CEs at each frame		
-		test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
-		print('-'*80)
-		of.write('-'*80)
+		# # check number of CEs at each frame		
+		# test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
+		# print('-'*80)
+		# of.write('-'*80)
 		
 		# content in the CEs at each frame
 		allCEs = test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)				
