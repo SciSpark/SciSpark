@@ -19,22 +19,33 @@ package org.dia.algorithms.mcc
 
 class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
-  override def toString : String = {
-    s"((${srcNode.frameNum},${srcNode.cloudElemNum}) , (${destNode.frameNum},${destNode.cloudElemNum}))"
-  }
-
-
-  override def equals(that: Any): Boolean = that match {
-    case that: MCCEdge => that.srcNode == this.srcNode && that.destNode == this.destNode
-  }
-
-  override def hashCode(): Int = super.hashCode()
+  var areaOverlap: Int = 0
 
   def this(srcNode : MCCNode, destNode: MCCNode) {
-    this(srcNode, destNode, 0f)
+    this(srcNode, destNode, 0.0)
   }
 
   def setSourceNode(node: MCCNode): Unit = {
     this.srcNode = node
   }
+
+  def incrementAreaOverlap(): Unit = {
+    this.areaOverlap += 1
+  }
+
+  override def equals(that: Any): Boolean = that match {
+    case that: MCCEdge => that.srcNode == this.srcNode && that.destNode == this.destNode
+  }
+
+  def updateWeight(_weight: Double): Unit = {
+    this.weight = _weight
+  }
+
+  override def toString : String = {
+    s"((${this.srcNode.frameNum},${this.srcNode.cloudElemNum}) ," +
+      s" (${this.destNode.frameNum},${this.destNode.cloudElemNum}))"
+  }
+
+  override def hashCode(): Int = super.hashCode()
+
 }

@@ -257,10 +257,10 @@ object MainDistGraphMCC {
     val sourceKey = source(0) + source(1)
     val destKey = dest(0) + dest(1)
     if (!nodeMap.contains(sourceKey)) {
-      nodeMap.put(sourceKey, new MCCNode(source(0).toInt, source(1).toFloat))
+      nodeMap.put(sourceKey, new MCCNode(source(0), source(1)))
     }
     if (!nodeMap.contains(destKey)) {
-      nodeMap.put(destKey, new MCCNode(dest(0).toInt, dest(1).toFloat))
+      nodeMap.put(destKey, new MCCNode(dest(0), dest(1)))
     }
     val sourceNode: MCCNode = nodeMap.get(sourceKey).get
     val destNode = nodeMap.get(destKey).get
@@ -284,8 +284,8 @@ object MainDistGraphMCC {
   }
 
   def mapEdgesToBuckets(edge: ((String, Double), (String, Double), Int)): (Integer, MCCEdge) = {
-    val sourceNode = new MCCNode(edge._1._1.toInt, edge._1._2)
-    val destNode = new MCCNode(edge._2._1.toInt, edge._2._2)
+    val sourceNode = new MCCNode(edge._1._1, edge._1._2)
+    val destNode = new MCCNode(edge._2._1, edge._2._2)
     val mccEdge = new MCCEdge(sourceNode, destNode, edge._3)
     val sourceFrameNum = mccEdge.srcNode.frameNum
     val bucket = scala.math.ceil(sourceFrameNum / frameBucketSize).toInt
