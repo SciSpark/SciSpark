@@ -4,18 +4,20 @@ from itertools import groupby
 from collections import Counter
 from datetime import date, datetime, timedelta
 
-def compare_times(pyDir, ssDir):
+def compare_times(pyNodes, ssNodes, ssDir, allTimesInts):
 	'''
-	Purpose: To check the times of files in two folders to determine if similar
-	Inputs: pyDir - string representing the path to the directory with the netCDF files from the python implementation
-			ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
+	Purpose: To check the times of files in two nodelist to determine if similar
+	Inputs: pyNodes - a list of strings (F##CE##) representing the nodes found in the Python implementation. F## is the frame integer
+			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh
+			pyDir - string representing the path to the directory with the netCDF files from the python implementation
+			allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime and endTime
 	Assumptions: Files contain a datetime string
 	'''
 	print 'Checking the times in the files ...'
-	pyFiles = glob.glob(pyDir+'/MERGnetcdfCEs/*.nc')
 	ssFiles = glob.glob(ssDir+'/MERGnetcdfCEs/*.nc')
-	pyTimes = sorted(set(map(lambda x: int(x.split('/')[-1].split('cloudElements')[-1].split('F')[0].replace('-','').replace('_','').split(':')[0]), pyFiles)))
 	ssTimes = sorted(set(map(lambda x: int(x.split('/')[-1].split('CE')[0].split('F')[1]), ssFiles))) 
+	pyTimes = sorted(set(map(lambda x: allTimesInts[int(x.split('F')[1].split('CE')[0]) -1], pyNodes)))
+	
 	if pyTimes == ssTimes:
 		return True, (pyTimes, ssTimes)
 	else:
@@ -28,11 +30,11 @@ def compare_num_CEs_per_frame(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 			ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
 			pyNodes - a list of strings (F##CE##) representing the nodes found in the Python implementation. F## is the frame integer
 			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh
+			allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime and endTime
 	Outputs: CEs - list of tuples showing the number of CEs found at each frame for either implementation
 	Assumptions: Files contain a datetime string 
 	'''
 	print 'Checking the number of CEs at each frame ...'
-	
 	CEs = []
 
 	for t in range(len(allTimesInts)):
@@ -56,12 +58,14 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 	Purpose: Determine the overlap between the CEs for each frame from the two implementations
 	Inputs: pyDir - string representing the path to the directory with the netCDF files from the python implementation
 			ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
-
+			pyNodes - a list of strings (F##CE##) representing the nodes found in the Python implementation. F## is the frame integer
+			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh
+			allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime and endTime
 	Outputs: CEs - a list of list of tuples [frame, (python_CE, scispark_CE, overlap, %overlap if a float, 
 							or number of pts not overlapping when one node is a subset of another)]
 	Assumptions: Files contain a datetime string
 	'''
-	# for each frame compare the content in the CEs in SciSpark implementation with the 'truth' Python implementation
+	
 	print 'Comparing the content for the CEs at each frame ...'
 	
 	CEs = []
@@ -140,11 +144,11 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 
 def write_CE_mappings(workingDir, allCEs):
 	'''
-	Purpose:
+	Purpose: Indicate the mappings of the pyCEs to the ssCEs
 	Inputs: workingDir - directory for writing mapping files
 			allCEs - a list of list of tuples [frame, (python_CE, scispark_CE, overlap, %overlap if a float, 
 							or number of pts not overlapping when one node is a subset of another)]
-	Outputs:
+	Outputs: writes a file in the output directory called CEmappings.txt with the data
 	'''
 	ceMap = []
 	a = map(lambda y: y[1],allCEs)
@@ -161,27 +165,29 @@ def write_CE_mappings(workingDir, allCEs):
 		of.write('\n!! Problem with writing CEmappings to file \n')
 		print '!! Problem with writing CEmappings'
 
-def test_1(pyDir, ssDir, allTimesInts):
+def test_1(pyNodes, ssNodes, ssDir, allTimesInts):
 	''' 
 	Purpose: execute the first test to check the times within either implementation
-	Inputs: pyDir - string representing the path to the directory with the netCDF files from the python implementation
+	Inputs: pyNodes - a list of strings (F##CE##) representing the nodes found in the Python implementation. F## is the frame integer
+			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh
 			ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
 			allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime and endTime
 	Outputs: None
 	'''
-	# check for times
-	passed, runTimes = compare_times(pyDir, ssDir)
+	
+	passed, runTimes = compare_times(pyNodes, ssNodes, ssDir, allTimesInts)
+	
 	if passed:
-		print 'Test 1: The times in the folder are similar'
-		of.write('Test 1: The times in the folder are similar \n')
+		print 'Test 1: The times between implementations are similar'
+		of.write('\nTest 1: The times between implementations are similar \n')
 		if len(allTimesInts) != len(runTimes[0]):
 			print '\t* Note: there are no CEs in either implementation at these times: %s' %sorted(list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[0]))))
 			of.write('\t* Note: there are no CEs in either implementation at these times: %s \n' %sorted(list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[0])))))
 	else:
-		print '!!Test 1: The times in the folders are NOT similar. \npyDir times are %s.\nssDir times are %s.' %(runTimes[0], runTimes[1])
+		print '!!Test 1: The times between implementations are NOT similar. \npyDir times are %s.\nssDir times are %s.' %(runTimes[0], runTimes[1])
 		print '\t*Note: there are no CEs in Python implementations at these times: %s' %list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[0])))
 		print '\t*Note: there are no CEs in SciSpark implementation at these times: %s' %list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[1])))
-		of.write('\n!!Test 1: The times in the folders are NOT similar. \npyDir times are %s.\nssDir times are %s' %(runTimes[0],runTimes[1]))
+		of.write('\n!!Test 1: The times between implementations are NOT similar. \npyDir times are %s.\nssDir times are %s' %(runTimes[0],runTimes[1]))
 		of.write('\t*Note: there are no CEs in Python implementations at these times: %s' %list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[0])))+'\n')
 		of.write('\t*Note: there are no CEs in SciSpark implementation at these times: S3' %list(set(allTimesInts) - (set(allTimesInts)&set(runTimes[1])))+'\n')
 
@@ -196,9 +202,11 @@ def test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes):
 			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh 
 	Outputs: None
 	'''
-	passed, CEs = compare_num_CEs_per_frame(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)
 	pyCEs = 0
 	ssCEs = 0
+
+	passed, CEs = compare_num_CEs_per_frame(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)
+	
 	for i in CEs:
 		try:
 			if 'python' in i[0][0]:
@@ -225,11 +233,15 @@ def test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 	Purpose: execute the third test to check the times within either implementation
 	Inputs: pyDir - string representing the path to the directory with the netCDF files from the python implementation
 			ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
+			pyNodes - a list of strings (F##CE##) representing the nodes found in the Python implementation. F## is the frame integer
+			ssNodes - a list of strings representing the nodes found in the SciSpark implementation. F## is the datetime of the frame in the format YYYYMMDDhh
+			allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime and endTime
 	Outputs: allCEs - a list of list of tuples [frame, (python_CE, scispark_CE, overlap, %overlap if a float, 
 							or number of pts not overlapping when one node is a subset of another)]
 	'''
 	accounted = []
 	accCeMap = []
+	
 	passed, allCEs = compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)
 	
 	if passed:
@@ -276,7 +288,9 @@ def main(argv):
 			/MERGnetcdfCEs/ with CEsNetcdfs
 			/textFiles/ with any outputs necessary for either implementation e.g. file of node names
 	'''
+	
 	global of
+	
 	try:
 		opts, args = getopt.getopt(argv,"hd:t:")
 
@@ -330,9 +344,11 @@ def main(argv):
 		of.write('Using Python implementations results at ' + pyDir+'\n')
 		of.write('Using SciSpark implementation results at ' + ssDir+'\n')
 		of.write('Results will be stored at ' + workingDir +'/output.log'+'\n')
-		
+		print('-'*80)
+		of.write('-'*80)
+
 		# check times between implementations
-		test_1(pyDir, ssDir, allTimesInts)
+		test_1(pyNodes, ssNodes, ssDir, allTimesInts)
 		print('-'*80)
 		of.write('-'*80)
 		
