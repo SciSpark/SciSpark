@@ -1,6 +1,7 @@
 import glob, numpy, sys, getopt
 from netCDF4 import Dataset
 from itertools import groupby
+from collections import Counter
 from datetime import date, datetime, timedelta
 
 def compare_times(pyDir, ssDir):
@@ -102,7 +103,6 @@ def compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 					sys.exit(1)	
 
 			# check equality of the two files (equivalent % of similar values). Assumes Python implementation as truth
-			# TODO: these for loops over the all the CEs instead of assuming Python is true
 			for i in range(len(pyData)):
 				for y in range(len(ssData)):
 					# if ssCE is entirely in python CE, mark it as true and note how much larger the python CE is than the ssCE
@@ -156,9 +156,9 @@ def write_CE_mappings(workingDir, allCEs):
 			for i in ceMap:
 				f.write(i[0] +' --> '+i[1]+'\n')
 
-		of.write('Wrote the CE mappings at '+workingDir+'/CEmappings.txt \n')
+		of.write('\nWrote the CE mappings at '+workingDir+'/CEmappings.txt \n')
 	except:
-		of.write('!! Problem with writing CEmappings to file \n')
+		of.write('\n!! Problem with writing CEmappings to file \n')
 		print '!! Problem with writing CEmappings'
 
 def test_1(pyDir, ssDir, allTimesInts):
@@ -228,10 +228,13 @@ def test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 	Outputs: allCEs - a list of list of tuples [frame, (python_CE, scispark_CE, overlap, %overlap if a float, 
 							or number of pts not overlapping when one node is a subset of another)]
 	'''
+	accounted = []
+	accCeMap = []
 	passed, allCEs = compare_content_in_CEs(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)
+	
 	if passed:
-		print 'Test 3: Content of CEs at each frame are similar'
-		of.write('\nTest 3: Content of CEs at each frame are similar')
+		print 'Test 3: Content of CEs at each frame are similar.'
+		of.write('\nTest 3: Content of CEs at each frame are similar.')
 	else:
 		print '!!Test 3: Different content of CEs at each frames.' 
 		of.write('\n!!Test 3: Different content of CEs at each frames.' )
@@ -243,13 +246,27 @@ def test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts):
 		of.write('\n!! '+str(len(ceMap))+' CEs are accounted for. They are: \n ' +str(ceMap)+'\n')
 		of.write('*'*25)
 		print ('*'*25)
+		# if accounted for CEs > len(pyNodes) then there were multiple nodes in scispark implementation for one node.
+		if len(ceMap) > len(pyNodes):
+			accounted = map(lambda x: x[0].split(':00:00')[1].split('.nc')[0],ceMap)
+			accCeMap = ceMap
 		
 		ceMap = []
 		a = map(lambda y: y[1],allCEs)
 		for i in a:
 			ceMap.extend(filter(lambda x: x[2] == False, i))
 		print '!! %d CEs are unaccounted for. They are: \n %s' %(len(ceMap), ceMap)
-		of.write('\n!! '+str(len(ceMap))+' CEs are unaccounted for. They are: \n' +str(ceMap)+'\n')
+		of.write('\n!! '+str(len(ceMap))+' CEs are unaccounted for. They are: %s \n' %str(ceMap))
+		of.write('*'*25)
+		print ('*'*25)
+
+		if accounted:
+			c = Counter(accounted) - Counter(pyNodes)
+			print '%s in the Python implementation represented by multiple CEs in SciSpark implementation.' %c.keys()
+			of.write('\n%s in the Python implementation represented by multiple CEs in SciSpark implementation. \n' %c.keys())
+			for ce in c.keys():
+				print '%s has %d CEs in SciSpark implementation. Namely: %s' %(ce, c.get(ce)+1, map(lambda j: j[1], filter(lambda i: ce in i[0], accCeMap)))
+				of.write('%s has %d CEs in SciSpark implementation. Namely: %s \n' %(ce, c.get(ce)+1, map(lambda j: j[1], filter(lambda i: ce in i[0], accCeMap))))
 	return allCEs
 
 
@@ -315,14 +332,14 @@ def main(argv):
 		of.write('Results will be stored at ' + workingDir +'/output.log'+'\n')
 		
 		# check times between implementations
-		# test_1(pyDir, ssDir, allTimesInts)
-		# print('-'*80)
-		# of.write('-'*80)
+		test_1(pyDir, ssDir, allTimesInts)
+		print('-'*80)
+		of.write('-'*80)
 		
-		# # check number of CEs at each frame		
-		# test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
-		# print('-'*80)
-		# of.write('-'*80)
+		# check number of CEs at each frame		
+		test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
+		print('-'*80)
+		of.write('-'*80)
 		
 		# content in the CEs at each frame
 		allCEs = test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)				
