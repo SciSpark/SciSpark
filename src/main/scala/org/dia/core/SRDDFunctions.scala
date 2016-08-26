@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 
 import org.apache.spark.rdd.RDD
 
+import org.dia.tensors.AbstractTensor
+
 /**
  * Functions on top of the SRDD: an RDD of SciDatasets
  * To use the functions in SRDDFunctions import it like so :
@@ -54,6 +56,18 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
     })
   }
 
+  def splitBySubset(varName : String,
+                    keyFunc : SciDataset => Int,
+                    subsetShape : Int*): RDD[(List[(Int, Int)], Int, AbstractTensor)] = {
+    self.flatMap(sciD => {
+      val shape = sciD(varName).shape()
+      val ks = subsetShape.zipWithIndex.map({
+        case(subLen, index) => (0 to shape(index) by subLen).sliding(2).map(seq => (seq(0), seq(1)))
+      }).map(t => t.map(z => List(z)).toList)
+      val ranges = ks.reduce((ls1, ls2) => for (l1 <- ls1; l2 <- ls2) yield l1 ++ l2)
+      ranges.map(range => (range, keyFunc(sciD), sciD(varName)()(range: _*)))
+    })
+  }
 }
 
 object SRDDFunctions {
