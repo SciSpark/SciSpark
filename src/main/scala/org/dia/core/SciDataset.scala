@@ -58,6 +58,10 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
     this(vars.map(vr => nvar.findVariable(vr)), nvar.getGlobalAttributes.asScala, nvar.getLocation.split("/").last)
   }
 
+  def this(datasetName : String) {
+    this(mutable.HashMap[String, Variable](), mutable.HashMap[String, String](), datasetName)
+  }
+
   /**
    * Extract all the dimension names from the variables
    * Convert them into a string representation e.g.
