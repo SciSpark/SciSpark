@@ -56,17 +56,34 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
     })
   }
 
-  def splitBySubset(varName : String,
-                    keyFunc : SciDataset => Int,
-                    subsetShape : Int*): RDD[(List[(Int, Int)], Int, AbstractTensor)] = {
+  def splitSubsets(varName: String,
+                   keyFunc: SciDataset => Int,
+                   subsetShape: Int*): RDD[(List[(Int, Int)], (Int, AbstractTensor))] = {
     self.flatMap(sciD => {
       val shape = sciD(varName).shape()
       val ks = subsetShape.zipWithIndex.map({
-        case(subLen, index) => (0 to shape(index) by subLen).sliding(2).map(seq => (seq(0), seq(1)))
+        case (subLen, index) => (0 to shape(index) by subLen).sliding(2).map(seq => (seq(0), seq(1)))
       }).map(t => t.map(z => List(z)).toList)
       val ranges = ks.reduce((ls1, ls2) => for (l1 <- ls1; l2 <- ls2) yield l1 ++ l2)
-      ranges.map(range => (range, keyFunc(sciD), sciD(varName)()(range: _*)))
+      ranges.map(range => (keyFunc(sciD), (range, sciD(varName)()(range: _*))))
     })
+  }
+
+  def stackSubsets(sRDD: RDD[(List[(Int, Int)], (Int, AbstractTensor))]): RDD[AbstractTensor] = {
+    sRDD.map({ case (rangeListKey, p) => (rangeListKey, List(p)) })
+      .reduceByKey(_ ++ _)
+      .map({
+        case (rangeListKey, keyedtensors) =>
+          val sortedTensors = keyedtensors.sortBy(_._1).map(_._2)
+          sortedTensors.reduce((a, b) => a.stack(b))
+      })
+  }
+
+  def splitBySubsets(varName: String,
+                     keyFunc: SciDataset => Int,
+                     subsetShape: Int*): RDD[AbstractTensor] = {
+    val rangeKeyedRDD = splitSubsets(varName, keyFunc, subsetShape)
+    stackSubsets(rangeKeyedRDD)
   }
 }
 

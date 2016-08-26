@@ -59,7 +59,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // sqaure subset
     LOG.info("Square subset of shape (2,2)")
     val subSettedRDD = someRDD.map(p => Dataset.setName(p.toString))
-      .splitBySubset("data", keyFunc, 2, 2)
+      .splitSubsets("data", keyFunc, 2, 2)
     val subsets = subSettedRDD.collect
     for ((ranges, index, tensor) <- subsets) {
       assert(Dataset("data")()(ranges: _*).copy == tensor)
@@ -68,7 +68,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // rectangle subset
     LOG.info("Rectangle subset")
     val subSettedRDD2 = someRDD.map(p => Dataset.setName(p.toString))
-      .splitBySubset("data", keyFunc, 2, 3)
+      .splitSubsets("data", keyFunc, 2, 3)
     val subsets2 = subSettedRDD2.collect
     for ((ranges, index, tensor) <- subsets2) {
       assert(Dataset("data")()(ranges: _*).copy == tensor)
@@ -77,7 +77,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // row subset
     LOG.info("Row subset")
     val subSettedRDD3 = someRDD.map(p => Dataset.setName(p.toString))
-      .splitBySubset("data", keyFunc, 1)
+      .splitSubsets("data", keyFunc, 1)
     val subsets3 = subSettedRDD3.collect
     for ((ranges, index, tensor) <- subsets3) {
       assert(Dataset("data")()(ranges: _*).copy == tensor)
@@ -86,7 +86,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // col subset
     LOG.info("Col subset")
     val subSettedRDD4 = someRDD.map(p => Dataset.setName(p.toString))
-      .splitBySubset("data", keyFunc, 1)
+      .splitSubsets("data", keyFunc, 1)
     val subsets4 = subSettedRDD4.collect
     for ((ranges, index, tensor) <- subsets3) {
       assert(Dataset("data")()(ranges: _*).copy == tensor)
