@@ -92,6 +92,18 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
   def data: Array[Double]
 
+  /**
+   * Stacks the current array ontop of the input array
+   * in row ordered fashion
+   * [this.array, array]
+   *
+   * The resulting array will have shape (2, originalShape)
+   *
+   * @param array the new array to stack on
+   * @return the stacked array
+   */
+  def stack(array : AbstractTensor) : T
+
    /**
    * Returns the data dimensions
    *

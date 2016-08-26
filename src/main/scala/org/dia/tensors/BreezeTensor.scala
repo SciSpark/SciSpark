@@ -154,6 +154,9 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     tensor(indexes(0), indexes(1))
   }
 
+  def stack(array: AbstractTensor) : BreezeTensor = {
+    throw new Exception("This method in BreezeTensor has not been implemented yet")
+  }
   /**
    * Utility Operations
    */

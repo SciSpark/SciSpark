@@ -172,6 +172,8 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
 
   def data: Array[Double] = tensor.data.asDouble()
 
+  def stack(array: AbstractTensor*) : Nd4jTensor = Nd4j.hstack(this.tensor, array)
+
   /**
    * Utility Functions
    */
