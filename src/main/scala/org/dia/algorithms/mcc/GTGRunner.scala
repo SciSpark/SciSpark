@@ -33,7 +33,14 @@ import org.dia.core.{SciDataset, SciSparkContext}
  */
 class GTGRunner(val masterURL: String,
                 val paths: String,
-                val partitions: Int) {
+                val partitions: Int,
+                val maxAreaOverlapThreshold : Double = 0.65,
+                val minAreaOverlapThreshold : Double = 0.50,
+                val outerTemp : Double = 241.0,
+                val innerTemp : Double = 233.0,
+                val convectiveFraction : Double = 0.9,
+                val minArea : Int = 625,
+                val nodeMinArea : Int = 150) {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -241,14 +248,6 @@ class GTGRunner(val masterURL: String,
   }
 
   def run(): Unit = {
-    val maxAreaOverlapThreshold = 0.65
-    val minAreaOverlapThreshold = 0.50
-    val minArea = 625
-    val nodeMinArea = 150
-    val convectiveFraction: Double = 0.9
-
-    val outerTemp = 241.0
-    val innerTemp = 233.0
 
     logger.info("Starting MCC")
     /**
