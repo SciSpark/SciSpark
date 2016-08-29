@@ -162,11 +162,21 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
   }
 
   /**
-   * Creates a clone of the variable
+   * Creates a clone of the SciDataset
    *
    * @return
    */
-  def copy(): SciDataset = new SciDataset(variables.clone(), attributes.clone(), datasetName)
+  def copy(): SciDataset = {
+    /**
+     * Hashmaps by default in scala do not do a deep clone.
+     * Cloning the variable hashmap only copies the references
+     * not the actual objects.
+     *
+     * Instead each variable in the hashmap is cloned.
+     */
+    val clonedVariables = variables.map({case (name, variable) => (name, variable.copy())})
+    new SciDataset(clonedVariables, attributes.clone.toSeq, datasetName)
+  }
 
   override def toString: String = {
     val header = datasetName + "\nroot group ...\n"

@@ -154,7 +154,7 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
     tensor(indexes(0), indexes(1))
   }
 
-  def stack(array: AbstractTensor) : BreezeTensor = {
+  def stack(array: AbstractTensor*) : BreezeTensor = {
     throw new Exception("This method in BreezeTensor has not been implemented yet")
   }
   /**
@@ -213,6 +213,14 @@ class BreezeTensor(val tensor: DenseMatrix[Double]) extends AbstractTensor {
 
   def copy: BreezeTensor = tensor.copy
 
+  override def equals(obj: Any): Boolean = {
+    obj match {
+    case breeze: BreezeTensor => this.tensor == breeze.tensor
+    case _ => super.equals(obj)
+    }
+  }
+
+  override def hashCode(): Int = super.hashCode()
   /**
    * Due to implicit conversions we can do operations on BreezeTensors and DenseMatrix
    */

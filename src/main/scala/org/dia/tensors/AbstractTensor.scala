@@ -102,7 +102,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    * @param array the new array to stack on
    * @return the stacked array
    */
-  def stack(array : AbstractTensor) : T
+  def stack(array : AbstractTensor*) : T
 
    /**
    * Returns the data dimensions
@@ -123,10 +123,12 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def toString: String
 
   /**
+   * It will be called when checking equality against
+   * different implementations of AbstractTensor.
    * Due to properties of Doubles, the equals method
    * utilizes the percent error rather than checking absolute equality.
    * The threshold for percent error is if it is greater than 0.5% or .005.
-   * @param any
+   * @param any the object to compare to
    * @return
    */
   override def equals(any: Any): Boolean = {
@@ -138,7 +140,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
     val thisData = this.data
     val otherData = array.data
-    for(index <- 0 to thisData.length - 1) {
+    for(index <- thisData.indices) {
       val left = thisData(index)
       val right = otherData(index)
       if(left != 0.0 && right == 0.0) {
