@@ -170,6 +170,105 @@ def write_CE_mappings(workingDir, allCEs):
 		of.write('\n!! Problem with writing CEmappings to file \n')
 		print '!! Problem with writing CEmappings'
 
+def compare_edgelists(pyEdgeList, ssEdgeList):
+	'''
+	Compare the edgelist generated between the two implementations
+	Inputs: pyEdgeList - a list of list of strings representing the connect nodes within each subgraph
+			ssEdgeList - a list of tuples of two strings representing an edge between connected nodes with subgraphs
+	Outputs:
+	'''
+	groupededges = {}
+	nodes = set()
+	nodesArray = []
+	subgraphs = [] #{}
+	groups = []
+	seenNodes = []
+	nodeGraphs = {}
+	graphNodes = []
+
+	# below can be used to find the subgraphs from the edgelist generated 
+	for i in ssEdgeList:
+	    nodes.add(i[0])
+	    nodes.add(i[1])
+
+	nodesArray = [i for i in nodes]
+
+	for key, group in groupby(ssEdgeList, lambda x: x[0]):
+	    groupededges[key] = [k for k in group]
+
+	for currNode in nodesArray:
+		# thetime = (currNode.split('CE')[0]).split('F')[1]
+		# if not thetime in groups or not groups:
+		# 	groups.append(thetime)
+		# groupNum = groups.index(thetime)        
+		nodeGraphs[currNode] = cloud_cluster(currNode, groupededges)
+    
+	# for i in subgraphs.items()[0:10]:
+	# 	source = nodesArray.index(subgraphs.items()[0][0])
+	# 	print i
+
+	# for i in subgraphs, if key not in seenNodes, add the items to the list, else check each list for node and add to accordingly
+	for k, v in nodeGraphs.iteritems():
+		if k not in seenNodes and k not in list(set(sum(subgraphs, []))):
+			print k, len(subgraphs), len(seenNodes), '****NOT_SEEN****' 
+			subgraphs.append(list(sum(v, ())))
+			# seenNodes.append(k)
+			seenNodes.extend(list(sum(v, ())))
+			seenNodes = list(set(seenNodes))
+		else:
+			for c in range(len(subgraphs)):
+				if k in subgraphs[c]:
+					print k, len(subgraphs), len(subgraphs[c]), c, ' ****INSIDE*****'
+					subgraphs[c].extend(list(sum(v, ())))
+					subgraphs[c] = list(set(subgraphs[c]))
+					# seenNodes.append(k)
+					seenNodes.extend(list(sum(v, ())))
+					seenNodes = list(set(seenNodes))
+					break
+
+		# seenNodes = list(set(seenNodes))
+					
+	# 	print k, len(subgraphs), seenNodes
+	
+	# sys.exit()
+	# for i in filter(lambda x: len(x) >3 ,subgraphs):
+	# 	print i
+	# seenNodes = sorted(seenNodes, key=lambda y: y.split('F')[1].split('CE')[0])
+	print seenNodes
+	# sys.exit()
+	print len(subgraphs), len(seenNodes)
+	subgraphs = filter(lambda x: len(x) >3 , map(lambda y: list(set(y)) , subgraphs))
+	print subgraphs
+	print len(subgraphs)
+	# print len(filter(lambda x: len(x) >3 ,subgraphs))
+
+	sys.exit()
+    # true check is to determine if two list match for the edges. Order the edgeList for each subgraph by frame num then 
+    # compare 1. len of each list; 2. the number of CEs at each frame (groupby operation); if 1. & 2. equal return true for subgraphs
+    # extensive test would be to use the mapping from the previous test for each CE to ensure not only lengths are correct, but the CEs are
+    # equivalent as well
+        
+def cloud_cluster(nodeName, groupedges):
+	'''
+	Find the subgraphs
+	Inputs: nodeName - a string representing the node
+			groupedges - a key:value where values is a list representing all the nodes connected to the key
+	'''
+	Edgelist = []
+	Stack = [nodeName]
+	while len(Stack) > 0:
+	    z = Stack.pop()
+
+	    Edges = []
+	    if groupedges.has_key(z):
+	        Edges = groupedges[z]
+
+	    for i in Edges:
+	        Edgelist.append(i)
+	        Stack.append(i[1])
+	return Edgelist
+
+
 def test_1(pyNodes, ssNodes, ssDir, allTimesInts):
 	''' 
 	Purpose: execute the first test to check the times within either implementation
@@ -331,6 +430,7 @@ def main(argv):
 	print 'Using SciSpark implementation results at %s' %ssDir
 	print 'Results will be stored at %s in %s' %(workingDir, 'output.log')
 
+	# --- Acquire the data from the different implementations for the tests ---
 	startTime = datetime(int(str(sTime)[:4]), int(str(sTime)[4:6]), int(str(sTime)[6:8]), int(str(sTime)[8:10]))
 	endTime = datetime(int(str(eTime)[:4]), int(str(eTime)[4:6]), int(str(eTime)[6:8]), int(str(eTime)[8:10]))
 	a = [aDate for aDate in [startTime+timedelta(hours=i) for i in xrange(((endTime - startTime).days* 24 + (endTime - startTime).seconds/3600)+1)]]
@@ -338,12 +438,22 @@ def main(argv):
 
 	with open(ssDir+'/textFiles/MCCNodesLines_150Area.json', 'r') as sF:
 		sFs = sF.readlines()
-	ssNodes = sorted (map(lambda x: x[:-2], sFs),  key=lambda x:x.split('F')[1].split('CE')[0])
+	ssNodes = sorted (map(lambda x: x[:-1], sFs),  key=lambda x:x.split('F')[1].split('CE')[0])
 
 	with open(pyDir+'/textFiles/CEList.txt', 'r') as pF:
 		pFs = pF.readline()
 	pyNodes = map(lambda y: y.lstrip(), sorted(pFs[1:-1].replace('\'','').split(','), key=lambda x:x.split('F')[1].split('CE')[0]))
+
+	with open(ssDir+'/textFiles/MCCEdges.txt', 'r') as sF:
+		sFs = sF.readlines()
+	ssEList = map(lambda x: x+'))', sFs[0].split('List(')[1][:-3].split(')), '))
+	ssEdgeList = map(lambda x: ('F'+x.split(',')[0].split('((')[1]+'CE'+x.split(',')[1].split(')')[0], 'F'+x.split(',')[2].split('(')[1]+'CE'+x.split(',')[3].split('))')[0]), ssEList)
 	
+	with open(pyDir+'/textFiles/MCSList.txt', 'r') as pF:
+		pFs = pF.readline()
+	pyEdgeList = map( lambda x: x[1:].replace('\'','').split(','), pFs[1:-1].split(']'))
+	# --- end acquire data --
+
 	with open (workingDir+'/output.log', 'w') as of:
 		of.write('Starting MCC accuracy tests ...\n')
 		of.write('Using Python implementations results at ' + pyDir+'\n')
@@ -352,23 +462,29 @@ def main(argv):
 		print('-'*80)
 		of.write('-'*80)
 
-		# check times between implementations
-		test_1(pyNodes, ssNodes, ssDir, allTimesInts)
-		print('-'*80)
-		of.write('-'*80)
+		# # check times between implementations
+		# test_1(pyNodes, ssNodes, ssDir, allTimesInts)
+		# print('-'*80)
+		# of.write('-'*80)
 		
-		# check number of CEs at each frame		
-		test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
-		print('-'*80)
-		of.write('-'*80)
+		# # check number of CEs at each frame		
+		# test_2(pyDir, ssDir, allTimesInts, pyNodes, ssNodes)
+		# print('-'*80)
+		# of.write('-'*80)
 		
-		# content in the CEs at each frame
-		allCEs = test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)				
-		print('-'*80)
-		of.write('-'*80)
+		# # content in the CEs at each frame
+		# allCEs = test_3(pyDir, ssDir, pyNodes, ssNodes, allTimesInts)				
+		# print('-'*80)
+		# of.write('-'*80)
 
-		# write mappings of cloudelements in either implementation to a file
-		write_CE_mappings(workingDir, allCEs)
+		# # write mappings of cloudelements in either implementation to a file
+		# write_CE_mappings(workingDir, allCEs)
+
+		# check edgelist
+		print ssNodes
+		print ('#'*20)
+		test4 = compare_edgelists(pyEdgeList, ssEdgeList)
+
 
 if __name__ == '__main__':
 	main(sys.argv[1:]) 
