@@ -30,9 +30,14 @@ import org.dia.core.{SciDataset, SciSparkContext}
  * Runs Grab em' Tag em' Graph em'
  * Data is taken from local file system or HDFS through
  * Spark's experimental "sc.binaryFiles".
+ *
+ * The algorithm assumes that the variable arrays
+ * "longitude" and "latitude" exist in the Netcdf Files
+ * at the given path.
  */
 class GTGRunner(val masterURL: String,
                 val paths: String,
+                val varName: String,
                 val partitions: Int,
                 val maxAreaOverlapThreshold : Double = 0.65,
                 val minAreaOverlapThreshold : Double = 0.50,
@@ -70,13 +75,14 @@ class GTGRunner(val masterURL: String,
    * Preconditon : The files read are are of the form merg_XX_4km-pixel.nc
    *
    * @param sRDD input RDD of SciTensors
-   * @return RDD of SciTensors with Frame number recorded in metadaa table
+   * @param varName the variable being used
+   * @return RDD of SciTensors with Frame number recorded in metadata table
    */
-  def recordFrameNumber(sRDD: RDD[SciDataset]): RDD[SciDataset] = {
+  def recordFrameNumber(sRDD: RDD[SciDataset], varName: String): RDD[SciDataset] = {
     sRDD.map(p => {
       val FrameID = p.datasetName.split("_")(1).toInt
       p("FRAME") = FrameID.toString
-      p("ch4") = p("ch4")(0)
+      p(varName) = p(varName)(0)
     })
   }
 
@@ -112,10 +118,20 @@ class GTGRunner(val masterURL: String,
    * component pairing results in a zero matrix.
    * If not output a new edge pairing of the form ((Frame, Component), (Frame, Component))
    *
-   * @param sRDD the input RDD of SciTensors
+   * Note : findEdges assumes that all SciDatasets have an attribute called "FRAME" which
+   * records the frame number.
+   *
+   * @param sRDD the input RDD of SciDataset pairs
+   * @param varName the name of the variable being used
+   * @param maxAreaOverlapThreshold the maximum area over lap threshold
+   * @param minAreaOverlapThreshold the minimum area overlap threhshold
+   * @param convectiveFraction convective fraction threshold
+   * @param minArea the minimum area to check for third weight
+   * @param nodeMinArea the minimum area of a component
    * @return
    */
   def findEdges(sRDD: RDD[(SciDataset, SciDataset)],
+                varName: String,
                 maxAreaOverlapThreshold: Double,
                 minAreaOverlapThreshold: Double,
                 convectiveFraction: Double,
@@ -124,7 +140,7 @@ class GTGRunner(val masterURL: String,
 
     sRDD.flatMap({
       case (sd1, sd2) =>
-        val (t1, t2) = (sd1("ch4"), sd2("ch4"))
+        val (t1, t2) = (sd1(varName), sd2(varName))
         val (frame1, frame2) = (sd1.attr("FRAME"), sd2.attr("FRAME"))
         /**
          * First label the connected components in each pair.
@@ -229,6 +245,7 @@ class GTGRunner(val masterURL: String,
    * From the edges collect all used vertices.
    * Repeated vertices are eliminated due to the set conversion.
    * @param MCCEdgeList Collection of MCCEdges
+   * @param MCCNodeMap Dictionary of all the MCCNodes
    */
   def processEdges(MCCEdgeList: Iterable[MCCEdge],
                    MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
@@ -256,6 +273,11 @@ class GTGRunner(val masterURL: String,
     val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
 
     /**
+     * Initialize variableName to avoid serialization issues
+     */
+
+    val variableName = varName
+    /**
      * Ingest the input file and construct the SRDD.
      * For MCC the sources are used to map date-indexes.
      * The metadata variable "FRAME" corresponds to an index.
@@ -265,7 +287,7 @@ class GTGRunner(val masterURL: String,
      * Note if no HDFS path is given, then randomly generated matrices are used.
      *
      */
-    val sRDD = sc.sciDatasets(paths, List("ch4", "longitude", "latitude"), partitions)
+    val sRDD = sc.sciDatasets(paths, List(varName, "longitude", "latitude"), partitions)
 
     /**
      * Collect lat and lon arrays
@@ -277,13 +299,13 @@ class GTGRunner(val masterURL: String,
     /**
      * Record the frame Number in each SciTensor
      */
-    val labeled = recordFrameNumber(sRDD)
+    val labeled = recordFrameNumber(sRDD, variableName)
 
 
     /**
      * Filter for temperature values under 241.0
      */
-    val filtered = labeled.map(p => p("ch4") = p("ch4") <= 241.0)
+    val filtered = labeled.map(p => p(variableName) = p(variableName) <= 241.0)
 
 
     /**
@@ -295,6 +317,7 @@ class GTGRunner(val masterURL: String,
      * Core MCC
      */
     val edgeListRDD = findEdges(consecFrames,
+      variableName,
       maxAreaOverlapThreshold,
       minAreaOverlapThreshold,
       convectiveFraction,

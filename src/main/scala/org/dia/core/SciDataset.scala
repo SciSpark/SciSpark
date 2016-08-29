@@ -77,12 +77,20 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
 
   /**
    * Writes attribute in the form of key-value pairs
+   *
+   * @param metaDataVar tuple(s) of (attribute name, attribute value)
+   * @return The modified SciDataset with added attributes
    */
   def insertAttributes(metaDataVar: (String, String)*): SciDataset = {
     insertAttributes(metaDataVar)
     this
   }
 
+  /**
+   * Writes attribute in the form of key-value pairs in a collection.
+   * @param metaDataVars collection of tuple(s) of (attribute name, attribute value)
+   * @return The modified SciDataset with added attributes
+   */
   def insertAttributes(metaDataVars: Traversable[(String, String)]): SciDataset = {
     attributes ++= metaDataVars
     this
@@ -90,6 +98,9 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
 
   /**
    * Writes variables in the form of key-value pairs
+   *
+   * @param variables collection of tuple(s) of (variable name, variable object)
+   * @return The modified SciDataset with added attributes
    */
   def insertVariable(variables: (String, Variable)*): SciDataset = {
     for ((k, v) <- variables) this.variables += ((k, v))
@@ -109,6 +120,11 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
     this
   }
 
+  /**
+   * Assigns a new name to the Dataset
+   * @param newName name to assign Dataset to
+   * @return the renamed SciDataset
+   */
   def setName(newName : String): SciDataset = {
     datasetName = newName
     this
