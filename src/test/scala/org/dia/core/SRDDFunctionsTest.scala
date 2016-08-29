@@ -113,7 +113,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
 
     // Join together entire arrays without subsetting
     LOG.info("Testing join of entire array")
-    val spacePartitionedRDD = someRDD.splitBySubsets("data", keyFunc)
+    val spacePartitionedRDD = someRDD.repartitionBySpace("data", keyFunc)
     val spacePartitioned = spacePartitionedRDD.collect
     for((abst, indx) <- spacePartitioned.zipWithIndex) {
       assert(abst.shape().toList == List(lenAlongDimension, 400, 1440))
@@ -127,7 +127,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
 
     // Split into shapes of 200 by 1440
     LOG.info("Testing tile by 200 x 1440")
-    val spacePartitionedRDD2 = someRDD.splitBySubsets("data", keyFunc, 200)
+    val spacePartitionedRDD2 = someRDD.repartitionBySpace("data", keyFunc, 200)
     val spacePartitioned2 = spacePartitionedRDD2.collect.sortBy(p => p.name)
     for((abst, indx) <- spacePartitioned2.zipWithIndex) {
       assert(abst.shape().toList == List(lenAlongDimension, 200, 1440))
@@ -140,7 +140,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
 
     // Split into shapes of 200 by 144
     LOG.info("Testing tile by 200 x 144")
-    val spacePartitionedRDD3 = someRDD.splitBySubsets("data", keyFunc, 200, 144)
+    val spacePartitionedRDD3 = someRDD.repartitionBySpace("data", keyFunc, 200, 144)
     val pattern = "\\[([0-9]+):([0-9]+)\\,([0-9]+):([0-9]+)\\]".r
     val spacePartitioned3 = spacePartitionedRDD3.collect.sortBy(p => {
       val pattern(w, x, y, z) = p.name.slice(13, p.name.length)
