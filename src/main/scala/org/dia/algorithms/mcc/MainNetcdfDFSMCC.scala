@@ -33,7 +33,7 @@ object MainNetcdfDFSMCC {
   def processCmd(args: Array[String]): (String, String, String, Int) = {
     val masterURL = if (args.isEmpty) "local[*]" else args(0)
     val partitions = if (args.length <= 1) 8 else args(1).toInt
-    val path = if (args.length <= 2) "paperSize/" else args(2)
+    val path = if (args.length <= 2) "resources/paperSize/" else args(2)
     val varName = if (args.length <= 3) "ch4" else args(3)
     (masterURL, path, varName, partitions)
   }
