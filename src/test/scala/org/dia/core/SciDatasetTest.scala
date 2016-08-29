@@ -59,6 +59,34 @@ class SciDatasetTest extends FunSuite with BeforeAndAfter{
     assert(Dataset.attr(attrName) == attr)
   }
 
+  test("updateAttributes") {
+    // create new attribute
+    val attr = "Hi Five!"
+    val attrName = "Greeting"
+    Dataset(attrName) = attr
+    assert(Dataset.attr(attrName) == attr)
+
+    // update attribute
+    val newAttrVal = "Hi Update!"
+    Dataset(attrName) = newAttrVal
+    assert(Dataset.attr(attrName) == newAttrVal)
+  }
+
+  test("updateVariables") {
+    // create new variable
+    val varName = "data2"
+    val dataVar = netcdfDataset.findVariable("data")
+    val variable = new Variable(dataVar)
+
+    Dataset(varName) = variable
+    assert(Dataset(varName) == variable)
+
+    // update variable
+    val variableMult = variable * 2.0
+    Dataset(varName) = variableMult
+    assert(Dataset(varName) == variableMult)
+  }
+
   test("testToString") {
     val string = "nc_3B42_daily.2008.01.02.7.bin.nc\n" +
                  "root group ...\n" +

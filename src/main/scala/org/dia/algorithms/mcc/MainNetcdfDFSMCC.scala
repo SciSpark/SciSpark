@@ -30,11 +30,12 @@ object MainNetcdfDFSMCC {
    * @param args the arguements
    * @return succesful parsing
    */
-  def processCmd(args: Array[String]): (String, String, Int) = {
+  def processCmd(args: Array[String]): (String, String, String, Int) = {
     val masterURL = if (args.isEmpty) "local[*]" else args(0)
     val partitions = if (args.length <= 1) 8 else args(1).toInt
-    val path = if (args.length <= 2) "resources/merg/" else args(4)
-    (masterURL, path, partitions)
+    val path = if (args.length <= 2) "resources/paperSize/" else args(2)
+    val varName = if (args.length <= 3) "ch4" else args(3)
+    (masterURL, path, varName, partitions)
   }
 
   def main(args: Array[String]): Unit = {
@@ -42,12 +43,12 @@ object MainNetcdfDFSMCC {
     /**
      * Process cmd line arguements
      */
-    val (masterURL, path, partitions) = processCmd(args)
+    val (masterURL, path, varName, partitions) = processCmd(args)
 
     /**
      * Run MCC search with GTGRunner
      */
-    val gTGRunner = new GTGRunner(masterURL, path, partitions)
+    val gTGRunner = new GTGRunner(masterURL, path, varName, partitions)
     gTGRunner.run()
 
   }

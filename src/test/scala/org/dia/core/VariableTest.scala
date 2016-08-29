@@ -94,6 +94,17 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
     assert(insertedAttribute == "value1")
   }
 
+  test("updateAttributes") {
+    // insert new attribute
+    val copy = variable.copy()
+    copy("random_attribute") = "value1"
+    assert(copy("random_attribute") == "value1")
+
+    // update inserted attribute
+    copy("random_attribute") = "other_value"
+    assert(copy("random_attribute") == "other_value")
+  }
+
   test("test Dims") {
     val dims = dataVar.getDimensions.asScala.map(p => (p.getFullName, p.getLength))
     val varDims = variable.dims.toMap

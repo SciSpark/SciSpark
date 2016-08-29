@@ -77,22 +77,54 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
 
   /**
    * Writes attribute in the form of key-value pairs
+   *
+   * @param metaDataVar tuple(s) of (attribute name, attribute value)
+   * @return The modified SciDataset with added attributes
    */
-  def insertAttributes(metaDataVar: (String, String)*): Unit = {
+  def insertAttributes(metaDataVar: (String, String)*): SciDataset = {
     insertAttributes(metaDataVar)
+    this
   }
 
-  def insertAttributes(metaDataVars: Traversable[(String, String)]): Unit = {
+  /**
+   * Writes attribute in the form of key-value pairs in a collection.
+   * @param metaDataVars collection of tuple(s) of (attribute name, attribute value)
+   * @return The modified SciDataset with added attributes
+   */
+  def insertAttributes(metaDataVars: Traversable[(String, String)]): SciDataset = {
     attributes ++= metaDataVars
+    this
   }
 
   /**
    * Writes variables in the form of key-value pairs
+   *
+   * @param variables collection of tuple(s) of (variable name, variable object)
+   * @return The modified SciDataset with added attributes
    */
-  def insertVariable(variables: (Variable)*): Unit = {
-    for (v <- variables) this.variables += ((v.name, v))
+  def insertVariable(variables: (String, Variable)*): SciDataset = {
+    for ((k, v) <- variables) this.variables += ((k, v))
+    this
   }
 
+  /**
+   * Writes a new variable to the hashmap.
+   * It is recommended to use the update function instead
+   * which enables you to use the "=" operator to insert new variables.
+   * @param key name of variable
+   * @param value the variable object ot insert
+   * @return the current SciDataset
+   */
+  def insertVariable(key: String, value: Variable): SciDataset = {
+    this.variables(key) = value
+    this
+  }
+
+  /**
+   * Assigns a new name to the Dataset
+   * @param newName name to assign Dataset to
+   * @return the renamed SciDataset
+   */
   def setName(newName : String): SciDataset = {
     datasetName = newName
     this
@@ -110,6 +142,35 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
    * @return the variable
    */
   def apply(key: String): Variable = variables(key)
+
+
+  /**
+   * Updates the SciDataset by inserting a new Variable
+   * for the given key.
+   *
+   * Usage sciD("key") = variable
+   * @param key the variable key to rename to
+   * @param variable the variable
+   * @return the modifed SciDataset
+   */
+  def update(key: String, variable: Variable): SciDataset = {
+    variables(key) = variable
+    this
+  }
+
+  /**
+   * Updates the SciDataset by inserting a new attribute
+   * for the given key.
+   *
+   * Usage sciD("key") = attributeString
+   * @param key the variable key to rename to
+   * @param attribute the attribute name
+   * @return the modified SciDataset
+   */
+  def update(key: String, attribute: String): SciDataset = {
+    attributes(key) = attribute
+    this
+  }
 
   /**
    * Access attribute values.
