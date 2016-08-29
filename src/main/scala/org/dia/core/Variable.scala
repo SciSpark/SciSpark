@@ -81,11 +81,17 @@ class Variable(var name: String,
     this(nvar.getFullName, nvar)
   }
 
+  def this(name: String, array: AbstractTensor, dims: List[(String, Int)]) {
+    this(name,
+      "Double64",
+      array,
+      mutable.HashMap[String, String](),
+      dims)
+  }
+
   def this(name: String, array: AbstractTensor) {
     this(name,
-         "Double64",
          array,
-         mutable.HashMap[String, String](),
          List[(String, Int)]())
   }
 
@@ -325,7 +331,7 @@ class Variable(var name: String,
    */
   def copy(): Variable = new Variable(name, dataType, array.copy, attributes.clone(), dims)
 
-  override def clone(): AnyRef = this.copy()
+  override def clone(): AnyRef = new Variable(name, dataType, array.copy, attributes.clone(), dims)
 
   /**
    * It should print just the same or similar to how

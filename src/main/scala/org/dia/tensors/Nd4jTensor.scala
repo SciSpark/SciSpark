@@ -173,6 +173,19 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def data: Array[Double] = tensor.data.asDouble()
 
   /**
+   * Joins a sequence of arrays along the first axis
+   *
+   * @param arrays the arrays to stack on
+   * @return the resulting array
+   */
+  def stack(arrays: AbstractTensor*) : Nd4jTensor = {
+    val listOfTensors = List(this.tensor) ++ arrays.map(_.tensor)
+    val newShape = Array(arrays.length + 1) ++ this.shape
+    val stackedTensors = Nd4j.vstack(listOfTensors: _*).reshape(newShape: _*)
+    new Nd4jTensor(stackedTensors)
+  }
+
+  /**
    * Utility Functions
    */
   def cumsum: Double = tensor.sumNumber.asInstanceOf[Double]
@@ -265,6 +278,15 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   def min: Double = tensor.minNumber.asInstanceOf[Double]
 
   def copy: Nd4jTensor = new Nd4jTensor(this.tensor.dup())
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case nd4j: Nd4jTensor => this.tensor == nd4j.tensor
+      case _ => super.equals(obj)
+    }
+  }
+
+  override def hashCode(): Int = super.hashCode()
 
   private implicit def AbstractConvert(array: AbstractTensor): Nd4jTensor = array.asInstanceOf[Nd4jTensor]
 }

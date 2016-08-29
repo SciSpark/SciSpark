@@ -58,6 +58,10 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
     this(vars.map(vr => nvar.findVariable(vr)), nvar.getGlobalAttributes.asScala, nvar.getLocation.split("/").last)
   }
 
+  def this(datasetName : String) {
+    this(mutable.HashMap[String, Variable](), mutable.HashMap[String, String](), datasetName)
+  }
+
   /**
    * Extract all the dimension names from the variables
    * Convert them into a string representation e.g.
@@ -219,11 +223,21 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
   }
 
   /**
-   * Creates a clone of the variable
+   * Creates a clone of the SciDataset
    *
    * @return
    */
-  def copy(): SciDataset = new SciDataset(variables.clone(), attributes.clone(), datasetName)
+  def copy(): SciDataset = {
+    /**
+     * Hashmaps by default in scala do not do a deep clone.
+     * Cloning the variable hashmap only copies the references
+     * not the actual objects.
+     *
+     * Instead each variable in the hashmap is cloned.
+     */
+    val clonedVariables = variables.map({case (name, variable) => (name, variable.copy())})
+    new SciDataset(clonedVariables, attributes.clone.toSeq, datasetName)
+  }
 
   override def toString: String = {
     val header = datasetName + "\nroot group ...\n"

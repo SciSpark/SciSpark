@@ -68,7 +68,7 @@ class BasicTensorTest extends FunSuite {
   test("filter") {
     logger.info("In filter test ...")
     val dense = Nd4j.create(Array[Double](1, 241, 241, 1), Array(2, 2))
-    val t = Nd4j.create(Array[Double](1, 0, 0, 0), Array(2, 2))
+    val t = Nd4j.create(Array[Double](1, 0, 0, 1), Array(2, 2))
     val Nd4jt1 = new Nd4jTensor(t)
     val Nd4jt2 = new Nd4jTensor(dense).map(p => if (p < 241) p else 0)
     logger.info(t.toString)
@@ -198,7 +198,9 @@ class BasicTensorTest extends FunSuite {
     val cubeTensor = new Nd4jTensor(cube)
     val solutionTensor = new Nd4jTensor(solutionDetrended)
     val detrended = cubeTensor.detrend(0)
-    assert(detrended == solutionTensor)
+    // Need to round to hundredth since the solution array is also rounded to hundredth
+    val roundedDetrend = detrended.map(p => Math.round(p * 100) / 100.0)
+    assert(roundedDetrend == solutionTensor)
   }
 
   test("assign") {

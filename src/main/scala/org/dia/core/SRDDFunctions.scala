@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
 
 import org.apache.spark.rdd.RDD
 
+import org.dia.tensors.AbstractTensor
+
 /**
  * Functions on top of the SRDD: an RDD of SciDatasets
  * To use the functions in SRDDFunctions import it like so :
@@ -54,6 +56,127 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
     })
   }
 
+  /**
+   * Splits Variables in SciDatasets into tiled Variables.
+   *
+   * The resulting tile variables are mapped to two keys:
+   * - a list of ranges specifying the location of the tile
+   * in the original array
+   * - an index specifying the tile's location on a new axis.
+   *
+   * @param varName The name of the variable to use
+   * @param keyFunc the function used to extract a new index
+   * @param tileShape the shape of tiles the variable array
+   *                       wil be split into
+   * @return
+   */
+  def splitTiles(varName: String,
+                 keyFunc: SciDataset => Int,
+                 tileShape: Int*): RDD[(List[(Int, Int)], (Int, Variable))] = {
+    self.flatMap(sciD => {
+      val shape = sciD(varName).shape()
+      val tileShapeSeq = if (tileShape.isEmpty) shape.toSeq else tileShape
+
+      /**
+       * Obtain a sliding range across all dimensions
+       * For example : An array of dimension 4, 4, 4 and a tile shape of 2 x 2 x 2
+       * will result in the following structure
+       * List(
+       *  List((0, 2), (2, 4))
+       *  List((0, 2), (2, 4))
+       *  List((0, 2), (2, 4))
+       * )
+       */
+      val tileRangesAlongDimensions = tileShapeSeq.zipWithIndex.map({
+        case (subLen, index) => (0 to shape(index) by subLen).sliding(2).map(seq => (seq(0), seq(1)))
+      }).map(t => t.map(z => List(z)).toList)
+
+      /**
+       * Take the cross product of ranges across dimension
+       * resulting in range slices for all tiles of the given shape.
+       *
+       * Following the example from above :
+       * List(
+       *  List((0, 2), (0, 2), (0, 2))
+       *  List((0, 2), (0, 2), (2, 4))
+       *  List((0, 2), (2, 4), (0, 2))
+       *  List((0, 2), (2, 4), (2, 4))
+       *  List((2, 4), (0, 2), (0, 2))
+       *  List((2, 4), (0, 2), (2, 4))
+       *  List((2, 4), (2, 4), (0, 2))
+       *  List((2, 4), (2, 4), (2, 4))
+       * )
+       */
+      val ranges = tileRangesAlongDimensions.reduce((ls1, ls2) => for (l1 <- ls1; l2 <- ls2) yield l1 ++ l2)
+
+      /**
+       * Apply the ranges on the variable to split it into tiles.
+       */
+      ranges.map(range => (range, (keyFunc(sciD), sciD(varName)(range: _*))))
+    })
+  }
+
+  /**
+   * Stacks a collection of variables along a new axis.
+   *
+   * Each element in the input RDD consists of :
+   *  1. List of ranges that serve as the location key
+   *  2. A tuple consisting of:
+   *      a. The index of the variable tile on the new axis
+   *      b. The variable tile
+   * @param sRDD the input RDD
+   * @param dimName the name of the new dimension default : time
+   * @return
+   */
+  def stackTiles(sRDD: RDD[(List[(Int, Int)], (Int, Variable))],
+                 dimName : String = "time"): RDD[Variable] = {
+
+    /**
+     * ReduceByKey aggregates tiles with the same original position
+     */
+    sRDD.map({ case (rangeKey, p) => (rangeKey, List(p))})
+      .reduceByKey(_ ++ _)
+      .map({
+        case (rangeKey, keyedVariables) =>
+
+          /**
+           * Use a sample variable to obtain the dimensions of
+           */
+          val (_, sampleVar) = keyedVariables.head
+          val newDims = (dimName, keyedVariables.length)::sampleVar.dims
+
+          /**
+           * Sort the tiles according to their index on the new axis.
+           * Stack tiles along this axis to create a tensor object.
+           */
+          val sortedTensors = keyedVariables
+            .sortBy({case (key, _) => key})
+            .map({case (_, variable) => variable()})
+          val head::tail = sortedTensors
+          val stackedTensor = head.stack(tail: _*)
+
+          new Variable(sampleVar.name, stackedTensor, newDims)
+      })
+  }
+
+  /**
+   * Repartitions a variable stored in each SciDataset.
+   * Initially the variable is split across a given axis for example time.
+   * Each SciDataset then corresponds to a specific index on the time axis.
+   *
+   * repartitionBySpace splits the chosen variable into tiles, and aggregates
+   * them along the time (or user defined) axis.
+   * @param varName the name of the variable
+   * @param keyFunc the function used to obtain index on the new axis
+   * @param tileShape the shape of tiles to each variable into.
+   * @return
+   */
+  def repartitionBySpace(varName: String,
+                         keyFunc: SciDataset => Int,
+                         tileShape: Int*): RDD[Variable] = {
+    val rangeKeyedRDD = splitTiles(varName, keyFunc, tileShape: _*)
+    stackTiles(rangeKeyedRDD)
+  }
 }
 
 object SRDDFunctions {
