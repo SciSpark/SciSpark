@@ -51,15 +51,15 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     assert(fileCount == 10)
   }
 
-  test("testRepartitionBySubset") {
+  test("testSplitTiles") {
     val Dataset = new SciDataset(netcdfDataset)
     val someRDD = SparkTestConstants.sc.sparkContext.parallelize(0 until 1)
     val keyFunc : SciDataset => Int = sciD => sciD.datasetName.toInt
 
     // sqaure subset
-    LOG.info("Square subset of shape (2,2)")
+    LOG.info("Square subset of shape (80,80)")
     val subSettedRDD = someRDD.map(p => Dataset.setName(p.toString))
-      .splitTiles("data", keyFunc, 2, 2)
+      .splitTiles("data", keyFunc, 80, 80)
     val subsets = subSettedRDD.collect
     for ((ranges, (index, tensor)) <- subsets) {
       assert(Dataset("data")(ranges: _*) == tensor)
@@ -68,7 +68,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // rectangle subset
     LOG.info("Rectangle subset")
     val subSettedRDD2 = someRDD.map(p => Dataset.setName(p.toString))
-      .splitTiles("data", keyFunc, 2, 3)
+      .splitTiles("data", keyFunc, 200, 30)
     val subsets2 = subSettedRDD2.collect
     for ((ranges, (index, tensor)) <- subsets2) {
       assert(Dataset("data")(ranges: _*) == tensor)
@@ -77,7 +77,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
     // row subset
     LOG.info("Row subset")
     val subSettedRDD3 = someRDD.map(p => Dataset.setName(p.toString))
-      .splitTiles("data", keyFunc, 1)
+      .splitTiles("data", keyFunc, 100)
     val subsets3 = subSettedRDD3.collect
     for ((ranges, (index, tensor)) <- subsets3) {
       assert(Dataset("data")(ranges: _*) == tensor)
@@ -94,7 +94,7 @@ class SRDDFunctionsTest extends FunSuite with BeforeAndAfterEach {
 
   }
 
-  test("testSplitBySubset") {
+  test("testRepartitionBySpace") {
     /**
      * Create a list of Datasets each with its values incremented
      * by a different amount
