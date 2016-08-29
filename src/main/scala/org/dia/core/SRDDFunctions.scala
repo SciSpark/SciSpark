@@ -159,9 +159,9 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
       })
   }
 
-  def splitBySubsets(varName: String,
-                     keyFunc: SciDataset => Int,
-                     subsetShape: Int*): RDD[Variable] = {
+  def repartitionBySpace(varName: String,
+                         keyFunc: SciDataset => Int,
+                         subsetShape: Int*): RDD[Variable] = {
     val rangeKeyedRDD = splitTiles(varName, keyFunc, subsetShape: _*)
     stackTiles(rangeKeyedRDD)
   }
