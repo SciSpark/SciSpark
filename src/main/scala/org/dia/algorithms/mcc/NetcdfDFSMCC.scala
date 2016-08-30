@@ -39,8 +39,8 @@ object NetcdfDFSMCC {
    * @return
    */
   def createMapFromEdgeList(edgesRDD: Iterable[MCCEdge],
-                            lat: Array[Double], lon: Array[Double]): mutable.HashMap[String, Any] = {
-    val MCCNodeMap = new mutable.HashMap[String, Any]()
+                            lat: Array[Double], lon: Array[Double]): mutable.HashMap[String, MCCNode] = {
+    val MCCNodeMap = new mutable.HashMap[String, MCCNode]()
     edgesRDD.foreach { edge => {
       val srcKey = s"${edge.srcNode.frameNum},${edge.srcNode.cloudElemNum}"
       val destKey = s"${edge.destNode.frameNum},${edge.destNode.cloudElemNum}"
