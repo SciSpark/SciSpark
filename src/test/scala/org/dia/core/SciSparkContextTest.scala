@@ -41,7 +41,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
   test("NetcdfFile.Local") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = SparkTestConstants.datasetVariable
-    val sRDD = sc.NetcdfFileList(testLinks, List(variable))
+    val sRDD = sc.netcdfFileList(testLinks, List(variable))
 
     val smoothedSRDD = sRDD.map(p => p(variable).reduceResolution(5, -9999))
     val collect = smoothedSRDD.map(_ <= 241.0).collect()
@@ -63,7 +63,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
    */
   test("NetcdfDFSFile.Local") {
     val variable = "data"
-    val rdd = sc.NetcdfDFSFiles("src/test/resources/Netcdf/", List(variable))
+    val rdd = sc.netcdfDFSFiles("src/test/resources/Netcdf/", List(variable))
     val collected = rdd.collect
 
     assert(collected.length == 2)
@@ -74,7 +74,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
    */
   test("NetcdfRandomAccessFile") {
     val variable = "data"
-    val rdd = sc.NetcdfRandomAccessDatasets("src/test/resources/Netcdf/", List(variable))
+    val rdd = sc.netcdfRandomAccessDatasets("src/test/resources/Netcdf/", List(variable))
     val count = rdd.count()
 
     assert(count == 2)
@@ -89,5 +89,14 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     val listCount = listRDD.count()
     assert(count == 2)
     assert(listCount == 2)
+  }
+
+  test("PartitionCount") {
+    val variable = "data"
+    val variable2 = SparkTestConstants.datasetVariable
+    val rdd = sc.sciDatasets("src/test/resources/Papersize/", List(variable), 4)
+    val nrdd = sc.netcdfDFSFiles("src/test/resources/Papersize/", List(variable), 4)
+    assert(rdd.getNumPartitions == 4)
+    assert(nrdd.getNumPartitions == 4)
   }
 }
