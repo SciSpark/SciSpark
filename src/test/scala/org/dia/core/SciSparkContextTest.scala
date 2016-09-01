@@ -95,7 +95,6 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     val variable = "data"
     val variable2 = SparkTestConstants.datasetVariable
     val rdd = sc.sciDatasets("src/test/resources/Papersize/", List(variable), 4)
-    val nrdd = sc.netcdfDFSFiles("src/test/resources/Papersize/", List(variable), 4)
     assert(rdd.getNumPartitions == 4)
   }
 }
