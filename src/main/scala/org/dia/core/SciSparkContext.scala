@@ -56,7 +56,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   // scalastyle:on classforname
   val ParserLevel = org.apache.log4j.Level.OFF
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
-  val r = scala.util.Random
+  val defaultPartitions = sparkContext.defaultMinPartitions
   var HTTPCredentials: mutable.Seq[(String, String, String)] = mutable.Seq()
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
 
@@ -118,14 +118,16 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *             A) a directory of netCDF files
    *             B) a .txt file consisting of line separated OpenDAP URLs
    * @param vars The variables to be extracted from the dataset
-   * @param partitionCount The number of partitions the data should be split into
+   * @param partitions The number of partitions the data should be split into
    */
-  def sciDatasets(path : String, vars : List[String] = Nil, partitionCount : Int = 2): RDD[SciDataset] = {
+  def sciDatasets(path : String,
+                  vars : List[String] = Nil,
+                  partitions : Int = defaultPartitions): RDD[SciDataset] = {
     val uri = new URI(path)
     if (uri.getPath.endsWith(".txt")) {
-      NetcdfDatasetList(path, vars, partitionCount)
+      netcdfDatasetList(path, vars, partitions)
     } else {
-      NetcdfRandomAccessDatasets(path, vars, partitionCount)
+      netcdfRandomAccessDatasets(path, vars, partitions)
     }
   }
 
@@ -136,11 +138,11 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfRandomAccessDatasets
    */
-  def NetcdfDatasetList(path: String,
+  def netcdfDatasetList(path: String,
                         vars: List[String] = Nil,
-                        partCount: Int = 2): RDD[SciDataset] = {
+                        partitions: Int = defaultPartitions): RDD[SciDataset] = {
     val creds = HTTPCredentials.clone()
-    val URIsFile = sparkContext.textFile(path, partCount)
+    val URIsFile = sparkContext.textFile(path, partitions)
     val rdd = URIsFile.map(p => {
       for ((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
       val netcdfDataset = NetCDFUtils.loadNetCDFDataSet(p)
@@ -160,11 +162,11 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def NetcdfFileList(path: String,
+  def netcdfFileList(path: String,
                      varName: List[String] = Nil,
-                     minPartitions: Int = 2): RDD[SciTensor] = {
+                     partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
-    val URIsFile = sparkContext.textFile(path, minPartitions)
+    val URIsFile = sparkContext.textFile(path, partitions)
     val creds = HTTPCredentials.clone()
     val rdd = URIsFile.map(p => {
       for ((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
@@ -180,9 +182,6 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
             if (i.contains(y)) varDapPart = i
           })
           if (varDapPart != "") {
-            // We forced Thread to be serializable when the sparkContext was initalized
-            // but this isnt working. So need to find another way to do this.
-            // Thread.sleep((r.nextFloat * 10.0).toLong)
             val arrayandShape = loadNetCDFNDVar(mainURL + varDapPart, y)
             val absT = new Nd4jTensor(arrayandShape)
             variableHashTable += ((y, absT))
@@ -211,14 +210,14 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def NetcdfRandomAccessDatasets(path: String,
+  def netcdfRandomAccessDatasets(path: String,
                                  varName: List[String] = Nil,
-                                 minPartitions: Int = 2): RDD[SciDataset] = {
+                                 partitions: Int = defaultPartitions): RDD[SciDataset] = {
 
     val fs = FileSystem.get(new Configuration())
     val FileStatuses = fs.listStatus(new Path(path))
     val fileNames = FileStatuses.map(p => p.getPath.getName)
-    val nameRDD = sparkContext.parallelize(fileNames)
+    val nameRDD = sparkContext.parallelize(fileNames, partitions)
 
     nameRDD.map(fileName => {
       val k = NetCDFUtils.loadDFSNetCDFDataSet(path, path + fileName, 4000)
@@ -236,11 +235,11 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * TODO :: Create an SRDD instead of a normal RDD
    */
-  def NetcdfDFSFiles(path: String,
+  def netcdfDFSFiles(path: String,
                      varName: List[String] = Nil,
-                     minPartitions: Int = 2): RDD[SciTensor] = {
+                     partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
-    val textFiles = sparkContext.binaryFiles(path, minPartitions)
+    val textFiles = sparkContext.binaryFiles(path, partitions)
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
       val dataset = loadNetCDFFile(p._1, byteArray)
@@ -267,10 +266,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   def randomMatrices(path: String,
                      varName: List[String] = Nil,
                      matrixSize: (Int, Int),
-                     minPartitions: Int = 2): SRDD[SciTensor] = {
+                     partitions: Int = defaultPartitions): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > partitions) (URIs.size + partitions) / partitions else 1
     val variables: List[String] = varName
 
     new SRDD[SciTensor](sparkContext, URIs, variables, loadRandomArray(matrixSize), mapNUri(partitionSize))
@@ -285,10 +284,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
                 varName: List[String] = List("TMP"),
                 shape: Array[Int] = Array(9896, 3298),
                 offset: Double = 75,
-                minPartitions: Int = 2): SRDD[SciTensor] = {
+                partitions: Int = defaultPartitions): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
-    val partitionSize = if (URIs.size > minPartitions) (URIs.size + minPartitions) / minPartitions else 1
+    val partitionSize = if (URIs.size > partitions) (URIs.size + partitions) / partitions else 1
 
     new SRDD[SciTensor](sparkContext, URIs, varName, loadMERGArray(shape, offset), mapNUri(partitionSize))
   }
@@ -307,9 +306,9 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
                   varName: List[String] = List("TMP"),
                   offset: Double = 75,
                   shape: Array[Int] = Array(9896, 3298),
-                  minPartitions: Int = 2): RDD[SciTensor] = {
+                  partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
-    val textFiles = sparkContext.binaryFiles(path, minPartitions)
+    val textFiles = sparkContext.binaryFiles(path, partitions)
     val rdd = textFiles.map(p => {
       val byteArray = p._2.toArray()
       val doubleArray = readMergBytetoJavaArray(byteArray, offset, shape)
@@ -324,7 +323,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   /**
    * Constructs an SRDD given a nested directories of NetCDF files.
    */
-  def OpenPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
+  def openPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
     val datasetPaths = List(path)
     new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVar, mapSubFoldersToFolders)
   }
