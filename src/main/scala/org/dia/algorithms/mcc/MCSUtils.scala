@@ -19,12 +19,12 @@ package org.dia.algorithms.mcc
 
 import java.util
 
-import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
-import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
+import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
+import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
 
 import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
