@@ -17,9 +17,12 @@
  */
 package org.dia.algorithms.mcc
 
+import scala.collection.mutable
+
 class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
 
   var areaOverlap: Int = 0
+  var metadata: mutable.HashMap[String, String] = new mutable.HashMap[String, String]()
 
   def this(srcNode : MCCNode, destNode: MCCNode) {
     this(srcNode, destNode, 0.0)
@@ -41,9 +44,16 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
     this.weight = _weight
   }
 
+  def updateMetadata(key: String, value: String): Unit = {
+    this.metadata.update(key, value)
+  }
+
+  def hashKey(): String = {
+    s"${this.srcNode.hashKey()},${this.destNode.hashKey()  }"
+  }
   override def toString : String = {
-    s"((${this.srcNode.frameNum},${this.srcNode.cloudElemNum}) ," +
-      s" (${this.destNode.frameNum},${this.destNode.cloudElemNum}))"
+    s"((${this.srcNode.frameNum}:${this.srcNode.cloudElemNum})," +
+      s" (${this.destNode.frameNum}:${this.destNode.cloudElemNum}))"
   }
 
   override def hashCode(): Int = super.hashCode()

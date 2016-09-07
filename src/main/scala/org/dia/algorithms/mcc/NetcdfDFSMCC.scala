@@ -139,7 +139,7 @@ object NetcdfDFSMCC {
         def updateComponent(label: Double, frame: String, value: Double, row: Int, col: Int): Unit = {
           if (label != 0.0) {
             val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame, label))
-            node.update(value, row, col)
+            node.updateNodeData(value, row, col)
             nodeMap.update((frame + ":" + label), node)
           }
         }
