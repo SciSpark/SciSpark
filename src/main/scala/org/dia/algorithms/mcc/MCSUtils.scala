@@ -153,8 +153,9 @@ object MCSUtils {
             val indices = k.replace("(", "").replace(")", "").replace(" ", "").split(",")
             nodeGrid.setDouble(ima.set( (indices(0).toInt) - latMinOffset, (indices(1).toInt) - lonMinOffset), v.toInt)
         }
-        nodeID = "/tmp/F" + thisNode.getFrameNum.toString + "CE" + thisNode.getCloudElemNum.toString.dropRight(2) + "_"
-          + latMinOffset + "_" + latMaxOffset + "_" + lonMinOffset + "_" + lonMaxOffset + ".nc"
+        nodeID = "/tmp/F" + thisNode.getFrameNum.toString + "CE" + thisNode.getCloudElemNum.toString.dropRight(2) +
+          "_" + latMinOffset.toString + "_" + latMaxOffset.toString + "_" + lonMinOffset.toString + "_" +
+          lonMaxOffset.toString + ".nc"
         netcdf_write(nodeID, nodeGrid, lats, lons)
     }
 }
