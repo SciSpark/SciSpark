@@ -353,6 +353,14 @@ class GTGRunner(val masterURL: String,
       print(x._2.toList)
     }
     /**
+     * Generate the netcdfs
+     */
+    val edgeTupleList = sc.sparkContext.parallelize(MCCEdgeList).map({ x =>
+      (s"${x.srcNode.frameNum},${x.srcNode.cloudElemNum}",
+      s"${x.destNode.frameNum},${x.destNode.cloudElemNum}") })
+    MCSUtils.get_all_node_data(edgeTupleList.collect().toArray, MCCNodeMap, lat, lon, false)
+
+    /**
      * Output RDD DAG to logger
      */
     logger.info(edgeListRDD.toDebugString + "\n")
