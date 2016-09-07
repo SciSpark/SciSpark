@@ -87,32 +87,6 @@ object MCSUtils {
         }
     }
 
-    /** Get the data from the CE to write
-     * @param edgeArray Array[(String, String)] representing the edgelist
-     * @param MCSNodeMap mutable.HashMap[String, MCCNode] representing the map of each node metadata
-     * @param lats Array[Double] representing the latitudes
-     * @param lons Array[Double] representing the longitudes
-     * @param tightestBox Boolean to use tightest box around data.
-     */
-    def get_node_data(edgeArray: Array[(String, String)], MCSNodeMap: mutable.HashMap[String, MCCNode],
-      lats: Array[Double], lons: Array[Double], tightestBox: Boolean): Unit = {
-        edgeArray.map({ e =>
-            var seenNodes = new mutable.ListBuffer[String]()
-            val first = e._1.split("CE")(0).split("F")(1) + "," + e._1.split("CE")(1).dropRight(1)
-            if (!seenNodes.contains(first)) {
-                seenNodes += first
-                val fNode = MCSNodeMap(first)
-                extract_masked_data(fNode, lats, lons, tightestBox)
-            }
-            val second = e._2.split("CE")(0).split("F")(1) + "," + e._2.split("CE")(1).dropRight(1)
-            if (!seenNodes.contains(second)) {
-                seenNodes += second
-                val sNode = MCSNodeMap(second)
-                extract_masked_data(sNode, lats, lons, tightestBox)
-            }
-        })
-    }
-
     /** Get the data from the nodes
      * @param edgeArray Array[(String, String)] representing the edgelist
      * @param MCSNodeMap mutable.HashMap[String, MCCNode] representing the map of each node metadata
@@ -124,13 +98,13 @@ object MCSUtils {
       lats: Array[Double], lons: Array[Double], tightestBox: Boolean): Unit = {
         edgeArray.map({ e =>
             var seenNodes = new mutable.ListBuffer[String]()
-            val first = e._1.split("CE")(0).split("F")(1) + "," + e._1.split("CE")(1).dropRight(1)
+            val first = e._1
             if (!seenNodes.contains(first)) {
                 seenNodes += first
                 val fNode = MCSNodeMap(first)
                 extract_masked_data(fNode, lats, lons, tightestBox)
             }
-            val second = e._2.split("CE")(0).split("F")(1) + "," + e._2.split("CE")(1).dropRight(1)
+            val second = e._2
             if (!seenNodes.contains(second)) {
                 seenNodes += second
                 val sNode = MCSNodeMap(second)
