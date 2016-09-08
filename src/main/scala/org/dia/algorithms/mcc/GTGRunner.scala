@@ -64,7 +64,7 @@ class GTGRunner(val masterURL: String,
 
     val MCCNodes = edges.flatMap(edge => List(edge.srcNode, edge.destNode)).distinct
     val MCCNodeKeyValuesSet = MCCNodes.map(node => {
-      val key = s"${node.frameNum},${node.cloudElemNum}"
+      val key = node.hashKey()
       node.updateLatLon(lat, lon)
       (key, node)
     })
@@ -350,20 +350,18 @@ class GTGRunner(val masterURL: String,
     val subgraphs = sc.sparkContext.parallelize(edgeListRDDIndexed.toSeq)
       .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
       .groupByKey()
-    val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize, minGraphLength, sc.sparkContext)
+    val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
+      minGraphLength, sc.sparkContext)
     for(x <- subgraphsFound) {
-      print(x._2.toList)
+      logger.info("Edges remaning : " + x._2.toList)
     }
     /**
      * Generate the netcdfs
      */
 
     val edgeTupleRDD = edgeListRDD.map({ x =>
-      (s"${x.srcNode.frameNum},${x.srcNode.cloudElemNum}",
-      s"${x.destNode.frameNum},${x.destNode.cloudElemNum}") })
-
-    val edgeTupleList = edgeTupleRDD.collect()
-    MCSUtils.get_all_node_data(edgeTupleList, broadcastedNodeMap.value, lat, lon, false)
+      MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false)})
+      .collect()
 
     /**
      * Output RDD DAG to logger

@@ -113,6 +113,25 @@ object MCSUtils {
         })
     }
 
+    /**
+     * Get the data from the nodes in the edge
+     * @param edge Current MCCEdge
+     * @param MCSNodeMap mutable.HashMap[String, MCCNode] representing the map of each node metadata
+     * @param lats Array[Double] representing the latitudes
+     * @param lons Array[Double] representing the longitudes
+     * @param tightestBox Boolean to use tightest box around data
+     */
+    def get_node_data(edge: MCCEdge, MCSNodeMap: mutable.HashMap[String, MCCNode],
+                      lats: Array[Double], lons: Array[Double], tightestBox: Boolean): Unit = {
+        val srcNodeKey = edge.srcNode.hashKey()
+        val srcNode = MCSNodeMap(srcNodeKey)
+        extract_masked_data(srcNode, lats, lons, tightestBox)
+
+        val destNodeKey = edge.destNode.hashKey()
+        val destNode = MCSNodeMap(destNodeKey)
+        extract_masked_data(destNode, lats, lons, tightestBox)
+    }
+
 
     /** Extract the node mask from the MCCNode metadata
      * @param thisNode MCCNode the current node
