@@ -269,32 +269,6 @@ class GTGRunner(val masterURL: String,
     fw.close()
   }
 
-
-
-
-  /**
-   * Method to partition the edges into buckets containing a group of
-   * consecutive nodes
-   * @todo Create a better partitioning method to account for node frame numbers which
-   *       are hours of the day and two different days should be kept in separate buckets
-   * @param edge MCCEdge
-   * @param bucketSize Number of nodes to put in one bucket (size of partition)
-   * @param partitionCount Number of partitions required
-   * @return A bucket number (int) and edge
-   */
-  def mapEdgesToBuckets(edge: MCCEdge, bucketSize: Int, partitionCount: Int): (Int, MCCEdge) = {
-    val edgePartitionKey: Int = edge.metadata("index").toInt
-    for (i <- 1 to partitionCount) {
-      if (edgePartitionKey <= bucketSize * i) {
-        val bucket: Int = i
-        return (bucket, edge)
-      }
-    }
-    /** Place the edge in the last partition, if in none of the above */
-    return (partitionCount, edge)
-  }
-
-
   def run(): Unit = {
 
     logger.info("Starting MCC")

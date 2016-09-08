@@ -361,8 +361,6 @@ object MCCOps {
   /**
    * Method to partition the edges into buckets containing a group of
    * consecutive nodes
-   * @todo Create a better partitioning method to account for node frame numbers which
-   *       are hours of the day and two different days should be kept in separate buckets
    * @param edge MCCEdge
    * @param bucketSize Number of nodes to put in one bucket (size of partition)
    * @param partitionCount Number of partitions required
