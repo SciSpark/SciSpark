@@ -178,7 +178,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
     this.cloudElemNum = c
   }
 
-  def update(value: Double, row: Int, col: Int): MCCNode = {
+  def updateNodeData(value: Double, row: Int, col: Int): MCCNode = {
     updateRowAndCol(row, col)
     updateTemperatures(value)
     this.area += 1
@@ -206,6 +206,10 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
     this.centerLat = (this.latMax + this.latMin) / 2
     this.centerLon = (this.lonMax + this.lonMin) / 2
+  }
+
+  def hashKey(): String = {
+    s"${this.frameNum}:${this.cloudElemNum}"
   }
 
   override def toString(): String = {

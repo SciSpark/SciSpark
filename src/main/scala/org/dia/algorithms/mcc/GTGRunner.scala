@@ -26,6 +26,7 @@ import org.apache.spark.rdd.RDD
 
 import org.dia.core.{SciDataset, SciSparkContext}
 
+
 /**
  * Runs Grab em' Tag em' Graph em'
  * Data is taken from local file system or HDFS through
@@ -45,7 +46,8 @@ class GTGRunner(val masterURL: String,
                 val innerTemp : Double = 233.0,
                 val convectiveFraction : Double = 0.9,
                 val minArea : Int = 625,
-                val nodeMinArea : Int = 150) {
+                val nodeMinArea : Int = 150,
+                val minGraphLength: Int = 4) {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -175,7 +177,8 @@ class GTGRunner(val masterURL: String,
         def updateComponent(label: Double, frame: String, value: Double, row: Int, col: Int): Unit = {
           if (label != 0.0) {
             val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame, label))
-            nodeMap(frame + ":" + label) = node.update(value, row, col)
+            node.updateNodeData(value, row, col)
+            nodeMap(frame + ":" + label) = node
           }
         }
 
@@ -185,6 +188,8 @@ class GTGRunner(val masterURL: String,
             updateComponent(components1(row, col), frame1, t1()(row, col), row, col)
             updateComponent(components2(row, col), frame2, t2()(row, col), row, col)
             if (product(row, col) != 0.0) {
+
+
 
               /** If overlap exists create an edge and update overlapped area */
               val label1 = components1(row, col)
@@ -324,6 +329,7 @@ class GTGRunner(val masterURL: String,
       minArea,
       nodeMinArea)
 
+
     /**
      * Collect the edgeList and construct NodeMap
      */
@@ -335,6 +341,17 @@ class GTGRunner(val masterURL: String,
      */
     processEdges(MCCEdgeList, MCCNodeMap)
 
+    val edgeListRDDIndexed = MCCOps.createPartitionIndex(edgeListRDD.collect())
+    val count = edgeListRDDIndexed.size
+    val buckets = 4
+    val maxParitionSize = count / buckets
+    val subgraphs = sc.sparkContext.parallelize(edgeListRDDIndexed.toSeq)
+      .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
+      .groupByKey()
+    val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize, minGraphLength, sc.sparkContext)
+    for(x <- subgraphsFound) {
+      print(x._2.toList)
+    }
     /**
      * Output RDD DAG to logger
      */
