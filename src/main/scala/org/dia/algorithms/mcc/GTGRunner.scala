@@ -26,7 +26,6 @@ import org.apache.spark.rdd.RDD
 
 import org.dia.core.{SciDataset, SciSparkContext}
 
-
 /**
  * Runs Grab em' Tag em' Graph em'
  * Data is taken from local file system or HDFS through
@@ -189,8 +188,6 @@ class GTGRunner(val masterURL: String,
             updateComponent(components2(row, col), frame2, t2()(row, col), row, col)
             if (product(row, col) != 0.0) {
 
-
-
               /** If overlap exists create an edge and update overlapped area */
               val label1 = components1(row, col)
               val node1 = nodeMap(frame1 + ":" + label1)
@@ -330,11 +327,16 @@ class GTGRunner(val masterURL: String,
       nodeMinArea)
 
 
+    edgeListRDD.cache()
+    edgeListRDD.localCheckpoint()
+
     /**
      * Collect the edgeList and construct NodeMap
      */
     val MCCEdgeList = edgeListRDD.collect()
     val MCCNodeMap = createNodeMapFromEdgeList(MCCEdgeList, lat, lon)
+
+    val broadcastedNodeMap = sc.sparkContext.broadcast(MCCNodeMap)
 
     /**
      * Process the edge list. Collect and output edges and vertices
@@ -355,11 +357,13 @@ class GTGRunner(val masterURL: String,
     /**
      * Generate the netcdfs
      */
-    val broadcastedNodeMap = sc.sparkContext.broadcast(MCCNodeMap)
-    val edgeTupleList = sc.sparkContext.parallelize(MCCEdgeList.toList).map({ x =>
+
+    val edgeTupleRDD = edgeListRDD.map({ x =>
       (s"${x.srcNode.frameNum},${x.srcNode.cloudElemNum}",
       s"${x.destNode.frameNum},${x.destNode.cloudElemNum}") })
-    MCSUtils.get_all_node_data(edgeTupleList.collect().toArray, broadcastedNodeMap.value, lat, lon, false)
+
+    val edgeTupleList = edgeTupleRDD.collect()
+    MCSUtils.get_all_node_data(edgeTupleList, broadcastedNodeMap.value, lat, lon, false)
 
     /**
      * Output RDD DAG to logger
