@@ -346,7 +346,7 @@ class GTGRunner(val masterURL: String,
     /**
      * Generate the netcdfs
      */
-    val edgeTupleRDD = edgeListRDD.foreach( x =>
+    edgeListRDD.foreach(x =>
       MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false))
 
     /**
