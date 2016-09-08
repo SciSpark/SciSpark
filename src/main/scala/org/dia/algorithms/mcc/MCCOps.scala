@@ -509,9 +509,9 @@ object MCCOps {
                                buckerSize: Int,
                                minGraphLength: Int,
                                sc: SparkContext): Array[(Int, Iterable[MCCEdge])] = {
-
+    var iter = iteration
     def startProcessing(obj: RDD[(Int, Iterable[MCCEdge])]): RDD[(Int, Iterable[MCCEdge])] = {
-      obj.map(x => processEdgePartition(x, iteration, minGraphLength, buckerSize))
+      obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize))
         .filter(x => x._1 != -1)
         .reduceByKey((x, y) => {
           val merged = new mutable.HashSet[MCCEdge]()
@@ -522,7 +522,7 @@ object MCCOps {
     }
 
     var newGraph = startProcessing(edgeList)
-    var iter = iteration + 1
+    iter += 1
     /** if edgeList is empty implies that all valid subgraphs were found */
     while (newGraph.count() > 1) {
         val temp = startProcessing(newGraph)
