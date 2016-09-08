@@ -18,19 +18,19 @@ def _get_python_implementation():
     Inputs: None
     Outputs: Boolean representing success retrieving the data
     '''
+    print 'Checking on Python implementation data' 
+    of.write('\n Checking on Python implementation data')
+
     pythonGTG = 'https://scispark.jpl.nasa.gov/pythonGTG.zip'
 
     os.chdir(workingDir)
     try:
-        if not os.path.isfile(workingDir + '/pythonGTG.zip'):
-            urllib.urlretrieve(pythonGTG, workingDir + '/pythonGTG.zip')
-
         if not os.path.exists(workingDir + '/pythonGTG'):
+            urllib.urlretrieve(pythonGTG, workingDir + '/pythonGTG.zip')
             zipGTG = zipfile.ZipFile(workingDir + '/pythonGTG.zip', 'r')
             zipGTG.extractall(workingDir)
             zipGTG.close()
-
-        os.remove(workingDir + '/pythonGTG.zip')
+            os.remove(workingDir + '/pythonGTG.zip')
 
         print 'Python implementation data retrieved from %s' %pythonGTG
         of.write('Python implementation data retrieved from %s' %pythonGTG)
@@ -45,28 +45,38 @@ def _run_scispark_implementation():
     Purpose: To run GTG runner for SciSpark results to compare as a spark-submit task
     Assumptions: spark-submit is available on the path. scala-2.11 is used.
     '''
+    runSpark = False
+
+    print 'Checking on SciSpark implementation data' 
+    of.write('\n Checking on SciSpark implementation data')
+
     try:
         if not os.path.exists(workingDir + '/scisparkGTG'):
             os.mkdir(workingDir + '/scisparkGTG')
+            runSpark = True
         if not os.path.exists(workingDir + '/scisparkGTG/textFiles'):
             os.mkdir(workingDir + '/scisparkGTG/textFiles')
+            runSpark = True
         if not os.path.exists(workingDir + '/scisparkGTG/MERGnetcdfCEs'):
             os.mkdir(workingDir + '/scisparkGTG/MERGnetcdfCEs')
-        os.chdir(workingDir + '/../../../../')
+            runSpark = True
 
-        sparkSubmitStr = 'spark-submit target/scala-2.10/SciSpark.jar'
-        subprocess.call(sparkSubmitStr, shell=True)
-        cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
-        subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'mv MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
-        subprocess.call(cpTextFilesStr, shell=True)
-        cpNetcdfsStr = 'mv /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
-        subprocess.call(cpNetcdfsStr, shell=True)
+        if runSpark:
+            os.chdir(workingDir + '/../../../../')
 
-        print 'SciSpark implementation successfully run. Data can be found at %s' \
-            %workingDir + '/scisparkGTG'
-        of.write('\nSciSpark implementation successfully run. Data can be found at %s' \
-            %workingDir + '/scisparkGTG')
+            sparkSubmitStr = 'spark-submit target/scala-2.10/SciSpark.jar'
+            subprocess.call(sparkSubmitStr, shell=True)
+            cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
+            subprocess.call(cpTextFilesStr, shell=True)
+            cpTextFilesStr = 'mv MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+            subprocess.call(cpTextFilesStr, shell=True)
+            cpNetcdfsStr = 'mv /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
+            subprocess.call(cpNetcdfsStr, shell=True)
+
+            print 'SciSpark implementation successfully run. Data can be found at %s' \
+                %workingDir + '/scisparkGTG'
+            of.write('\nSciSpark implementation successfully run. Data can be found at %s' \
+                %workingDir + '/scisparkGTG')
         return True
     except:
         print '!! Problem running SciSpark MCS implementation!'
@@ -372,8 +382,8 @@ def _get_data(sTime, eTime, pyDir, ssDir):
     with open(ssDir + '/textFiles/MCCEdges.txt', 'r') as sF:
         sFs = sF.readlines()
     ssEList = map(lambda x: x + '))', sFs[0].split('WrappedArray(')[1][:-3].split(')), '))
-    ssEdgeList = map(lambda x: ('F' + x.split(',')[0].split('((')[1] + 'CE' + x.split(',')[1].split(')')[0], \
-        'F' + x.split(',')[2].split('(')[1] + 'CE' + x.split(',')[3].split('))')[0]), ssEList)
+    ssEdgeList = map(lambda x: ('F' + x.split(',')[0].split('((')[1].split(':')[0] + 'CE' + x.split(',')[0].split('((')[1].split(':')[1][:-1], \
+        'F' + x.split(',')[1].split('(')[1].split(':')[0] + 'CE' + x.split(',')[1].split('(')[1].split(':')[1][:-2]), ssEList)
 
     with open(pyDir + '/textFiles/MCSList.txt', 'r') as pF:
         pFs = pF.readline()
@@ -445,9 +455,11 @@ def test_2(allTimesInts, pyNodes, ssNodes):
         of.write('\nTest 2: Number of CEs at each frame are similar. There are  '+ pyCEs + 'CEs in total. ')
     else:
         print '!!Test 2: Different number of CEs at each frames. There are %d CEs in the Python implementation and %d CEs \
-            in the SciSpark implementation. \nPlease check! \n %s' %(pyCEs, ssCEs, filter(lambda x: 'python' in str(x[0]), CEs))
+            in the SciSpark implementation. \nPlease check! (implementation: frame, #_of_CEs) \n %s' \
+            %(pyCEs, ssCEs, filter(lambda x: 'python' in str(x[0]), CEs))
         of.write('\n!!Test 2: Different number of CEs at each frames. There are %d CEs in the Python implementation and %d CEs\
-            in the SciSpark implementation. \nPlease check! \n %s\n' %(pyCEs, ssCEs, filter(lambda x: 'python' in str(x[0]), CEs)))
+            in the SciSpark implementation. \nPlease check! (implementation: frame, #_of_CEs) \n %s\n' \
+            %(pyCEs, ssCEs, filter(lambda x: 'python' in str(x[0]), CEs)))
         of.write('*'*25)
         of.write('\n All CEs at times are %s\n' %str(CEs))
 
@@ -474,10 +486,8 @@ def test_3(pyDir, ssDir, pyNodes, allTimesInts):
         a = map(lambda y: y[1], allCEs)
         for i in a:
             ceMap.extend(filter(lambda x: x[2] == True, i))
-        print '!! %d CEs are accounted for. They are: \n %s' %(len(ceMap), ceMap)
-        of.write('\n!! ' + str(len(ceMap))+' CEs are accounted for. They are: \n ' + str(ceMap) + '\n')
-        of.write('*'*25)
-        print '*'*25
+        print '!! %d CEs are accounted for.' %len(ceMap)
+        of.write('\n!! ' + str(len(ceMap))+' CEs are accounted for.')
         # if accounted for CEs > len(pyNodes) then there were multiple nodes in scispark implementation for one node.
         if len(ceMap) > len(pyNodes):
             accounted = map(lambda x: x[0].split(':00:00')[1].split('.nc')[0], ceMap)
@@ -585,7 +595,7 @@ def main(argv):
         allTimesInts, ssNodes, pyNodes, ssEdgeList, pyEdgeList = _get_data(sTime, eTime, pyDir, ssDir)
 
         # check times between implementations
-        test_1(pyNodes, ssNodes, ssDir, allTimesInts)
+        test_1(pyNodes, ssDir, allTimesInts)
         print '-' *80
         of.write('-' *80)
 
