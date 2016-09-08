@@ -536,20 +536,17 @@ object MCCOps {
 
   /**
    *
-   * @param edgeList
+   * @param edgeListRDD
    */
-  def createPartitionIndex(edgeList: Iterable[MCCEdge]): Iterable[MCCEdge] = {
-    val temp = edgeList.toList.groupBy(_.srcNode.frameNum)
-      .toSeq.sortBy(_._1)
+  def createPartitionIndex(edgeListRDD: RDD[MCCEdge]): RDD[MCCEdge] = {
+    val temp = edgeListRDD.map(edge => (edge.srcNode.frameNum, List(edge)))
+      .reduceByKey(_ ++ _)
+      .sortBy(_._1)
       .zipWithIndex
-  val updatedEdgeList = new mutable.MutableList[MCCEdge]()
-    for (((key, edges), index) <- temp) {
-      for (edge <- edges) {
-        edge.updateMetadata("index", index.toString)
-        updatedEdgeList += edge
-      }
 
-    }
-    updatedEdgeList
+    temp.flatMap({
+      case ((key, edges), index) =>
+        edges.map(edge => edge.updateMetadata("index", index.toString))
+    })
   }
 }

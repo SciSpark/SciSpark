@@ -44,8 +44,9 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
     this.weight = _weight
   }
 
-  def updateMetadata(key: String, value: String): Unit = {
+  def updateMetadata(key: String, value: String): MCCEdge = {
     this.metadata.update(key, value)
+    this
   }
 
   def hashKey(): String = {

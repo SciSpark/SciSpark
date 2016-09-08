@@ -346,18 +346,17 @@ class GTGRunner(val masterURL: String,
     /**
      * Generate the netcdfs
      */
-    val edgeTupleRDD = edgeListRDD.map({ x =>
-      MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false)})
-      .collect()
+    val edgeTupleRDD = edgeListRDD.foreach( x =>
+      MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false))
 
     /**
      * Find the subgraphs
      */
-    val edgeListRDDIndexed = MCCOps.createPartitionIndex(MCCEdgeList)
-    val count = edgeListRDDIndexed.size
+    val edgeListRDDIndexed = MCCOps.createPartitionIndex(edgeListRDD)
+    val count = edgeListRDDIndexed.count.toInt
     val buckets = 4
     val maxParitionSize = count / buckets
-    val subgraphs = sc.sparkContext.parallelize(edgeListRDDIndexed.toSeq)
+    val subgraphs = edgeListRDDIndexed
       .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
       .groupByKey()
     val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
