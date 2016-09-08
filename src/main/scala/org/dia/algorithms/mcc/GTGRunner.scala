@@ -346,13 +346,14 @@ class GTGRunner(val masterURL: String,
     /**
      * Generate the netcdfs
      */
-
     val edgeTupleRDD = edgeListRDD.map({ x =>
       MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false)})
       .collect()
 
     /**
-    val edgeListRDDIndexed = MCCOps.createPartitionIndex(edgeListRDD.collect())
+     * Find the subgraphs
+     */
+    val edgeListRDDIndexed = MCCOps.createPartitionIndex(MCCEdgeList)
     val count = edgeListRDDIndexed.size
     val buckets = 4
     val maxParitionSize = count / buckets
@@ -364,7 +365,8 @@ class GTGRunner(val masterURL: String,
     for(x <- subgraphsFound) {
       logger.info("Edges remaning : " + x._2.toList)
     }
-    
+
+    /**
      * Output RDD DAG to logger
      */
     logger.info(edgeListRDD.toDebugString + "\n")
