@@ -91,6 +91,18 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     assert(listCount == 2)
   }
 
+  test("netcdfWholeDatasets") {
+    val variable = "data"
+    val variable2 = SparkTestConstants.datasetVariable
+    val randomRDD = sc.netcdfRandomAccessDatasets("src/test/resources/Netcdf/", List(variable))
+    val wholeRDD = sc.netcdfWholeDatasets("src/test/resources/Netcdf/", List(variable))
+
+    val randomList = randomRDD.collect.toList
+    val wholeList = wholeRDD.collect.toList
+
+    assert(randomList == wholeList)
+  }
+
   test("PartitionCount") {
     val variable = "data"
     val variable2 = SparkTestConstants.datasetVariable
