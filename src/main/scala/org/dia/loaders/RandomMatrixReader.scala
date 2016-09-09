@@ -22,6 +22,7 @@ import java.util.Random
 import org.nd4j.linalg.factory.Nd4j
 
 import org.dia.core.SciDataset
+import org.dia.core.Variable
 import org.dia.tensors.Nd4jTensor
 
 /**
@@ -80,10 +81,10 @@ object RandomMatrixReader {
         val nd4jTensor = new Nd4jTensor(Nd4j.rand(shape, filename.hashCode.toLong)) * 300.0
         val dims = shape.zip(Array("u", "v", "w", "x", "y", "z"))
           .map({ case (dim, name) => (filename + "_" + name.toString, dim) }).toList
-        (filename, new org.dia.core.Variable(filename, nd4jTensor, dims))
+        (filename, new Variable(filename, nd4jTensor, dims))
     })
 
-    new org.dia.core.SciDataset(SciVars, attributes, name)
+    new SciDataset(SciVars, attributes, name)
   }
 
 }

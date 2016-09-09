@@ -47,7 +47,7 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * under tmp and the copies it to hdfs.
    * TODO :: Write netcdfFile directly to hdfs rather to local fs and then copying over.
    *
-   * @param directoryPath The directory to write to. The hdfs path format is HDFS://HOSTNAME:<porn no.>
+   * @param directoryPath The directory to write to. The hdfs path format is HDFS://HOSTNAME:<port no.>
    * @param stagingPath The area to stage files on the local filesystem. Default is /tmp/.
    */
   def writeSRDD(directoryPath : String, stagingPath : String = "/tmp/"): Unit = {
