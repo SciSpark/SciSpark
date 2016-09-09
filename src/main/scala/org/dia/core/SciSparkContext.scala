@@ -258,17 +258,17 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   }
 
   /**
-    * Constructs an RDD given a URI pointing to an HDFS directory of Netcdf files and a list of variable names.
-    * Note that since the files are read from HDFS, the binaryFiles function is used which is called
-    * from SparkContext.
-    * netcdfWholeDatasets should only be used for reading large subsets of variables or all the
-    * variables in NetCDF Files.
-    *
-    * @param path the path to read from. The format for HDFS directory is : hdfs://HOSTNAME:<port no.>
-    * @param varNames the names of variables to extract. If none are provided, then all variables are reaad.
-    * @param partitions The number of partitions to split the dataset into
-    * @return
-    */
+   * Constructs an RDD given a URI pointing to an HDFS directory of Netcdf files and a list of variable names.
+   * Note that since the files are read from HDFS, the binaryFiles function is used which is called
+   * from SparkContext.
+   * netcdfWholeDatasets should only be used for reading large subsets of variables or all the
+   * variables in NetCDF Files.
+   *
+   * @param path the path to read from. The format for HDFS directory is : hdfs://HOSTNAME:<port no.>
+   * @param varNames the names of variables to extract. If none are provided, then all variables are reaad.
+   * @param partitions The number of partitions to split the dataset into
+   * @return
+   */
   def netcdfWholeDatasets(path: String,
                           varNames: List[String] = Nil,
                           partitions: Int = defaultPartitions): RDD[SciDataset] = {
