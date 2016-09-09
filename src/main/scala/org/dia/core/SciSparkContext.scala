@@ -214,7 +214,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
                                  varName: List[String] = Nil,
                                  partitions: Int = defaultPartitions): RDD[SciDataset] = {
 
-    val fs = FileSystem.get(new Configuration())
+    val fs = FileSystem.get(new URI(path), new Configuration())
     val FileStatuses = fs.listStatus(new Path(path))
     val fileNames = FileStatuses.map(p => p.getPath.getName)
     val nameRDD = sparkContext.parallelize(fileNames, partitions)
