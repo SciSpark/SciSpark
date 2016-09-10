@@ -346,8 +346,10 @@ class GTGRunner(val masterURL: String,
     /**
      * Generate the netcdfs
      */
-    edgeListRDD.foreach(x =>
-      MCSUtils.get_node_data(x, broadcastedNodeMap.value, lat, lon, false))
+    edgeListRDD.foreach(edge => {
+      val nodeMap = broadcastedNodeMap.value
+      MCSUtils.writeEdgeComponentsToNetCDF(edge, nodeMap, lat, lon, false)
+    })
 
     /**
      * Find the subgraphs
