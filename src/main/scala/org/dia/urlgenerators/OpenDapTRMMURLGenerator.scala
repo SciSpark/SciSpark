@@ -51,13 +51,14 @@ object OpenDapTRMMURLGenerator {
    * @param endTime   endtime in the format YYYYMMDDHHmm
    * @param tRes      temporal resolution for the files. Options are 1-daily or 2-3hrly
    */
-  def run(checkLink: Boolean,
-          hdfsURL: String,
-          fName: String,
-          starttime: String,
-          endtime: String,
-          tres: Int,
-          varNames: List[String]): Unit = {
+  def run(
+      checkLink: Boolean,
+      hdfsURL: String,
+      fName: String,
+      starttime: String,
+      endtime: String,
+      tres: Int,
+      varNames: List[String]): Unit = {
     /** initializing variables */
     checkUrl = checkLink
     val fileName = new Path(fName)

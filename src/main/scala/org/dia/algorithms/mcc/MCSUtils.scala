@@ -42,11 +42,12 @@ object MCSUtils {
    * @param lons        Array[Double] of the longitudes to be used
    * @param tightestBox Boolean to use tightest box around data.
    */
-  def writeEdgeNodesToNetCDF(edge: MCCEdge,
-                             MCSNodeMap: mutable.HashMap[String, MCCNode],
-                             lats: Array[Double],
-                             lons: Array[Double],
-                             tightestBox: Boolean): Unit = {
+  def writeEdgeNodesToNetCDF(
+      edge: MCCEdge,
+      MCSNodeMap: mutable.HashMap[String, MCCNode],
+      lats: Array[Double],
+      lons: Array[Double],
+      tightestBox: Boolean): Unit = {
 
     val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
@@ -64,11 +65,12 @@ object MCSUtils {
    * @param lats      Array[Double] of the latitudes to be used
    * @param lons      Array[Double] of the longitudes to be used
    */
-  def writeNodeToNetCDF(directory: String,
-                        fileName: String,
-                        varData: ucar.ma2.ArrayInt.D2,
-                        lats: Array[Double],
-                        lons: Array[Double]): Unit = {
+  def writeNodeToNetCDF(
+      directory: String,
+      fileName: String,
+      varData: ucar.ma2.ArrayInt.D2,
+      lats: Array[Double],
+      lons: Array[Double]): Unit = {
     val filepath = directory + fileName
     try {
       val fsplit = filepath.split("_")
@@ -140,10 +142,12 @@ object MCSUtils {
    * @param tightestBox Boolean to use tightest box around data.
    * @return Tuple consisting of the nodeID, and grid array
    */
-  def extract_masked_data(thisNode: MCCNode,
-                          lats: Array[Double],
-                          lons: Array[Double],
-                          tightestBox: Boolean): (String, ArrayInt.D2) = {
+  def extract_masked_data(
+      thisNode: MCCNode,
+      lats: Array[Double],
+      lons: Array[Double],
+      tightestBox: Boolean): (String, ArrayInt.D2) = {
+
     var latMin = .0
     var latMax = .0
     var lonMin = .0

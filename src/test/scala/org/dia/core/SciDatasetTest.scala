@@ -89,11 +89,11 @@ class SciDatasetTest extends FunSuite with BeforeAndAfter{
 
   test("testToString") {
     val string = "nc_3B42_daily.2008.01.02.7.bin.nc\n" +
-                 "root group ...\n" +
-                 "\tFF_GLOBAL.Server: DODS FreeFrom based on FFND release 4.2.3\n" +
-                 "\t_CoordSysBuilder: ucar.nc2.dataset.conv.DefaultConvention\n" +
-                 "\tdimensions(sizes): (rows(400), cols(1440))\n" +
-                 "\tvariables: (float data(rows, cols))\n"
+      "root group ...\n" +
+      "\tFF_GLOBAL.Server: DODS FreeFrom based on FFND release 4.2.3\n" +
+      "\t_CoordSysBuilder: ucar.nc2.dataset.conv.DefaultConvention\n" +
+      "\tdimensions(sizes): (rows(400), cols(1440))\n" +
+      "\tvariables: (float data(rows, cols))\n"
     assert(Dataset.toString == string)
   }
 

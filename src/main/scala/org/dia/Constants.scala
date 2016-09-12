@@ -27,10 +27,14 @@ object Constants extends Serializable {
    */
 
   /** potential names for the different axis of the grid that is present in NetCDF files */
-  val X_AXIS_NAMES = Array("x", "rlat", "rlats", "lat", "lats",
-                           "rows", "nlat", "latitude", "latitudes")
-  val Y_AXIS_NAMES = Array("y", "rlon", "rlons", "lon", "lons", "cols",
-                           "nlon", "longitude", "longitudes")
+  val X_AXIS_NAMES = Array("x", "rlat", "rlats",
+    "lat", "lats", "rows",
+    "nlat", "latitude", "latitudes")
+
+  val Y_AXIS_NAMES = Array("y", "rlon", "rlons",
+    "lon", "lons", "cols",
+    "nlon", "longitude", "longitudes")
+
   val TIME_NAMES = Array("time", "times", "date", "dates", "julian")
 
   /** TRMM default row/col dimension size */

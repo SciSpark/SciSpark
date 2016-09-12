@@ -53,7 +53,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   }
 
   def getRowMax(): Int = {
-     this.rowMax
+    this.rowMax
   }
 
   def getRowMin(): Int = {
@@ -135,7 +135,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
    * @return
    */
   def getMetadata(): util.Map[String, String] = {
-     metadata.asJava
+    metadata.asJava
   }
 
   def updateMetadata(key: String, value: String): Unit = {
@@ -145,13 +145,13 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, destNode, weight)
     addOutgoingEdge(edge)
-     edge
+    edge
   }
 
   def connectFrom(srcNode: MCCNode, weight: Double): MCCEdge = {
     val edge = new MCCEdge(this, srcNode, weight)
     addIncomingEdge(edge)
-     edge
+    edge
   }
 
   def addIncomingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {

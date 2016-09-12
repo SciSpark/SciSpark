@@ -34,20 +34,25 @@ import org.dia.utils.NetCDFUtils
  *
  * The LinkedHashMap preserves insertion order for iteration purposes.
  */
-class SciDataset(val variables: mutable.HashMap[String, Variable],
-                 val attributes: mutable.HashMap[String, String],
-                 var datasetName: String) extends Serializable{
+class SciDataset(
+    val variables: mutable.HashMap[String, Variable],
+    val attributes: mutable.HashMap[String, String],
+    var datasetName: String) extends Serializable {
 
   def this(vars : Traversable[(String, Variable)], attr : Traversable[(String, String)], datasetName : String) {
-    this(mutable.HashMap[String, Variable]() ++= vars,
-         mutable.HashMap[String, String]() ++= attr,
-         datasetName)
+    this(
+      mutable.HashMap[String, Variable]() ++= vars,
+      mutable.HashMap[String, String]() ++= attr,
+      datasetName
+    )
   }
 
   def this(vars : Iterable[ucar.nc2.Variable], attr : Iterable[Attribute], datasetName : String) {
-    this(vars.map(p => (p.getFullName, new Variable(p))),
-         attr.map(p => NetCDFUtils.convertAttribute(p)),
-         datasetName)
+    this(
+      vars.map(p => (p.getFullName, new Variable(p))),
+      attr.map(p => NetCDFUtils.convertAttribute(p)),
+      datasetName
+    )
   }
 
   def this(nvar: dataset.NetcdfDataset) {

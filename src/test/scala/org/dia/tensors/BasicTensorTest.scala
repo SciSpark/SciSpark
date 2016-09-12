@@ -189,7 +189,7 @@ class BasicTensorTest extends FunSuite {
   test("detrend") {
     val axis = 0
     val sample = Array(1, 2, 4, 6, 54, 333, 2, 12, 4, 5, 7, 8, 3, 4, 2, 23, 45, 32,
-                       33, 879, 34, 22, 34, 54, 55, 66, 23).map(p => p.toDouble)
+      33, 879, 34, 22, 34, 54, 55, 66, 23).map(p => p.toDouble)
     // NOTE : The solution matrix was obtaied by using the signal.detrend function from Scipy
     val solution = Array(4, 144.5, 3.67, 3.67, 13.33, 63.83, 1.83, -2.00, -6.17, -8.00, -289.00, -7.33, -7.33, -26.67,
       -127.67, -3.67, 4.00, 12.33, 4.00, 144.50, 3.67, 3.67, 13.33, 63.83, 1.83, -2.00, -6.17)

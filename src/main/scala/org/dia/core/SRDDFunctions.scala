@@ -73,9 +73,10 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    *                       wil be split into
    * @return
    */
-  def splitTiles(varName: String,
-                 keyFunc: SciDataset => Int,
-                 tileShape: Int*): RDD[(List[(Int, Int)], (Int, Variable))] = {
+  def splitTiles(
+      varName: String,
+      keyFunc: SciDataset => Int,
+      tileShape: Int*): RDD[(List[(Int, Int)], (Int, Variable))] = {
     self.flatMap(sciD => {
       val shape = sciD(varName).shape()
       val tileShapeSeq = if (tileShape.isEmpty) shape.toSeq else tileShape
@@ -131,9 +132,7 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * @param dimName the name of the new dimension default : time
    * @return
    */
-  def stackTiles(sRDD: RDD[(List[(Int, Int)], (Int, Variable))],
-                 dimName : String = "time"): RDD[Variable] = {
-
+  def stackTiles(sRDD: RDD[(List[(Int, Int)], (Int, Variable))], dimName : String = "time"): RDD[Variable] = {
     /**
      * ReduceByKey aggregates tiles with the same original position
      */
@@ -174,9 +173,10 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * @param tileShape the shape of tiles to each variable into.
    * @return
    */
-  def repartitionBySpace(varName: String,
-                         keyFunc: SciDataset => Int,
-                         tileShape: Int*): RDD[Variable] = {
+  def repartitionBySpace(
+      varName: String,
+      keyFunc: SciDataset => Int,
+      tileShape: Int*): RDD[Variable] = {
     val rangeKeyedRDD = splitTiles(varName, keyFunc, tileShape: _*)
     stackTiles(rangeKeyedRDD)
   }

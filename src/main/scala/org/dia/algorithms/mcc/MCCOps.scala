@@ -71,10 +71,12 @@ object MCCOps {
    *
    * Similar to above method reduceResolution.
    */
-  def reduceRectangleResolution(tensor: AbstractTensor,
-                                rowSize: Int,
-                                colSize: Int,
-                                invalid: Double = Double.NaN): AbstractTensor = {
+  def reduceRectangleResolution(
+      tensor: AbstractTensor,
+      rowSize: Int,
+      colSize: Int,
+      invalid: Double = Double.NaN): AbstractTensor = {
+
     val largeArray = tensor
     val numRows = largeArray.rows()
     val numCols = largeArray.cols()
@@ -457,7 +459,7 @@ object MCCOps {
       logger.info(s"Iteration $currentIteration," +
         s"PartitionIndex: $partitionIndex," +
         s"No edges in FilteredEdges found")
-//      return (-1, filteredEdges).
+      //      return (-1, filteredEdges).
       return (-1, new mutable.MutableList[MCCEdge]())
     }
     val newIndex = if (partitionIndex%2==0) partitionIndex/2 else (1 + partitionIndex/2)

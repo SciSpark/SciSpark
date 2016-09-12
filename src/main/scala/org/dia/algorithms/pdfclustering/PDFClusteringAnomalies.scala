@@ -30,10 +30,10 @@ import org.dia.core.SciSparkContext
 object PDFClusteringAnomalies {
 
   def whiten(input: Array[Double]): Array[Double] = {
-      val mean = input.reduce((a, b) => a + b) / input.length
-      val summation = input.map(p => Math.pow(p - mean, 2.0)).reduce((a, b) => a + b)
-      val std = Math.sqrt(summation / input.length)
-      input.map(p => p / std)
+    val mean = input.reduce((a, b) => a + b) / input.length
+    val summation = input.map(p => Math.pow(p - mean, 2.0)).reduce((a, b) => a + b)
+    val std = Math.sqrt(summation / input.length)
+    input.map(p => p / std)
   }
 
   def main(args: Array[String]): Unit = {

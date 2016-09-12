@@ -39,8 +39,10 @@ import org.dia.tensors.{AbstractTensor, TensorFactory}
  * The internal API of the SRDD (specifically the constructors) may change in the future.
  *
  */
-class SRDD[T: ClassTag](@transient var sc: SparkContext,
-                        @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) {
+class SRDD[T: ClassTag](
+    @transient var sc: SparkContext,
+    @transient var deps: Seq[Dependency[_]]) extends RDD[T](sc, deps) {
+
   val arrLib = sc.getLocalProperty(org.dia.Constants.ARRAY_LIB)
   var datasets: List[String] = _
   var varName: Seq[String] = Nil
@@ -48,10 +50,10 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext,
   var partitionFunc: List[String] => List[List[String]] = _
 
   def this(@transient sc: SparkContext,
-    data: List[String],
-    name: List[String],
-    loader: (String, String) => (Array[Double], Array[Int]),
-    partitioner: List[String] => List[List[String]]) {
+      data: List[String],
+      name: List[String],
+      loader: (String, String) => (Array[Double], Array[Int]),
+      partitioner: List[String] => List[List[String]]) {
 
     this(sc, Nil)
     datasets = data
@@ -59,15 +61,6 @@ class SRDD[T: ClassTag](@transient var sc: SparkContext,
     loadFunc = loader
     partitionFunc = partitioner
   }
-
-  //  def this(@transient sc: SciSparkContext,
-  //           data: List[String],
-  //           name: List[String],
-  //           loader: (String, String) => (Array[Double], Array[Int]),
-  //           partitioner: List[String] => List[List[String]]) {
-  //
-  //    this(sc.sparkContext, data, name, loader, partitioner)
-  //  }
 
   def this(@transient oneParent: SRDD[_]) = {
     this(oneParent.context, List(new OneToOneDependency(oneParent)))
