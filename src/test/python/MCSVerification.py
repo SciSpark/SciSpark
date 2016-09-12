@@ -70,20 +70,20 @@ def _run_scispark_implementation():
     try:
         if os.path.exists(workingDir + '/scisparkGTG'):
             shutil.rmtree(workingDir + '/scisparkGTG')
-        else:
-            os.mkdir(workingDir + '/scisparkGTG')
-            os.mkdir(workingDir + '/scisparkGTG/textFiles')
-            os.mkdir(workingDir + '/scisparkGTG/MERGnetcdfCEs')
+        
+        os.mkdir(workingDir + '/scisparkGTG')
+        os.mkdir(workingDir + '/scisparkGTG/textFiles')
+        os.mkdir(workingDir + '/scisparkGTG/MERGnetcdfCEs')
 
         os.chdir(workingDir + '/../../../../')
 
         sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
-        cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
+        cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'mv MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+        cpTextFilesStr = 'cp MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
-        cpNetcdfsStr = 'mv /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
+        cpNetcdfsStr = 'cp /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
         subprocess.call(cpNetcdfsStr, shell=True)
 
         print 'SciSpark implementation successfully run. Data can be found at %s' \
