@@ -82,7 +82,7 @@ def _run_scispark_implementation():
         if runSpark:
             os.chdir(workingDir + '/../../../../')
 
-            sparkSubmitStr = 'spark-submit target/scala-2.10/SciSpark.jar'
+            sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
             subprocess.call(sparkSubmitStr, shell=True)
             cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
             subprocess.call(cpTextFilesStr, shell=True)
