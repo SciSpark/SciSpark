@@ -21,6 +21,7 @@ import glob
 import json
 import numpy
 import os
+import shutil
 import subprocess
 import sys
 import urllib
@@ -63,38 +64,32 @@ def _run_scispark_implementation():
     Purpose: To run GTG runner for SciSpark results to compare as a spark-submit task
     Assumptions: spark-submit is available on the path. scala-2.11 is used.
     '''
-    runSpark = False
-
     print 'Checking on SciSpark implementation data' 
     of.write('\n Checking on SciSpark implementation data')
 
     try:
-        if not os.path.exists(workingDir + '/scisparkGTG'):
+        if os.path.exists(workingDir + '/scisparkGTG'):
+            shutil.rmtree(workingDir + '/scisparkGTG')
+        else:
             os.mkdir(workingDir + '/scisparkGTG')
-            runSpark = True
-        if not os.path.exists(workingDir + '/scisparkGTG/textFiles'):
             os.mkdir(workingDir + '/scisparkGTG/textFiles')
-            runSpark = True
-        if not os.path.exists(workingDir + '/scisparkGTG/MERGnetcdfCEs'):
             os.mkdir(workingDir + '/scisparkGTG/MERGnetcdfCEs')
-            runSpark = True
 
-        if runSpark:
-            os.chdir(workingDir + '/../../../../')
+        os.chdir(workingDir + '/../../../../')
 
-            sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
-            subprocess.call(sparkSubmitStr, shell=True)
-            cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
-            subprocess.call(cpTextFilesStr, shell=True)
-            cpTextFilesStr = 'mv MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
-            subprocess.call(cpTextFilesStr, shell=True)
-            cpNetcdfsStr = 'mv /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
-            subprocess.call(cpNetcdfsStr, shell=True)
+        sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
+        subprocess.call(sparkSubmitStr, shell=True)
+        cpTextFilesStr = 'mv MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
+        subprocess.call(cpTextFilesStr, shell=True)
+        cpTextFilesStr = 'mv MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+        subprocess.call(cpTextFilesStr, shell=True)
+        cpNetcdfsStr = 'mv /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
+        subprocess.call(cpNetcdfsStr, shell=True)
 
-            print 'SciSpark implementation successfully run. Data can be found at %s' \
-                %workingDir + '/scisparkGTG'
-            of.write('\nSciSpark implementation successfully run. Data can be found at %s' \
-                %workingDir + '/scisparkGTG')
+        print 'SciSpark implementation successfully run. Data can be found at %s' \
+            %workingDir + '/scisparkGTG'
+        of.write('\nSciSpark implementation successfully run. Data can be found at %s' \
+            %workingDir + '/scisparkGTG')
         return True
     except:
         print '!! Problem running SciSpark MCS implementation!'
