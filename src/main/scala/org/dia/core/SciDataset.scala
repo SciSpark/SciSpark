@@ -201,11 +201,12 @@ class SciDataset(val variables: mutable.HashMap[String, Variable],
    */
   def writeToNetCDF(name: String = datasetName, path: String = ""): Unit = {
     val writer = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, path + name, null)
+    val globalDimensionMap = mutable.HashMap[String, ucar.nc2.Dimension]()
     val netcdfKeyValue = variables.map {
       case (key, variable) =>
         val dims = new util.ArrayList[ucar.nc2.Dimension]()
         for ((dimName, length) <- variable.dims) {
-          val newDim = writer.addDimension(null, dimName, length)
+          val newDim = globalDimensionMap.getOrElseUpdate(dimName, writer.addDimension(null, dimName, length))
           dims.add(newDim)
         }
         val varT = writer.addVariable(null, key, ucar.ma2.DataType.FLOAT, dims)

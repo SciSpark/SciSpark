@@ -110,4 +110,13 @@ class SciDatasetTest extends FunSuite with BeforeAndAfter{
     assert(newDataset == Dataset)
   }
 
+  test("writeDataset Variables with shared dimension") {
+    val name = Dataset.datasetName
+    val k = Dataset("data")
+    Dataset("newData") = Dataset("data").copy().setName("newData")
+    Dataset.writeToNetCDF()
+    val newDataset = new SciDataset(NetCDFUtils.loadNetCDFDataSet(name))
+    assert(newDataset == Dataset)
+  }
+
 }
