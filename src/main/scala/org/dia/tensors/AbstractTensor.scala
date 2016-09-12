@@ -104,7 +104,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
   def stack(array : AbstractTensor*) : T
 
-   /**
+  /**
    * Returns the data dimensions
    *
    */

@@ -385,9 +385,11 @@ object MCCOps {
    * @param bucketSize
    * @return
    */
-  def processEdgePartition(partition: (Int, Iterable[MCCEdge]),
-                           currentIteration: Int, minGraphLength: Int,
-                           bucketSize: Int): (Int, Iterable[MCCEdge]) = {
+  def processEdgePartition(
+      partition: (Int, Iterable[MCCEdge]),
+      currentIteration: Int,
+      minGraphLength: Int,
+      bucketSize: Int): (Int, Iterable[MCCEdge]) = {
 
     logger.info(s"Processing partition for key: ${partition._1} at iteration: $currentIteration" +
       s" with edges: ${partition._2}")
@@ -480,11 +482,13 @@ object MCCOps {
    * @return Tuple (length of graph, all edges in the graph, boolean value if the
    *         graph contains a border node)
    */
-  def getGraphInfo(srcNode: String, length: Int, borderNodeFlag: Boolean,
-                   edgeMap: mutable.HashMap[String, mutable.Set[String]],
-                   edgeList: mutable.HashSet[String],
-                   endFrameNum: String, startFrame: String):
-  (Int, mutable.HashSet[String], Boolean) = {
+  def getGraphInfo(
+      srcNode: String,
+      length: Int,
+      borderNodeFlag: Boolean,
+      edgeMap: mutable.HashMap[String, mutable.Set[String]],
+      edgeList: mutable.HashSet[String],
+      endFrameNum: String, startFrame: String): (Int, mutable.HashSet[String], Boolean) = {
     var maxLength = length
     var hasBorderNode = borderNodeFlag
     if (edgeMap.contains(srcNode)) {
@@ -505,10 +509,11 @@ object MCCOps {
    * @param edgeList
    * @return Array[(Int, Iterable[MCCEdge])]
    */
-  def findSubgraphsIteratively(edgeList: RDD[(Int, Iterable[MCCEdge])], iteration: Int,
-                               buckerSize: Int,
-                               minGraphLength: Int,
-                               sc: SparkContext): Array[(Int, Iterable[MCCEdge])] = {
+  def findSubgraphsIteratively(
+      edgeList: RDD[(Int, Iterable[MCCEdge])], iteration: Int,
+      buckerSize: Int,
+      minGraphLength: Int,
+      sc: SparkContext): Array[(Int, Iterable[MCCEdge])] = {
     var iter = iteration
     def startProcessing(obj: RDD[(Int, Iterable[MCCEdge])]): RDD[(Int, Iterable[MCCEdge])] = {
       obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize))
@@ -523,9 +528,10 @@ object MCCOps {
 
     var newGraph = startProcessing(edgeList)
     iter += 1
+
     /** if edgeList is empty implies that all valid subgraphs were found */
     while (newGraph.count() > 1) {
-        val temp = startProcessing(newGraph)
+      val temp = startProcessing(newGraph)
       newGraph = temp
       iter += 1
       logger.debug(edgeList.toDebugString)
