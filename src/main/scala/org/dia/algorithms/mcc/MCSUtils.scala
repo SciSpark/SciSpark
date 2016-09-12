@@ -37,16 +37,16 @@ object MCSUtils {
    * Writes the node components of an MCCEdge to Netcdf
    *
    * @param edge        the edge object which is composed of the nodes
+   * @param MCSNodeMap  mutable.HashMap[String, MCCNode] representing the map of each node metadata
    * @param lats        Array[Double] of the latitudes to be used
    * @param lons        Array[Double] of the longitudes to be used
    * @param tightestBox Boolean to use tightest box around data.
-   * @param MCSNodeMap  mutable.HashMap[String, MCCNode] representing the map of each node metadata
    */
-  def writeEdgeComponentsToNetCDF(edge: MCCEdge,
-                                  MCSNodeMap: mutable.HashMap[String, MCCNode],
-                                  lats: Array[Double],
-                                  lons: Array[Double],
-                                  tightestBox: Boolean): Unit = {
+  def writeEdgeNodesToNetCDF(edge: MCCEdge,
+                             MCSNodeMap: mutable.HashMap[String, MCCNode],
+                             lats: Array[Double],
+                             lons: Array[Double],
+                             tightestBox: Boolean): Unit = {
 
     val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
