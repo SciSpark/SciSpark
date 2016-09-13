@@ -120,9 +120,7 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * @param vars The variables to be extracted from the dataset
    * @param partitions The number of partitions the data should be split into
    */
-  def sciDatasets(path : String,
-                  vars : List[String] = Nil,
-                  partitions : Int = defaultPartitions): RDD[SciDataset] = {
+  def sciDatasets(path : String, vars : List[String] = Nil, partitions : Int = defaultPartitions): RDD[SciDataset] = {
     val uri = new URI(path)
     if (uri.getPath.endsWith(".txt")) {
       netcdfDatasetList(path, vars, partitions)
@@ -138,9 +136,11 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfRandomAccessDatasets
    */
-  def netcdfDatasetList(path: String,
-                        vars: List[String] = Nil,
-                        partitions: Int = defaultPartitions): RDD[SciDataset] = {
+  def netcdfDatasetList(
+      path: String,
+      vars: List[String] = Nil,
+      partitions: Int = defaultPartitions): RDD[SciDataset] = {
+
     val creds = HTTPCredentials.clone()
     val URIsFile = sparkContext.textFile(path, partitions)
     val rdd = URIsFile.map(p => {
@@ -162,9 +162,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def netcdfFileList(path: String,
-                     varName: List[String] = Nil,
-                     partitions: Int = defaultPartitions): RDD[SciTensor] = {
+  def netcdfFileList(
+      path: String,
+      varName: List[String] = Nil,
+      partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
     val URIsFile = sparkContext.textFile(path, partitions)
     val creds = HTTPCredentials.clone()
@@ -210,9 +211,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * For reading from HDFS check NetcdfDFSFile.
    */
-  def netcdfRandomAccessDatasets(path: String,
-                                 varName: List[String] = Nil,
-                                 partitions: Int = defaultPartitions): RDD[SciDataset] = {
+  def netcdfRandomAccessDatasets(
+      path: String,
+      varName: List[String] = Nil,
+      partitions: Int = defaultPartitions): RDD[SciDataset] = {
 
     val fs = FileSystem.get(new URI(path), new Configuration())
     val FileStatuses = fs.listStatus(new Path(path))
@@ -235,9 +237,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * TODO :: Create an SRDD instead of a normal RDD
    */
-  def netcdfDFSFiles(path: String,
-                     varName: List[String] = Nil,
-                     partitions: Int = defaultPartitions): RDD[SciTensor] = {
+  def netcdfDFSFiles(
+      path: String,
+      varName: List[String] = Nil,
+      partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, partitions)
     val rdd = textFiles.map(p => {
@@ -269,9 +272,10 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * @param partitions The number of partitions to split the dataset into
    * @return
    */
-  def netcdfWholeDatasets(path: String,
-                          varNames: List[String] = Nil,
-                          partitions: Int = defaultPartitions): RDD[SciDataset] = {
+  def netcdfWholeDatasets(
+      path: String,
+      varNames: List[String] = Nil,
+      partitions: Int = defaultPartitions): RDD[SciDataset] = {
 
     val textFiles = sparkContext.binaryFiles(path, partitions)
     textFiles.map(p => {
@@ -290,10 +294,11 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * The seed for matrix values is the path values, so the same input set will yield the same data.
    *
    */
-  def randomMatrices(path: String,
-                     varName: List[String] = Nil,
-                     matrixSize: (Int, Int),
-                     partitions: Int = defaultPartitions): SRDD[SciTensor] = {
+  def randomMatrices(
+      path: String,
+      varName: List[String] = Nil,
+      matrixSize: (Int, Int),
+      partitions: Int = defaultPartitions): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > partitions) (URIs.size + partitions) / partitions else 1
@@ -307,11 +312,12 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    * and matrix dimensions. By default the variable name is set to TMP, the dimensions are 9896 x 3298
    * and the value offset is 75.
    */
-  def mergeFile(path: String,
-                varName: List[String] = List("TMP"),
-                shape: Array[Int] = Array(9896, 3298),
-                offset: Double = 75,
-                partitions: Int = defaultPartitions): SRDD[SciTensor] = {
+  def mergeFile(
+      path: String,
+      varName: List[String] = List("TMP"),
+      shape: Array[Int] = Array(9896, 3298),
+      offset: Double = 75,
+      partitions: Int = defaultPartitions): SRDD[SciTensor] = {
 
     val URIs = Source.fromFile(path).mkString.split("\n").toList
     val partitionSize = if (URIs.size > partitions) (URIs.size + partitions) / partitions else 1
@@ -329,11 +335,12 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
    *
    * TODO :: Create an SRDD instead of a normal RDD
    */
-  def mergDFSFile(path: String,
-                  varName: List[String] = List("TMP"),
-                  offset: Double = 75,
-                  shape: Array[Int] = Array(9896, 3298),
-                  partitions: Int = defaultPartitions): RDD[SciTensor] = {
+  def mergDFSFile(
+      path: String,
+      varName: List[String] = List("TMP"),
+      offset: Double = 75,
+      shape: Array[Int] = Array(9896, 3298),
+      partitions: Int = defaultPartitions): RDD[SciTensor] = {
 
     val textFiles = sparkContext.binaryFiles(path, partitions)
     val rdd = textFiles.map(p => {

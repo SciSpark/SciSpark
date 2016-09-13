@@ -35,18 +35,19 @@ import org.dia.core.{SciDataset, SciSparkContext}
  * "longitude" and "latitude" exist in the Netcdf Files
  * at the given path.
  */
-class GTGRunner(val masterURL: String,
-                val paths: String,
-                val varName: String,
-                val partitions: Int,
-                val maxAreaOverlapThreshold : Double = 0.65,
-                val minAreaOverlapThreshold : Double = 0.50,
-                val outerTemp : Double = 241.0,
-                val innerTemp : Double = 233.0,
-                val convectiveFraction : Double = 0.9,
-                val minArea : Int = 625,
-                val nodeMinArea : Int = 150,
-                val minGraphLength: Int = 4) {
+class GTGRunner(
+    val masterURL: String,
+    val paths: String,
+    val varName: String,
+    val partitions: Int,
+    val maxAreaOverlapThreshold: Double = 0.65,
+    val minAreaOverlapThreshold: Double = 0.50,
+    val outerTemp: Double = 241.0,
+    val innerTemp: Double = 233.0,
+    val convectiveFraction: Double = 0.9,
+    val minArea: Int = 625,
+    val nodeMinArea: Int = 150,
+    val minGraphLength: Int = 4) {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -58,9 +59,10 @@ class GTGRunner(val masterURL: String,
    * @param lon the longitude dimension array
    * @return
    */
-  def createNodeMapFromEdgeList(edges: Seq[MCCEdge],
-                                lat: Array[Double],
-                                lon: Array[Double]): mutable.HashMap[String, MCCNode] = {
+  def createNodeMapFromEdgeList(
+      edges: Seq[MCCEdge],
+      lat: Array[Double],
+      lon: Array[Double]): mutable.HashMap[String, MCCNode] = {
 
     val MCCNodes = edges.flatMap(edge => List(edge.srcNode, edge.destNode)).distinct
     val MCCNodeKeyValuesSet = MCCNodes.map(node => {
@@ -131,13 +133,14 @@ class GTGRunner(val masterURL: String,
    * @param nodeMinArea the minimum area of a component
    * @return
    */
-  def findEdges(sRDD: RDD[(SciDataset, SciDataset)],
-                varName: String,
-                maxAreaOverlapThreshold: Double,
-                minAreaOverlapThreshold: Double,
-                convectiveFraction: Double,
-                minArea: Int,
-                nodeMinArea: Int): RDD[MCCEdge] = {
+  def findEdges(
+      sRDD: RDD[(SciDataset, SciDataset)],
+      varName: String,
+      maxAreaOverlapThreshold: Double,
+      minAreaOverlapThreshold: Double,
+      convectiveFraction: Double,
+      minArea: Int,
+      nodeMinArea: Int): RDD[MCCEdge] = {
 
     sRDD.flatMap({
       case (sd1, sd2) =>
@@ -249,8 +252,7 @@ class GTGRunner(val masterURL: String,
    * @param MCCEdgeList Collection of MCCEdges
    * @param MCCNodeMap Dictionary of all the MCCNodes
    */
-  def processEdges(MCCEdgeList: Iterable[MCCEdge],
-                   MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
+  def processEdges(MCCEdgeList: Iterable[MCCEdge], MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
     logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
     logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
 

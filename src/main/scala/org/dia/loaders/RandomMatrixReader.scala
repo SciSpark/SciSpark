@@ -73,9 +73,10 @@ object RandomMatrixReader {
   }
 
 
-  def createRandomSciDataset(name: String,
-                             variables : List[(String, Array[Int])],
-                             attributes : List[(String, String)]): SciDataset = {
+  def createRandomSciDataset(
+      name: String,
+      variables : List[(String, Array[Int])],
+      attributes : List[(String, String)]): SciDataset = {
     val SciVars = variables.map({
       case (filename, shape) =>
         val nd4jTensor = new Nd4jTensor(Nd4j.rand(shape, filename.hashCode.toLong)) * 300.0

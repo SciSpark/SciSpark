@@ -46,35 +46,40 @@ import org.dia.utils.NetCDFUtils
  *
  *            AbstractTensor = netcdfVar()
  */
-class Variable(var name: String,
-               val dataType: String,
-               val array: AbstractTensor,
-               val attributes: mutable.HashMap[String, String],
-               val dims: List[(String, Int)]) extends Serializable {
+class Variable(
+    var name: String,
+    val dataType: String,
+    val array: AbstractTensor,
+    val attributes: mutable.HashMap[String, String],
+    val dims: List[(String, Int)]) extends Serializable {
 
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
-  def this(name: String,
-           dataType: String,
-           array: Array[Double],
-           shape: Array[Int],
-           attr: Seq[(String, String)],
-           dims: List[(String, Int)]) {
+  def this(
+      name: String,
+      dataType: String,
+      array: Array[Double],
+      shape: Array[Int],
+      attr: Seq[(String, String)],
+      dims: List[(String, Int)]) {
+
     this(name,
-         dataType,
-         new Nd4jTensor(array, shape),
-         mutable.HashMap[String, String]() ++= attr,
-         dims)
+      dataType,
+      new Nd4jTensor(array, shape),
+      mutable.HashMap[String, String]() ++= attr,
+      dims
+    )
   }
 
 
   def this(name: String, nvar: ucar.nc2.Variable) {
     this(name,
-         nvar.getDataType.toString,
-         NetCDFUtils.getArrayFromVariable(nvar),
-         nvar.getShape,
-         nvar.getAttributes.asScala.map(p => NetCDFUtils.convertAttribute(p)),
-         nvar.getDimensions.asScala.map(p => (p.getFullName, p.getLength)).toList)
+      nvar.getDataType.toString,
+      NetCDFUtils.getArrayFromVariable(nvar),
+      nvar.getShape,
+      nvar.getAttributes.asScala.map(p => NetCDFUtils.convertAttribute(p)),
+      nvar.getDimensions.asScala.map(p => (p.getFullName, p.getLength)).toList
+    )
   }
 
   def this(nvar: ucar.nc2.Variable) {
@@ -91,8 +96,8 @@ class Variable(var name: String,
 
   def this(name: String, array: AbstractTensor) {
     this(name,
-         array,
-         List[(String, Int)]())
+      array,
+      List[(String, Int)]())
   }
 
   def this(array: AbstractTensor) {

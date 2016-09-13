@@ -35,7 +35,7 @@ class Nd4jTensor(val tensor: INDArray) extends AbstractTensor {
   var mask = 0.0
 
   def this(array: Array[Double], shape: Array[Int]) {
-   this(Nd4j.create(array, Nd4jTensorUtils.processShape(shape)))
+    this(Nd4j.create(array, Nd4jTensorUtils.processShape(shape)))
   }
 
   def this(shapePair: (Array[Double], Array[Int])) {
