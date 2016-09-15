@@ -41,7 +41,7 @@ class MCCOpsTest extends FunSuite {
     assert(breezeReduced.data.toList == List(1.5, 5.5))
   }
 
-  test("testFindConnectedComponents") {
+  test("testlabelConnectedComponents") {
     val m = Array(
       Array(1.0, 2.0, 0.0, 4.0),
       Array(5.0, 6.0, 0.0, 8.0),
@@ -91,30 +91,6 @@ class MCCOpsTest extends FunSuite {
     assert(averageDoubleColums == averageDoubleColumnsSolution)
     assert(averageRows == averageRowSolution)
     assert(mismatchedDimension == mismatchedDimensionSolution)
-  }
-
-  test("findComponents") {
-    val m = Array(
-      Array(1.0, 2.0, 0.0, 4.0),
-      Array(5.0, 6.0, 0.0, 8.0),
-      Array(43.9, 23.0, 1.0, 0.0),
-      Array(0.0, 0.0, 0.0, 0.0),
-      Array(1.0, 0.0, 1.0, 0.0))
-
-    val cc = Array(
-      Array(1.0, 1.0, 0.0, 2.0),
-      Array(1.0, 1.0, 0.0, 2.0),
-      Array(1.0, 1.0, 1.0, 0.0),
-      Array(0.0, 0.0, 0.0, 0.0),
-      Array(3.0, 0.0, 4.0, 0.0))
-
-    val ndArray = Nd4j.create(m)
-    val ccArray = Nd4j.create(cc)
-    val t = new Nd4jTensor(ndArray)
-    val cct = new Nd4jTensor(ccArray)
-    val frames = MCCOps.findConnectedComponents(t)
-    val ccframes = MCCOps.findConnectedComponents(cct)
-    assert(frames == ccframes)
   }
 
 }
