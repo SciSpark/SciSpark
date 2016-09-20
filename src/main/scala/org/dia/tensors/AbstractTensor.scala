@@ -198,8 +198,8 @@ trait AbstractTensor extends Serializable with SliceableArray {
    */
   def labelComponents(): (AbstractTensor, Int) = {
     val fourVector = List((1, 0), (-1, 0), (0, 1), (0, -1))
-    val rows = this.shape(0)//tensor.rows()
-    val cols = this.shape(1) //tensor.cols()
+    val rows = this.shape(0)
+    val cols = this.shape(1)
     val labels = zeros(this.shape: _*)
     var label = 1
     val stack = new util.ArrayDeque[Int](this.rows + this.cols * 10)

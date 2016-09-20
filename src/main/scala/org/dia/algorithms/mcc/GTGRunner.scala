@@ -160,11 +160,8 @@ class GTGRunner(
          * This way only one traverse is necessary instead of a 2nd traverse
          * to find the highest label.
          */
-        // val (components1, _) = labelConnectedComponents(t1())
-        // val (components2, _) = AbstractTensor.labelConnectedComponents(t2())
         val (components1, _) = t1().labelComponents
         val (components2, _) = t2().labelComponents
-        
         /**
          * The labeled components are element-wise multiplied
          * to find overlapping regions. Non-overlapping regions
@@ -176,7 +173,6 @@ class GTGRunner(
          *
          */
         val product = components1 * components2
-
         val nodeMap = new mutable.HashMap[String, MCCNode]()
         val MCCEdgeMap = new mutable.HashMap[String, MCCEdge]()
 
