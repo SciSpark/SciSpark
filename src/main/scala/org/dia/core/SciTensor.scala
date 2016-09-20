@@ -27,7 +27,6 @@ import ucar.ma2
 import ucar.nc2.Attribute
 import ucar.nc2.NetcdfFileWriter
 
-import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.AbstractTensor
 
 /**
@@ -259,7 +258,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    * dimensions blockInt.
    */
   def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): SciTensor = {
-    MCCOps.reduceResolution(variables(varInUse), blockInt, invalid)
+    variables(varInUse).reduceResolution(blockInt, invalid)
   }
 
   /**
@@ -272,7 +271,7 @@ class SciTensor(val variables: mutable.Map[String, AbstractTensor]) extends Seri
    * rowblockSize X colblockSize.
    */
   def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Int): SciTensor = {
-    MCCOps.reduceRectangleResolution(variables(varInUse), rowblockSize, colblockSize, invalid)
+    variables(varInUse).reduceRectangleResolution(rowblockSize, colblockSize, invalid)
   }
 
   def writeToNetCDF(name: String, path: String = ""): Unit = {

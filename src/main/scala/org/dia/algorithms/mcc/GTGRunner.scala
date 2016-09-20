@@ -25,6 +25,7 @@ import scala.collection.mutable
 import org.apache.spark.rdd.RDD
 
 import org.dia.core.{SciDataset, SciSparkContext}
+import org.dia.tensors.AbstractTensor
 
 /**
  * Runs Grab em' Tag em' Graph em'
@@ -159,8 +160,11 @@ class GTGRunner(
          * This way only one traverse is necessary instead of a 2nd traverse
          * to find the highest label.
          */
-        val (components1, _) = MCCOps.labelConnectedComponents(t1())
-        val (components2, _) = MCCOps.labelConnectedComponents(t2())
+        // val (components1, _) = labelConnectedComponents(t1())
+        // val (components2, _) = AbstractTensor.labelConnectedComponents(t2())
+        val (components1, _) = t1().labelComponents
+        val (components2, _) = t2().labelComponents
+        
         /**
          * The labeled components are element-wise multiplied
          * to find overlapping regions. Non-overlapping regions
