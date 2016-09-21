@@ -21,7 +21,6 @@ import scala.collection.JavaConverters._
 
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
-import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
@@ -321,7 +320,7 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
   test("test ReduceRectangleResolution") {
     val (row, col) = (2, 2)
     val solutionName = "reduceResolution(" + leftName + "," + (row, col) + ")"
-    val solution = new Variable(solutionName, MCCOps.reduceRectangleResolution(leftTensor, row, col))
+    val solution = new Variable(solutionName, leftTensor.reduceRectangleResolution(row, col))
     val leftOpRight = leftVar.reduceRectangleResolution(row, col)
     assert(leftOpRight == solution)
   }
@@ -329,7 +328,7 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
   test("test ReduceResolution") {
     val block = 2
     val solutionName = "reduceResolution(" + leftName + "," + (block, block) + ")"
-    val solution = new Variable(solutionName, MCCOps.reduceResolution(leftTensor, block))
+    val solution = new Variable(solutionName, leftTensor.reduceResolution(block))
     val leftOpRight = leftVar.reduceResolution(block)
     assert(leftOpRight == solution)
   }

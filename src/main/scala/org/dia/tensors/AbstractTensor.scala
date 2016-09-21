@@ -17,6 +17,8 @@
  */
 package org.dia.tensors
 
+import java.util
+
 /**
  * An abstract tensor
  */
@@ -24,6 +26,7 @@ trait AbstractTensor extends Serializable with SliceableArray {
 
   type T <: AbstractTensor
   val name: String
+  val BACKGROUND = 0.0
   val LOG = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   def reshape(shape: Array[Int]): T
@@ -121,6 +124,143 @@ trait AbstractTensor extends Serializable with SliceableArray {
   def skew(axis: Int*): T
   def assign(newTensor: AbstractTensor) : T
   def toString: String
+
+  /**
+   * Reduces the resolution of the tensor into square blocks
+   * by taking the average.
+   *
+   * @param blockSize block size used for aggregation
+   * @param invalid value used to signify invalid value
+   * @return aggregated tensor obtained by taking the average of
+   * values within blocks ignoring invalid values
+   */
+  def reduceResolution(blockSize: Int, invalid: Double = Double.NaN): AbstractTensor = {
+    val largeArray = this.asInstanceOf[AbstractTensor]
+    val numRows = largeArray.rows
+    val numCols = largeArray.cols
+    val reducedMatrix = zeros(numRows / blockSize, numCols / blockSize)
+
+    for (row <- 0 until reducedMatrix.rows) {
+      for (col <- 0 until reducedMatrix.cols) {
+        val rowRange = (row * blockSize) -> ((row + 1) * blockSize)
+        val columnRange = (col * blockSize) -> ((col + 1) * blockSize)
+        val block = this(rowRange, columnRange).copy
+        val numValid = block.data.count(_ != invalid)
+        val avg = if (numValid > 0) block.cumsum / numValid else 0.0
+        reducedMatrix.put(avg, row, col)
+      }
+    }
+    reducedMatrix
+  }
+
+  /**
+   * Reduces the resolution of the tensor into rectangle blocks
+   * by taking the average.
+   *
+   * Similar to above method reduceResolution.
+   */
+  def reduceRectangleResolution(
+      rowSize: Int,
+      colSize: Int,
+      invalid: Double = Double.NaN): AbstractTensor = {
+
+    val largeArray = this.asInstanceOf[AbstractTensor]
+    val numRows = largeArray.rows()
+    val numCols = largeArray.cols()
+    val reducedMatrix = zeros(numRows / rowSize, numCols / colSize)
+
+    for (row <- 0 until reducedMatrix.rows) {
+      for (col <- 0 until reducedMatrix.cols) {
+        val rowRange = (row * rowSize) -> ((row + 1) * rowSize)
+        val columnRange = (col * colSize) -> ((col + 1) * colSize)
+        val block = this(rowRange, columnRange).copy
+        val numValid = block.data.count(_ != invalid)
+        val avg = if (numValid > 0) block.cumsum / numValid else 0.0
+        reducedMatrix.put(avg, row, col)
+      }
+    }
+    reducedMatrix
+  }
+
+  /**
+   * Computes connected component labels of tensor.
+   *
+   * Note that for garbage collection purposes we use one ArrayStack.
+   * We push in row/col tuples two ints at a time, and pop two ints at a time.
+   * Also note that the components are labeled starting at 1.
+   *
+   * This is just doing a depth-first-search (DFS) over the tensor cells.
+   * (The tensor cells are a graph with two cells being connected iff
+   * they are next to each other horizontally or vertically (but not diagonally).)
+   *
+   * @return a single tensor with the associated component numbers,
+   * together with the total number of components.
+   */
+  def labelComponents(): (AbstractTensor, Int) = {
+    val fourVector = List((1, 0), (-1, 0), (0, 1), (0, -1))
+    val rows = this.shape(0)
+    val cols = this.shape(1)
+    val labels = zeros(this.shape: _*)
+    var label = 1
+    val stack = new util.ArrayDeque[Int](this.rows + this.cols * 10)
+
+    /**
+     * Whether we already assigned a component label to the coordinate.
+     *
+     * (row,col) is already labeled if
+     * (i) it's out of bounds OR
+     * (ii) its value is BACKGROUND (=0) OR
+     * (iii) it has already been assigned to a component,
+     * i.e. labels(row,col) is not BACKGROUND (=0)
+     *
+     * @param row the row to check
+     * @param col the column to check
+     * @return whether (row,col) is already labeled
+     */
+    def isLabeled(row: Int, col: Int): Boolean = {
+      if (row < 0 || col < 0 || row >= rows || col >= cols) return true
+      this(row, col) == BACKGROUND || labels(row, col) != BACKGROUND
+    }
+
+    /**
+     * Pushes unlabeled neighbors onto the stack.
+     *
+     * @param currentLabel the component label being added
+     */
+    def dfs(currentLabel: Int): Unit = {
+      while (!stack.isEmpty) {
+        /**
+         *  Note that when popping, we pop col, then row.
+         *  When pushing, we push row, then col.
+         */
+        val col = stack.pop
+        val row = stack.pop
+        labels.put(currentLabel, row, col)
+        val neighbors = fourVector.map(p => (p._1 + row, p._2 + col))
+        for (neighbor <- neighbors) {
+          if (!isLabeled(neighbor._1, neighbor._2)) {
+            val row = neighbor._1
+            val col = neighbor._2
+            stack.push(row)
+            stack.push(col)
+          }
+        }
+      }
+    }
+
+    /** Main loop */
+    for (row <- 0 until rows) {
+      for (col <- 0 until cols) {
+        if (!isLabeled(row, col)) {
+          stack.push(row)
+          stack.push(col)
+          dfs(label)
+          label += 1
+        }
+      }
+    }
+    (labels, label - 1)
+  }
 
   /**
    * It will be called when checking equality against

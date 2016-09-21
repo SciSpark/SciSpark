@@ -24,7 +24,6 @@ import scala.collection.JavaConverters._
 
 import ucar.nc2.Attribute
 
-import org.dia.algorithms.mcc.MCCOps
 import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
 
@@ -310,7 +309,7 @@ class Variable(
    * dimensions blockInt.
    */
   def reduceResolution(blockInt: Int, invalid: Double = Double.NaN): Variable = {
-    val reduced = MCCOps.reduceResolution(this(), blockInt, invalid)
+    val reduced = this().reduceResolution(blockInt, invalid)
     varStatOp(reduced, "reduceResolution", (blockInt, blockInt).toString)
   }
 
@@ -324,7 +323,7 @@ class Variable(
    * rowblockSize X colblockSize.
    */
   def reduceRectangleResolution(rowblockSize: Int, colblockSize: Int, invalid: Double = Double.NaN): Variable = {
-    val reduced = MCCOps.reduceRectangleResolution(this(), rowblockSize, colblockSize, invalid)
+    val reduced = this().reduceRectangleResolution(rowblockSize, colblockSize, invalid)
     varStatOp(reduced, "reduceResolution", (rowblockSize, colblockSize).toString)
   }
 
