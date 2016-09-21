@@ -146,17 +146,17 @@ object MCCOps {
 
         /** If the graph has a border node then we store the entire graph containing it for the next iteration */
         if (graphInfo._3) {
-          val temp = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
+          val tmp = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
             new mutable.HashSet[String]())
-          visitedNodes ++= temp._2
-          filteredEdges ++= temp._1
+          visitedNodes ++= tmp._2
+          filteredEdges ++= tmp._1
         }
         else {
           if (graphInfo._1 >= minGraphLength) {
-            val temp = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
+            val tmp = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
               new mutable.HashSet[String]())
-            visitedNodes ++= temp._2
-            subgraphList += temp._1
+            visitedNodes ++= tmp._2
+            subgraphList += tmp._1
           }
           else {
             discardedEdges ++= graphInfo._2
