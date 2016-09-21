@@ -53,7 +53,7 @@ object MCSUtils {
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
     val (dstNodeId, dstNodeGrid) = extract_masked_data(dstMCSNode, lats, lons, tightestBox)
     MCSUtils.writeNodeToNetCDF("/tmp/", srcNodeID, srcNodeGrid, lats, lons)
-    MCSUtils.writeNodeToNetCDF("/tmp/", dstNodeId, srcNodeGrid, lats, lons)
+    MCSUtils.writeNodeToNetCDF("/tmp/", dstNodeId, dstNodeGrid, lats, lons)
   }
 
   /**
