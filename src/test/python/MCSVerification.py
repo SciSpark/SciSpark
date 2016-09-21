@@ -37,7 +37,7 @@ def _get_python_implementation():
     Inputs: None
     Outputs: Boolean representing success retrieving the data
     '''
-    print 'Checking on Python implementation data' 
+    print 'Checking on Python implementation data'
     of.write('\n Checking on Python implementation data')
 
     pythonGTG = 'https://scispark.jpl.nasa.gov/pythonGTG.zip'
@@ -64,24 +64,26 @@ def _run_scispark_implementation():
     Purpose: To run GTG runner for SciSpark results to compare as a spark-submit task
     Assumptions: spark-submit is available on the path. scala-2.11 is used.
     '''
-    print 'Checking on SciSpark implementation data' 
+    print 'Checking on SciSpark implementation data'
     of.write('\n Checking on SciSpark implementation data')
 
     try:
         if os.path.exists(workingDir + '/scisparkGTG'):
             shutil.rmtree(workingDir + '/scisparkGTG')
-        
+
         os.mkdir(workingDir + '/scisparkGTG')
         os.mkdir(workingDir + '/scisparkGTG/textFiles')
         os.mkdir(workingDir + '/scisparkGTG/MERGnetcdfCEs')
 
         os.chdir(workingDir + '/../../../../')
 
-        sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
+        sparkSubmitStr = 'spark-submit target/scala-2.10/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
         cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
         cpTextFilesStr = 'cp MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+        subprocess.call(cpTextFilesStr, shell=True)
+        cpTextFilesStr = 'cp subgraphs.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
         cpNetcdfsStr = 'cp /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
         subprocess.call(cpNetcdfsStr, shell=True)
@@ -101,7 +103,7 @@ def _compare_times(pyNodes, ssDir, allTimesInts):
     Purpose: To check the times of files in two nodelist to determine if similar
     Inputs: pyNodes - a list of strings (F##CE##) representing the nodes found in the Python
                     implementation. F## is the frame integer
-            pyDir - string representing the path to the directory with the netCDF files from the 
+            pyDir - string representing the path to the directory with the netCDF files from the
                     Python implementation
             allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime & endTime
     Assumptions: Files contain a datetime string
@@ -119,7 +121,7 @@ def _compare_times(pyNodes, ssDir, allTimesInts):
 def _compare_num_CEs_per_frame(pyNodes, ssNodes, allTimesInts):
     '''
     Purpose: To compare the number of number of CEs per a frame
-    Inputs: pyNodes - a list of strings (F##CE##) representing the nodes found in the Python 
+    Inputs: pyNodes - a list of strings (F##CE##) representing the nodes found in the Python
                     implementation. F## is the frame integer
             ssNodes - a list of strings representing the nodes found in the SciSpark implementation.
                     F## is the datetime of the frame in the format YYYYMMDDhh
@@ -326,21 +328,46 @@ def _convert_to_pyNodes(subgraphs, workingDir):
 
     return ssGraph
 
-def _compare_edgelists(pyEdgeList, ssEdgeList):
+def _compare_num_subgraphs(pyEdgeList, ssEdgeList):
     '''
-    Purpose: Compare the edgelist generated between the two implementations
+    Purpose: Compare the number of subgraphs generated between the two implementations
     Inputs: pyEdgeList - a list of list of strings representing the connect nodes within each subgraph
             ssEdgeList - a list of tuples of two strings representing an edge between connected nodes with subgraphs
     Outputs: Boolean representing if the two list entered are equal, a list of list representing any difference between the inputs
     '''
+    if len(pyEdgeList) == len(ssEdgeList):
+        return True, 0
+    elif len(pyEdgeList) > len(ssEdgeList):
+        return False, len(pyEdgeList) - len(ssEdgeList)
+    elif len(ssEdgeList) > len(pyEdgeList):
+        return False, (len(ssEdgeList) - len(pyEdgeList)) * -1
+
+
+def _compare_edgelists(pySubgraphs, ssSubgraphs):
+    '''
+    Purpose: Compare the edgelist generated between the two implementations
+    Inputs: pySubgraphs - a list of list of strings representing the connect nodes within each subgraph
+            ssSubgraphs - a list of tuples of two strings representing an edge between connected nodes with subgraphs
+    Outputs: Boolean representing if the two list entered are equal, a list of list representing any difference between the inputs
+    '''
     x = []
-    for i in pyEdgeList:
-        if not filter(lambda y: set(y) & set(i), ssEdgeList):
-            x.append(filter(lambda y: set(y) & set(i) == [], ssEdgeList))
+    z = []
+
+    for i in pySubgraphs:
+        ssGraph = filter(lambda y: set(y) & set(i), ssSubgraphs)
+        if not ssGraph:
+            x.append(filter(lambda y: set(y) & set(i) == set([]), ssSubgraphs))
+        else:
+            if len(i) > len(ssGraph[0]):
+                z.append(('Python len: ' + str(len(i)), 'SciSpark len: '+str(len(ssGraph[0])), list(set(i) - set(ssGraph[0]))))
+            elif len(ssGraph[0]) > len(i):
+                z.append(('Python len: ' + str(len(i)), 'SciSpark len: '+str(len(ssGraph[0])), list(set(ssGraph[0]) - set(i))))
+            else:
+                z.append(('Python len: '+str(len(i)), 'SciSpark len: '+str(len(ssGraph[0])), []))
     if x:
         return False, x
     else:
-        return True, x
+        return True, z
 
 def _cloud_cluster(nodeName, groupedges):
     '''
@@ -365,6 +392,21 @@ def _cloud_cluster(nodeName, groupedges):
 
     return edgelist
 
+def _get_ssSubgraphs(ssDir):
+    '''
+    Purpose: to acquire the subgraphs found in the SciSpark implmentation from the text file
+    Input: ssDir - string representing the path to the directory with the netCDF files from the SciSpark implementation
+    Output: ssSubgraphs - a list of subgraphs from the SciSpark implementation
+    '''
+    subgraphs = []
+
+    with open(ssDir+'/textFiles/subgraphs.txt') as f:
+        s = f.readlines()
+    subgraphs = map(lambda x: list(set((x.strip().split('(Set(')[1].split('))')[0]).replace(' ', '').split(','))), s)
+
+    return subgraphs
+
+
 def _get_data(sTime, eTime, pyDir, ssDir):
     '''
     Purpose: to acquire necessary data from the two implementations
@@ -386,7 +428,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
 
     with open(ssDir+'/textFiles/MCCNodesLines.json', 'r') as sF:
         sFs = sF.readlines()
-    ssNodes = map(lambda y: "F" + str(y["frameNum"])+"CE" + str(y["cloudElemNum"])[:-2], map(lambda x: json.loads(x), sFs))
+    ssNodes = map(lambda y: 'F' + str(y['frameNum'])+'CE' + str(y['cloudElemNum'])[:-2], map(lambda x: json.loads(x), sFs))
 
     with open(pyDir + '/textFiles/CEList.txt', 'r') as pF:
         pFs = pF.readline()
@@ -400,9 +442,10 @@ def _get_data(sTime, eTime, pyDir, ssDir):
 
     with open(pyDir + '/textFiles/MCSList.txt', 'r') as pF:
         pFs = pF.readline()
-    pyEdgeList = map(lambda x: x[1:].replace('\'', '').split(','), pFs[1:-1].split(']'))
+    pyEdgeList = map(lambda x: x[1:].replace('\'', '').replace(' ', '').split(','), pFs[1:-1].split(']'))
 
     return allTimesInts, ssNodes, pyNodes, ssEdgeList, pyEdgeList
+
 
 def test_1(pyNodes, ssDir, allTimesInts):
     '''
@@ -442,7 +485,7 @@ def test_2(allTimesInts, pyNodes, ssNodes):
     '''
     Purpose: execute the 2nd test to compare number of CEs at each frame
     Inputs: allTimesInts - list of ints (YYYYMMDDhh) representing dates between startTime & endTime
-            pyNodes - a list of strings (F##CE##) representing the nodes found in the 
+            pyNodes - a list of strings (F##CE##) representing the nodes found in the
                     Python implementation. F## is the frame integer
             ssNodes - a list of strings representing the nodes found in the SciSpark implementation.
                    F## is the datetime of the frame in the format YYYYMMDDhh
@@ -526,10 +569,10 @@ def test_3(pyDir, ssDir, pyNodes, allTimesInts):
                     %(ce, c.get(ce) + 1, map(lambda j: j[1], filter(lambda i: ce in i[0], accCeMap))))
     return allCEs
 
-def test_4(pyEdgeList, ssEdgeList):
+def test_4(pySubgraphs, ssEdgeList):
     '''
-    Purpose: execute the fourth tests to compare the edgelist generated within either implementation
-    Inputs: pyEdgeList - a list of list of strings representing the connect nodes within each subgraph
+    Purpose: execute the fourth tests to compare if the edgelist generated at the end of step one contains the graphs
+    Inputs: pySubgraphs - a list of list of strings representing the connect nodes within each subgraph
             ssEdgeList - a list of tuples of two strings representing an edge between connected nodes with subgraphs
     Outputs: None
     '''
@@ -537,17 +580,83 @@ def test_4(pyEdgeList, ssEdgeList):
     subgraphs = filter(lambda x: len(list(set(map(lambda y: int(y.split('F')[1].split('CE')[0]), x)))) > 3, subgraphs)
     subgraphs = map(lambda y: list(set(y)), subgraphs)
     ssgraph = _convert_to_pyNodes(subgraphs, workingDir)
-    passed, graph = _compare_edgelists(pyEdgeList, ssgraph)
+
+    passed, graph = _compare_edgelists(pySubgraphs, ssgraph)
     if passed:
         print 'Test 4: Graph objects generated are similar.'
         of.write('\nTest 4. Graph objects generated are similar.')
     else:
         print '!!Test 4: Different graph objects are generated in either implementation. \n \
         The %d graphs in Python implementation and %d in SciSpark implementation. The different subgraphs are %s' \
-            %(len(pyEdgeList), len(ssgraph), graph)
+            %(len(pySubgraphs), len(ssgraph), graph)
         of.write('\n!!Test 3: Different graph objects are generated in either implementation.\n\
             The %d graphs in Python implementation and %d in SciSpark implementation. The different subgraphs are %s'\
-            %(len(pyEdgeList), len(ssgraph), graph))
+            %(len(pySubgraphs), len(ssgraph), graph))
+
+
+def test_5(pySubgraphs, ssSubgraphs):
+    '''
+    Purpose: execute the fifth tests to compare the subgraphs generated within either implementation
+    Inputs: pyEdgeList - a list of list of strings representing the connect nodes within each subgraph
+            ssEdgeList - a list of tuples of two strings representing an edge between connected nodes with subgraphs
+    Outputs: None
+    '''
+    passed, diffLen = _compare_num_subgraphs(pySubgraphs, ssSubgraphs)
+    if passed:
+        print 'Test 5: Number of subgraphs generated are equal.'
+        of.write('\nTest 5. Number of subgraphs generated are equal.')
+    else:
+        if diffLen > 0:
+            print 'Python implementation found %d more subgraphs than the SciSpark implementation' %diffLen
+            of.write('\nPython implementation has found %d more subgraphs than the SciSpark implementation' %diffLen)
+        else:
+            print 'SciSpark implementation found %d more subgraphs than the Python implementation' %(diffLen * -1)
+            of.write('\nSciSpark implementation has found %d more subgraphs than the Python implementation' %(diffLen * -1))
+
+def test_6(workingDir, pySubgraphs, ssSubgraphs):
+    '''
+    Purpose: execute the sixth tests to compare the subgraphs generated within either implementation
+    Inputs: workingDir - - directory for writing mapping files
+    pySubgraphs - a list of list of strings representing the connect nodes within each subgraph
+            ssSubgraphs - a list of tuples of two strings representing an edge between connected nodes with subgraphs
+    Outputs: None
+    '''
+
+    mappedGraph = []
+    aGraph = []
+    ssgraph = []
+
+    with open(workingDir+'/CEmappings.txt', 'r') as f:
+        nodeMap = f.readlines()
+
+    nodeMap = map(lambda x: (x.split(' --> ')[0], x.split(' --> ')[1].strip()), nodeMap)
+    
+    for s in ssSubgraphs:
+        ssgraph.append(map(lambda x: 'F' + x.split(':')[0] + 'CE' + x.split(':')[1], filter(None, s))) 
+
+    for g in ssgraph:
+        for n in g:
+            entry = filter(lambda y: y[1] == n, nodeMap)
+            if entry:
+                pyNode = entry[0][0]
+            else:
+                pyNode = None
+            aGraph.append(pyNode)
+        mappedGraph.append(aGraph)
+        aGraph = []
+
+    passed, graph = _compare_edgelists(pySubgraphs, mappedGraph)
+
+    if passed:
+        print 'Test 6: Subgraphs generated are similar. %s' %graph 
+        of.write('\nTest 6. Subgraphs generated are similar.')
+    else:
+        print '!!Test 6: Different elements in the subgraphs are generated in either implementation. \n \
+        The different for each subgraph are %s' \
+            %graph
+        of.write('\n!!Test 6: Different elements in the subgraph are generated in either implementation.\n\
+            The difference for each subgraph are %s'\
+            %graph)
 
 def main(argv):
     '''
@@ -605,7 +714,7 @@ def main(argv):
             sys.exit(2)
 
         # --- Acquire the data from the different implementations for the tests ---
-        allTimesInts, ssNodes, pyNodes, ssEdgeList, pyEdgeList = _get_data(sTime, eTime, pyDir, ssDir)
+        allTimesInts, ssNodes, pyNodes, ssEdgeList, pySubgraphs = _get_data(sTime, eTime, pyDir, ssDir)
 
         # check times between implementations
         test_1(pyNodes, ssDir, allTimesInts)
@@ -618,15 +727,28 @@ def main(argv):
         of.write('-' *80)
 
         # content in the CEs at each frame
-        allCEs = test_3(pyDir, ssDir, pyNodes, allTimesInts)         
+        allCEs = test_3(pyDir, ssDir, pyNodes, allTimesInts)
         print '-' *80
         of.write('-' *80)
 
         # write mappings of cloudelements in either implementation to a file
         _write_CE_mappings(allCEs)
+        
+        # check graph objects using edgelists
+        test_4(pySubgraphs, ssEdgeList)
+        print '-' *80
+        of.write('-' *80)
 
-        # check edgelist
-        test_4(pyEdgeList, ssEdgeList)
+        # open subgraphs
+        ssSubgraphs = _get_ssSubgraphs(ssDir)
+
+        # check number of graphs
+        test_5(pySubgraphs, ssSubgraphs)
+        print '-' *80
+        of.write('-' *80)
+
+        # check subgraphs generated between either implementation
+        test_6(workingDir, pySubgraphs, ssSubgraphs)
         print '-' *80
         of.write('-' *80)
 
