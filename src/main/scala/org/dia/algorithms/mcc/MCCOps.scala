@@ -222,9 +222,12 @@ object MCCOps {
     return (maxLength, edgeList, hasBorderNode)
   }
 
-  def findConnectedNodes(node: String, edgeMap: mutable.HashMap[String, mutable.Set[String]],
-                         edges: mutable.HashSet[String],
-                         visitedNodes: mutable.HashSet[String]): (mutable.HashSet[String], mutable.HashSet[String]) = {
+  def findConnectedNodes(
+      node: String,
+      edgeMap: mutable.HashMap[String, mutable.Set[String]],
+      edges: mutable.HashSet[String],
+      visitedNodes: mutable.HashSet[String]): (mutable.HashSet[String], mutable.HashSet[String]) = {
+
     visitedNodes += node
     for (edge <- edgeMap(node)) {
       edges += edge
