@@ -366,7 +366,7 @@ class GTGRunner(
     val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
       minGraphLength, sc.sparkContext)
     for(x <- subgraphsFound) {
-      logger.info("Edges remaning : " + x._2._1.toList)
+      logger.info("Edges remaning : " + x._2.toList)
     }
 
     /**
