@@ -19,13 +19,14 @@ package org.dia.algorithms.mcc
 
 import java.util
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.reflect.ClassTag
-
 import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
 import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
-
 import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
 
@@ -185,5 +186,37 @@ object MCSUtils {
     val lonBoundString = "_" + lonMinOffset.toString + "_" + lonMaxOffset.toString
     val nodeID = frameString + componentString + latBoundString + lonBoundString + ".nc"
     (nodeID, nodeGrid)
+  }
+
+  /**
+   * Write edges to a file
+   * @param filename Absolute filepath
+   * @param edgeList Edgelist containing the edges to be written
+   */
+  def writeEdgesToFile(filename: String, edgeList: Iterable[MCCEdge]): Unit = {
+    val filePath = new Path(filename)
+    val conf = new Configuration()
+    val fs = FileSystem.get(filePath.toUri, conf)
+    val os = fs.create(filePath)
+    os.writeChars(edgeList.toList.toString())
+    os.close()
+  }
+
+  /**
+   * Write edges to a file
+   * @param filename Absolute filepath
+   * @param nodeList Node list containing the nodes to be written
+   * @param printData If true, this method will print node data (grid, temp, lat, long, etc). If false,
+   *                  this method will write the node key.
+   */
+  def writeNodesToFile(filename: String, nodeList: Iterable[MCCNode]): Unit = {
+    val filePath = new Path(filename)
+    val conf = new Configuration()
+    val fs = FileSystem.get(filePath.toUri, conf)
+    val os = fs.create(filePath)
+    for (node <- nodeList) {
+      os.writeChars(node.toString() + "\n")
+    }
+    os.close()
   }
 }

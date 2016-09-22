@@ -258,16 +258,12 @@ class GTGRunner(
     logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
     logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
 
-    val pw = new PrintWriter("MCCNodesLines.json")
-    MCCNodeMap.foreach { case (key, value) =>
-      pw.write(value.toString())
-      pw.write("\n")
-    }
-    pw.close()
+    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.json"
+    MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
 
-    val fw = new PrintWriter("MCCEdges.txt")
-    fw.write(MCCEdgeList.toString())
-    fw.close()
+    val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
+    MCSUtils.writeEdgesToFile(MCCEdgeFilename, MCCEdgeList)
+
   }
 
   def testHDFSWrite(outputDir: String): String = {
