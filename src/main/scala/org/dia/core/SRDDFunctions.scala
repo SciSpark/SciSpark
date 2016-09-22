@@ -180,6 +180,32 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
     val rangeKeyedRDD = splitTiles(varName, keyFunc, tileShape: _*)
     stackTiles(rangeKeyedRDD)
   }
+
+  /**
+   * For each array N* where N is the frame number and N* is the array
+   * output the following pairs (N, N*), (N + 1, N*).
+   *
+   * After flat-mapping the pairs and applying additional pre-processing
+   * we have pairs (X, Y) where X is a label and Y a tensor.
+   *
+   * After reducing by key and reordering pairs we obtain pairs
+   * (N*, (N+1)*) which achieves the consecutive pairwise grouping
+   * of frames.
+   *
+   * Precondition : Each SciTensor has a FRAME key recorded in its metadata table
+   *
+   * @param sRDD the input RDD of SciTensors
+   * @return
+   */
+  def pairConsecutiveFrames(frame: String): RDD[(SciDataset, SciDataset)] = {
+    self.sortBy(p => p.attr(frame).toInt)
+      .zipWithIndex()
+      .flatMap({ case (sciD, indx) => List((indx, List(sciD)), (indx + 1, List(sciD))) })
+      .reduceByKey(_ ++ _)
+      .filter({ case (_, sciDs) => sciDs.size == 2 })
+      .map({ case (_, sciDs) => sciDs.sortBy(p => p.attr(frame).toInt) })
+      .map(sciDs => (sciDs(0), sciDs(1)))
+  }
 }
 
 object SRDDFunctions {
