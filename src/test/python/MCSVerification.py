@@ -397,7 +397,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
 
     with open(ssDir + '/textFiles/MCCEdges.txt', 'r') as sF:
         sFs = sF.readlines()
-    ssEList = map(lambda x: x + '))', sFs[0].split('List    (')[1][:-3].split(')), '))
+    ssEList = map(lambda x: x + '))', sFs[0].split('List(')[1][:-3].split(')), '))
     ssEdgeList = map(lambda x: ('F' + x.split(',')[0].split('((')[1].split(':')[0] + 'CE' + x.split(',')[0].split('((')[1].split(':')[1][:-1], \
         'F' + x.split(',')[1].split('(')[1].split(':')[0] + 'CE' + x.split(',')[1].split('(')[1].split(':')[1][:-2]), ssEList)
 

@@ -249,7 +249,7 @@ class GTGRunner(
   def run(): Unit = {
 
     logger.info("Starting MCC")
-    val outputDir = MCSUtils.testHDFSWrite(this.outputDir)
+    val outputDir = MCSUtils.checkHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */

@@ -87,9 +87,10 @@ object MCCOps {
 
   /**
    * @todo Come up with a way to find out border nodes when frame numbers are of type 2006091100
-   * @param partition
-   * @param currentIteration
-   * @param bucketSize
+   * @param partition Tuple containing the bucket# and list of edges
+   * @param currentIteration Current iteration number
+   * @param bucketSize Number of frames in each bucket
+   * @param outputDir Path to store subgraphs found
    * @return
    */
   def processEdgePartition(
@@ -227,6 +228,14 @@ object MCCOps {
     return (maxLength, edgeList, hasBorderNode)
   }
 
+  /**
+   * Find all nodes connected to the given node
+   * @param node Source node to start search
+   * @param edgeMap A map of edges(value) originating or ending at a given node(key)
+   * @param edges A list of edges connect to source node
+   * @param visitedNodes A list of visited nodes
+   * @return
+   */
   def findConnectedNodes(
       node: String,
       edgeMap: mutable.HashMap[String, mutable.Set[String]],
@@ -247,7 +256,7 @@ object MCCOps {
     return (edges, visitedNodes)
   }
 
-  def writeSubgraphsToFile(
+  private def writeSubgraphsToFile(
       subgraphList: Iterable[mutable.HashSet[String]],
       outputDir: String,
       iteration: Int,

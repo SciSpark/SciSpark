@@ -220,11 +220,11 @@ object MCSUtils {
   }
 
   /**
-   * Test access to output dir path on FileSyste
+   * Check access to output dir path on FileSystem and create outputdir
    * @param outputDir
    * @return
    */
-  def testHDFSWrite(outputDir: String): String = {
+  def checkHDFSWrite(outputDir: String): String = {
     val pathString = outputDir + System.getProperty("file.separator") + System.currentTimeMillis().toString
     val conf = new Configuration()
     val path = new Path(pathString)
