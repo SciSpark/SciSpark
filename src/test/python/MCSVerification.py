@@ -79,9 +79,12 @@ def _run_scispark_implementation():
 
         sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
-        cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
+        outputDirectory = "output"
+        resultDir = max([os.path.join(outputDirectory,d) for d in os.listdir(outputDirectory)], key=os.path.getmtime)
+
+        cpTextFilesStr = 'cp {}/MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'.format(resultDir)
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'cp MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+        cpTextFilesStr = 'cp {}/MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'.format(resultDir)
         subprocess.call(cpTextFilesStr, shell=True)
         cpNetcdfsStr = 'cp /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
         subprocess.call(cpNetcdfsStr, shell=True)
