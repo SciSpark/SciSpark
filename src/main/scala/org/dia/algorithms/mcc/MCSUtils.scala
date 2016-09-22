@@ -199,7 +199,7 @@ object MCSUtils {
     val conf = new Configuration()
     val fs = FileSystem.get(filePath.toUri, conf)
     val os = fs.create(filePath)
-    os.writeChars(edgeList.toList.toString())
+    os.write(edgeList.toList.toString().getBytes())
     os.close()
   }
 
@@ -214,7 +214,7 @@ object MCSUtils {
     val fs = FileSystem.get(filePath.toUri, conf)
     val os = fs.create(filePath)
     for (node <- nodeList) {
-      os.writeChars(node.toString() + "\n")
+      os.write((node.toString() + "\n").getBytes())
     }
     os.close()
   }
@@ -236,7 +236,7 @@ object MCSUtils {
     }
     val filepath = new Path(path.toString + "/testfile")
     val os = fs.create(filepath)
-    os.writeChars("Testing")
+    os.write("Testing".getBytes())
     os.close()
     fs.delete(filepath, true)
     pathString

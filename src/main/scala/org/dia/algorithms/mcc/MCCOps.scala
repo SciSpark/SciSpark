@@ -259,7 +259,7 @@ object MCCOps {
     val fs = FileSystem.get(filepath.toUri, conf)
     val os = fs.create(filepath)
     for (edge <- subgraphList) {
-      os.writeChars(edge.toString() + "\n")
+      os.write((edge.toString() + "\n").getBytes())
     }
     os.close()
   }
