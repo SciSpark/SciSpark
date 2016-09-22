@@ -20,6 +20,9 @@ package org.dia.algorithms.mcc
 import java.io.FileWriter
 import java.util
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
 import scala.collection.mutable
 
 import org.apache.spark.SparkContext
@@ -93,7 +96,8 @@ object MCCOps {
       partition: (Int, Iterable[MCCEdge]),
       currentIteration: Int,
       minGraphLength: Int,
-      bucketSize: Int): (Int, (Iterable[MCCEdge], mutable.MutableList[mutable.HashSet[String]])) = {
+      bucketSize: Int,
+      outputDir: String): (Int, Iterable[MCCEdge]) = {
 
     logger.info(s"Processing partition for key: ${partition._1} at iteration: $currentIteration" +
       s" with edges: ${partition._2}")
@@ -169,21 +173,23 @@ object MCCOps {
     logger.info(s"Iteration $currentIteration," +
       s"PartitionIndex: $partitionIndex," +
       s"Subgraph found : ${subgraphList}")
+    writeSubgraphsToFile(subgraphList, outputDir, currentIteration, partitionIndex)
+
+    val newIndex = if (partitionIndex%2==0) partitionIndex/2 else (1 + partitionIndex/2)
+    logger.info(s"Sending to new partition, iteration : $currentIteration, edges: $filteredEdges")
 
     if (filteredEdges.isEmpty) {
       logger.info(s"Iteration $currentIteration," +
         s"PartitionIndex: $partitionIndex," +
         s"No edges in FilteredEdges found")
       //      return (-1, filteredEdges).
-      return (-1, (new mutable.MutableList[MCCEdge](), subgraphList))
+      return (newIndex, new mutable.MutableList[MCCEdge]())
     }
-    val newIndex = if (partitionIndex%2==0) partitionIndex/2 else (1 + partitionIndex/2)
-    logger.info(s"Sending to new partition, iteration : $currentIteration, edges: $filteredEdges")
 
     val returnedEdges = edgeMap.filter(x => {
       filteredEdges.contains(x._1)
     })
-    return (newIndex, (returnedEdges.values, subgraphList))
+    return (newIndex, returnedEdges.values)
   }
 
   /**
@@ -241,6 +247,23 @@ object MCCOps {
     return (edges, visitedNodes)
   }
 
+  def writeSubgraphsToFile(
+      subgraphList: Iterable[mutable.HashSet[String]],
+      outputDir: String,
+      iteration: Int,
+      bucket: Int): Unit = {
+
+    val filepath = new Path(outputDir + System.getProperty("file.separator") +
+      s"subgraphs-${iteration}-${bucket}.txt")
+    val conf = new Configuration()
+    val fs = FileSystem.get(filepath.toUri, conf)
+    val os = fs.create(filepath)
+    for (edge <- subgraphList) {
+      os.writeChars(edge.toString() + "\n")
+    }
+    os.close()
+  }
+
   /**
    * Method to recursively generate subgraphs from the partitions
    * @param edgeList
@@ -250,27 +273,17 @@ object MCCOps {
       edgeList: RDD[(Int, Iterable[MCCEdge])], iteration: Int,
       buckerSize: Int,
       minGraphLength: Int,
-      sc: SparkContext): Array[(Int, Iterable[MCCEdge])] = {
+      outputDir: String): Array[(Int, Iterable[MCCEdge])] = {
     var iter = iteration
     def startProcessing(obj: RDD[(Int, (Iterable[MCCEdge]))], iter: Int):
     RDD[(Int, Iterable[MCCEdge])] = {
-      obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize))
-        .filter({case (bucket, (edges, subgraphs)) =>
-          val fw = new FileWriter("subgraphs.txt", true)
-          for (edge <- subgraphs) {
-            fw.write(edge.toString() + "\n")
-          }
-          fw.close()
-          bucket != -1
-        })
-        .reduceByKey({case ((edges1, subgraphs1), (edges2, subgraphs2)) =>
+      obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize, outputDir))
+        .reduceByKey({case (edges1, edges2) =>
           val merged = new mutable.HashSet[MCCEdge]()
           merged ++= edges1
           merged ++= edges2
-          subgraphs1 ++= subgraphs2
-          (merged, subgraphs1)
+          (merged)
         })
-        .map({case (bucket, (edges, subgraphs)) => (bucket, edges)})
     }
 
     var newGraph = startProcessing(edgeList, iter)

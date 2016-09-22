@@ -20,10 +20,11 @@ package org.dia.algorithms.mcc
 
 import java.io.PrintWriter
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
 import scala.collection.mutable
-
 import org.apache.spark.rdd.RDD
-
 import org.dia.core.{SciDataset, SciSparkContext}
 import org.dia.tensors.AbstractTensor
 
@@ -41,6 +42,7 @@ class GTGRunner(
     val paths: String,
     val varName: String,
     val partitions: Int,
+    val outputDir: String,
     val maxAreaOverlapThreshold: Double = 0.65,
     val minAreaOverlapThreshold: Double = 0.50,
     val outerTemp: Double = 241.0,
@@ -268,9 +270,28 @@ class GTGRunner(
     fw.close()
   }
 
+  def testHDFSWrite(outputDir: String): String = {
+    val filename = outputDir + System.getProperty("file.separator") + System.currentTimeMillis().toString
+    val conf = new Configuration()
+    val path = new Path(filename)
+    val fs = FileSystem.get(path.toUri, conf)
+    if (!fs.exists(path)) {
+      if (!fs.mkdirs(path)) {
+        throw new Exception(s"Could not create directory at ${path} ")
+      }
+    }
+    val filepath = new Path(path.toString + "/testfile")
+    val os = fs.create(filepath)
+    os.writeChars("Testing")
+    os.close()
+    fs.delete(filepath, true)
+    filename
+  }
+
   def run(): Unit = {
 
     logger.info("Starting MCC")
+    val outputDir = testHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */
@@ -364,7 +385,7 @@ class GTGRunner(
       .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
       .groupByKey()
     val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
-      minGraphLength, sc.sparkContext)
+      minGraphLength, outputDir)
     for(x <- subgraphsFound) {
       logger.info("Edges remaning : " + x._2.toList)
     }
