@@ -77,7 +77,7 @@ def _run_scispark_implementation():
 
         os.chdir(workingDir + '/../../../../')
 
-        sparkSubmitStr = 'spark-submit target/scala-2.10/SciSpark.jar'
+        sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
         cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
@@ -402,7 +402,7 @@ def _get_ssSubgraphs(ssDir):
 
     with open(ssDir+'/textFiles/subgraphs.txt') as f:
         s = f.readlines()
-    subgraphs = map(lambda x: list(set((x.strip().split('(Set(')[1].split('))')[0]).replace(' ', '').split(','))), s)
+    subgraphs = map(lambda x: list(set((x.strip().split('Set(')[1].split(')')[0]).replace(' ', '').split(','))), s)
 
     return subgraphs
 
