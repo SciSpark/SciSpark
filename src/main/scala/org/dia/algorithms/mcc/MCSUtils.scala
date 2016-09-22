@@ -204,7 +204,7 @@ object MCSUtils {
   }
 
   /**
-   * Write edges to a file
+   * Write nodes to a file
    * @param filename Absolute filepath
    * @param nodeList Node list containing the nodes to be written
    */
