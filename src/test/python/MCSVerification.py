@@ -62,7 +62,8 @@ def _get_python_implementation():
 def _run_scispark_implementation():
     '''
     Purpose: To run GTG runner for SciSpark results to compare as a spark-submit task
-    Assumptions: spark-submit is available on the path. scala-2.11 is used.
+    Assumptions: spark-submit is available on the path. SciSpark jar is available at
+                  /target/scalaVersion/SciSpark.jar
     '''
     print 'Checking on SciSpark implementation data'
     of.write('\n Checking on SciSpark implementation data')
@@ -77,7 +78,7 @@ def _run_scispark_implementation():
 
         os.chdir(workingDir + '/../../../../')
 
-        sparkSubmitStr = 'spark-submit target/scala-2.11/SciSpark.jar'
+        sparkSubmitStr = 'spark-submit target/' + scalaVersion + '/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
         cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
@@ -667,6 +668,7 @@ def main(argv):
     '''
     global of
     global workingDir
+    global scalaVersion
     sTime = 2006091100
     eTime = 2006091212
     # create folder for outputs
@@ -677,14 +679,26 @@ def main(argv):
     ssDir = workingDir + '/scisparkGTG'
 
     try:
-        opts, _ = getopt.getopt(argv, "h")
-        if len(opts) == 1:
-            if '-h' in opts[0][0]:
+        opts, arg = getopt.getopt(argv, "hs:")
+
+        if len(opts) == 0:
+            print 'Please run: python MCSVerification.py -h'
+            sys.exit(2)
+
+        for opt, arg in opts:
+            if '-h' in opt: 
                 print 'These are the verification test to determine if SciSpark GTG is operating correctly.'
+                print 'To run: python MCSVerification.py -s scalaVersion'
+                print 'For example: python MCSVerification.py -s scala-2.11'
                 print 'The data used in the runs were used in the paper, and the python GTG results are downloaded.'
                 print 'If needed, the original GTG can de downloaded and used to generate the results. \
                     Please use the original release - Release 1.0'
                 sys.exit(2)
+            elif '-s' in opt: 
+                scalaVersion = arg
+                if not os.path.exists('../../../target/' + scalaVersion):
+                    print '!! scalaVersion Scispark jar not found'
+                    sys.exit(2)
             else:
                 print 'Please run: python MCSVerification.py -h'
                 sys.exit(2)
