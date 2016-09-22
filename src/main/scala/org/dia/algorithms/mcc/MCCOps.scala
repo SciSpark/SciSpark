@@ -17,6 +17,7 @@
  */
 package org.dia.algorithms.mcc
 
+import java.io.FileWriter
 import java.util
 
 import scala.collection.mutable
@@ -92,7 +93,7 @@ object MCCOps {
       partition: (Int, Iterable[MCCEdge]),
       currentIteration: Int,
       minGraphLength: Int,
-      bucketSize: Int): (Int, Iterable[MCCEdge]) = {
+      bucketSize: Int): (Int, (Iterable[MCCEdge], mutable.MutableList[mutable.HashSet[String]])) = {
 
     logger.info(s"Processing partition for key: ${partition._1} at iteration: $currentIteration" +
       s" with edges: ${partition._2}")
@@ -101,67 +102,80 @@ object MCCOps {
      * we get the partition size by multiplying the # of iteration and individual partition size
      */
     val partitionMaxSize = bucketSize * math.pow(2, currentIteration -1).toInt
-    val partitionIndex: Int = partition._1
+    val (partitionIndex, edgeList) = partition
     val partitionStartNodeIndex: Int = partitionMaxSize * (partitionIndex-1)
     val partitionEndNodeIndex: Int = partitionMaxSize * partitionIndex
+    val subgraphList = new mutable.MutableList[mutable.HashSet[String]]
 
-    val firstEdge = partition._2.toSeq(0)
+    val firstEdge = edgeList.toSeq(0)
     val partitionStartFrameNum =
       if (firstEdge.metadata("index").toInt == partitionStartNodeIndex) firstEdge.srcNode.frameNum else -1
 
-    val lastEdge = partition._2.toSeq(partition._2.size - 1)
+    val lastEdge = edgeList.toSeq(edgeList.size - 1)
     val partitionEndFrameNum =
       if (lastEdge.metadata("index").toInt == partitionEndNodeIndex) lastEdge.srcNode.frameNum else -1
 
     /** To have a key and a set of values, we use MultiMap */
     val edgeMap = new mutable.HashMap[String, MCCEdge]
+    /** A map of all edges originating from the key (i.e the source node) */
+    val srcNodeMap = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
+    /** A map of edges originating or ending in the current node (key of the map) */
     val edgeMapString = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
-    val nodeMap = new mutable.HashMap[String, MCCNode]()
-    /** A set of nodes who have 0 incoming edges */
-    val originNodes = mutable.HashSet[MCCNode]()
 
-    for(edge <- partition._2) {
+
+    for(edge <- edgeList) {
       val srcKey = edge.srcNode.hashKey()
       val destKey = edge.destNode.hashKey()
       edgeMap(edge.hashKey()) = edge
+      srcNodeMap.addBinding(srcKey, edge.hashKey())
       edgeMapString.addBinding(srcKey, edge.hashKey())
+      edgeMapString.addBinding(destKey, edge.hashKey())
     }
 
     /** Edges we need to carry forward to the next iteration */
     val filteredEdges = new mutable.HashSet[String]()
-    val subgraphList = new mutable.HashSet[String]()
+
     val discardedEdges = new mutable.HashSet[String]()
+    val visitedNodes = new mutable.HashSet[String]()
 
-    for(node <- edgeMapString.keys) {
-      val graphInfo = getGraphInfo(node, 0, false, edgeMapString, new mutable.HashSet[String](),
-        partitionEndFrameNum.toString, partitionStartFrameNum.toString)
+    for(node <- srcNodeMap.keys) {
+      if (!visitedNodes.contains(node)) {
+        val (length, edges, hasBorderNode) = getGraphInfo(node, 0, false, srcNodeMap, new mutable.HashSet[String](),
+          partitionEndFrameNum.toString, partitionStartFrameNum.toString)
 
-      /** If the graph has a border node then we store the entire graph containing it for the next iteration */
-      if (graphInfo._3) {
-        filteredEdges ++= graphInfo._2
-      }
-      else {
-        if (graphInfo._1 >= minGraphLength) {
-          subgraphList ++= graphInfo._2
+        /** If the graph has a border node then we store the entire graph containing it for the next iteration */
+        if (hasBorderNode) {
+          val (connectedEdges, visited) = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
+            new mutable.HashSet[String]())
+          visitedNodes ++= visited
+          filteredEdges ++= connectedEdges
         }
         else {
-          discardedEdges ++= graphInfo._2
-          logger.info(s"Iteration $currentIteration," +
-            s"PartitionIndex: $partitionIndex," +
-            s"Discarded Edges : ${graphInfo._2}")
+          if (length >= minGraphLength) {
+            val (connectedEdges, visited) = findConnectedNodes(node, edgeMapString, new mutable.HashSet[String](),
+              new mutable.HashSet[String]())
+            visitedNodes ++= visited
+            subgraphList += connectedEdges
+          }
+          else {
+            discardedEdges ++= edges
+            logger.info(s"Iteration $currentIteration," +
+              s"PartitionIndex: $partitionIndex," +
+              s"Discarded Edges : ${edges}")
+          }
         }
       }
     }
     logger.info(s"Iteration $currentIteration," +
       s"PartitionIndex: $partitionIndex," +
-      s"Subgraph found : ${subgraphList.toSeq.sorted}")
+      s"Subgraph found : ${subgraphList}")
 
     if (filteredEdges.isEmpty) {
       logger.info(s"Iteration $currentIteration," +
         s"PartitionIndex: $partitionIndex," +
         s"No edges in FilteredEdges found")
       //      return (-1, filteredEdges).
-      return (-1, new mutable.MutableList[MCCEdge]())
+      return (-1, (new mutable.MutableList[MCCEdge](), subgraphList))
     }
     val newIndex = if (partitionIndex%2==0) partitionIndex/2 else (1 + partitionIndex/2)
     logger.info(s"Sending to new partition, iteration : $currentIteration, edges: $filteredEdges")
@@ -169,7 +183,7 @@ object MCCOps {
     val returnedEdges = edgeMap.filter(x => {
       filteredEdges.contains(x._1)
     })
-    return (newIndex, returnedEdges.values)
+    return (newIndex, (returnedEdges.values, subgraphList))
   }
 
   /**
@@ -207,10 +221,30 @@ object MCCOps {
     return (maxLength, edgeList, hasBorderNode)
   }
 
+  def findConnectedNodes(
+      node: String,
+      edgeMap: mutable.HashMap[String, mutable.Set[String]],
+      edges: mutable.HashSet[String],
+      visitedNodes: mutable.HashSet[String]): (mutable.HashSet[String], mutable.HashSet[String]) = {
+
+    visitedNodes += node
+    for (edge <- edgeMap(node)) {
+      edges += edge
+      val (src, dest) = (edge.split(",")(0), edge.split(",")(1))
+      if (!visitedNodes.contains(src)) {
+        findConnectedNodes(src, edgeMap, edges, visitedNodes)
+      }
+      if (!visitedNodes.contains(dest)) {
+        findConnectedNodes(dest, edgeMap, edges, visitedNodes)
+      }
+    }
+    return (edges, visitedNodes)
+  }
+
   /**
    * Method to recursively generate subgraphs from the partitions
    * @param edgeList
-   * @return Array[(Int, Iterable[MCCEdge])]
+   * @return Array[(Bucket#, (Edges, Subgraphs found))]
    */
   def findSubgraphsIteratively(
       edgeList: RDD[(Int, Iterable[MCCEdge])], iteration: Int,
@@ -218,29 +252,40 @@ object MCCOps {
       minGraphLength: Int,
       sc: SparkContext): Array[(Int, Iterable[MCCEdge])] = {
     var iter = iteration
-    def startProcessing(obj: RDD[(Int, Iterable[MCCEdge])]): RDD[(Int, Iterable[MCCEdge])] = {
+    def startProcessing(obj: RDD[(Int, (Iterable[MCCEdge]))], iter: Int):
+    RDD[(Int, Iterable[MCCEdge])] = {
       obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize))
-        .filter(x => x._1 != -1)
-        .reduceByKey((x, y) => {
-          val merged = new mutable.HashSet[MCCEdge]()
-          merged ++= x
-          merged ++= y
-          merged
+        .filter({case (bucket, (edges, subgraphs)) =>
+          val fw = new FileWriter("subgraphs.txt", true)
+          for (edge <- subgraphs) {
+            fw.write(edge.toString() + "\n")
+          }
+          fw.close()
+          bucket != -1
         })
+        .reduceByKey({case ((edges1, subgraphs1), (edges2, subgraphs2)) =>
+          val merged = new mutable.HashSet[MCCEdge]()
+          merged ++= edges1
+          merged ++= edges2
+          subgraphs1 ++= subgraphs2
+          (merged, subgraphs1)
+        })
+        .map({case (bucket, (edges, subgraphs)) => (bucket, edges)})
     }
 
-    var newGraph = startProcessing(edgeList)
+    var newGraph = startProcessing(edgeList, iter)
+
     iter += 1
 
     /** if edgeList is empty implies that all valid subgraphs were found */
     while (newGraph.count() > 1) {
-      val temp = startProcessing(newGraph)
-      newGraph = temp
+      val tmp = startProcessing(newGraph, iter)
+      newGraph = tmp
       iter += 1
       logger.debug(edgeList.toDebugString)
     }
-    val temp = startProcessing(newGraph).collect()
-    return temp
+    val tmp = startProcessing(newGraph, iter).collect()
+    return tmp
   }
 
   /**
