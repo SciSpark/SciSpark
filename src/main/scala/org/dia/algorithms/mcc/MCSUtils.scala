@@ -19,14 +19,15 @@ package org.dia.algorithms.mcc
 
 import java.util
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
 import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
+
 import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
 
@@ -206,8 +207,6 @@ object MCSUtils {
    * Write edges to a file
    * @param filename Absolute filepath
    * @param nodeList Node list containing the nodes to be written
-   * @param printData If true, this method will print node data (grid, temp, lat, long, etc). If false,
-   *                  this method will write the node key.
    */
   def writeNodesToFile(filename: String, nodeList: Iterable[MCCNode]): Unit = {
     val filePath = new Path(filename)
@@ -218,5 +217,28 @@ object MCSUtils {
       os.writeChars(node.toString() + "\n")
     }
     os.close()
+  }
+
+  /**
+   * Test access to output dir path on FileSyste
+   * @param outputDir
+   * @return
+   */
+  def testHDFSWrite(outputDir: String): String = {
+    val pathString = outputDir + System.getProperty("file.separator") + System.currentTimeMillis().toString
+    val conf = new Configuration()
+    val path = new Path(pathString)
+    val fs = FileSystem.get(path.toUri, conf)
+    if (!fs.exists(path)) {
+      if (!fs.mkdirs(path)) {
+        throw new Exception(s"Could not create directory at ${path} ")
+      }
+    }
+    val filepath = new Path(path.toString + "/testfile")
+    val os = fs.create(filepath)
+    os.writeChars("Testing")
+    os.close()
+    fs.delete(filepath, true)
+    pathString
   }
 }

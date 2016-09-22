@@ -20,10 +20,10 @@ package org.dia.algorithms.mcc
 import java.io.FileWriter
 import java.util
 
+import scala.collection.mutable
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-
-import scala.collection.mutable
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

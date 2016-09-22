@@ -20,11 +20,10 @@ package org.dia.algorithms.mcc
 
 import java.io.PrintWriter
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-
 import scala.collection.mutable
+
 import org.apache.spark.rdd.RDD
+
 import org.dia.core.{SciDataset, SciSparkContext}
 import org.dia.tensors.AbstractTensor
 
@@ -247,47 +246,10 @@ class GTGRunner(
     })
   }
 
-  /**
-   * Collect the edges of the form ((String, Double), (String, Double))
-   * From the edges collect all used vertices.
-   * Repeated vertices are eliminated due to the set conversion.
-   * @param MCCEdgeList Collection of MCCEdges
-   * @param MCCNodeMap Dictionary of all the MCCNodes
-   */
-  def processEdges(MCCEdgeList: Iterable[MCCEdge], MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
-    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
-    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
-
-    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.json"
-    MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
-
-    val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
-    MCSUtils.writeEdgesToFile(MCCEdgeFilename, MCCEdgeList)
-
-  }
-
-  def testHDFSWrite(outputDir: String): String = {
-    val filename = outputDir + System.getProperty("file.separator") + System.currentTimeMillis().toString
-    val conf = new Configuration()
-    val path = new Path(filename)
-    val fs = FileSystem.get(path.toUri, conf)
-    if (!fs.exists(path)) {
-      if (!fs.mkdirs(path)) {
-        throw new Exception(s"Could not create directory at ${path} ")
-      }
-    }
-    val filepath = new Path(path.toString + "/testfile")
-    val os = fs.create(filepath)
-    os.writeChars("Testing")
-    os.close()
-    fs.delete(filepath, true)
-    filename
-  }
-
   def run(): Unit = {
 
     logger.info("Starting MCC")
-    val outputDir = testHDFSWrite(this.outputDir)
+    val outputDir = MCSUtils.testHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */
@@ -358,9 +320,16 @@ class GTGRunner(
     val broadcastedNodeMap = sc.sparkContext.broadcast(MCCNodeMap)
 
     /**
-     * Process the edge list. Collect and output edges and vertices
+     * Write Nodes and Edges to disk
      */
-    processEdges(MCCEdgeList, MCCNodeMap)
+    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
+    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
+
+    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.json"
+    MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
+
+    val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
+    MCSUtils.writeEdgesToFile(MCCEdgeFilename, MCCEdgeList)
 
     /**
      * Generate the netcdfs
