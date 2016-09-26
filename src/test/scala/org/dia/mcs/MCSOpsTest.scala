@@ -15,19 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.mcc
+package org.dia.mcs
 
 import org.nd4j.linalg.factory.Nd4j
 import org.scalatest.FunSuite
 
-import org.dia.algorithms.mcc.MCCOps
+import org.dia.algorithms.mcs.MCSOps
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 
 /**
- * Tests functionality in MCCOpsTest including:
+ * Tests functionality in MCSOpsTest including:
  * reduceResolution,labelConnectedComponents,findConnectedComponents.
  */
-class MCCOpsTest extends FunSuite {
+class MCSOpsTest extends FunSuite {
 
   /**
    * Note that Nd4s slicing is broken at the moment
