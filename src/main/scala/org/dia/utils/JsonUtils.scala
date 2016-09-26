@@ -28,10 +28,10 @@ import org.json4s.JsonDSL._
 object JsonUtils {
 
   /**
-   * Generates JSON out of (MCC) graph.
+   * Generates JSON out of (MCS) graph.
    *
-   * @param nodes Nodes of the (MCC) graph. A node is a tuple (frameID,componentID)
-   * @param edges Edges of the (MCC) graph
+   * @param nodes Nodes of the (MCS) graph. A node is a tuple (frameID,componentID)
+   * @param edges Edges of the (MCS) graph
    * @param dates Hash map of dates
    * @return Sets of JSON objects for nodes and edges which
    * can then be written to a file.

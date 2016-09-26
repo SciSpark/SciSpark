@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
-object MainNetcdfDFSMCC {
+object MainNetcdfDFSMCS {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -47,7 +47,7 @@ object MainNetcdfDFSMCC {
     val (masterURL, path, varName, partitions, outputDir) = processCmd(args)
 
     /**
-     * Run MCC search with GTGRunner
+     * Run MCS search with GTGRunner
      */
     val gTGRunner = new GTGRunner(masterURL, path, varName, partitions, outputDir)
     gTGRunner.run()

@@ -19,7 +19,7 @@ package org.dia.algorithms
 
 /**
  * Provides objects implementing Grab em' Tag em' Graph em' algorithm's
- * Mesoscale Convective Complex (MCC) feature identification routines using
+ * Mesoscale Convective Complex (MCS) feature identification routines using
  * the map-reduce paradigm
  *
  * Algorithm details: [[https://github.com/kwhitehall/grab-tag-graph]]
@@ -28,6 +28,6 @@ package org.dia.algorithms
  *  - See examples of SciSpark API usage
  *  - Perform various real-world use cases
  */
-package object mcc {
+package object mcs {
 
 }

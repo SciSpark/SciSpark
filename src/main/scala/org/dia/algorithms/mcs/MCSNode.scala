@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
 import java.util
 
@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
+class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
-  var inEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
-  var outEdges: mutable.HashSet[MCCEdge] = new mutable.HashSet[MCCEdge]
+  var inEdges: mutable.HashSet[MCSEdge] = new mutable.HashSet[MCSEdge]
+  var outEdges: mutable.HashSet[MCSEdge] = new mutable.HashSet[MCSEdge]
   var metadata: mutable.HashMap[String, String] = new mutable.HashMap[String, String]()
   var grid: mutable.HashMap[String, Double] = new mutable.HashMap[String, Double]()
   var area: Int = 0
@@ -142,23 +142,23 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
     this.metadata.update(key, value)
   }
 
-  def connectTo(destNode: MCCNode, weight: Double): MCCEdge = {
-    val edge = new MCCEdge(this, destNode, weight)
+  def connectTo(destNode: MCSNode, weight: Double): MCSEdge = {
+    val edge = new MCSEdge(this, destNode, weight)
     addOutgoingEdge(edge)
     edge
   }
 
-  def connectFrom(srcNode: MCCNode, weight: Double): MCCEdge = {
-    val edge = new MCCEdge(this, srcNode, weight)
+  def connectFrom(srcNode: MCSNode, weight: Double): MCSEdge = {
+    val edge = new MCSEdge(this, srcNode, weight)
     addIncomingEdge(edge)
     edge
   }
 
-  def addIncomingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
+  def addIncomingEdge(edge: MCSEdge): mutable.HashSet[MCSEdge] = {
     this.inEdges += edge
   }
 
-  def addOutgoingEdge(edge: MCCEdge): mutable.HashSet[MCCEdge] = {
+  def addOutgoingEdge(edge: MCSEdge): mutable.HashSet[MCSEdge] = {
     this.outEdges += edge
   }
 
@@ -178,7 +178,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
     this.cloudElemNum = c
   }
 
-  def updateNodeData(value: Double, row: Int, col: Int): MCCNode = {
+  def updateNodeData(value: Double, row: Int, col: Int): MCSNode = {
     updateRowAndCol(row, col)
     updateTemperatures(value)
     this.area += 1
@@ -218,7 +218,7 @@ class MCCNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   }
 
   override def equals(that: Any): Boolean = that match {
-    case that: MCCNode => that.frameNum == this.frameNum && that.cloudElemNum == this.cloudElemNum
+    case that: MCSNode => that.frameNum == this.frameNum && that.cloudElemNum == this.cloudElemNum
     case _ => false
   }
 

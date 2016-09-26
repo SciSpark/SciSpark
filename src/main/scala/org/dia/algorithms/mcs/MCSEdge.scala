@@ -15,20 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
 import scala.collection.mutable
 
-class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double) extends Serializable {
+class MCSEdge(var srcNode : MCSNode, var destNode: MCSNode, var weight : Double) extends Serializable {
 
   var areaOverlap: Int = 0
   var metadata: mutable.HashMap[String, String] = new mutable.HashMap[String, String]()
 
-  def this(srcNode : MCCNode, destNode: MCCNode) {
+  def this(srcNode : MCSNode, destNode: MCSNode) {
     this(srcNode, destNode, 0.0)
   }
 
-  def setSourceNode(node: MCCNode): Unit = {
+  def setSourceNode(node: MCSNode): Unit = {
     this.srcNode = node
   }
 
@@ -37,14 +37,14 @@ class MCCEdge(var srcNode : MCCNode, var destNode: MCCNode, var weight : Double)
   }
 
   override def equals(that: Any): Boolean = that match {
-    case that: MCCEdge => that.srcNode == this.srcNode && that.destNode == this.destNode
+    case that: MCSEdge => that.srcNode == this.srcNode && that.destNode == this.destNode
   }
 
   def updateWeight(_weight: Double): Unit = {
     this.weight = _weight
   }
 
-  def updateMetadata(key: String, value: String): MCCEdge = {
+  def updateMetadata(key: String, value: String): MCSEdge = {
     this.metadata.update(key, value)
     this
   }
