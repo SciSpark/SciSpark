@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
 import java.util
 
@@ -36,17 +36,17 @@ object MCSUtils {
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
-   * Writes the node components of an MCCEdge to Netcdf
+   * Writes the node components of an MCSEdge to Netcdf
    *
    * @param edge        the edge object which is composed of the nodes
-   * @param MCSNodeMap  mutable.HashMap[String, MCCNode] representing the map of each node metadata
+   * @param MCSNodeMap  mutable.HashMap[String, MCSNode] representing the map of each node metadata
    * @param lats        Array[Double] of the latitudes to be used
    * @param lons        Array[Double] of the longitudes to be used
    * @param tightestBox Boolean to use tightest box around data.
    */
   def writeEdgeNodesToNetCDF(
-      edge: MCCEdge,
-      MCSNodeMap: mutable.HashMap[String, MCCNode],
+      edge: MCSEdge,
+      MCSNodeMap: mutable.HashMap[String, MCSNode],
       lats: Array[Double],
       lons: Array[Double],
       tightestBox: Boolean): Unit = {
@@ -127,25 +127,25 @@ object MCSUtils {
    * Get the data from the nodes in the edge
    *
    * @param edge       the edge object which is composed of the nodes to look up in the MCSNodeMap
-   * @param MCSNodeMap mutable.HashMap[String, MCCNode] representing the map of each node metadata
+   * @param MCSNodeMap mutable.HashMap[String, MCSNode] representing the map of each node metadata
    */
-  def getMCSNodes(edge: MCCEdge, MCSNodeMap: mutable.HashMap[String, MCCNode]): (MCCNode, MCCNode) = {
+  def getMCSNodes(edge: MCSEdge, MCSNodeMap: mutable.HashMap[String, MCSNode]): (MCSNode, MCSNode) = {
     val (srcNode, dstNode) = (edge.srcNode, edge.destNode)
     val (srcKey, dstKey) = (srcNode.hashKey(), dstNode.hashKey())
     (MCSNodeMap(srcKey), MCSNodeMap(dstKey))
   }
 
 
-  /** Extract the node mask from the MCCNode metadata
+  /** Extract the node mask from the MCSNode metadata
    *
-   * @param thisNode    MCCNode the current node
+   * @param thisNode    MCSNode the current node
    * @param lats        Array[Double] representing the latitudes
    * @param lons        Array[Double] representing the longitudes
    * @param tightestBox Boolean to use tightest box around data.
    * @return Tuple consisting of the nodeID, and grid array
    */
   def extract_masked_data(
-      thisNode: MCCNode,
+      thisNode: MCSNode,
       lats: Array[Double],
       lons: Array[Double],
       tightestBox: Boolean): (String, ArrayInt.D2) = {
@@ -194,7 +194,7 @@ object MCSUtils {
    * @param filename Absolute filepath
    * @param edgeList Edgelist containing the edges to be written
    */
-  def writeEdgesToFile(filename: String, edgeList: Iterable[MCCEdge]): Unit = {
+  def writeEdgesToFile(filename: String, edgeList: Iterable[MCSEdge]): Unit = {
     val filePath = new Path(filename)
     val conf = new Configuration()
     val fs = FileSystem.get(filePath.toUri, conf)
@@ -208,7 +208,7 @@ object MCSUtils {
    * @param filename Absolute filepath
    * @param nodeList Node list containing the nodes to be written
    */
-  def writeNodesToFile(filename: String, nodeList: Iterable[MCCNode]): Unit = {
+  def writeNodesToFile(filename: String, nodeList: Iterable[MCSNode]): Unit = {
     val filePath = new Path(filename)
     val conf = new Configuration()
     val fs = FileSystem.get(filePath.toUri, conf)

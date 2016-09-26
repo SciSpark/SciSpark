@@ -15,22 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.mcc
-
-import org.nd4j.linalg.factory.Nd4j
-import org.scalatest.FunSuite
-
-import org.dia.algorithms.mcc.MCCOps
-import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
+package org.dia.algorithms
 
 /**
- * Tests functionality in MCCOpsTest including:
- * reduceResolution,labelConnectedComponents,findConnectedComponents.
+ * Provides objects implementing Grab em' Tag em' Graph em' algorithm's
+ * Mesoscale Convective Complex (MCS) feature identification routines using
+ * the map-reduce paradigm
+ *
+ * Algorithm details: [[https://github.com/kwhitehall/grab-tag-graph]]
+ *
+ * Utilize elements in this package to:
+ *  - See examples of SciSpark API usage
+ *  - Perform various real-world use cases
  */
-class MCCOpsTest extends FunSuite {
-
-  /**
-   * Note that Nd4s slicing is broken at the moment
-   */
+package object mcs {
 
 }

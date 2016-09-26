@@ -43,7 +43,7 @@ scalaVersion := sversion
 
 scalacOptions := Seq("-feature", "-deprecation")
 
-mainClass in Compile := Some("org.dia.algorithms.mcc.MainNetcdfDFSMCC")
+mainClass in Compile := Some("org.dia.algorithms.mcs.MainNetcdfDFSMCS")
 
 resolvers ++= Seq(
   Resolver.mavenLocal,

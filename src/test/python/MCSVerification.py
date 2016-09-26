@@ -83,9 +83,9 @@ def _run_scispark_implementation():
         outputDirectory = "output"
         resultDir = max([os.path.join(outputDirectory,d) for d in os.listdir(outputDirectory)], key=os.path.getmtime)
 
-        cpTextFilesStr = 'cp {0}/MCCEdges.txt {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
+        cpTextFilesStr = 'cp {0}/MCSEdges.txt {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'cp {0}/MCCNodes.json {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
+        cpTextFilesStr = 'cp {0}/MCSNodes.json {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
         filenames = glob.glob(resultDir + '/subgraphs*.txt')
         with open(workingDir + '/scisparkGTG/textFiles/subgraphs.txt', 'w') as outfile:
@@ -433,7 +433,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
         + (endTime - startTime).seconds / 3600) + 1)]]
     allTimesInts = map(lambda x: int(x.strftime('%Y%m%d%H')), a)
 
-    with open(ssDir+'/textFiles/MCCNodes.json', 'rb') as sF:
+    with open(ssDir+'/textFiles/MCSNodes.json', 'rb') as sF:
         sFs = sF.readlines()
     ssNodes = map(lambda y: 'F' + str(y['frameNum'])+'CE' + str(y['cloudElemNum'])[:-2], map(lambda x: json.loads(x), sFs))
 
@@ -441,7 +441,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
         pFs = pF.readline()
     pyNodes = map(lambda y: y.lstrip(), sorted(pFs[1:-1].replace('\'', '').split(','), key=lambda x: x.split('F')[1].split('CE')[0]))
 
-    with open(ssDir + '/textFiles/MCCEdges.txt', 'r') as sF:
+    with open(ssDir + '/textFiles/MCSEdges.txt', 'r') as sF:
         sFs = sF.readlines()
     ssEList = map(lambda x: x + '))', sFs[0].split('List(')[1][:-3].split(')), '))
     ssEdgeList = map(lambda x: ('F' + x.split(',')[0].split('((')[1].split(':')[0] + 'CE' + x.split(',')[0].split('((')[1].split(':')[1][:-1], \
@@ -718,7 +718,7 @@ def main(argv):
     print 'Results will be stored at %s in %s' %(workingDir, 'output.log')
 
     with open(workingDir + '/output.log', 'w') as of:
-        of.write('Starting MCC accuracy tests ...\n')
+        of.write('Starting MCS accuracy tests ...\n')
         of.write('Using Python implementations results at ' + pyDir+'\n')
         of.write('Using SciSpark implementation results at ' + ssDir+'\n')
         of.write('Results will be stored at ' + workingDir + '/output.log' + '\n')

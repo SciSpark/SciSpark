@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -37,7 +37,7 @@ import org.dia.tensors.AbstractTensor
 /**
  * Utilities to compute connected components within tensor.
  */
-object MCCOps {
+object MCSOps {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
@@ -69,12 +69,12 @@ object MCCOps {
   /**
    * Method to partition the edges into buckets containing a group of
    * consecutive nodes
-   * @param edge MCCEdge
+   * @param edge MCSEdge
    * @param bucketSize Number of nodes to put in one bucket (size of partition)
    * @param partitionCount Number of partitions required
    * @return A bucket number (int) and edge
    */
-  def mapEdgesToBuckets(edge: MCCEdge, bucketSize: Int, partitionCount: Int): (Int, MCCEdge) = {
+  def mapEdgesToBuckets(edge: MCSEdge, bucketSize: Int, partitionCount: Int): (Int, MCSEdge) = {
     val edgePartitionKey: Int = edge.metadata("index").toInt
     for (i <- 1 to partitionCount) {
       if (edgePartitionKey <= bucketSize * i) {
@@ -95,11 +95,11 @@ object MCCOps {
    * @return
    */
   def processEdgePartition(
-      partition: (Int, Iterable[MCCEdge]),
+      partition: (Int, Iterable[MCSEdge]),
       currentIteration: Int,
       minGraphLength: Int,
       bucketSize: Int,
-      outputDir: String): (Int, Iterable[MCCEdge]) = {
+      outputDir: String): (Int, Iterable[MCSEdge]) = {
 
     logger.info(s"Processing partition for key: ${partition._1} at iteration: $currentIteration" +
       s" with edges: ${partition._2}")
@@ -122,7 +122,7 @@ object MCCOps {
       if (lastEdge.metadata("index").toInt == partitionEndNodeIndex) lastEdge.srcNode.frameNum else -1
 
     /** To have a key and a set of values, we use MultiMap */
-    val edgeMap = new mutable.HashMap[String, MCCEdge]
+    val edgeMap = new mutable.HashMap[String, MCSEdge]
     /** A map of all edges originating from the key (i.e the source node) */
     val srcNodeMap = new mutable.HashMap[String, mutable.Set[String]] with mutable.MultiMap[String, String]
     /** A map of edges originating or ending in the current node (key of the map) */
@@ -185,7 +185,7 @@ object MCCOps {
         s"PartitionIndex: $partitionIndex," +
         s"No edges in FilteredEdges found")
       //      return (-1, filteredEdges).
-      return (newIndex, new mutable.MutableList[MCCEdge]())
+      return (newIndex, new mutable.MutableList[MCSEdge]())
     }
 
     val returnedEdges = edgeMap.filter(x => {
@@ -280,16 +280,16 @@ object MCCOps {
    * @return Array[(Bucket#, (Edges, Subgraphs found))]
    */
   def findSubgraphsIteratively(
-      edgeList: RDD[(Int, Iterable[MCCEdge])], iteration: Int,
+      edgeList: RDD[(Int, Iterable[MCSEdge])], iteration: Int,
       buckerSize: Int,
       minGraphLength: Int,
-      outputDir: String): Array[(Int, Iterable[MCCEdge])] = {
+      outputDir: String): Array[(Int, Iterable[MCSEdge])] = {
     var iter = iteration
-    def startProcessing(obj: RDD[(Int, (Iterable[MCCEdge]))], iter: Int):
-    RDD[(Int, Iterable[MCCEdge])] = {
+    def startProcessing(obj: RDD[(Int, (Iterable[MCSEdge]))], iter: Int):
+    RDD[(Int, Iterable[MCSEdge])] = {
       obj.map(x => processEdgePartition(x, iter, minGraphLength, buckerSize, outputDir))
         .reduceByKey({case (edges1, edges2) =>
-          val merged = new mutable.HashSet[MCCEdge]()
+          val merged = new mutable.HashSet[MCSEdge]()
           merged ++= edges1
           merged ++= edges2
           (merged)
@@ -315,7 +315,7 @@ object MCCOps {
    *
    * @param edgeListRDD
    */
-  def createPartitionIndex(edgeListRDD: RDD[MCCEdge]): RDD[MCCEdge] = {
+  def createPartitionIndex(edgeListRDD: RDD[MCSEdge]): RDD[MCSEdge] = {
     val temp = edgeListRDD.map(edge => (edge.srcNode.frameNum, List(edge)))
       .reduceByKey(_ ++ _)
       .sortBy(_._1)
@@ -352,7 +352,7 @@ object MCCOps {
       minAreaOverlapThreshold: Double,
       convectiveFraction: Double,
       minArea: Int,
-      nodeMinArea: Int): RDD[MCCEdge] = {
+      nodeMinArea: Int): RDD[MCSEdge] = {
 
     sRDD.flatMap({
       case (sd1, sd2) =>
@@ -384,14 +384,14 @@ object MCCOps {
          *
          */
         val product = components1 * components2
-        val nodeMap = new mutable.HashMap[String, MCCNode]()
-        val MCCEdgeMap = new mutable.HashMap[String, MCCEdge]()
+        val nodeMap = new mutable.HashMap[String, MCSNode]()
+        val MCSEdgeMap = new mutable.HashMap[String, MCSEdge]()
 
         for (row <- 0 until product.rows) {
           for (col <- 0 until product.cols) {
             /** Find non-zero points in product array */
-            MCCOps.updateComponent(components1(row, col), frame1, t1()(row, col), row, col, nodeMap)
-            MCCOps.updateComponent(components2(row, col), frame2, t2()(row, col), row, col, nodeMap)
+            MCSOps.updateComponent(components1(row, col), frame1, t1()(row, col), row, col, nodeMap)
+            MCSOps.updateComponent(components2(row, col), frame2, t2()(row, col), row, col, nodeMap)
             if (product(row, col) != 0.0) {
 
               /** If overlap exists create an edge and update overlapped area */
@@ -402,14 +402,14 @@ object MCCOps {
               val node2 = nodeMap(frame2 + ":" + label2)
 
               val edgeKey = s"$frame1:$label1,$frame2:$label2"
-              val edge = MCCEdgeMap.getOrElse(edgeKey, new MCCEdge(node1, node2))
+              val edge = MCSEdgeMap.getOrElse(edgeKey, new MCSEdge(node1, node2))
               edge.incrementAreaOverlap()
-              MCCEdgeMap(edgeKey) = edge
+              MCSEdgeMap(edgeKey) = edge
             }
           }
         }
 
-        MCCOps.updateEdgeMapCriteria(MCCEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
+        MCSOps.updateEdgeMapCriteria(MCSEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
           convectiveFraction, minArea, nodeMinArea)
     })
   }
@@ -417,23 +417,23 @@ object MCCOps {
   /**
    * Function that adds weights on the edges
    *
-   * @param MCCEdgeMap mutable.HashMap[String, MCCEdge] of the current edgeMap
+   * @param MCSEdgeMap mutable.HashMap[String, MCSEdge] of the current edgeMap
    * @param maxAreaOverlapThreshold the maximum area over lap threshold
    * @param minAreaOverlapThreshold the minimum area overlap threhshold
    * @param convectiveFraction convective fraction threshold
    * @param minArea the minimum area to check for third weight
    * @param nodeMinArea the minimum area of a component
-   * @return Iterable[org.dia.algorithms.mcc.MCCEdge] of weighted edges
+   * @return Iterable[org.dia.algorithms.mcs.MCSEdge] of weighted edges
    */
   def updateEdgeMapCriteria(
-      MCCEdgeMap: mutable.HashMap[String, MCCEdge],
+      MCSEdgeMap: mutable.HashMap[String, MCSEdge],
       maxAreaOverlapThreshold: Double,
       minAreaOverlapThreshold: Double,
       convectiveFraction: Double,
       minArea: Int,
-      nodeMinArea: Int): Iterable[org.dia.algorithms.mcc.MCCEdge] = {
+      nodeMinArea: Int): Iterable[org.dia.algorithms.mcs.MCSEdge] = {
 
-    val filtered = MCCEdgeMap.filter({
+    val filtered = MCSEdgeMap.filter({
       case (k, edge) =>
         val srcNode = edge.srcNode
         val (srcArea, srcMinTemp, srcMaxTemp) = (srcNode.area, srcNode.minTemp, srcNode.maxTemp)
@@ -479,8 +479,8 @@ object MCCOps {
    * @param value Double representing the variable value at the row,col
    * @param row Int
    * @param col Int
-   * @param nodeMap mutable.HashMap[String, MCCNode]
-   * @return Iterable[org.dia.algorithms.mcc.MCCEdge] of weighted edges
+   * @param nodeMap mutable.HashMap[String, MCSNode]
+   * @return Iterable[org.dia.algorithms.mcs.MCSEdge] of weighted edges
    */
   def updateComponent(
       label: Double,
@@ -488,9 +488,9 @@ object MCCOps {
       value: Double,
       row: Int,
       col: Int,
-      nodeMap: mutable.HashMap[String, MCCNode]): Unit = {
+      nodeMap: mutable.HashMap[String, MCSNode]): Unit = {
     if (label != 0.0) {
-      val node = nodeMap.getOrElse(frame + ":" + label, new MCCNode(frame, label))
+      val node = nodeMap.getOrElse(frame + ":" + label, new MCSNode(frame, label))
       node.updateNodeData(value, row, col)
       nodeMap(frame + ":" + label) = node
     }
@@ -500,45 +500,45 @@ object MCCOps {
    * Collect the edges of the form ((String, Double), (String, Double))
    * From the edges collect all used vertices.
    * Repeated vertices are eliminated due to the set conversion.
-   * @param MCCEdgeList Collection of MCCEdges
-   * @param MCCNodeMap Dictionary of all the MCCNodes
+   * @param MCSEdgeList Collection of MCSEdges
+   * @param MCSNodeMap Dictionary of all the MCSNodes
    */
-  def processEdges(MCCEdgeList: Iterable[MCCEdge], MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
-    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
-    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
+  def processEdges(MCSEdgeList: Iterable[MCSEdge], MCSNodeMap: mutable.HashMap[String, MCSNode]): Unit = {
+    logger.info("NUM VERTICES : " + MCSNodeMap.size + "\n")
+    logger.info("NUM EDGES : " + MCSEdgeList.size + "\n")
 
-    val pw = new PrintWriter("MCCNodesLines.json")
-    MCCNodeMap.foreach { case (key, value) =>
+    val pw = new PrintWriter("MCSNodesLines.json")
+    MCSNodeMap.foreach { case (key, value) =>
       pw.write(value.toString())
       pw.write("\n")
     }
     pw.close()
 
-    val fw = new PrintWriter("MCCEdges.txt")
-    fw.write(MCCEdgeList.toString())
+    val fw = new PrintWriter("MCSEdges.txt")
+    fw.write(MCSEdgeList.toString())
     fw.close()
   }
 
   /**
    * To create a map of Nodes from the edges found.
    *
-   * @param edges sequence of MCCEdge objects
+   * @param edges sequence of MCSEdge objects
    * @param lat the lattitude dimension array
    * @param lon the longitude dimension array
    * @return
    */
   def createNodeMapFromEdgeList(
-      edges: Seq[MCCEdge],
+      edges: Seq[MCSEdge],
       lat: Array[Double],
-      lon: Array[Double]): mutable.HashMap[String, MCCNode] = {
+      lon: Array[Double]): mutable.HashMap[String, MCSNode] = {
 
-    val MCCNodes = edges.flatMap(edge => List(edge.srcNode, edge.destNode)).distinct
-    val MCCNodeKeyValuesSet = MCCNodes.map(node => {
+    val MCSNodes = edges.flatMap(edge => List(edge.srcNode, edge.destNode)).distinct
+    val MCSNodeKeyValuesSet = MCSNodes.map(node => {
       val key = node.hashKey()
       node.updateLatLon(lat, lon)
       (key, node)
     })
-    mutable.HashMap[String, MCCNode](MCCNodeKeyValuesSet: _*)
+    mutable.HashMap[String, MCSNode](MCSNodeKeyValuesSet: _*)
   }
 
   /**

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.dia.algorithms.mcc
+package org.dia.algorithms.mcs
 
 import scala.collection.mutable
 
@@ -53,12 +53,12 @@ class GTGRunner(
 
   def run(): Unit = {
 
-    logger.info("Starting MCC")
+    logger.info("Starting MCS")
     val outputDir = MCSUtils.checkHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */
-    val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCC Search")
+    val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCS Search")
 
     /**
      * Initialize variableName to avoid serialization issues
@@ -67,7 +67,7 @@ class GTGRunner(
     val variableName = varName
     /**
      * Ingest the input file and construct the SRDD.
-     * For MCC the sources are used to map date-indexes.
+     * For MCS the sources are used to map date-indexes.
      * The metadata variable "FRAME" corresponds to an index.
      * The indices themselves are numbered with respect to
      * date-sorted order.
@@ -87,7 +87,7 @@ class GTGRunner(
     /**
      * Record the frame Number in each SciTensor
      */
-    val labeled = MCCOps.recordFrameNumber(sRDD, variableName)
+    val labeled = MCSOps.recordFrameNumber(sRDD, variableName)
 
 
     /**
@@ -103,9 +103,9 @@ class GTGRunner(
     // val consecFrames = pairConsecutiveFrames(filtered, "FRAME")
 
     /**
-     * Core MCC
+     * Core MCS
      */
-    val edgeListRDD = MCCOps.findEdges(consecFrames,
+    val edgeListRDD = MCSOps.findEdges(consecFrames,
       variableName,
       maxAreaOverlapThreshold,
       minAreaOverlapThreshold,
@@ -120,22 +120,22 @@ class GTGRunner(
     /**
      * Collect the edgeList and construct NodeMap
      */
-    val MCCEdgeList = edgeListRDD.collect()
-    val MCCNodeMap = MCCOps.createNodeMapFromEdgeList(MCCEdgeList, lat, lon)
+    val MCSEdgeList = edgeListRDD.collect()
+    val MCSNodeMap = MCSOps.createNodeMapFromEdgeList(MCSEdgeList, lat, lon)
 
-    val broadcastedNodeMap = sc.sparkContext.broadcast(MCCNodeMap)
+    val broadcastedNodeMap = sc.sparkContext.broadcast(MCSNodeMap)
 
     /**
      * Write Nodes and Edges to disk
      */
-    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
-    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
+    logger.info("NUM VERTICES : " + MCSNodeMap.size + "\n")
+    logger.info("NUM EDGES : " + MCSEdgeList.size + "\n")
 
-    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.json"
-    MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
+    val MCSNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCSNodes.json"
+    MCSUtils.writeNodesToFile(MCSNodeFilename, MCSNodeMap.values)
 
-    val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
-    MCSUtils.writeEdgesToFile(MCCEdgeFilename, MCCEdgeList)
+    val MCSEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCSEdges.txt"
+    MCSUtils.writeEdgesToFile(MCSEdgeFilename, MCSEdgeList)
 
     /**
      * Generate the netcdfs
@@ -148,14 +148,14 @@ class GTGRunner(
     /**
      * Find the subgraphs
      */
-    val edgeListRDDIndexed = MCCOps.createPartitionIndex(edgeListRDD)
+    val edgeListRDDIndexed = MCSOps.createPartitionIndex(edgeListRDD)
     val count = edgeListRDDIndexed.count.toInt
     val buckets = 4
     val maxParitionSize = count / buckets
     val subgraphs = edgeListRDDIndexed
-      .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
+      .map(MCSOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
       .groupByKey()
-    val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
+    val subgraphsFound = MCSOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
       minGraphLength, outputDir)
     for(x <- subgraphsFound) {
       logger.info("Edges remaning : " + x._2.toList)
