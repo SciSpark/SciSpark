@@ -85,10 +85,13 @@ def _run_scispark_implementation():
 
         cpTextFilesStr = 'cp {0}/MCCEdges.txt {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'cp {0}/MCCNodes.jsonl {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
+        cpTextFilesStr = 'cp {0}/MCCNodes.json {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'cp subgraphs.txt ' + workingDir + '/scisparkGTG/textFiles'
-        subprocess.call(cpTextFilesStr, shell=True)
+        filenames = glob.glob(resultDir + '/subgraphs*.txt')
+        with open(workingDir + '/scisparkGTG/textFiles/subgraphs.txt', 'w') as outfile:
+            for fname in filenames:
+                with open(fname) as infile:
+                    outfile.write(infile.read())
         cpNetcdfsStr = 'cp /tmp/*.nc ' + workingDir + '/scisparkGTG/MERGnetcdfCEs'
         subprocess.call(cpNetcdfsStr, shell=True)
 
@@ -430,7 +433,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
         + (endTime - startTime).seconds / 3600) + 1)]]
     allTimesInts = map(lambda x: int(x.strftime('%Y%m%d%H')), a)
 
-    with open(ssDir+'/textFiles/MCCNodes.jsonl', 'rb') as sF:
+    with open(ssDir+'/textFiles/MCCNodes.json', 'rb') as sF:
         sFs = sF.readlines()
     ssNodes = map(lambda y: 'F' + str(y['frameNum'])+'CE' + str(y['cloudElemNum'])[:-2], map(lambda x: json.loads(x), sFs))
 
