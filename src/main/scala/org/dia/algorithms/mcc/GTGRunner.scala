@@ -131,7 +131,7 @@ class GTGRunner(
     logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
     logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
 
-    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.jsonl"
+    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.json"
     MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
 
     val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
