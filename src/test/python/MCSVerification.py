@@ -80,9 +80,12 @@ def _run_scispark_implementation():
 
         sparkSubmitStr = 'spark-submit target/' + scalaVersion + '/SciSpark.jar'
         subprocess.call(sparkSubmitStr, shell=True)
-        cpTextFilesStr = 'cp MCCEdges.txt ' + workingDir + '/scisparkGTG/textFiles'
+        outputDirectory = "output"
+        resultDir = max([os.path.join(outputDirectory,d) for d in os.listdir(outputDirectory)], key=os.path.getmtime)
+
+        cpTextFilesStr = 'cp {0}/MCCEdges.txt {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
-        cpTextFilesStr = 'cp MCCNodesLines.json ' + workingDir + '/scisparkGTG/textFiles'
+        cpTextFilesStr = 'cp {0}/MCCNodes.jsonl {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
         cpTextFilesStr = 'cp subgraphs.txt ' + workingDir + '/scisparkGTG/textFiles'
         subprocess.call(cpTextFilesStr, shell=True)
@@ -427,7 +430,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
         + (endTime - startTime).seconds / 3600) + 1)]]
     allTimesInts = map(lambda x: int(x.strftime('%Y%m%d%H')), a)
 
-    with open(ssDir+'/textFiles/MCCNodesLines.json', 'r') as sF:
+    with open(ssDir+'/textFiles/MCCNodes.jsonl', 'rb') as sF:
         sFs = sF.readlines()
     ssNodes = map(lambda y: 'F' + str(y['frameNum'])+'CE' + str(y['cloudElemNum'])[:-2], map(lambda x: json.loads(x), sFs))
 
@@ -437,7 +440,7 @@ def _get_data(sTime, eTime, pyDir, ssDir):
 
     with open(ssDir + '/textFiles/MCCEdges.txt', 'r') as sF:
         sFs = sF.readlines()
-    ssEList = map(lambda x: x + '))', sFs[0].split('WrappedArray(')[1][:-3].split(')), '))
+    ssEList = map(lambda x: x + '))', sFs[0].split('List(')[1][:-3].split(')), '))
     ssEdgeList = map(lambda x: ('F' + x.split(',')[0].split('((')[1].split(':')[0] + 'CE' + x.split(',')[0].split('((')[1].split(':')[1][:-1], \
         'F' + x.split(',')[1].split('(')[1].split(':')[0] + 'CE' + x.split(',')[1].split('(')[1].split(':')[1][:-2]), ssEList)
 

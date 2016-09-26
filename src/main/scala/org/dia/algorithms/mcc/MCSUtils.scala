@@ -23,6 +23,8 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
 import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
 
@@ -185,5 +187,58 @@ object MCSUtils {
     val lonBoundString = "_" + lonMinOffset.toString + "_" + lonMaxOffset.toString
     val nodeID = frameString + componentString + latBoundString + lonBoundString + ".nc"
     (nodeID, nodeGrid)
+  }
+
+  /**
+   * Write edges to a file
+   * @param filename Absolute filepath
+   * @param edgeList Edgelist containing the edges to be written
+   */
+  def writeEdgesToFile(filename: String, edgeList: Iterable[MCCEdge]): Unit = {
+    val filePath = new Path(filename)
+    val conf = new Configuration()
+    val fs = FileSystem.get(filePath.toUri, conf)
+    val os = fs.create(filePath)
+    os.write(edgeList.toList.toString().getBytes())
+    os.close()
+  }
+
+  /**
+   * Write nodes to a file
+   * @param filename Absolute filepath
+   * @param nodeList Node list containing the nodes to be written
+   */
+  def writeNodesToFile(filename: String, nodeList: Iterable[MCCNode]): Unit = {
+    val filePath = new Path(filename)
+    val conf = new Configuration()
+    val fs = FileSystem.get(filePath.toUri, conf)
+    val os = fs.create(filePath)
+    for (node <- nodeList) {
+      os.write((node.toString() + "\n").getBytes())
+    }
+    os.close()
+  }
+
+  /**
+   * Check access to output dir path on FileSystem and create outputdir
+   * @param outputDir
+   * @return
+   */
+  def checkHDFSWrite(outputDir: String): String = {
+    val pathString = outputDir + System.getProperty("file.separator") + System.currentTimeMillis().toString
+    val conf = new Configuration()
+    val path = new Path(pathString)
+    val fs = FileSystem.get(path.toUri, conf)
+    if (!fs.exists(path)) {
+      if (!fs.mkdirs(path)) {
+        throw new Exception(s"Could not create directory at ${path} ")
+      }
+    }
+    val filepath = new Path(path.toString + "/testfile")
+    val os = fs.create(filepath)
+    os.write("Testing".getBytes())
+    os.close()
+    fs.delete(filepath, true)
+    pathString
   }
 }

@@ -41,6 +41,7 @@ class GTGRunner(
     val paths: String,
     val varName: String,
     val partitions: Int,
+    val outputDir: String,
     val maxAreaOverlapThreshold: Double = 0.65,
     val minAreaOverlapThreshold: Double = 0.50,
     val outerTemp: Double = 241.0,
@@ -245,32 +246,10 @@ class GTGRunner(
     })
   }
 
-  /**
-   * Collect the edges of the form ((String, Double), (String, Double))
-   * From the edges collect all used vertices.
-   * Repeated vertices are eliminated due to the set conversion.
-   * @param MCCEdgeList Collection of MCCEdges
-   * @param MCCNodeMap Dictionary of all the MCCNodes
-   */
-  def processEdges(MCCEdgeList: Iterable[MCCEdge], MCCNodeMap: mutable.HashMap[String, MCCNode]): Unit = {
-    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
-    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
-
-    val pw = new PrintWriter("MCCNodesLines.json")
-    MCCNodeMap.foreach { case (key, value) =>
-      pw.write(value.toString())
-      pw.write("\n")
-    }
-    pw.close()
-
-    val fw = new PrintWriter("MCCEdges.txt")
-    fw.write(MCCEdgeList.toString())
-    fw.close()
-  }
-
   def run(): Unit = {
 
     logger.info("Starting MCC")
+    val outputDir = MCSUtils.checkHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */
@@ -341,9 +320,16 @@ class GTGRunner(
     val broadcastedNodeMap = sc.sparkContext.broadcast(MCCNodeMap)
 
     /**
-     * Process the edge list. Collect and output edges and vertices
+     * Write Nodes and Edges to disk
      */
-    processEdges(MCCEdgeList, MCCNodeMap)
+    logger.info("NUM VERTICES : " + MCCNodeMap.size + "\n")
+    logger.info("NUM EDGES : " + MCCEdgeList.size + "\n")
+
+    val MCCNodeFilename: String = outputDir + System.getProperty("file.separator") + "MCCNodes.jsonl"
+    MCSUtils.writeNodesToFile(MCCNodeFilename, MCCNodeMap.values)
+
+    val MCCEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCCEdges.txt"
+    MCSUtils.writeEdgesToFile(MCCEdgeFilename, MCCEdgeList)
 
     /**
      * Generate the netcdfs
@@ -364,7 +350,7 @@ class GTGRunner(
       .map(MCCOps.mapEdgesToBuckets(_, maxParitionSize, buckets))
       .groupByKey()
     val subgraphsFound = MCCOps.findSubgraphsIteratively(subgraphs, 1, maxParitionSize,
-      minGraphLength, sc.sparkContext)
+      minGraphLength, outputDir)
     for(x <- subgraphsFound) {
       logger.info("Edges remaning : " + x._2.toList)
     }
