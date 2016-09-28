@@ -143,7 +143,6 @@ object MCSUtils {
     (MCSNodeMap(srcKey), MCSNodeMap(dstKey))
   }
 
-
   /** Extract the node mask from the MCSNode metadata
    *
    * @param thisNode    MCSNode the current node
