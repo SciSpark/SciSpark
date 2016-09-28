@@ -7,12 +7,12 @@ Learn more about docker containers [here](https://www.docker.com/).
 
 Instal Docker following the guidelines for your system [here](https://docs.docker.com/engine/installation/)
 
-<h2> SciSpark Docker </h2> 
+<h2> SciSpark Dev Docker </h2> 
 To run the SciSpark docker follow the below steps: 
 
 * Make sure you have docker installed
 * Now, ```$ git clone https://github.com/SciSpark/SciSpark.git```
-* run ```$ cd SciSaprk/docker/```
+* run ```$ cd SciSpark/docker/```
 * If you want to build the docker container from scratch run 
 
 ```$ docker build -t scispark -f Dockerfile .```
