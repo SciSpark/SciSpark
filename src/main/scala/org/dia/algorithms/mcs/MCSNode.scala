@@ -31,9 +31,9 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   var grid: mutable.HashMap[String, Double] = new mutable.HashMap[String, Double]()
   var area: Int = 0
   var rowMax: Int = 0
-  var rowMin: Int = 0
+  var rowMin: Int = Int.MaxValue
   var colMax: Int = 0
-  var colMin: Int = 0
+  var colMin: Int = Int.MaxValue
   var latMax: Double = 0.0
   var latMin: Double = 0.0
   var lonMax: Double = 0.0
