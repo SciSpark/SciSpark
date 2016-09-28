@@ -50,4 +50,27 @@ object FileUtils {
         }
     }
 
+  /**
+   * Write nodes to hdfs
+   * @param hdfsDir  String The hdfs directory
+   * @param localDir The local directory
+   * @param filename The filename to be copied
+   */
+  
+  def copyNodesToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
+    try {
+      val dstPath = new Path(hdfsDir)
+      val conf = new Configuration()
+      val fs = FileSystem.get(dstPath.toUri, conf)
+      val currFile = localDir + System.getProperty("file.separator") + filename
+      val srcPath = new Path(currFile)
+      fs.copyFromLocalFile(srcPath, dstPath)
+      new File(currFile).delete()
+    }
+    catch {
+      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
+    }
+  }
+
+
 }

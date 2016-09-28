@@ -31,6 +31,7 @@ import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
 
 import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
+import org.dia.utils.FileUtils
 
 object MCSUtils {
 
@@ -127,7 +128,7 @@ object MCSUtils {
       case _: Throwable => logger.info("Error generating netCDF file for " + filepath + "\n")
     }
     if (hdfsDir != null) {
-      copyNodesToHDFS(hdfsDir, localDir, fileName)
+      FileUtils.copyFileToHDFS(hdfsDir, localDir, fileName)
     }
   }
 
@@ -224,27 +225,6 @@ object MCSUtils {
       os.write((node.toString() + "\n").getBytes())
     }
     os.close()
-  }
-
-  /**
-   * Write nodes to hdfs
-   * @param hdfsDir  String The hdfs directory
-   * @param localDir The local directory
-   * @param filename The filename to be copied
-   */
-  def copyNodesToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
-    try {
-      val dstPath = new Path(hdfsDir)
-      val conf = new Configuration()
-      val fs = FileSystem.get(dstPath.toUri, conf)
-      val currFile = localDir + System.getProperty("file.separator") + filename
-      val srcPath = new Path(currFile)
-      fs.copyFromLocalFile(srcPath, dstPath)
-      new File(currFile).delete()
-    }
-    catch {
-      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
-    }
   }
 
   /**
