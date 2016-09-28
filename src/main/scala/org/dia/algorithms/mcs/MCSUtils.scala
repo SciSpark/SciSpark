@@ -150,9 +150,9 @@ object MCSUtils {
       lons: Array[Double],
       tightestBox: Boolean): (String, ArrayInt.D2) = {
 
-    var latMin = .0
+    var latMin = Double.MaxValue
     var latMax = .0
-    var lonMin = .0
+    var lonMin = Double.MaxValue
     var lonMax = .0
     var lonMinOffset = 0
     var lonMaxOffset = 0
