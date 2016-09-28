@@ -24,6 +24,7 @@ import org.apache.spark.rdd.RDD
 
 import org.dia.core.{SciDataset, SciSparkContext, SRDDFunctions}
 import org.dia.tensors.AbstractTensor
+import org.dia.utils.FileUtils
 
 /**
  * Runs Grab em' Tag em' Graph em'
@@ -54,7 +55,7 @@ class GTGRunner(
   def run(): Unit = {
 
     logger.info("Starting MCS")
-    val outputDir = MCSUtils.checkHDFSWrite(this.outputDir)
+    val outputDir = FileUtils.checkHDFSWrite(this.outputDir)
     /**
      * Initialize the spark context to point to the master URL
      */
@@ -142,7 +143,7 @@ class GTGRunner(
      */
     edgeListRDD.foreach(edge => {
       val nodeMap = broadcastedNodeMap.value
-      MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, false)
+      MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, true, "/tmp", null)
     })
 
     /**
