@@ -21,6 +21,8 @@ import java.io.{FileWriter, PrintWriter, Writer}
 
 import scala.language.reflectiveCalls
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 /**
  * Utilities to read from/write to files.
  */
@@ -78,6 +80,7 @@ object FileUtils {
       case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
     }
   }
+
 
 
 }
