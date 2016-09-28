@@ -61,12 +61,15 @@ object FileUtils {
     }
 
   /**
-   * Write file to hdfs. NB: file is deleted from local FS
+   * Copy file to hdfs. NB: file is deleted from local FS
    * @param hdfsDir  String The hdfs directory
    * @param localDir The local directory
    * @param filename The filename to be copied
    */  
-  def copyFileToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
+  def copyFileToHDFS(
+    hdfsDir: String,
+    localDir: String,
+    filename: String): Unit = {
     try {
       val dstPath = new Path(hdfsDir)
       val conf = new Configuration()
@@ -81,6 +84,27 @@ object FileUtils {
     }
   }
 
-
+  /**
+   * Copy file from hdfs to localDir
+   * @param hdfsDir  String The hdfs directory
+   * @param localDir The local directory
+   * @param filename The filename to be copied
+   */
+  def copyFileFromHDFS(
+    hdfsDir: String,
+    localDir: String,
+    filename: String): Unit = {
+    try {
+      val dstPath = new Path(localDir)
+      val conf = new Configuration()
+      val fs = FileSystem.get(dstPath.toUri, conf)
+      val currFile = hdfsDir + System.getProperty("file.separator") + filename
+      val srcPath = new Path(currFile)
+      fs.copyToLocalFile(srcPath, dstPath)
+    }
+    catch {
+      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
+    }
+  }
 
 }
