@@ -17,8 +17,8 @@
  */
 package org.dia.algorithms.mcs
 
-import java.util
 import java.io.File
+import java.util
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -79,7 +79,7 @@ object MCSUtils {
       lats: Array[Double],
       lons: Array[Double],
       hdfsDir: String): Unit = {
-    val filepath = localDir + System.getProperty("file.separator") + fileName 
+    val filepath = localDir + System.getProperty("file.separator") + fileName
     try {
       val fsplit = filepath.split("_")
       val latMin = fsplit(1).toInt
@@ -126,12 +126,10 @@ object MCSUtils {
     catch {
       case _: Throwable => logger.info("Error generating netCDF file for " + filepath + "\n")
     }
-    if (hdfsDir != null){
+    if (hdfsDir != null) {
       copyNodesToHDFS(hdfsDir, localDir, fileName)
     }
-    
   }
-
 
   /**
    * Get the data from the nodes in the edge
@@ -236,14 +234,13 @@ object MCSUtils {
    * @param filename The filename to be copied
    */
   def copyNodesToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
-    try{
+    try {
       val dstPath = new Path(hdfsDir)
       val conf = new Configuration()
       val fs = FileSystem.get(dstPath.toUri, conf)
       val currFile = localDir + System.getProperty("file.separator") + filename
       val srcPath = new Path(currFile)
       fs.copyFromLocalFile(srcPath, dstPath)
-
       new File(currFile).delete()
     }
     catch {
