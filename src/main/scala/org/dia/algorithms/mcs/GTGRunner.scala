@@ -142,7 +142,7 @@ class GTGRunner(
      */
     edgeListRDD.foreach(edge => {
       val nodeMap = broadcastedNodeMap.value
-      MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, false)
+      MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, true, "/tmp", null)
     })
 
     /**

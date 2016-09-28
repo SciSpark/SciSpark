@@ -18,6 +18,7 @@
 package org.dia.algorithms.mcs
 
 import java.util
+import java.io.File
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -49,31 +50,36 @@ object MCSUtils {
       MCSNodeMap: mutable.HashMap[String, MCSNode],
       lats: Array[Double],
       lons: Array[Double],
-      tightestBox: Boolean): Unit = {
+      tightestBox: Boolean,
+      localDir: String = "/tmp",
+      hdfsDir: String = null
+      ): Unit = {
 
     val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
     val (dstNodeId, dstNodeGrid) = extract_masked_data(dstMCSNode, lats, lons, tightestBox)
-    MCSUtils.writeNodeToNetCDF("/tmp/", srcNodeID, srcNodeGrid, lats, lons)
-    MCSUtils.writeNodeToNetCDF("/tmp/", dstNodeId, dstNodeGrid, lats, lons)
+    MCSUtils.writeNodeToNetCDF(localDir, srcNodeID, srcNodeGrid, lats, lons, hdfsDir)
+    MCSUtils.writeNodeToNetCDF(localDir, dstNodeId, dstNodeGrid, lats, lons, hdfsDir)
   }
 
   /**
    * Writes the node to a netCDF file
    *
-   * @param directory The directory to write the file to
+   * @param localDir  The local directory to write the file to
    * @param fileName  String The full path and name of the netcdfFile.
    * @param varData   ucar.ma2.ArrayInt.D2  2D data to be written to the file.
    * @param lats      Array[Double] of the latitudes to be used
    * @param lons      Array[Double] of the longitudes to be used
+   * @param hdfsDir   The HDFS directory to write the file to
    */
   def writeNodeToNetCDF(
-      directory: String,
+      localDir: String,
       fileName: String,
       varData: ucar.ma2.ArrayInt.D2,
       lats: Array[Double],
-      lons: Array[Double]): Unit = {
-    val filepath = directory + fileName
+      lons: Array[Double],
+      hdfsDir: String): Unit = {
+    val filepath = localDir + System.getProperty("file.separator") + fileName 
     try {
       val fsplit = filepath.split("_")
       val latMin = fsplit(1).toInt
@@ -120,6 +126,10 @@ object MCSUtils {
     catch {
       case _: Throwable => logger.info("Error generating netCDF file for " + filepath + "\n")
     }
+    if (hdfsDir != null){
+      copyNodesToHDFS(hdfsDir, localDir, fileName)
+    }
+    
   }
 
 
@@ -217,6 +227,28 @@ object MCSUtils {
       os.write((node.toString() + "\n").getBytes())
     }
     os.close()
+  }
+
+  /**
+   * Write nodes to hdfs
+   * @param hdfsDir  String The hdfs directory
+   * @param localDir The local directory
+   * @param filename The filename to be copied
+   */
+  def copyNodesToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
+    try{
+      val dstPath = new Path(hdfsDir)
+      val conf = new Configuration()
+      val fs = FileSystem.get(dstPath.toUri, conf)
+      val currFile = localDir + System.getProperty("file.separator") + filename
+      val srcPath = new Path(currFile)
+      fs.copyFromLocalFile(srcPath, dstPath)
+
+      new File(currFile).delete()
+    }
+    catch {
+      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
+    }
   }
 
   /**
