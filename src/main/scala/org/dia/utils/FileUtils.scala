@@ -37,11 +37,19 @@ object FileUtils {
       param.close()
     }
 
+  /**
+   * @param fileName String for filename on local system to write data to
+   * @param data String of the data to be written to file
+   */
   def writeToFile(fileName: String, data: String): Unit =
     using(new FileWriter(fileName)) {
       fileWriter => fileWriter.write(data)
     }
 
+  /**
+   * @param fileName String for filename on local system to append data to
+   * @param textData String of data to be appended to file
+   */
   def appendToFile(fileName: String, textData: String): Unit =
     using(new FileWriter(fileName, true)) {
       fileWriter =>
@@ -51,13 +59,12 @@ object FileUtils {
     }
 
   /**
-   * Write nodes to hdfs
+   * Write file to hdfs. NB: file is deleted from local FS
    * @param hdfsDir  String The hdfs directory
    * @param localDir The local directory
    * @param filename The filename to be copied
-   */
-  
-  def copyNodesToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
+   */  
+  def copyFileToHDFS(hdfsDir: String, localDir: String, filename: String): Unit = {
     try {
       val dstPath = new Path(hdfsDir)
       val conf = new Configuration()
