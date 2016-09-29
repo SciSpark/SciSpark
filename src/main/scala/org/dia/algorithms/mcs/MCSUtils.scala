@@ -30,6 +30,7 @@ import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
 
 import org.dia.core.SciTensor
 import org.dia.tensors.AbstractTensor
+import org.dia.utils.FileUtils
 
 object MCSUtils {
 
@@ -49,40 +50,44 @@ object MCSUtils {
       MCSNodeMap: mutable.HashMap[String, MCSNode],
       lats: Array[Double],
       lons: Array[Double],
-      tightestBox: Boolean): Unit = {
+      tightestBox: Boolean,
+      localDir: String = "/tmp",
+      hdfsDir: String = null): Unit = {
 
     val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
     val (dstNodeId, dstNodeGrid) = extract_masked_data(dstMCSNode, lats, lons, tightestBox)
-    MCSUtils.writeNodeToNetCDF("/tmp/", srcNodeID, srcNodeGrid, lats, lons)
-    MCSUtils.writeNodeToNetCDF("/tmp/", dstNodeId, dstNodeGrid, lats, lons)
+    MCSUtils.writeNodeToNetCDF(localDir, srcNodeID, srcNodeGrid, lats, lons, hdfsDir)
+    MCSUtils.writeNodeToNetCDF(localDir, dstNodeId, dstNodeGrid, lats, lons, hdfsDir)
   }
 
   /**
    * Writes the node to a netCDF file
    *
-   * @param directory The directory to write the file to
+   * @param localDir  The local directory to write the file to
    * @param fileName  String The full path and name of the netcdfFile.
    * @param varData   ucar.ma2.ArrayInt.D2  2D data to be written to the file.
    * @param lats      Array[Double] of the latitudes to be used
    * @param lons      Array[Double] of the longitudes to be used
+   * @param hdfsDir   The HDFS directory to write the file to
    */
   def writeNodeToNetCDF(
-      directory: String,
+      localDir: String,
       fileName: String,
       varData: ucar.ma2.ArrayInt.D2,
       lats: Array[Double],
-      lons: Array[Double]): Unit = {
-    val filepath = directory + fileName
+      lons: Array[Double],
+      hdfsDir: String): Unit = {
+    val currFile = localDir + System.getProperty("file.separator") + fileName
     try {
-      val fsplit = filepath.split("_")
+      val fsplit = currFile.split("_")
       val latMin = fsplit(1).toInt
       val latMax = fsplit(2).toInt
       val lonMin = fsplit(3).toInt
       val lonMax = fsplit(4).dropRight(3).toInt
       val lats1 = lats.slice(latMin, latMax + 1)
       val lons1 = lons.slice(lonMin, lonMax + 1)
-      val datafile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, filepath, null)
+      val datafile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, currFile, null)
       // Create netCDF dimensions
       val lonDim = datafile.addDimension(null, "longitudes", lons1.length)
       val latDim = datafile.addDimension(null, "latitudes", lats1.length)
@@ -118,10 +123,12 @@ object MCSUtils {
       datafile.close()
     }
     catch {
-      case _: Throwable => logger.info("Error generating netCDF file for " + filepath + "\n")
+      case _: Throwable => logger.info("Error generating netCDF file for " + currFile + "\n")
+    }
+    if (hdfsDir != null) {
+      FileUtils.copyFileToHDFS(hdfsDir, currFile)
     }
   }
-
 
   /**
    * Get the data from the nodes in the edge
@@ -134,7 +141,6 @@ object MCSUtils {
     val (srcKey, dstKey) = (srcNode.hashKey(), dstNode.hashKey())
     (MCSNodeMap(srcKey), MCSNodeMap(dstKey))
   }
-
 
   /** Extract the node mask from the MCSNode metadata
    *
