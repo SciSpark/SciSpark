@@ -19,7 +19,7 @@ To run the SciSpark docker follow the below steps:
 
 else you can pull and existing image from docker hub by running 
 
-```$ docker pull sujenshah/scispark```
+```$ docker pull scispark/scispark-dev-docker```
 
 * After the build completed successfully, run the docker by executing this command 
 
@@ -27,5 +27,5 @@ else you can pull and existing image from docker hub by running
 
 or if you have pulled from docker hub run 
    
-```docker run -it sujenshah/scispark /bin/bash``` 
+```docker run -it scispark/scispark-dev-docker /bin/bash``` 
 * The above command will open up a shell with root access in the scispark docker
