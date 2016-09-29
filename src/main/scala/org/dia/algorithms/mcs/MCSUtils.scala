@@ -17,7 +17,6 @@
  */
 package org.dia.algorithms.mcs
 
-import java.io.File
 import java.util
 
 import scala.collection.JavaConverters._
@@ -53,8 +52,7 @@ object MCSUtils {
       lons: Array[Double],
       tightestBox: Boolean,
       localDir: String = "/tmp",
-      hdfsDir: String = null
-      ): Unit = {
+      hdfsDir: String = null): Unit = {
 
     val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
@@ -80,16 +78,16 @@ object MCSUtils {
       lats: Array[Double],
       lons: Array[Double],
       hdfsDir: String): Unit = {
-    val filepath = localDir + System.getProperty("file.separator") + fileName
+    val currFile = localDir + System.getProperty("file.separator") + fileName
     try {
-      val fsplit = filepath.split("_")
+      val fsplit = currFile.split("_")
       val latMin = fsplit(1).toInt
       val latMax = fsplit(2).toInt
       val lonMin = fsplit(3).toInt
       val lonMax = fsplit(4).dropRight(3).toInt
       val lats1 = lats.slice(latMin, latMax + 1)
       val lons1 = lons.slice(lonMin, lonMax + 1)
-      val datafile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, filepath, null)
+      val datafile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, currFile, null)
       // Create netCDF dimensions
       val lonDim = datafile.addDimension(null, "longitudes", lons1.length)
       val latDim = datafile.addDimension(null, "latitudes", lats1.length)
@@ -125,10 +123,10 @@ object MCSUtils {
       datafile.close()
     }
     catch {
-      case _: Throwable => logger.info("Error generating netCDF file for " + filepath + "\n")
+      case _: Throwable => logger.info("Error generating netCDF file for " + currFile + "\n")
     }
     if (hdfsDir != null) {
-      FileUtils.copyFileToHDFS(hdfsDir, localDir, fileName)
+      FileUtils.copyFileToHDFS(hdfsDir, currFile)
     }
   }
 

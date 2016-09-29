@@ -17,7 +17,7 @@
  */
 package org.dia.utils
 
-import java.io.{FileWriter, PrintWriter, Writer}
+import java.io.{File, FileWriter, PrintWriter, Writer}
 
 import scala.language.reflectiveCalls
 
@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.{FileSystem, Path}
  * Utilities to read from/write to files.
  */
 object FileUtils {
+
+  val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
 
   /**
    * Used for reading/writing to a database, files, etc.
@@ -62,49 +64,89 @@ object FileUtils {
 
   /**
    * Copy file to hdfs. NB: file is deleted from local FS
-   * @param hdfsDir  String The hdfs directory
-   * @param localDir The local directory
-   * @param filename The filename to be copied
-   */  
+   * @param hdfsDir  String The HDFS directory
+   * @param localFile The filename on the local directory to be copied
+   */
   def copyFileToHDFS(
-    hdfsDir: String,
-    localDir: String,
-    filename: String): Unit = {
+      hdfsDir: String,
+      localFile: String): Unit = {
     try {
       val dstPath = new Path(hdfsDir)
       val conf = new Configuration()
       val fs = FileSystem.get(dstPath.toUri, conf)
-      val currFile = localDir + System.getProperty("file.separator") + filename
-      val srcPath = new Path(currFile)
+      val srcPath = new Path(localFile)
       fs.copyFromLocalFile(srcPath, dstPath)
-      new File(currFile).delete()
+      new File(localFile).delete()
     }
     catch {
-      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
+      case _: Throwable => logger.info("Error copying " + localFile + " to HDFS. \n")
+    }
+  }
+
+  /**
+   * Copy files from hdfs to localDir
+   * @param hdfsDir  String The hdfs directory
+   * @param localDir The local directory
+   */
+  def copyFilesToHDFS(
+      hdfsDir: String,
+      localDir: String): Unit = {
+    try {
+      val conf = new Configuration()
+      val srcPath = new File(localDir)
+      var currLink = ""
+      // val allFiles = FileSystem.get(sc.hadoopConfiguration).listFiles(new Path(hdfsDir), true)
+      val allFiles = srcPath.listFiles.filter(_.isFile).toList
+      while (allFiles.hasNext()) {
+        currLink = allFiles.next().getPath().toString
+        copyFileToHDFS(hdfsDir, currLink)
+      }
+    }
+    catch {
+      case _: Throwable => logger.info("Error copying from HDFS location " + hdfsDir + "\n")
     }
   }
 
   /**
    * Copy file from hdfs to localDir
-   * @param hdfsDir  String The hdfs directory
+   * @param hdfsFile String The full hdfsFile path with filename
    * @param localDir The local directory
-   * @param filename The filename to be copied
    */
   def copyFileFromHDFS(
-    hdfsDir: String,
-    localDir: String,
-    filename: String): Unit = {
+      hdfsFile: String,
+      localDir: String): Unit = {
     try {
       val dstPath = new Path(localDir)
       val conf = new Configuration()
       val fs = FileSystem.get(dstPath.toUri, conf)
-      val currFile = hdfsDir + System.getProperty("file.separator") + filename
-      val srcPath = new Path(currFile)
+      val srcPath = new Path(hdfsFile)
       fs.copyToLocalFile(srcPath, dstPath)
     }
     catch {
-      case _: Throwable => logger.info("Error copying " + filename + " to HDFS. \n")
+      case _: Throwable => logger.info("Error copying " + hdfsFile + " from HDFS. \n")
     }
   }
 
+  /**
+   * Copy files from hdfs to localDir
+   * @param hdfsDir  String The hdfs directory
+   * @param localDir The local directory
+   */
+  def copyFilesFromHDFS(
+      hdfsDir: String,
+      localDir: String): Unit = {
+    try {
+      val conf = new Configuration()
+      val srcPath = new Path(hdfsDir)
+      var currHDFSLink = ""
+      val allFiles = FileSystem.get(srcPath.toUri, conf).listFiles(srcPath, true)
+      while (allFiles.hasNext()) {
+        currHDFSLink = allFiles.next().getPath().toString
+        copyFileFromHDFS(currHDFSLink, localDir)
+      }
+    }
+    catch {
+      case _: Throwable => logger.info("Error copying from HDFS location " + hdfsDir + "\n")
+    }
+  }
 }
