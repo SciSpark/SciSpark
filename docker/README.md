@@ -15,7 +15,7 @@ To run the SciSpark docker follow the below steps:
 * run ```$ cd SciSpark/docker/```
 * If you want to build the docker container from scratch run 
 
-```$ docker build -t scispark -f Dockerfile .```
+```$ docker build -t scispark/scispark-dev-docker -f Dockerfile .```
 
 else you can pull and existing image from docker hub by running 
 
@@ -23,7 +23,7 @@ else you can pull and existing image from docker hub by running
 
 * After the build completed successfully, run the docker by executing this command 
 
-```docker run -it scispark /bin/bash``` 
+```docker run -it scispark/scispark-dev-docker /bin/bash``` 
 
 or if you have pulled from docker hub run 
    
