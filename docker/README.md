@@ -29,3 +29,12 @@ or if you have pulled from docker hub run
    
 ```docker run -it scispark/scispark-dev-docker /bin/bash``` 
 * The above command will open up a shell with root access in the scispark docker
+
+<h2> Development </h2>
+To have to ability to develop on your host machine and be able to compile and run those changes in the docker environment, please use the following run command in place of the above:
+
+``` docker run -it -v <absolute path of SciSpark dir>:/root/SciSpark scispark/scispark-dev-docker /bin/bash```
+
+The -v option mounts the SciSpark directory on the users host machine to the one in the docker. 
+
+Once you are done with making changes to the code, run the docker, run ```sbt clean assembly``` and the new jar will be created in the target directory. 
