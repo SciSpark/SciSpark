@@ -45,6 +45,10 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   var maxTemp: Double = 0.0
   var minTemp: Double = Double.MaxValue
 
+  var maxTempArea: Double = 0.0
+  var minArea: Double = 0.0
+  var minAreaTemp: Double = 0.0
+
   def this(frameNum: String, cloudElemNum: String) {
     this(frameNum.toInt, cloudElemNum.toInt)
   }
@@ -102,6 +106,18 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
   def getMinTemp(): Double = {
     this.minTemp
+  }
+
+  def getMaxTempArea(): Double = {
+    this.maxTempArea
+  }
+
+  def getMinTempArea(): Double = {
+    this.minArea
+  }
+
+  def getMinAreaTemp(): Double = {
+    this.minAreaTemp
   }
 
   def setGrid(_grid: mutable.HashMap[String, Double]): Unit = {
@@ -206,6 +222,15 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
     this.centerLat = (this.latMax + this.latMin) / 2
     this.centerLon = (this.lonMax + this.lonMin) / 2
+  }
+
+  def updateMinTempArea(areaVal: Double, tempVal: Double): Unit = {
+    this.minArea = areaVal
+    this.minAreaTemp = tempVal
+  }
+
+  def updateMaxTempArea(value: Double): Unit = {
+    this.maxTempArea = value
   }
 
   def hashKey(): String = {

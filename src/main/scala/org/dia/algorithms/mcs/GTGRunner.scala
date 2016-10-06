@@ -48,6 +48,7 @@ class GTGRunner(
     val convectiveFraction: Double = 0.9,
     val minArea: Int = 625,
     val nodeMinArea: Int = 150,
+    val minAreaThres: Int = 16,
     val minGraphLength: Int = 4) {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -112,8 +113,8 @@ class GTGRunner(
       minAreaOverlapThreshold,
       convectiveFraction,
       minArea,
-      nodeMinArea)
-
+      nodeMinArea,
+      minAreaThres)
 
     edgeListRDD.cache()
     edgeListRDD.localCheckpoint()
