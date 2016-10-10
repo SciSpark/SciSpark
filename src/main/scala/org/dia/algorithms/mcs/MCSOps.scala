@@ -343,6 +343,7 @@ object MCSOps {
    * @param convectiveFraction convective fraction threshold
    * @param minArea the minimum area to check for third weight
    * @param nodeMinArea the minimum area of a component
+   * @param minAreaThres the minimum area threshold within in a node
    * @return
    */
   def findEdges(
@@ -352,7 +353,8 @@ object MCSOps {
       minAreaOverlapThreshold: Double,
       convectiveFraction: Double,
       minArea: Int,
-      nodeMinArea: Int): RDD[MCSEdge] = {
+      nodeMinArea: Int,
+      minAreaThres: Int): RDD[MCSEdge] = {
 
     sRDD.flatMap({
       case (sd1, sd2) =>
@@ -408,6 +410,14 @@ object MCSOps {
             }
           }
         }
+
+        val nodeslist = MCSEdgeMap.values
+        val i = nodeslist.map({ edge =>
+          val node1 = edge.srcNode
+          val node2 = edge.destNode
+          MCSOps.updateTempAreas(node1, t1().zeros(t1().shape: _*), minAreaThres)
+          MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)
+        })
 
         MCSOps.updateEdgeMapCriteria(MCSEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
           convectiveFraction, minArea, nodeMinArea)
@@ -556,5 +566,39 @@ object MCSOps {
       p(varName) = p(varName)(0)
     })
   }
+
+/**
+ * Function to update the areas associated with min and max temperatures found in each node.
+ * Note that: (1) areas are the number of boxes within the node meeting the temperaure.
+ * (2) If the original min temp does not meet the min area threshold, it is iteratively
+ * increased until a valid temperature is found.
+ *
+ * @param thisNode The MCSNode object to update with the areas
+ * @param nodeGrid The tensor of zeros with the shape
+ * @param areaBox The area for the minTemp threshold area
+ *
+ */
+def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
+  val gridMap: mutable.HashMap[String, Double] = thisNode.grid
+
+  gridMap.foreach { case (k, v) =>
+    val indices = k.replace("(", "").replace(")", "").replace(" ", "").split(",")
+    nodeGrid.put(v, indices(0).toInt, indices(1).toInt)
+  }
+
+  var minTemp = scala.math.ceil(thisNode.getMinTemp())
+  val maxTemp = scala.math.floor(thisNode.getMaxTemp())
+  var minArea = nodeGrid.data.count(_ <= minTemp) - nodeGrid.data.count(_ == 0.0)
+
+  while (minArea < areaBox && minTemp < maxTemp) {
+    minTemp += 1.0
+    minArea = nodeGrid.data.count(_ <= minTemp) - nodeGrid.data.count(_ == 0.0)
+  }
+
+  thisNode.updateMinTempArea(minArea, minTemp)
+
+  val maxArea = nodeGrid.data.count(_ >= maxTemp)
+  thisNode.updateMaxTempArea(maxArea)
+}
 
 }
