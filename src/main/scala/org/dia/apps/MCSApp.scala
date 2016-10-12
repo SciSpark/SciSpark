@@ -26,7 +26,7 @@ import org.dia.core.{SciDataset, SciSparkContext, SRDDFunctions}
 import org.dia.tensors.AbstractTensor
 import org.dia.utils.FileUtils
 
-object MCS extends App {
+object MCSApp extends App {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
   /**

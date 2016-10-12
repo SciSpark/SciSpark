@@ -30,7 +30,7 @@ import org.dia.tensors.{AbstractTensor, Nd4jTensor}
 /**
  *
  */
-object PDF extends App {
+object PDFApp extends App {
 
   val masterURL = "local[2]"
   val sc = new SciSparkContext(masterURL, "PDF clustering")
