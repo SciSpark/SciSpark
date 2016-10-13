@@ -48,7 +48,7 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * TODO :: Write netcdfFile directly to hdfs rather to local fs and then copying over.
    *
    * @param directoryPath The directory to write to. The hdfs path format is HDFS://HOSTNAME:<port no.>
-   * @param stagingPath The area to stage files on the local filesystem. Default is /tmp/.
+   * @param stagingPath   The area to stage files on the local filesystem. Default is /tmp/.
    */
   def writeSRDD(directoryPath : String, stagingPath : String = "/tmp/"): Unit = {
     self.foreach(p => {
@@ -67,11 +67,11 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * in the original array
    * - an index specifying the tile's location on a new axis.
    *
-   * @param varName The name of the variable to use
-   * @param keyFunc the function used to extract a new index
-   * @param tileShape the shape of tiles the variable array
+   * @param varName   The name of the variable to use
+   * @param keyFunc   The function used to extract a new index
+   * @param tileShape The shape of tiles the variable array
    *                       wil be split into
-   * @return
+   * @return sRDD tuple containing the 
    */
   def splitTiles(
       varName: String,
@@ -128,9 +128,9 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    *  2. A tuple consisting of:
    *      a. The index of the variable tile on the new axis
    *      b. The variable tile
-   * @param sRDD the input RDD
-   * @param dimName the name of the new dimension default : time
-   * @return
+   * @param sRDD    The input RDD
+   * @param dimName The name of the new dimension default : time
+   * @return 
    */
   def stackTiles(sRDD: RDD[(List[(Int, Int)], (Int, Variable))], dimName : String = "time"): RDD[Variable] = {
     /**
@@ -168,9 +168,9 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    *
    * repartitionBySpace splits the chosen variable into tiles, and aggregates
    * them along the time (or user defined) axis.
-   * @param varName the name of the variable
-   * @param keyFunc the function used to obtain index on the new axis
-   * @param tileShape the shape of tiles to each variable into.
+   * @param varName   The name of the variable
+   * @param keyFunc   The function used to obtain index on the new axis
+   * @param tileShape The shape of tiles to each variable into.
    * @return
    */
   def repartitionBySpace(
@@ -192,10 +192,10 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * (N*, (N+1)*) which achieves the consecutive pairwise grouping
    * of frames.
    *
-   * Precondition : Each SciTensor has a FRAME key recorded in its metadata table
+   * Precondition : Each SciDataset has a FRAME key recorded in its metadata table
    *
-   * @param sRDD the input RDD of SciTensors
-   * @return
+   * @param frame The global attribute in the SciDataset to use inorder to obtain a sequence
+   * @return An sRDD of ordered tuples of sciDatsets
    */
   def pairConsecutiveFrames(frame: String): RDD[(SciDataset, SciDataset)] = {
     self.sortBy(p => p.attr(frame).toInt)
