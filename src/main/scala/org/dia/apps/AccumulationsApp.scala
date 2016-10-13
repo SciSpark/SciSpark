@@ -39,6 +39,7 @@ object AccumulationsApp extends App {
   val varname = if (args.length <= 3) "precipitation" else args(3)
   val outputLoc = if (args.length <= 4) "output" else args(4)
   val credentialsFilePath = "src/test/resources/TestHTTPCredentials"
+  val fileSepStr = System.getProperty("file.separator")
   val credentialList = Source.fromFile(credentialsFilePath)
     .getLines()
     .map(p => {
@@ -50,11 +51,10 @@ object AccumulationsApp extends App {
 
   val outputDir = FileUtils.checkHDFSWrite(outputLoc)
 
-  val hdfsDir = outputDir + System.getProperty("file.separator") + "TRMM3B42.txt"
+  val hdfsDir = outputDir + fileSepStr + "TRMM3B42.txt"
   val ugi = UserGroupInformation.getCurrentUser().getUserName()
-  val hdfsPath = hdfsURL + System.getProperty("file.separator") + "user" +
-    System.getProperty("file.separator") + ugi + System.getProperty("file.separator") +
-    outputDir + System.getProperty("file.separator")
+  val hdfsPath = hdfsURL + fileSepStr + "user" + fileSepStr + ugi + fileSepStr +
+    outputDir + fileSepStr
 
   logger.info("Starting Simple Accumulation")
 
@@ -75,13 +75,15 @@ object AccumulationsApp extends App {
    * Add the frame as an attribute to the SciDataset
    */
   val labels = sRDD.map(p => {
-    val FrameID = p.datasetName.split("\\.")(1) + p.datasetName.split("\\.")(2)
-    p("FRAME") = FrameID.toString
+    val splitName = p.datasetName.split("\\.")
+    val FrameID = splitName(1) + splitName(2)
+    p("FRAME") = FrameID
   })
   /**
    * Convert the data from hrly rate every 3 hrs to 3hrly accumulations.
    */
   val accu3hrly = labels.map(p => {
+    /* Verbose way to add a new Variable to a sciDataset */
     val precipAccStr = "(" + varname + " * 3.0)"
     val precipAccTensor = p(varname)() * 3.0
     val precipAccVar = new Variable("precip3hrlyAcc", "float", precipAccTensor.data,
@@ -100,19 +102,18 @@ object AccumulationsApp extends App {
    * Sum consecutive frames for 6hrly accumulation
    */
   val accu6hrly = consecutiveTimes.map(p => {
+    /* Concise way to add a new Variable to the sciDataset using the update function */
     val summationStr = "(precip3hrlyAcc._1 + precip3hrlyAcc._2)"
-    val summationTensor = p._1("precip3hrlyAcc")() + p._2("precip3hrlyAcc")()
-    val summationVar = new Variable(summationStr, "float", summationTensor.data,
-      p._1(varname).shape, List(("Calculation", "(precip3hrlyAcc._1 + precip3hrlyAcc._2)")),
-      p._1(varname).dims)
-    summationVar.insertAttributes(("long_name", "precipitation 6hrlyAccumulation"))
-    summationVar.insertAttributes(("units", "mm"))
-    p._1.insertVariable(("6hrlyaccu", summationVar))
+    p._1.update("6hrlyaccu", p._1("precip3hrlyAcc") + p._2("precip3hrlyAcc"))
+    p._1("6hrlyaccu").insertAttributes(("Calculation", summationStr))
+    p._1("6hrlyaccu").insertAttributes(("long_name", "precipitation 6hrlyAccumulation"))
+    p._1("6hrlyaccu").insertAttributes(("units", "mm"))
+
     /**
      * Update the sciDataset name to reflect the computation
      */
-    val newname = "6hrly-accu-starting-at" + p._1.datasetName.split("\\.")(1) +
-      p._1.datasetName.split("\\.")(2) + ".nc"
+    val splitName = p._1.datasetName.split("\\.")
+    val newname = "6hrly-accu-starting-at" + splitName(1) + splitName(2) + ".nc"
     p._1.setName(newname)
     p._1
   })
