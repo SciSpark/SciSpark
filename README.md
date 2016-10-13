@@ -27,6 +27,9 @@ The steps to running the SciSpark test suite can be found [here](https://github.
 #API
 SciSpark documentation can be found at https://scispark.jpl.nasa.gov/api/
 
+#SciSpark notebooks
+SciSpark frontend interface leverages notebook software and is built on Apache Zeppelin. Examples of notebooks leveraging the SciSpark API and furnished with visualizations of the data analyzed can be found [here](https://github.com/SciSpark/scispark_zeppelin_notebooks).
+
 #Grab em' Tag em' Graph em' : An Automated Search for Mesoscale Convective Complexes
 
 The initial application of SciSpark is to scale the Grab em' Tag em' Graph em' algorithm.
