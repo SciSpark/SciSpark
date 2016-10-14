@@ -102,10 +102,9 @@ object AccumulationsApp extends App {
    * Sum consecutive frames for 6hrly accumulation
    */
   val accu6hrly = consecutiveTimes.map(p => {
-    /* Concise way to add a new Variable to the sciDataset using the update function */
-    val summationStr = "(precip3hrlyAcc._1 + precip3hrlyAcc._2)"
-    p._1.update("6hrlyaccu", p._1("precip3hrlyAcc") + p._2("precip3hrlyAcc"))
-    p._1("6hrlyaccu").insertAttributes(("Calculation", summationStr))
+    /* Concise way to add a new Variable to the sciDataset */
+    p._1("6hrlyaccu") = p._1("precip3hrlyAcc") + p._2("precip3hrlyAcc")
+    p._1("6hrlyaccu").insertAttributes(("Calculation", "(precip3hrlyAcc._1 + precip3hrlyAcc._2)"))
     p._1("6hrlyaccu").insertAttributes(("long_name", "precipitation 6hrlyAccumulation"))
     p._1("6hrlyaccu").insertAttributes(("units", "mm"))
 
