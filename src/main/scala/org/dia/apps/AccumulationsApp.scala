@@ -20,7 +20,6 @@ package org.dia.apps
 import java.io.{ File, PrintWriter }
 
 import scala.collection.mutable
-import scala.io.Source
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.security.UserGroupInformation
@@ -29,7 +28,7 @@ import org.apache.spark.rdd.RDD
 
 import org.dia.core.{SciDataset, SciSparkContext, SRDDFunctions, Variable}
 import org.dia.urlgenerators.OpenDapTRMMURLGenerator
-import org.dia.utils.{FileUtils, NetCDFUtils}
+import org.dia.utils.{FileUtils, NetCDFUtils, OpenDapUtils}
 
 object AccumulationsApp extends App {
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -38,16 +37,9 @@ object AccumulationsApp extends App {
   val hdfsURL = if (args.length <= 2) "hdfs://localhost:9000" else args(2)
   val varname = if (args.length <= 3) "precipitation" else args(3)
   val outputLoc = if (args.length <= 4) "output" else args(4)
-  val credentialsFilePath = "src/test/resources/TestHTTPCredentials"
+  val cFile = "src/test/resources/TestHTTPCredentials"
   val fileSepStr = System.getProperty("file.separator")
-  val credentialList = Source.fromFile(credentialsFilePath)
-    .getLines()
-    .map(p => {
-      val split = p.split("\\s+")
-      (split(0), split(1))
-    }).toList
-  val username = credentialList(0)._2
-  val password = credentialList(1)._2
+  val opendapURL = "http://disc2.nascom.nasa.gov:80/opendap/hyrax/TRMM_L3/"
 
   val outputDir = FileUtils.checkHDFSWrite(outputLoc)
 
@@ -56,11 +48,17 @@ object AccumulationsApp extends App {
   val hdfsPath = hdfsURL + fileSepStr + "user" + fileSepStr + ugi + fileSepStr +
     outputDir + fileSepStr
 
-  logger.info("Starting Simple Accumulation")
+  val (username, password) = OpenDapUtils.getLoginCredentials(cFile)
+  if (username.isEmpty() || password.isEmpty()) {
+    logger.info("Peoblem with credentials in file: " + cFile + " Ending Simple Accumulation App.")
+    System.exit(1)
+  }
 
   val sc = new SciSparkContext(masterURL, "SciSpark example: Simple Accumulation")
+  logger.info("Starting Simple Accumulation")
 
-  sc.addHTTPCredential("http://disc2.nascom.nasa.gov/opendap/hyrax/TRMM_L3/", username, password)
+  sc.addHTTPCredential(opendapURL, username, password)
+
   /**
    * The data is 3hrly TRMM data. See
    * http://disc.sci.gsfc.nasa.gov/precipitation/documentation/TRMM_README/TRMM_3B42_readme.shtml
