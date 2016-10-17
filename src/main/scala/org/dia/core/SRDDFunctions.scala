@@ -71,7 +71,7 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    * @param keyFunc   The function used to extract a new index
    * @param tileShape The shape of tiles the variable array
    *                       wil be split into
-   * @return sRDD tuple containing the 
+   * @return sRDD tuple containing the
    */
   def splitTiles(
       varName: String,
@@ -130,9 +130,11 @@ class SRDDFunctions(self: RDD[SciDataset]) extends Serializable {
    *      b. The variable tile
    * @param sRDD    The input RDD
    * @param dimName The name of the new dimension default : time
-   * @return 
+   * @return
    */
-  def stackTiles(sRDD: RDD[(List[(Int, Int)], (Int, Variable))], dimName : String = "time"): RDD[Variable] = {
+  def stackTiles(
+      sRDD: RDD[(List[(Int, Int)], (Int, Variable))],
+      dimName : String = "time"): RDD[Variable] = {
     /**
      * ReduceByKey aggregates tiles with the same original position
      */
