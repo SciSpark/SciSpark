@@ -172,4 +172,21 @@ object FileUtils {
     fs.delete(filepath, true)
     pathString
   }
+
+  /**
+   * Write a iterable object to HDFS
+   * @param filepath Path of file to write to
+   * @param data Iterable object to be written
+   */
+  def writeIterableToHDFS(filepath: String, data: Iterable[Any]): Unit = {
+    val conf = new Configuration()
+    val path = new Path(filepath)
+    val fs = FileSystem.get(path.toUri, conf)
+    if (!fs.exists(path.getParent)) {
+      throw new Exception(s"${path.getParent} directory does not exists")
+    }
+    val os = fs.create(path)
+    data.foreach(x => os.write(x.toString.getBytes()))
+    os.close()
+  }
 }
