@@ -357,13 +357,6 @@ object MCSOps {
       minArea: Int,
       nodeMinArea: Int,
       minAreaThres: Int): RDD[MCSEdge] = {
-      // wwlnDF: Broadcast[DataFrame]): RDD[MCSEdge] = {
-      // broadcastedWWLN: Option[Broadcast[DataFrame]] = None): RDD[MCSEdge] = {
-      // useWWLN: Boolean = false): RDD[MCSEdge] = {
-      // wwlnDF: DataFrame = Seq.empty[(String)].toDF()): RDD[MCSEdge] = {
-
-    // val wwlnDF = broadcastedWWLN getOrElse None
-    // val useWWLN = if (wwlnDF == None) false else true
     sRDD.flatMap({
       case (sd1, sd2) =>
         val (t1, t2) = (sd1(varName), sd2(varName))
@@ -424,15 +417,7 @@ object MCSOps {
           val node1 = edge.srcNode
           val node2 = edge.destNode
           MCSOps.updateTempAreas(node1, t1().zeros(t1().shape: _*), minAreaThres)
-          MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)
-
-          // if lightning data is available, then update the nodes here       
-          // if (useWWLN){
-            // val wwlnDF = GetWWLNDF.getWWLNDF //broadcastedWWLN.value
-            // MCSOps.updateLightningWWLN(node1, wwlnDF)
-            // MCSOps.updateLightningWWLN(node2, wwlnDF)
-          // }
-          
+          MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)          
         })
 
         MCSOps.updateEdgeMapCriteria(MCSEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
