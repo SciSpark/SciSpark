@@ -24,7 +24,7 @@ import org.apache.spark.rdd.RDD
 import org.dia.algorithms.mcs._
 import org.dia.core.{SciDataset, SciSparkContext, SRDDFunctions}
 import org.dia.tensors.AbstractTensor
-import org.dia.utils.FileUtils
+import org.dia.utils.{FileUtils, WWLNUtils}
 
 object MCSApp extends App {
 
@@ -37,6 +37,8 @@ object MCSApp extends App {
   val path = if (args.length <= 2) "resources/paperSize/" else args(2)
   val varName = if (args.length <= 3) "ch4" else args(3)
   val outputLoc = if (args.length <= 4) "output" else args(4)
+  val WWLNpath = "resources/WWLN/" // must be hdfs file location
+  
   /**
    * User parameters for the algorithm itself
    */
@@ -59,6 +61,12 @@ object MCSApp extends App {
    */
   val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCS Search")
 
+  /**
+   * Get WWLN data to update MCSNodes 
+   */
+  val broadcastedWWLNDF = sc.readWWLNData(WWLNpath, partitions)
+  logger.info("Check the WWLN data read in \n" + broadcastedWWLNDF.value.show(10))
+  
   /**
    * Initialize variableName to avoid serialization issues
    */
@@ -108,7 +116,9 @@ object MCSApp extends App {
     convectiveFraction,
     minArea,
     nodeMinArea,
-    minAreaThres)
+    minAreaThres)//,
+    // true)
+    // broadcastedWWLNDF)
 
   edgeListRDD.cache()
   edgeListRDD.localCheckpoint()
@@ -121,6 +131,20 @@ object MCSApp extends App {
   val broadcastedNodeMap = sc.sparkContext.broadcast(MCSNodeMap)
 
   /**
+   * Add WWLN data to nodes
+   */
+  edgeListRDD.map(edge => MCSUtils.addWWLN(edge, broadcastedNodeMap.value, broadcastedWWLNDF))
+
+  /**
+   * Generate the netcdfs
+   */
+  edgeListRDD.foreach(edge => {
+    val nodeMap = broadcastedNodeMap.value
+    // MCSUtils.addWWLN(edge, nodeMap, broadcastedWWLNDF)
+    MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, false, "/tmp", null)
+  })
+
+  /**
    * Write Nodes and Edges to disk
    */
   logger.info("NUM VERTICES : " + MCSNodeMap.size + "\n")
@@ -131,14 +155,6 @@ object MCSApp extends App {
 
   val MCSEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCSEdges.txt"
   MCSUtils.writeEdgesToFile(MCSEdgeFilename, MCSEdgeList)
-
-  /**
-   * Generate the netcdfs
-   */
-  edgeListRDD.foreach(edge => {
-    val nodeMap = broadcastedNodeMap.value
-    MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, false, "/tmp", null)
-  })
 
   /**
    * Find the subgraphs

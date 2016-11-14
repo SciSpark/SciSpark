@@ -28,9 +28,13 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import ucar.ma2.{ArrayDouble, ArrayInt, DataType}
 import ucar.nc2.{Attribute, Dimension, NetcdfFileWriter, Variable}
 
-import org.dia.core.SciTensor
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
+
+import org.dia.core.{SciSparkContext, SciTensor}
 import org.dia.tensors.AbstractTensor
-import org.dia.utils.FileUtils
+import org.dia.utils.{FileUtils, WWLNUtils}
 
 object MCSUtils {
 
@@ -224,4 +228,48 @@ object MCSUtils {
     }
     os.close()
   }
+
+  /**
+   * Add WWLN data to node
+   * @param edge        the edge object which is composed of the nodes
+   * @param MCSNodeMap  Broadcasted mutable.HashMap[String, MCSNode] representing the map of each node metadata
+   * @param wwlnDF Broadcasted WWLN dataframe //useWWLN Option to use WWLN data
+   */ 
+  def addWWLN (
+      edge:MCSEdge,
+      MCSNodeMap:mutable.HashMap[String, MCSNode],
+      wwlnDF:Broadcast[DataFrame]) {
+    val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
+    MCSOps.updateLightningWWLN(srcMCSNode, wwlnDF)
+    MCSOps.updateLightningWWLN(dstMCSNode, wwlnDF) 
+  }
+
+  // /**
+  //  * Get all the subgraphs into one string
+  //  * @param  ScisparkContext being used
+  //  * @param  subgraphsDir A string representing the location of the subgraphs text files
+  //  * @return An RDD containing a list of strings of all the subgraphs
+  //  */
+  //  def getSubgraphs(
+  //      ssc: SciSparkContext,
+  //      subgraphsDir: String): List[String] ={
+  //   val subgraphs = ssc.textFile(subgraphsDir)
+  //   val sgList = subgraphs.map(sg => sg.drop(4).dropRight(1).split(", "))
+  //   sgList
+  //  }
+   
+  /**
+   * Order the nodes in the subgraphs
+   * @param  gRDD An RDD containing the array of subgraphs found
+   * @return An RDD containing a list of list of nodes in each subgraph ordered by frame num
+   */
+  def orderNodesInSubGraph(gRDD: RDD[Array[String]]): RDD[List[String]] = {
+    val orderedSg = gRDD.map(sg => {
+      val eachSg = sg.flatMap( t => List(t.split(",")(0), t.split(",")(1))).toSet.toList
+      eachSg.sorted
+    })
+    orderedSg
+  }
+
+  
 }
