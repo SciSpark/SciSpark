@@ -34,7 +34,7 @@ import org.apache.spark.sql.DataFrame
 
 import org.dia.core.{SciDataset, SciSparkContext}
 import org.dia.tensors.AbstractTensor
-import org.dia.utils.WWLNUtils
+import org.dia.utils.WWLLNUtils
 
 /**
  * Utilities to compute connected components within tensor.
@@ -417,7 +417,7 @@ object MCSOps {
           val node1 = edge.srcNode
           val node2 = edge.destNode
           MCSOps.updateTempAreas(node1, t1().zeros(t1().shape: _*), minAreaThres)
-          MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)          
+          MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)
         })
 
         MCSOps.updateEdgeMapCriteria(MCSEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
@@ -579,7 +579,7 @@ object MCSOps {
  * @param areaBox The area for the minTemp threshold area
  *
  */
-def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
+def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int): Unit = {
   val gridMap: mutable.HashMap[String, Double] = thisNode.grid
 
   gridMap.foreach { case (k, v) =>
@@ -603,14 +603,16 @@ def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
 }
 
 /**
- * Function to add WWLN lighnting data to MCSNode
+ * Function to add WWLLN lighnting data to MCSNode
  * @param thisNode The MCSNode object to update with the lightning locations
- * @param bcWWLN The broadcasted WWLN data stored within a dataframe
+ * @param bcWWLLN The broadcasted WWLLN data stored within a dataframe
  */
- def updateLightningWWLN(thisNode:MCSNode, bcWWLN: Broadcast[DataFrame]){ //DataFrame){
+def updateLightningWWLLN(
+    thisNode: MCSNode,
+    bcWWLLN: Broadcast[DataFrame]): Unit = {
   val currtime = thisNode.getFrameNum.toString
   var currtimeStr = ""
-  //convert to str format "yyyy/MM/DD kk:mm:ss" for the WWLN dataframe time
+  // convert to str format "yyyy/MM/DD kk:mm:ss" for the WWLLN dataframe time
   if (currtime.length == 10) {
     currtimeStr = currtime.dropRight(6) + "/" + currtime.dropRight(4).drop(4) +
       "/" + currtime.dropRight(2).drop(6) + " " + currtime.drop(8) + ":00:00"
@@ -624,11 +626,10 @@ def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
   val latMax = thisNode.getLatMax()
   val lonMin = thisNode.getLonMin()
   val lonMax = thisNode.getLonMax()
-
-  val lightningLocs = WWLNUtils.getLightningLocs(bcWWLN, currtimeStr,
+  val lightningLocs = WWLLNUtils.getLightningLocs(bcWWLLN, currtimeStr,
     latMin, latMax, lonMin, lonMax)
 
   thisNode.updateLightning(lightningLocs)
- }
+}
 
 }

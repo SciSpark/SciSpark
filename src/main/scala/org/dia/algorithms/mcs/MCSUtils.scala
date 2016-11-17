@@ -34,8 +34,7 @@ import org.apache.spark.sql.DataFrame
 
 import org.dia.core.{SciSparkContext, SciTensor}
 import org.dia.tensors.AbstractTensor
-import org.dia.utils.{FileUtils, WWLNUtils}
-
+import org.dia.utils.FileUtils
 object MCSUtils {
 
   val logger = org.slf4j.LoggerFactory.getLogger(this.getClass)
@@ -51,14 +50,14 @@ object MCSUtils {
    */
   def writeEdgeNodesToNetCDF(
       edge: MCSEdge,
-      MCSNodeMap: mutable.HashMap[String, MCSNode],
+      MCSNodeMap: Broadcast[mutable.HashMap[String, MCSNode]],
       lats: Array[Double],
       lons: Array[Double],
       tightestBox: Boolean,
       localDir: String = "/tmp",
       hdfsDir: String = null): Unit = {
 
-    val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
+    val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap.value)
     val (srcNodeID, srcNodeGrid) = extract_masked_data(srcMCSNode, lats, lons, tightestBox)
     val (dstNodeId, dstNodeGrid) = extract_masked_data(dstMCSNode, lats, lons, tightestBox)
     MCSUtils.writeNodeToNetCDF(localDir, srcNodeID, srcNodeGrid, lats, lons, hdfsDir)
@@ -230,34 +229,21 @@ object MCSUtils {
   }
 
   /**
-   * Add WWLN data to node
+   * Add WWLLN data to node
    * @param edge        the edge object which is composed of the nodes
    * @param MCSNodeMap  Broadcasted mutable.HashMap[String, MCSNode] representing the map of each node metadata
-   * @param wwlnDF Broadcasted WWLN dataframe //useWWLN Option to use WWLN data
-   */ 
-  def addWWLN (
-      edge:MCSEdge,
-      MCSNodeMap:mutable.HashMap[String, MCSNode],
-      wwlnDF:Broadcast[DataFrame]) {
-    val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMap)
-    MCSOps.updateLightningWWLN(srcMCSNode, wwlnDF)
-    MCSOps.updateLightningWWLN(dstMCSNode, wwlnDF) 
+   * @param wwllnDF Broadcasted WWLLN dataframe
+   */
+  def addWWLLN (
+      edge: MCSEdge,
+      MCSNodeMap: Broadcast[mutable.HashMap[String, MCSNode]],
+      wwllnDF: Broadcast[DataFrame]): Unit = {
+    val MCSNodeMapVal = MCSNodeMap.value
+    val (srcMCSNode, dstMCSNode) = getMCSNodes(edge, MCSNodeMapVal)
+    MCSOps.updateLightningWWLLN(srcMCSNode, wwllnDF)
+    MCSOps.updateLightningWWLLN(dstMCSNode, wwllnDF)
   }
 
-  // /**
-  //  * Get all the subgraphs into one string
-  //  * @param  ScisparkContext being used
-  //  * @param  subgraphsDir A string representing the location of the subgraphs text files
-  //  * @return An RDD containing a list of strings of all the subgraphs
-  //  */
-  //  def getSubgraphs(
-  //      ssc: SciSparkContext,
-  //      subgraphsDir: String): List[String] ={
-  //   val subgraphs = ssc.textFile(subgraphsDir)
-  //   val sgList = subgraphs.map(sg => sg.drop(4).dropRight(1).split(", "))
-  //   sgList
-  //  }
-   
   /**
    * Order the nodes in the subgraphs
    * @param  gRDD An RDD containing the array of subgraphs found
@@ -271,5 +257,4 @@ object MCSUtils {
     orderedSg
   }
 
-  
 }

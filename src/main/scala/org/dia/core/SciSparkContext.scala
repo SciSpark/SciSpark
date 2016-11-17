@@ -39,7 +39,7 @@ import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
-import org.dia.utils.WWLNUtils
+import org.dia.utils.WWLLNUtils
 
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
@@ -48,8 +48,11 @@ import org.dia.utils.WWLNUtils
  * that are useful for catching unwanted calls. Such as
  * executing one of the functions after the SparkContext has been stopped.
  */
-class SciSparkContext (@transient val sparkContext: SparkContext) extends Serializable {
 
+// Define WWLLN schema for DataFrame
+case class WWLLN(lDateTime: String, lat: Double, lon: Double, resFit: Double, numStations: Integer)
+
+class SciSparkContext (@transient val sparkContext: SparkContext) extends Serializable {
   /**
    * Log4j Setup
    * By default the natty Parser log4j messages are turned OFF.
@@ -63,11 +66,6 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
   var HTTPCredentials: mutable.Seq[(String, String, String)] = mutable.Seq()
   LogManager.getLogger(DateParserClass).setLevel(ParserLevel)
 
-  /**
-   * Define WWLN schema for DataFrame
-   */
-  case class WWLN (lDateTime:String, lat:Float, lon:Float, resFit:Float, numStations:Integer)
-    
   /**
    * SparkContext setup
    * The default matrix library is Scala Breeze
@@ -100,6 +98,8 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
   }
 
   def getConf: SparkConf = sparkContext.getConf
+
+  def stop: Unit = sparkContext.stop()
 
   /**
    * Adds http credentials which is then registered by any function
@@ -371,33 +371,25 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
   }
 
   /**
-   * Reads data from WWLN files into a SQL Dataframe and broadcasts this DF
-   * @param WWLNpath Path on HDFS to the data
+   * Reads data from WWLLN files into a SQL Dataframe and broadcasts this DF
+   * @param WWLLNpath Path on HDFS to the data
    * @param paritions The number of paritions to use
-   * return DataFrame with all the WWLN data at the location provided
+   * return DataFrame with all the WWLLN data at the location provided
    */
-  def readWWLNData(WWLNpath: String, partitions: Integer): Broadcast[DataFrame] = { //DataFrame = {
+  def readWWLLNData(WWLLNpath: String, partitions: Integer): Broadcast[DataFrame] = {
     val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
     import sqlContext.implicits._
 
-    val WWLNdataStrs = sparkContext.textFile(WWLNpath, partitions).filter(lines => lines.split(",").length != 1)
-    val wwlnRDD = WWLNdataStrs.map(line => line.split(",")).map(p => 
-      WWLN(WWLNUtils.getWWLNtimeStr(p(0).trim, p(1).trim), p(2).trim.toFloat, p(3).trim.toFloat, p(4).trim.toFloat, p(5).trim.toInt))
-    val wwlnDF = wwlnRDD.toDF()
-    val broadcastedWWLN = sparkContext.broadcast(wwlnDF)   
-    object GetWWLNDF {
-      def getWWLNDF = broadcastedWWLN.value
+    val WWLLNdataStrs = sparkContext.textFile(WWLLNpath, partitions).filter(lines => lines.split(",").length != 1)
+    val wwllnRDD = WWLLNdataStrs.map(line => line.split(",")).map(p =>
+      WWLLN(WWLLNUtils.getWWLLNtimeStr(p(0).trim, p(1).trim), p(2).trim.toDouble, p(3).trim.toDouble,
+        p(4).trim.toDouble, p(5).trim.toInt))
+    val wwllnDF = wwllnRDD.toDF()
+    val broadcastedWWLLN = sparkContext.broadcast(wwllnDF)
+    object GetWWLLNDF {
+      def getWWLLNDF = broadcastedWWLLN.value
     }
-    broadcastedWWLN
-    // wwlnDF
+    broadcastedWWLLN
   }
-
-  // /**
-  //  * Helper script to access broadcasted WWLN DF
-  //  */ 
-  // def getWWLNDF (broadcastedWWLN: Broadcast[DataFrame]) {
-  //   broadcastedWWLN.value
-  // } 
-  
 
 }
