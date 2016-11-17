@@ -30,11 +30,11 @@ class WWLLNUtilsTest extends FunSuite with BeforeAndAfter {
   /**
    * Read data into DF
    */
-  test("readWWLLNDataTest"){
-  	val WWLLNpath = "resources/WWLLN/"
-  	val partitions = 4
+  test("readWWLLNDataTest") {
+    val WWLLNpath = "resources/WWLLN/"
+    val partitions = 4
     val WWLLNdata = sc.readWWLLNData(WWLLNpath, partitions)
     val line1 = WWLLNdata.value.take(1).mkString("")
-    assert(line1 == "[2006/09/11 00:00:00,-6.0588,-178.601,28.2,5]") 
+    assert(line1 == "[2006/09/11 00:00:00,-6.0588,-178.601,28.2,5]")
   }
 }
