@@ -88,9 +88,7 @@ object WWLLNUtils extends Serializable {
       ") and (lon > " + minLon.toString + " and lon < " + maxLon.toString +
       ") and (lDateTime = '" + thisTimeDate + "')"
     val result = WWLLN.value.filter(filterCmd)
-    // logger.info("\nfiltercmd "+filterCmd)
     result.rdd.map( r => (r(1).asInstanceOf[Double], r(2).asInstanceOf[Double])).collect()
-    // result.map(r => {(r(1).asInstanceOf[Double], r(2).asInstanceOf[Double])}).collect()
   }
 
 }
