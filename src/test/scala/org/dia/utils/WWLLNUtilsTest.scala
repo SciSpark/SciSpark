@@ -31,7 +31,7 @@ class WWLLNUtilsTest extends FunSuite with BeforeAndAfter {
    * Read data into DF
    */
   test("readWWLLNDataTest") {
-    val WWLLNpath = "resources/WWLLN/"
+    val WWLLNpath = "src/test/resources/WWLLN/"
     val partitions = 4
     val WWLLNdata = sc.readWWLLNData(WWLLNpath, partitions)
     val line1 = WWLLNdata.value.take(1).mkString("")
