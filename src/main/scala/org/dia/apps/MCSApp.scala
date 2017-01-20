@@ -24,7 +24,7 @@ import org.apache.spark.rdd.RDD
 import org.dia.algorithms.mcs._
 import org.dia.core.{SciDataset, SciSparkContext, SRDDFunctions}
 import org.dia.tensors.AbstractTensor
-import org.dia.utils.FileUtils
+import org.dia.utils.{FileUtils, WWLLNUtils}
 
 object MCSApp extends App {
 
@@ -37,6 +37,8 @@ object MCSApp extends App {
   val path = if (args.length <= 2) "resources/paperSize/" else args(2)
   val varName = if (args.length <= 3) "ch4" else args(3)
   val outputLoc = if (args.length <= 4) "output" else args(4)
+  val WWLLNpath = "resources/WWLLN/" // must be hdfs file location
+
   /**
    * User parameters for the algorithm itself
    */
@@ -58,6 +60,12 @@ object MCSApp extends App {
    * Initialize the spark context to point to the master URL
    */
   val sc = new SciSparkContext(masterURL, "DGTG : Distributed MCS Search")
+
+  /**
+   * Get WWLLN data to update MCSNodes
+   */
+  val broadcastedWWLLNDF = sc.readWWLLNData(WWLLNpath, partitions)
+  logger.info("Check the WWLLN data read in \n" + broadcastedWWLLNDF.value.show(10))
 
   /**
    * Initialize variableName to avoid serialization issues
@@ -121,6 +129,16 @@ object MCSApp extends App {
   val broadcastedNodeMap = sc.sparkContext.broadcast(MCSNodeMap)
 
   /**
+   * Optional add ons
+   */
+  MCSEdgeList.foreach(edge => {
+    // Add WWLLN data to nodes
+    MCSUtils.addWWLLN(edge, broadcastedNodeMap, broadcastedWWLLNDF)
+    // Generate the netcdfs
+    MCSUtils.writeEdgeNodesToNetCDF(edge, broadcastedNodeMap, lat, lon, false, "/tmp", null)
+  })
+
+  /**
    * Write Nodes and Edges to disk
    */
   logger.info("NUM VERTICES : " + MCSNodeMap.size + "\n")
@@ -131,14 +149,6 @@ object MCSApp extends App {
 
   val MCSEdgeFilename: String = outputDir + System.getProperty("file.separator") + "MCSEdges.txt"
   MCSUtils.writeEdgesToFile(MCSEdgeFilename, MCSEdgeList)
-
-  /**
-   * Generate the netcdfs
-   */
-  edgeListRDD.foreach(edge => {
-    val nodeMap = broadcastedNodeMap.value
-    MCSUtils.writeEdgeNodesToNetCDF(edge, nodeMap, lat, lon, false, "/tmp", null)
-  })
 
   /**
    * Find the subgraphs
@@ -160,5 +170,16 @@ object MCSApp extends App {
    * Output RDD DAG to logger
    */
   logger.info(edgeListRDD.toDebugString + "\n")
+
+  /**
+   * Remove broadcasted variables
+   */
+  broadcastedWWLLNDF.destroy()
+  broadcastedNodeMap.destroy()
+
+  /**
+   * Elegantly stop the SciSpark Context
+   */
+  sc.stop
 
 }

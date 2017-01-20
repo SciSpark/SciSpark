@@ -22,17 +22,19 @@ import java.io.PrintWriter
 import java.util
 
 import scala.collection.mutable
+import scala.util.Try
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.DataFrame
 
-import org.dia.core.SciDataset
+import org.dia.core.{SciDataset, SciSparkContext}
 import org.dia.tensors.AbstractTensor
-
-
+import org.dia.utils.WWLLNUtils
 
 /**
  * Utilities to compute connected components within tensor.
@@ -355,7 +357,6 @@ object MCSOps {
       minArea: Int,
       nodeMinArea: Int,
       minAreaThres: Int): RDD[MCSEdge] = {
-
     sRDD.flatMap({
       case (sd1, sd2) =>
         val (t1, t2) = (sd1(varName), sd2(varName))
@@ -569,7 +570,7 @@ object MCSOps {
 
 /**
  * Function to update the areas associated with min and max temperatures found in each node.
- * Note that: (1) areas are the number of boxes within the node meeting the temperaure.
+ * Note that: (1) areas are the number of boxes within the node meeting the temperature.
  * (2) If the original min temp does not meet the min area threshold, it is iteratively
  * increased until a valid temperature is found.
  *
@@ -578,7 +579,7 @@ object MCSOps {
  * @param areaBox The area for the minTemp threshold area
  *
  */
-def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
+def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int): Unit = {
   val gridMap: mutable.HashMap[String, Double] = thisNode.grid
 
   gridMap.foreach { case (k, v) =>
@@ -599,6 +600,36 @@ def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int) {
 
   val maxArea = nodeGrid.data.count(_ >= maxTemp)
   thisNode.updateMaxTempArea(maxArea)
+}
+
+/**
+ * Function to add WWLLN lighnting data to MCSNode
+ * @param thisNode The MCSNode object to update with the lightning locations
+ * @param bcWWLLN The broadcasted WWLLN data stored within a dataframe
+ */
+def updateLightningWWLLN(
+    thisNode: MCSNode,
+    bcWWLLN: Broadcast[DataFrame]): Unit = {
+  val currtime = thisNode.getFrameNum.toString
+  var currtimeStr = ""
+  // convert to str format "yyyy/MM/DD kk:mm:ss" for the WWLLN dataframe time
+  if (currtime.length == 10) {
+    currtimeStr = currtime.dropRight(6) + "/" + currtime.dropRight(4).drop(4) +
+      "/" + currtime.dropRight(2).drop(6) + " " + currtime.drop(8) + ":00:00"
+  } else if (currtime.length == 12) {
+    currtimeStr = currtime.dropRight(8) + "/" + currtime.dropRight(6).drop(4) +
+      "/" + currtime.dropRight(4).drop(6) + " " + currtime.dropRight(2).drop(8) +
+      ":" + currtime.drop(10) + ":00"
+  }
+
+  val latMin = thisNode.getLatMin()
+  val latMax = thisNode.getLatMax()
+  val lonMin = thisNode.getLonMin()
+  val lonMax = thisNode.getLonMax()
+  val lightningLocs = WWLLNUtils.getLightningLocs(bcWWLLN, currtimeStr,
+    latMin, latMax, lonMin, lonMax)
+
+  thisNode.updateLightning(lightningLocs)
 }
 
 }

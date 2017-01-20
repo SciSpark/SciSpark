@@ -28,7 +28,9 @@ import org.apache.hadoop.fs.Path
 import org.apache.log4j.LogManager
 
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame}
 
 import org.dia.Constants._
 import org.dia.loaders.MergReader._
@@ -37,6 +39,7 @@ import org.dia.loaders.RandomMatrixReader._
 import org.dia.partitioners.SPartitioner._
 import org.dia.tensors.{AbstractTensor, BreezeTensor, Nd4jTensor}
 import org.dia.utils.NetCDFUtils
+import org.dia.utils.WWLLNUtils
 
 /**
  * A SciSparkContext is a wrapper for the SparkContext.
@@ -45,8 +48,11 @@ import org.dia.utils.NetCDFUtils
  * that are useful for catching unwanted calls. Such as
  * executing one of the functions after the SparkContext has been stopped.
  */
-class SciSparkContext(@transient val sparkContext: SparkContext) {
 
+// Define WWLLN schema for DataFrame
+case class WWLLN(lDateTime: String, lat: Double, lon: Double, resFit: Double, numStations: Integer)
+
+class SciSparkContext (@transient val sparkContext: SparkContext) extends Serializable {
   /**
    * Log4j Setup
    * By default the natty Parser log4j messages are turned OFF.
@@ -92,6 +98,8 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   }
 
   def getConf: SparkConf = sparkContext.getConf
+
+  def stop: Unit = sparkContext.stop()
 
   /**
    * Adds http credentials which is then registered by any function
@@ -360,6 +368,28 @@ class SciSparkContext(@transient val sparkContext: SparkContext) {
   def openPath(path: String, varName: List[String] = Nil): SRDD[SciTensor] = {
     val datasetPaths = List(path)
     new SRDD[SciTensor](sparkContext, datasetPaths, varName, loadNetCDFNDVar, mapSubFoldersToFolders)
+  }
+
+  /**
+   * Reads data from WWLLN files into a SQL Dataframe and broadcasts this DF
+   * @param WWLLNpath Path on HDFS to the data
+   * @param paritions The number of paritions to use
+   * return DataFrame with all the WWLLN data at the location provided
+   */
+  def readWWLLNData(WWLLNpath: String, partitions: Integer): Broadcast[DataFrame] = {
+    val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
+    import sqlContext.implicits._
+
+    val WWLLNdataStrs = sparkContext.textFile(WWLLNpath, partitions).filter(lines => lines.split(",").length != 1)
+    val wwllnRDD = WWLLNdataStrs.map(line => line.split(",")).map(p =>
+      WWLLN(WWLLNUtils.getWWLLNtimeStr(p(0).trim, p(1).trim), p(2).trim.toDouble, p(3).trim.toDouble,
+        p(4).trim.toDouble, p(5).trim.toInt))
+    val wwllnDF = wwllnRDD.toDF()
+    val broadcastedWWLLN = sparkContext.broadcast(wwllnDF)
+    object GetWWLLNDF {
+      def getWWLLNDF = broadcastedWWLLN.value
+    }
+    broadcastedWWLLN
   }
 
 }
