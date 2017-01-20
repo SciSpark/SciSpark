@@ -205,7 +205,7 @@ object MCCOps {
         nodeAreaCriteriaB += 1
       }
     }
-    if (nodeAreaCriteriaA >= areaCriteriaA || nodeAreaCriteriaB >= areaCriteriaB) {
+    if (nodeAreaCriteriaA >= areaCriteriaA && nodeAreaCriteriaB >= areaCriteriaB) {
       return (true, node.hashKey())
     }
     else {
