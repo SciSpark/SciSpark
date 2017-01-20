@@ -87,6 +87,8 @@ def _run_scispark_implementation():
         subprocess.call(cpTextFilesStr, shell=True)
         cpTextFilesStr = 'cp {0}/MCSNodes.json {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
         subprocess.call(cpTextFilesStr, shell=True)
+        cpTextFilesStr = 'cp {0}/MCCPaths.txt {1}/scisparkGTG/textFiles'.format(resultDir, workingDir)
+        subprocess.call(cpTextFilesStr, shell=True)
         filenames = glob.glob(resultDir + '/subgraphs*.txt')
         with open(workingDir + '/scisparkGTG/textFiles/subgraphs.txt', 'w') as outfile:
             for fname in filenames:
@@ -363,7 +365,7 @@ def _compare_edgelists(pySubgraphs, ssSubgraphs):
     for i in pySubgraphs:
         ssGraph = filter(lambda y: set(y) & set(i), ssSubgraphs)
         if not ssGraph:
-            x.append(filter(lambda y: set(y) & set(i) == set([]), ssSubgraphs))
+            x.append(filter(lambda y: set(y) & set(i) != set([]), ssSubgraphs))
         else:
             if len(i) > len(ssGraph[0]):
                 z.append(('Python len: ' + str(len(i)), 'SciSpark len: '+str(len(ssGraph[0])), list(set(i) - set(ssGraph[0]))))
@@ -452,6 +454,39 @@ def _get_data(sTime, eTime, pyDir, ssDir):
     pyEdgeList = map(lambda x: x[1:].replace('\'', '').replace(' ', '').split(','), pFs[1:-1].split(']'))
 
     return allTimesInts, ssNodes, pyNodes, ssEdgeList, pyEdgeList
+
+def _convert_to_pyStr(workingDir, scisparkMCCsList):
+    '''
+    Purpose: execute the sixth tests to compare the subgraphs generated within either implementation
+    Inputs: workingDir - directory for writing mapping files
+            scisparkMCCsList - list of subgraphs from SciSpark implementation
+    Outputs: mappedGraph - list of subgraphs from SciSpark implementation with nodes in Python implementation format
+    '''
+    mappedGraph = []
+    aGraph = []
+    scisparkMCCs = []
+
+    with open(workingDir + '/CEmappings.txt', 'r') as f:
+        nodeMap = f.readlines()
+
+    nodeMap = map(lambda x: (x.split(' --> ')[0], x.split(' --> ')[1].strip()), nodeMap)
+    
+    #convert the scisparkList to the python string format
+    for s in scisparkMCCsList:
+        scisparkMCCs.append(map(lambda x: 'F' + x.split(':')[0] + 'CE' + x.split(':')[1], filter(None, s)))
+
+    for g in scisparkMCCs:
+        for n in g:
+            entry = filter(lambda y: y[1] == n, nodeMap)
+            if entry:
+                pyNode = entry[0][0]
+            else:
+                pyNode = None
+            aGraph.append(pyNode)
+        mappedGraph.append(aGraph)
+        aGraph = []
+
+    return mappedGraph
 
 
 def test_1(pyNodes, ssDir, allTimesInts):
@@ -633,25 +668,7 @@ def test_6(workingDir, pySubgraphs, ssSubgraphs):
     aGraph = []
     ssgraph = []
 
-    with open(workingDir+'/CEmappings.txt', 'r') as f:
-        nodeMap = f.readlines()
-
-    nodeMap = map(lambda x: (x.split(' --> ')[0], x.split(' --> ')[1].strip()), nodeMap)
-    
-    for s in ssSubgraphs:
-        ssgraph.append(map(lambda x: 'F' + x.split(':')[0] + 'CE' + x.split(':')[1], filter(None, s))) 
-
-    for g in ssgraph:
-        for n in g:
-            entry = filter(lambda y: y[1] == n, nodeMap)
-            if entry:
-                pyNode = entry[0][0]
-            else:
-                pyNode = None
-            aGraph.append(pyNode)
-        mappedGraph.append(aGraph)
-        aGraph = []
-
+    mappedGraph = _convert_to_pyStr(workingDir, ssSubgraphs)
     passed, graph = _compare_edgelists(pySubgraphs, mappedGraph)
 
     if passed:
@@ -664,6 +681,35 @@ def test_6(workingDir, pySubgraphs, ssSubgraphs):
         of.write('\n!!Test 6: Different elements in the subgraph are generated in either implementation.\n\
             The difference for each subgraph are %s'\
             %graph)
+
+def test_7(workingDir, pyDir, ssDir):
+    '''
+    Purpose: execute the seventh tests to compare the MCCs found within either implementation
+    Inputs: workingDir - - directory for writing mapping files
+    Outputs: None
+    '''
+    with open(pyDir + '/textFiles/MCCList.txt', 'r') as p:
+        pyMCCs = p.readlines()
+    pyMCCsList = map(lambda x: x[2:-2].split("', '"), pyMCCs)
+
+    with open(ssDir + '/textFiles/MCCPaths.txt', 'r') as s:
+        ssMCCs = s.readlines()
+    ssMCCsList = map(lambda x: x[4:-1].split(', '), ssMCCs)
+
+    mappedMCCs = _convert_to_pyStr(workingDir, ssMCCsList)
+    passed, graph = _compare_edgelists(pyMCCsList, mappedMCCs)
+
+    if passed:
+        print 'Test 7: MCCs generated are similar. %s' %graph 
+        of.write('\nTest 6. Subgraphs generated are similar.')
+    else:
+        print '!!Test 7: Different elements in the MCCs are generated in either implementation. \n \
+        The different for each MCC are %s' \
+            %graph
+        of.write('\n!!Test 7: Different elements in the MCCs are generated in either implementation.\n\
+            The difference for each MCC are %s'\
+            %graph)
+
 
 def main(argv):
     '''
@@ -725,13 +771,13 @@ def main(argv):
         print '-' *80
         of.write('-' *80)
 
-        # get the implementations data
-        if not _get_python_implementation():
-            sys.exit(2)
+        # # get the implementations data
+        # if not _get_python_implementation():
+        #     sys.exit(2)
 
-        # run SciSpark
-        if not _run_scispark_implementation():
-            sys.exit(2)
+        # # run SciSpark
+        # if not _run_scispark_implementation():
+        #     sys.exit(2)
 
         # --- Acquire the data from the different implementations for the tests ---
         allTimesInts, ssNodes, pyNodes, ssEdgeList, pySubgraphs = _get_data(sTime, eTime, pyDir, ssDir)
@@ -769,6 +815,11 @@ def main(argv):
 
         # check subgraphs generated between either implementation
         test_6(workingDir, pySubgraphs, ssSubgraphs)
+        print '-' *80
+        of.write('-' *80)
+
+        # check MCCs generated between either implementation
+        test_7(workingDir, pyDir, ssDir)
         print '-' *80
         of.write('-' *80)
 
