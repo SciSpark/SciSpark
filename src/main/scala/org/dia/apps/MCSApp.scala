@@ -52,6 +52,14 @@ object MCSApp extends App {
   val minAreaThres = 16
   val minGraphLength = 4
 
+  /** Criteria for MCC */
+  val minFeatureLength = 6
+  val maxFeatureLEngth = 24
+  val areaCriteriaA = 30000/16
+  val b = 80000/16
+  val tempA = 213.0f
+  val tempB = 233.0f
+
   logger.info("Starting MCS")
 
   val outputDir = FileUtils.checkHDFSWrite(outputLoc)
@@ -165,6 +173,35 @@ object MCSApp extends App {
   for(x <- subgraphsFound) {
     logger.info("Edges remaning : " + x._2.toList)
   }
+
+  /** find potential nodes */
+  val potentialNodes = sc.sparkContext.parallelize(MCSNodeMap.values.toSeq)
+    .map(MCCOps.isPotentialNode(_, areaCriteriaA, b, tempA, tempB))
+    .filter(x => x._1)
+    .groupByKey()
+    .collect()
+
+  val potentialNodeSet = new mutable.HashSet[String]()
+  for ((isCriteria, nodes) <- potentialNodes) {
+    if (isCriteria) {
+      potentialNodeSet ++= nodes
+    }
+  }
+
+  val broadcastPotentialNodes = sc.sparkContext.broadcast(potentialNodeSet)
+  val subgraphsPath = outputDir + System.getProperty("file.separator") + "subgraphs-*"
+  val subgraphsRDD = MCCOps.loadSubgraphsFromFile(subgraphsPath, sc.sparkContext)
+
+  println(subgraphsRDD.collect())
+
+  /** Find MCCs in the subgraphs */
+  val MCCs = subgraphsRDD.map(MCCOps.findMCC(_, minFeatureLength, maxFeatureLEngth, broadcastPotentialNodes))
+    .reduce((x, y) => x ++ y)
+
+  /** Merge all paths if they have common nodes */
+  val MCCFilePath = outputDir + System.getProperty("file.separator") + "MCCPaths.txt"
+
+  FileUtils.writeIterableToHDFS(MCCFilePath, MCCs)
 
   /**
    * Output RDD DAG to logger
