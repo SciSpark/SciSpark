@@ -37,7 +37,7 @@ object MCSApp extends App {
   val path = if (args.length <= 2) "resources/paperSize/" else args(2)
   val varName = if (args.length <= 3) "ch4" else args(3)
   val outputLoc = if (args.length <= 4) "output" else args(4)
-  val WWLLNpath = "resources/WWLLN/" // must be hdfs file location
+  val WWLLNpath = "resources/WWLLN/"
 
   /**
    * User parameters for the algorithm itself
@@ -174,39 +174,73 @@ object MCSApp extends App {
     logger.info("Edges remaning : " + x._2.toList)
   }
 
-  /** find potential nodes */
-  val potentialNodes = sc.sparkContext.parallelize(MCSNodeMap.values.toSeq)
-    .map(MCCOps.isPotentialNode(_, areaCriteriaA, b, tempA, tempB))
-    .filter(x => x._1)
-    .groupByKey()
-    .collect()
-
-  val potentialNodeSet = new mutable.HashSet[String]()
-  for ((isCriteria, nodes) <- potentialNodes) {
-    if (isCriteria) {
-      potentialNodeSet ++= nodes
-    }
-  }
-
-  val broadcastPotentialNodes = sc.sparkContext.broadcast(potentialNodeSet)
+  /**
+   * Load subgraphs from file into RDD
+   */
   val subgraphsPath = outputDir + System.getProperty("file.separator") + "subgraphs-*"
   val subgraphsRDD = MCCOps.loadSubgraphsFromFile(subgraphsPath, sc.sparkContext)
 
-  println(subgraphsRDD.collect())
-
-  /** Find MCCs in the subgraphs */
-  val MCCs = subgraphsRDD.map(MCCOps.findMCC(_, minFeatureLength, maxFeatureLEngth, broadcastPotentialNodes))
-    .reduce((x, y) => x ++ y)
-
-  /** Merge all paths if they have common nodes */
-  val MCCFilePath = outputDir + System.getProperty("file.separator") + "MCCPaths.txt"
-
-  FileUtils.writeIterableToHDFS(MCCFilePath, MCCs)
+  /**
+   * Remove the nodes that are not in the subgraphs from the nodemap
+   */
+  val subgraphsNodes = subgraphsRDD.collect().flatten.flatMap{ case(a, b) => List(a, b)}
+  val notSubgraphNodes = MCSNodeMap.keys.filterNot(subgraphsNodes.toSet).toList
+  MCSNodeMap --= notSubgraphNodes
 
   /**
-   * Output RDD DAG to logger
+   * Add the criteria according to Goyens et al. 2011
    */
-  logger.info(edgeListRDD.toDebugString + "\n")
+  val areasTempsAllRDD = subgraphsRDD.map(x => (MCSOps.getMCSAreas(x, broadcastedNodeMap),
+    MCSOps.getMCS210KTemps(x, broadcastedNodeMap)))
+
+  val areasTempsRDD = areasTempsAllRDD.map{ x =>
+    val areaTempList = new mutable.ListBuffer[(String, Double, Double, List[String])]
+    for (i <- 0 to x._1.length - 1) {
+      areaTempList += ((x._1(i)._1, x._1(i)._2, x._2(i)._2, x._1(i)._3))
+    }
+    areaTempList.toList
+  }
+
+  /**
+   * Add the stages
+   */
+  val findTheStages = areasTempsRDD.map(x => MCSOps.getDevStage(x))
+
+
+  /**
+   * Update the MCSNodeMap
+   */
+  val allStages = findTheStages.collect().flatten
+  allStages.foreach{println}
+  for (x <- 0 to allStages.length - 1) {
+    for (nodeStr <- allStages(x)._3) {
+      MCSNodeMap(nodeStr).updateDevStage(allStages(x)._2)
+    }
+  }
+
+  val removeNodes = findTheStages.map{ x =>
+    var count = 0
+    var mcs: Boolean = false
+    var rNodes = new mutable.ListBuffer[List[String]]
+    for(i <- 1 to x.length - 1) {
+      rNodes += x(i)._3
+      count = if (x(i)._2 == "M") count + 1 else 0
+      if (count >= 3) {
+        mcs = true
+      }
+    }
+    if (mcs) {
+      rNodes.remove(0, rNodes.length)
+    }
+    rNodes.flatten.toList
+  }
+
+  /**
+   * Update MCSNode map directly
+   */
+  MCSNodeMap --= removeNodes.collect().toList.flatten
+  for ((k, v) <- MCSNodeMap) printf("%s,\t%s\t%s\t%s\t%s\n", k,
+    v.getCenterLat(), v.getCenterLon, v.getArea(), v.getDevStage())
 
   /**
    * Remove broadcasted variables

@@ -418,6 +418,8 @@ object MCSOps {
           val node2 = edge.destNode
           MCSOps.updateTempAreas(node1, t1().zeros(t1().shape: _*), minAreaThres)
           MCSOps.updateTempAreas(node2, t2().zeros(t2().shape: _*), minAreaThres)
+          MCSOps.updateAvgTemp(node1, t1().zeros(t1().shape: _*))
+          MCSOps.updateAvgTemp(node2, t2().zeros(t2().shape: _*))
         })
 
         MCSOps.updateEdgeMapCriteria(MCSEdgeMap, maxAreaOverlapThreshold, minAreaOverlapThreshold,
@@ -600,6 +602,27 @@ def updateTempAreas(thisNode: MCSNode, nodeGrid: AbstractTensor, areaBox: Int): 
 
   val maxArea = nodeGrid.data.count(_ >= maxTemp)
   thisNode.updateMaxTempArea(maxArea)
+
+  val temp210 = nodeGrid.data.count(_ <= 210.0) - nodeGrid.data.count(_ == 0.0)
+  thisNode.update210TempArea(temp210)
+}
+
+/**
+ * Function to update the average temperature in the node
+ *
+ * @param thisNode The MCSNode object to update with the areas
+ * @param nodeGrid The tensor of zeros with the shape
+ */
+def updateAvgTemp(thisNode: MCSNode, nodeGrid: AbstractTensor) {
+  val gridMap: mutable.HashMap[String, Double] = thisNode.grid
+
+  gridMap.foreach { case (k, v) =>
+    val indices = k.replace("(", "").replace(")", "").replace(" ", "").split(",")
+    nodeGrid.put(v, indices(0).toInt, indices(1).toInt)
+  }
+
+  val avgTemp = nodeGrid.data.sum / nodeGrid.data.count(_ != 0.0)
+  thisNode.updateAvgTemp(avgTemp)
 }
 
 /**
@@ -630,6 +653,94 @@ def updateLightningWWLLN(
     latMin, latMax, lonMin, lonMax)
 
   thisNode.updateLightning(lightningLocs)
+}
+
+/**
+ * Function to store areas from a MCSs in a list
+ * @param nodeList The list of strings representing the connected nodes in a MCSs
+ * @param MCSNodeMap  Broadcasted mutable.HashMap[String, MCSNode] representing the map of each node metadata
+ * @return areaList The list of tuples of (nodeID, normalized area) corresponding to the MCS
+ */
+def getMCSAreas(
+    nodeList: mutable.Iterable[(String, String)],
+    MCSNodeMap: Broadcast[mutable.HashMap[String, MCSNode]]) : List[(String, Double, List[String])] = {
+  val uniqueNodes = nodeList.flatMap{ case(a, b) => List(a, b) }.toList.distinct
+  val orderedNodes = uniqueNodes.sortWith(_.split(":")(0).toInt < _.split(":")(0).toInt)
+  var areaList = orderedNodes.map{ x => (x, MCSNodeMap.value(x).getArea())}
+  val combinedAreas = areaList.groupBy(_._1.split(":")(0)).map{
+    case(k, vs) => (k, vs.map(_._2).sum, vs.map(_._1))}.toList.sortBy(_._1)
+  combinedAreas.toList
+}
+
+/**
+ * Function to store the brightness temperatures < 210K area from a MCSs in a list
+ * @param nodeList The list of strings representing the connected nodes in a MCSs
+ * @param MCSNodeMap  Broadcasted mutable.HashMap[String, MCSNode] representing the map of each node metadata
+ * @return temp210AreaList The list of tuples of (nodeID, area) corresponding to the MCS
+ */
+def getMCS210KTemps(
+    nodeList: mutable.Iterable[(String, String)],
+    MCSNodeMap: Broadcast[mutable.HashMap[String, MCSNode]]) : List[(String, Double, List[String])] = {
+  val uniqueNodes = nodeList.flatMap{ case(a, b) => List(a, b) }.toList.distinct
+  val orderedNodes = uniqueNodes.sortWith(_.split(":")(0).toInt < _.split(":")(0).toInt)
+  val tempAreas = orderedNodes.map{ x => (x, (MCSNodeMap.value(x).get210TempArea()/ MCSNodeMap.value(x).getArea()))}
+  val temp210AreaList = tempAreas.groupBy(_._1.split(":")(0)).map{ case(k, vs) =>
+    (k, vs.map(_._2).sum, vs.map(_._1))}.toList.sortBy(_._1)
+  temp210AreaList.toList
+}
+
+/**
+ * Function to get the MCS development stage according to Goyens et al. 2011.
+ * Goyens et al 2011 identify large scale MCS as area > 30000km^2 for 3+ hrs
+ * Stages are I - initation stage, M- maturity, D-Decay, reI - reinitialization
+ * @param areaTempList ordered (by the string representing the area) list of the area size
+ * @return list(datetime, devStage, list(nodes)) of the node development stage in the MCS for each time.
+ */
+def getDevStage(
+    areaTempList: List[(String, Double, Double, List[String])]): List[(String, String, List[String])] = {
+  var cutoffMinA = 30000 / 16
+  var mcsLength = areaTempList.length
+  var devStageList = new mutable.ListBuffer[(String, String, List[String])]
+  for (i <- 0 to mcsLength - 2) {
+    if (areaTempList(i)._2 < cutoffMinA && (areaTempList(i)._2 - areaTempList(i + 1)._2)/(i - i + 1) > 0) {
+      if (i !=0 && (devStageList(i - 1)._2 == "D" || devStageList(i - 1)._2 == "reI")) {
+        devStageList += ((areaTempList(i)._1, "reI", areaTempList(i)._4))
+      } else {
+        devStageList += ((areaTempList(i)._1, "I", areaTempList(i)._4))
+      }
+    } else if (areaTempList(i)._2 < cutoffMinA && (areaTempList(i)._2 - areaTempList(i + 1)._2)/(i - i + 1) < 0) {
+      devStageList += ((areaTempList(i)._1, "D", areaTempList(i)._4))
+    } else if (areaTempList(i)._2 > cutoffMinA) {
+      if (areaTempList(i)._3 >= 0.1) {
+        devStageList += ((areaTempList(i)._1, "M", areaTempList(i)._4))
+        } else {
+          devStageList += ((areaTempList(i)._1, "D", areaTempList(i)._4))
+        }
+    }
+  }
+  // the last node
+  if (devStageList(mcsLength - 2)._2 == "I") {
+    if (areaTempList(mcsLength - 1)._2 >= cutoffMinA && areaTempList(mcsLength - 1)._3 >= 0.1) {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "M", areaTempList(mcsLength - 1)._4))
+    } else {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "I", areaTempList(mcsLength - 1)._4))
+    }
+  }
+  if (devStageList(mcsLength - 2)._2 == "D") {
+    if (areaTempList(mcsLength - 1)._2 >= cutoffMinA && areaTempList(mcsLength - 1)._3 >= 0.1) {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "M", areaTempList(mcsLength - 1)._4))
+    } else {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "D", areaTempList(mcsLength - 1)._4))
+    }
+  }
+  if (devStageList(mcsLength - 2)._2 == "M") {
+    if (areaTempList(mcsLength - 1)._2 <= cutoffMinA && areaTempList(mcsLength - 1)._3 < 0.1) {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "D", areaTempList(mcsLength - 1)._4))
+    } else {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "M", areaTempList(mcsLength - 1)._4))
+    }
+  }
+  devStageList.toList
 }
 
 }
