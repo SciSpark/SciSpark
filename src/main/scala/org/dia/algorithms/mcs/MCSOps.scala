@@ -702,14 +702,17 @@ def getDevStage(
   var mcsLength = areaTempList.length
   var devStageList = new mutable.ListBuffer[(String, String, List[String])]
   for (i <- 0 to mcsLength - 2) {
-    if (areaTempList(i)._2 < cutoffMinA && (areaTempList(i)._2 - areaTempList(i + 1)._2)/(i - i + 1) > 0) {
-      if (i !=0 && (devStageList(i - 1)._2 == "D" || devStageList(i - 1)._2 == "reI")) {
-        devStageList += ((areaTempList(i)._1, "reI", areaTempList(i)._4))
+    if (areaTempList(i)._2 < cutoffMinA) {
+      if (i != 0 && (devStageList(i - 1)._2 == "D" || devStageList(i - 1)._2 == "reI")) {
+        if ((areaTempList(i)._3 > areaTempList(i + 1)._3) ||
+          (areaTempList(i)._3 == 0.0 && areaTempList(i + 1)._3 == 0)) {
+          devStageList += ((areaTempList(i)._1, "D", areaTempList(i)._4))
+        } else {
+          devStageList += ((areaTempList(i)._1, "reI", areaTempList(i)._4))
+        }
       } else {
         devStageList += ((areaTempList(i)._1, "I", areaTempList(i)._4))
       }
-    } else if (areaTempList(i)._2 < cutoffMinA && (areaTempList(i)._2 - areaTempList(i + 1)._2)/(i - i + 1) < 0) {
-      devStageList += ((areaTempList(i)._1, "D", areaTempList(i)._4))
     } else if (areaTempList(i)._2 > cutoffMinA) {
       if (areaTempList(i)._3 >= 0.1) {
         devStageList += ((areaTempList(i)._1, "M", areaTempList(i)._4))
@@ -729,6 +732,15 @@ def getDevStage(
   if (devStageList(mcsLength - 2)._2 == "D") {
     if (areaTempList(mcsLength - 1)._2 >= cutoffMinA && areaTempList(mcsLength - 1)._3 >= 0.1) {
       devStageList += ((areaTempList(mcsLength - 1)._1, "M", areaTempList(mcsLength - 1)._4))
+    } else {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "D", areaTempList(mcsLength - 1)._4))
+    }
+  }
+  if (devStageList(mcsLength - 2)._2 == "reI") {
+    if (areaTempList(mcsLength - 1)._2 >= cutoffMinA && areaTempList(mcsLength - 1)._3 >= 0.1) {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "M", areaTempList(mcsLength - 1)._4))
+    } else if (areaTempList(mcsLength - 1)._3 >= areaTempList(mcsLength - 2)._3) {
+      devStageList += ((areaTempList(mcsLength - 1)._1, "reI", areaTempList(mcsLength - 1)._4))
     } else {
       devStageList += ((areaTempList(mcsLength - 1)._1, "D", areaTempList(mcsLength - 1)._4))
     }

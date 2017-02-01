@@ -223,6 +223,8 @@ object MCSApp extends App {
     }
     if (mcs) {
       rNodes.remove(0, rNodes.length)
+    } else {
+      rNodes += x(0)._3
     }
     rNodes.flatten.toList
   }
