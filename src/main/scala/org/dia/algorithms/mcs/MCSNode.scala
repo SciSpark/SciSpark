@@ -41,14 +41,16 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   var centerLat: Double = 0.0
   var centerLon: Double = 0.0
   var lightningData: String = "(-999.0, -999.0)"
+  var devStage: String = "U"
 
   /** Since temperature is in Kelvin, we don't want to go below absolute zero */
   var maxTemp: Double = 0.0
   var minTemp: Double = Double.MaxValue
-
   var maxTempArea: Double = 0.0
   var minArea: Double = 0.0
   var minAreaTemp: Double = 0.0
+  var temp210Area: Double = 0.0
+  var avgTemp: Double = 0.0
 
   def this(frameNum: String, cloudElemNum: String) {
     this(frameNum.toInt, cloudElemNum.toInt)
@@ -123,6 +125,18 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
 
   def getLightningData(): String = {
     this.lightningData
+  }
+
+  def getAvgTemp(): Double = {
+    this.avgTemp
+  }
+
+  def get210TempArea(): Double = {
+    this.temp210Area
+  }
+
+  def getDevStage(): String = {
+    this.devStage
   }
 
   def setGrid(_grid: mutable.HashMap[String, Double]): Unit = {
@@ -219,6 +233,10 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
     this.maxTemp = if (value > this.maxTemp) value else this.maxTemp
   }
 
+  def updateAvgTemp(value: Double): Unit = {
+    this.avgTemp = value
+  }
+
   def updateLatLon(lat: Array[Double], lon: Array[Double]): Unit = {
     this.latMax = lat(this.rowMax)
     this.latMin = lat(this.rowMin)
@@ -241,6 +259,14 @@ class MCSNode(var frameNum: Int, var cloudElemNum: Int) extends Serializable {
   def updateLightning(value: Array[(Double, Double)]): Unit = {
     val currloc = if (value.isEmpty) "none" else value.mkString(",")
     this.lightningData = currloc
+  }
+
+  def update210TempArea(value: Double): Unit = {
+    this.temp210Area = value
+  }
+
+  def updateDevStage(value: String): Unit = {
+    this.devStage = value
   }
 
   def hashKey(): String = {

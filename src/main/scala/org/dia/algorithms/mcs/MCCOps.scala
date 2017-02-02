@@ -214,10 +214,10 @@ object MCCOps {
   }
 
   /**
-   * Load the subgraphs found in the previous steps from the files spcified in filepath
+   * Load the subgraphs found in the previous steps from the files specified in filepath
    * @param filepath
    * @param sc
-   * @return
+   * @return textfiles
    */
   def loadSubgraphsFromFile(filepath: String, sc: SparkContext):
   RDD[mutable.MutableList[(String, String)]] = {
