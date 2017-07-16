@@ -26,12 +26,14 @@ import org.dia.testenv.SparkTestConstants
 import org.dia.utils.NetCDFUtils
 
 /**
- * Tests whether the creation of Nd4jTensors works.
+ * Tests constructor of Nd4jTensor.
  * Note that a likely reason for these tests to fail
- * Is if a filename has changed on the OpenDap server where these
+ * is if a filename has changed on the OpenDap server where these
  * files are being pulled from.
  *
  * To check, simply visit the url corresponding to the failed test.
+ * Currently these tests are ignored because the datasets
+ * require authentication using valid Earth Data login credentials.
  */
 class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
 
@@ -72,7 +74,7 @@ class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
   /**
    * Testing creation of 2D Array from daily collected TRMM compData
    */
-  test("ReadingDailyTRMMDimensions") {
+  ignore("ReadingDailyTRMMDimensions") {
     /** creating expected */
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(dailyTrmmUrl)
     val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, DAILY_TRMM_DATA_VAR)
@@ -87,7 +89,7 @@ class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
   /**
    * Testing creation of 2D Array from hourly collected TRMM compData
    */
-  test("ReadingHourlyTRMMDimensions") {
+  ignore("ReadingHourlyTRMMDimensions") {
     /** creating expected */
     val netcdfFile = NetCDFUtils.loadNetCDFDataSet(hourlyTrmmUrl)
     val coordArray = NetCDFUtils.netCDFArrayAndShape(netcdfFile, HOURLY_TRMM_DATA_VAR)
@@ -102,7 +104,7 @@ class Nd4jIntegrationTest extends FunSuite with BeforeAndAfter {
   /**
    * Testing creation of N-d array from AIRS compData
    */
-  test("ReadingAIRSDimensions") {
+  ignore("ReadingAIRSDimensions") {
     val realTensor = new Nd4jTensor(NetCDFReader.loadNetCDFNDVar(airslvl3, TOTALCOUNTS_A))
     assert(realTensor.tensor.rows() == 180)
     assert(realTensor.tensor.columns() == 360)
