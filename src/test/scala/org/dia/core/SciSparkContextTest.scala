@@ -38,7 +38,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
   /**
    * Creates SRDD from a file of URIs.
    */
-  test("NetcdfFile.Local") {
+  ignore("NetcdfFile.Local") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val variable = SparkTestConstants.datasetVariable
     val sRDD = sc.netcdfFileList(testLinks, List(variable))
@@ -80,7 +80,7 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     assert(count == 2)
   }
 
-  test("sciDatasets") {
+  ignore("sciDatasets") {
     val variable = "data"
     val variable2 = SparkTestConstants.datasetVariable
     val rdd = sc.sciDatasets("src/test/resources/Netcdf/", List(variable))

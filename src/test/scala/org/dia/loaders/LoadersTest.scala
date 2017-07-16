@@ -89,7 +89,7 @@ class LoadersTest extends FunSuite with BeforeAndAfter {
    * Tests SRDD creation if NetCDFs come from URIs provided in a local file.
    * This test here is in fact not loading any variables.
    */
-  test("LoadMultiVariable") {
+  ignore("LoadMultiVariable") {
     sc.setLocalProperty(ARRAY_LIB, ND4J_LIB)
     val path = SparkTestConstants.datasetPath
     val variable = SparkTestConstants.datasetVariable

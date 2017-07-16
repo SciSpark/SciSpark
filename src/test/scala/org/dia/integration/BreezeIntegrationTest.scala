@@ -25,12 +25,14 @@ import org.dia.testenv.SparkTestConstants
 import org.dia.utils.NetCDFUtils
 
 /**
- * Tests whether the creation of BreezeTensors works.
+ * Tests constructor of BreezeTensor.
  * Note that a likely reason for these tests to fail
- * Is if a filename has changed on the OpenDap server where these
+ * is if a filename has changed on the OpenDap server where these
  * files are being pulled from.
  *
  * To check, simply visit the url corresponding to the failed test.
+ * Currently these tests are ignored because the datasets
+ * require authentication using valid Earth Data login credentials.
  */
 class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
 
@@ -70,7 +72,7 @@ class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
    * Notice the flipped parameters for the DenseMatrix constructor.
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
-  test("ReadingDailyTRMMDimensions") {
+  ignore("ReadingDailyTRMMDimensions") {
     val arrayTuple = NetCDFReader.loadNetCDFNDVar(dailyTrmmUrl, DAILY_TRMM_DATA_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
     assert(EXPECTED_ROWS_DAILY == resDenseMatrix.rows)
@@ -82,7 +84,7 @@ class BreezeIntegrationTest extends FunSuite with BeforeAndAfter{
    * Testing creation of 2D Array (DenseMatrix) from hourly collected TRMM data
    * Assert Criteria : Dimensions of TRMM data matches shape of 2D Array
    */
-  test("ReadingHourlyTRMMDimensions") {
+  ignore("ReadingHourlyTRMMDimensions") {
     val arrayTuple = NetCDFReader.loadNetCDFNDVar(hourlyTrmmUrl, HOURLY_TRMM_DATA_VAR)
     val resDenseMatrix = new BreezeTensor(arrayTuple)
     assert(EXPECTED_ROWS_HOURLY == resDenseMatrix.rows)
