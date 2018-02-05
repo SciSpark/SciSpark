@@ -147,13 +147,14 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
   def netcdfDatasetList(
       path: String,
       vars: List[String] = Nil,
-      partitions: Int = defaultPartitions): RDD[SciDataset] = {
+      partitions: Int = defaultPartitions,
+      NaNs: Boolean = false): RDD[SciDataset] = {
 
     val creds = HTTPCredentials.clone()
     val URIsFile = sparkContext.textFile(path, partitions)
     val rdd = URIsFile.map(p => {
       for ((uri, username, password) <- creds) NetCDFUtils.setHTTPAuthentication(uri, username, password)
-      val netcdfDataset = NetCDFUtils.loadNetCDFDataSet(p)
+      val netcdfDataset = NetCDFUtils.loadNetCDFDataSet(p, NaNs)
       if(vars.nonEmpty) {
         new SciDataset(netcdfDataset, vars)
       } else {
@@ -222,7 +223,7 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
   def netcdfRandomAccessDatasets(
       path: String,
       varName: List[String] = Nil,
-      partitions: Int = defaultPartitions): RDD[SciDataset] = {
+      partitions: Int = defaultPartitions, NaNs: Boolean = false): RDD[SciDataset] = {
 
     val fs = FileSystem.get(new URI(path), new Configuration())
     val FileStatuses = fs.listStatus(new Path(path))
@@ -230,7 +231,7 @@ class SciSparkContext (@transient val sparkContext: SparkContext) extends Serial
     val nameRDD = sparkContext.parallelize(fileNames, partitions)
 
     nameRDD.map(fileName => {
-      val k = NetCDFUtils.loadDFSNetCDFDataSet(path, path + fileName, 4000)
+      val k = NetCDFUtils.loadDFSNetCDFDataSet(path, path + fileName, 4000, NaNs)
       varName match {
         case Nil => new SciDataset (k)
         case s : List[String] => new SciDataset(k, s)

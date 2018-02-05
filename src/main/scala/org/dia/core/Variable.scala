@@ -356,7 +356,7 @@ class Variable(
    *
    */
   override def toString: String = {
-    val dimensionString = "(" + dims.map(_._1).reduce((a, b) => a + ", " + b) + ")"
+    val dimensionString = if (dims.isEmpty) "()" else "(" + dims.map(_._1).reduce((a, b) => a + ", " + b) + ")"
     val header = dataType + " " + name + dimensionString + "\n"
     val shapeString = shape().map(_.toString).reduce((a, b) => a + ", " + b)
     val footer = "current shape = (" + shapeString + ")\n"

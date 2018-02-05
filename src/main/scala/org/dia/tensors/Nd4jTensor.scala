@@ -295,6 +295,7 @@ private object Nd4jTensorUtils {
 
   def processShape(shape: Array[Int]) : Array[Int] = {
     shape.length match {
+      case 0 => Array(1, 1)
       case 1 => Array(1) ++ shape
       case _ => shape
     }
