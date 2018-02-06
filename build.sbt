@@ -48,7 +48,7 @@ mainClass in (Compile, packageBin) := Some("org.dia.apps.MCCApp")
 resolvers ++= Seq(
   Resolver.mavenLocal,
   Resolver.file("Local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns),
-  "maven Repository" at "http://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
+  "maven Repository" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
 )
 
 /**
