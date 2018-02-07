@@ -91,6 +91,13 @@ class SciSparkContextTest extends FunSuite with BeforeAndAfter {
     assert(listCount == 2)
   }
 
+  test("GOES16Dataset") {
+    val imageRDD = sc.netcdfDatasetList("/Users/bsrubin/SciSparkFork/src/test/resources/GOESnetcdf/imageList.txt",
+      List("CMI_C01", "x", "x_image_bounds", "goes_imager_projection"), NaNs = true)
+    assert(imageRDD.first.variables.keys.toList.lengthCompare(4) == 0)
+    assert(imageRDD.first.variables("CMI_C01").dataType == "float")
+  }
+
   test("netcdfWholeDatasets") {
     val variable = "data"
     val variable2 = SparkTestConstants.datasetVariable
