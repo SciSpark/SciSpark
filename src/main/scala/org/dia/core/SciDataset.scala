@@ -77,11 +77,11 @@ class SciDataset(
    * and keep the distinct dimensions.
    */
   def globalDimensions() : List[String] = {
-    variables.valuesIterator.map(variable =>
+    variables.valuesIterator.flatMap(variable =>
       variable.dims.map({
         case(dimName, length) => dimName + "(" + length + ")"
       })
-    ).flatten.toList.distinct
+    ).toList.distinct
   }
 
   /**
@@ -214,9 +214,32 @@ class SciDataset(
           val newDim = globalDimensionMap.getOrElseUpdate(dimName, writer.addDimension(null, dimName, length))
           dims.add(newDim)
         }
-        val varT = writer.addVariable(null, key, ucar.ma2.DataType.FLOAT, dims)
+        val fixDataType = variable.dataType match {
+          case "double" => ucar.ma2.DataType.DOUBLE
+          case "short" => ucar.ma2.DataType.SHORT
+          case "float" => ucar.ma2.DataType.FLOAT
+          case "int" => ucar.ma2.DataType.INT
+          case "byte" => ucar.ma2.DataType.BYTE
+        }
+
+        val varT = writer.addVariable(null, key, fixDataType, dims)
         varT.addAll(variable.attributes.map(p => new Attribute(p._1, p._2)).asJava)
-        val dataOut = Array.factory(DataType.DOUBLE, variable.shape(), variable.data())
+
+        val fixShape = variable.dims.size match {
+          case 0 => scala.Array[Int]()
+          case 1 => scala.Array[Int](variable.shape()(1))
+          case _ => variable.shape()
+        }
+
+        val fixArray = variable.dataType match {
+          case "double" => variable.data()
+          case "short" => variable.data().map(_.toShort)
+          case "float" => variable.data().map(_.toFloat)
+          case "int" => variable.data().map(_.toInt)
+          case "byte" => variable.data().map(_.toByte)
+        }
+
+        val dataOut = Array.factory(fixDataType, fixShape, fixArray)
         (varT, dataOut)
     }
     for ((key, attribute) <- attributes) {

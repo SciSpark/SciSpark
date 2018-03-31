@@ -40,6 +40,10 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
   var leftVar : Variable = _
   var rightVar : Variable = _
   var rightScalar : Double = _
+  var scalarTensor: AbstractTensor = _
+  var oneDimTensor: AbstractTensor = _
+  var scalarVar : Variable = _
+  var oneDimVar : Variable = _
 
   override def beforeEach(): Unit = {
     leftName = "left"
@@ -49,6 +53,10 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
     leftVar = new Variable(leftName, leftTensor)
     rightVar = new Variable(rightName, rightTensor)
     rightScalar = 5.0
+    scalarTensor = new Nd4jTensor(Array(1), Array(1, 1))
+    oneDimTensor = new Nd4jTensor(Array(1, 2, 3, 4), Array(1, 4))
+    scalarVar = new Variable("scalar", scalarTensor)
+    oneDimVar = new Variable("oneDim", oneDimTensor)
   }
 
   test("testCopy") {
@@ -115,6 +123,16 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
     assert(shape.toList == List(1, 128, 256))
   }
 
+  test("testScalarShape") {
+    val shape = scalarVar.shape()
+    assert(shape.toList == List(1, 1))
+  }
+
+  test("testOneDimShape") {
+    val shape = oneDimVar.shape()
+    assert(shape.toList == List(1, 4))
+  }
+
   test("testData") {
     val shapeProduct = variable.shape().product
     val (array, shape) = NetCDFUtils.netCDFArrayAndShape(netcdfDataset, name)
@@ -139,6 +157,12 @@ class VariableTest extends FunSuite with BeforeAndAfterEach {
       "\tunits: K\n" +
       "current shape = (1, 128, 256)\n"
     assert(variable.toString == string)
+  }
+
+  test("testScalarVarToString") {
+    val string = "Double64 scalar()\n" +
+    "current shape = (1, 1)\n"
+    assert(scalarVar.toString == string)
   }
 
   test("test += tensor") {
